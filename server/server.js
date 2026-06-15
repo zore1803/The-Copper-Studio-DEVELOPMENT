@@ -6,6 +6,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import Order from "./models/Order.js";
+import Lead from "./models/Lead.js";
 import { packages } from "./data/packages.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
@@ -178,6 +179,41 @@ app.post("/api/orders", async (req, res, next) => {
     });
 
     res.status(201).json(order);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/leads", async (req, res, next) => {
+  try {
+    const {
+      customerName,
+      customerPhone,
+      customerCountryCode,
+      customerEmail,
+      customerCompany,
+      selectedPackageId,
+      verified
+    } = req.body;
+
+    if (!customerName || !customerPhone || !customerEmail) {
+      return res.status(400).json({ message: "Name, phone, and email are required." });
+    }
+
+    const lead = await Lead.create({
+      customerName,
+      customerPhone,
+      customerCountryCode: customerCountryCode || "+91",
+      customerEmail,
+      customerCompany: customerCompany || "",
+      selectedPackageId: selectedPackageId || "",
+      verification: {
+        phoneVerified: Boolean(verified?.phone),
+        emailVerified: Boolean(verified?.email)
+      }
+    });
+
+    res.status(201).json({ id: lead._id });
   } catch (error) {
     next(error);
   }

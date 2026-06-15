@@ -372,49 +372,91 @@ select:focus {
 }
 
 .input-action .btn,
-.otp-inline .btn {
+.otp-row .btn {
   min-height: 44px;
   white-space: nowrap;
 }
 
-.otp-inline {
+.phone-field {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.phone-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.phone-field select {
+  width: auto;
+  min-height: 44px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.88rem;
+  padding: 9px 6px 9px 10px;
+  outline: none;
+  box-shadow: none;
+}
+
+.phone-field select:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.phone-field input {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.phone-field input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.otp-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-soft);
 }
 
-.otp-inline small {
+.otp-row small {
   grid-column: 1 / -1;
   color: var(--muted);
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 500;
 }
 
-.verify-field.is-sent .otp-inline {
-  border-color: rgba(37, 99, 235, 0.28);
-  background: #eff6ff;
+.verify-field.is-sent .otp-row input {
+  border-color: rgba(37, 99, 235, 0.45);
 }
 
-.verify-field.is-verified .otp-inline {
-  border-color: rgba(21, 128, 61, 0.35);
+.verify-field.is-verified .otp-row input {
+  border-color: var(--success);
   background: #f0fdf4;
 }
 
-.verify-field.is-verified .otp-inline small {
+.verify-field.is-verified .otp-row small {
   color: var(--success);
+  font-weight: 600;
 }
 
-.otp-inline input:disabled {
+.otp-row input:disabled {
   color: var(--muted);
-  background: #eef0f3;
   cursor: not-allowed;
 }
 
-.otp-inline .btn:disabled,
+.otp-row .btn:disabled,
 .input-action .btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -794,7 +836,7 @@ select:focus {
 
   .field-grid,
   .input-action,
-  .otp-inline,
+  .otp-row,
   .payment-methods,
   .mini-fields,
   .client-row {

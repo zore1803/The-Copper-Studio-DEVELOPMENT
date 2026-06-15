@@ -215,7 +215,7 @@ function renderCheckoutPage() {
     });
   });
 
-  document.getElementById("customerForm").addEventListener("submit", (event) => {
+  document.getElementById("customerForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
@@ -227,6 +227,20 @@ function renderCheckoutPage() {
 
     order.customer = Object.fromEntries(new FormData(form).entries());
     saveOrder(order);
+
+    try {
+      await apiRequest("/leads", {
+        method: "POST",
+        body: JSON.stringify({
+          ...order.customer,
+          selectedPackageId: order.selectedPackageId,
+          verified: order.verified
+        })
+      });
+    } catch (error) {
+      console.warn("Lead save failed:", error.message);
+    }
+
     window.location.href = "payment.html";
   });
 }
