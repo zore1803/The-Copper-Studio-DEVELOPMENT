@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
-  BarChart3, CalendarDays, Clock3, Copy, FileDown, FileText, Folder,
-  FolderPlus, PackageCheck, PieChart, Plus, ReceiptText, Search, Send,
+  BarChart3, CalendarDays, Clock3, Copy, FileDown, FileText,
+  PackageCheck, PieChart, Plus, ReceiptText, Send,
   Tag, TrendingUp, Users, WalletCards, Table2
 } from "lucide-react";
 import {
@@ -564,36 +564,3 @@ export function DatabaseTablesPage() {
   );
 }
 
-export function FoldersPage() {
-  const [query, setQuery] = useState("");
-  const { showToast } = useToast();
-  const folders = [
-    { name: "Client Proposals", files: 18, owner: "Sales", updated: "Today" },
-    { name: "Invoices and GST", files: 42, owner: "Billing", updated: "Yesterday" },
-    { name: "Project Documents", files: 31, owner: "Delivery", updated: "16 Jun" },
-    { name: "Brand Assets", files: 12, owner: "Design", updated: "14 Jun" },
-  ].filter((folder) => folder.name.toLowerCase().includes(query.toLowerCase()));
-
-  return (
-    <PageShell title="Folders" subtitle="Organize proposals, invoices, documents, and client deliverables." action={<Button onClick={() => showToast({ title: "Folder created", message: "New folder is ready." })}><FolderPlus size={14} /> New Folder</Button>}>
-      <Card>
-        <div className="border-b border-gray-100 p-4">
-          <div className="flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 focus-within:border-blue-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-50">
-            <Search size={14} className="text-gray-400" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search folders" className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400" />
-          </div>
-        </div>
-        <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-4">
-          {folders.map((folder) => (
-            <button key={folder.name} onClick={() => showToast({ type: "info", title: folder.name, message: `${folder.files} files available.` })} className="rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">
-              <Folder size={26} className="text-[#2563EB]" />
-              <p className="mt-4 text-sm font-bold text-gray-950">{folder.name}</p>
-              <p className="mt-1 text-xs text-gray-500">{folder.files} files - {folder.owner}</p>
-              <p className="mt-4 rounded-full bg-gray-50 px-2 py-1 text-[11px] font-bold text-gray-400">Updated {folder.updated}</p>
-            </button>
-          ))}
-        </div>
-      </Card>
-    </PageShell>
-  );
-}

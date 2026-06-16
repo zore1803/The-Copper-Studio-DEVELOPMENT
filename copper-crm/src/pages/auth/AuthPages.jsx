@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole,
-  Mail, ShieldCheck, Sparkles, UserRound
+  Mail, ShieldCheck, UserRound
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
 
@@ -13,49 +13,47 @@ const roleOptions = [
 
 function AuthShell({ children, title, subtitle }) {
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-gray-950 grid lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="hidden lg:flex flex-col justify-between border-r border-gray-200 bg-white px-10 py-9">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-[#2563EB] text-white grid place-items-center shadow-lg shadow-blue-200">
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-bold">DataCircles CRM</p>
-            <p className="text-xs text-gray-400">The Copper Studio portal</p>
+    <div className="min-h-screen bg-[#f0ede4] text-[#211a17] grid lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="studio-gradient hidden lg:flex flex-col justify-between border-r border-[#211a17] px-10 py-9 text-white">
+        <div>
+          <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-24 w-80 rounded-xl object-cover shadow-2xl shadow-black/30" />
+          <div className="mt-4">
+            <p className="studio-logo-text text-xl leading-tight">The Copper Studio</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">DataCircles portal</p>
           </div>
         </div>
 
         <div className="max-w-xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
             <ShieldCheck size={14} />
             Authenticated access only
           </div>
-          <h1 className="text-5xl font-semibold leading-tight tracking-tight">
-            Professional CRM access after package purchase.
+          <h1 className="font-display text-5xl font-bold leading-tight tracking-tight">
+            Premium studio access after package purchase.
           </h1>
-          <p className="mt-5 max-w-lg text-sm leading-6 text-gray-500">
-            Clients receive a secure email link after payment, set their own password, and enter a dedicated portal. Admins manage leads, orders, projects, invoices, and reports from one protected workspace.
+          <p className="mt-5 max-w-lg text-sm leading-6 text-white/68">
+            Clients receive a secure email link after payment, set their own password, and return to the shared login page. Admins manage the full creative pipeline from one protected workspace.
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           {["Payment verified", "Invite emailed", "Portal unlocked"].map((item) => (
-            <div key={item} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-              <CheckCircle2 size={16} className="text-emerald-500" />
-              <p className="mt-3 text-xs font-semibold text-gray-700">{item}</p>
+            <div key={item} className="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+              <CheckCircle2 size={16} className="text-[#ffb693]" />
+              <p className="mt-3 text-xs font-semibold text-white/86">{item}</p>
             </div>
           ))}
         </div>
       </section>
 
       <main className="flex min-h-screen items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[440px] rounded-[1.5rem] border border-gray-200 bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] sm:p-8">
+        <div className="w-full max-w-[440px] rounded-xl border border-[#d8c2b9] bg-[#fff8f6] p-6 shadow-[0_24px_80px_rgba(54,47,44,0.12)] sm:p-8">
           <div className="mb-7">
-            <div className="mb-4 h-11 w-11 rounded-2xl bg-blue-50 text-[#2563EB] grid place-items-center">
+            <div className="mb-4 h-11 w-11 rounded-xl bg-[#ffdbcc] text-[#884c2d] grid place-items-center">
               <LockKeyhole size={20} />
             </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-gray-950">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-500">{subtitle}</p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-[#211a17]">{title}</h2>
+            <p className="mt-2 text-sm leading-6 text-[#6c6355]">{subtitle}</p>
           </div>
           {children}
         </div>
@@ -72,10 +70,10 @@ function RolePicker({ value, onChange }) {
           key={role.value}
           type="button"
           onClick={() => onChange(role.value)}
-          className={`rounded-2xl border p-3 text-left transition-all ${
+          className={`rounded-xl border p-3 text-left transition-all ${
             value === role.value
-              ? "border-[#2563EB] bg-blue-50 text-blue-700"
-              : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+              ? "border-[#884c2d] bg-[#fff1ec] text-[#6f381a]"
+              : "border-[#d8c2b9] bg-white text-[#6c6355] hover:border-[#ffb693]"
           }`}
         >
           <p className="text-sm font-bold">{role.label}</p>
@@ -92,19 +90,19 @@ function Field({ icon: Icon, type = "text", label, value, onChange, placeholder,
 
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-gray-600">{label}</span>
-      <span className="mt-1.5 flex items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 focus-within:border-blue-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-50">
-        <Icon size={16} className="text-gray-400" />
+      <span className="text-xs font-semibold text-[#6c6355]">{label}</span>
+      <span className="mt-1.5 flex items-center gap-2 rounded-xl border border-[#d8c2b9] bg-[#fff1ec] px-3 py-2.5 focus-within:border-[#884c2d] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#ffdbcc]/70">
+        <Icon size={16} className="text-[#85736c]" />
         <input
           type={inputType}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-300"
+          className="w-full bg-transparent text-sm text-[#211a17] outline-none placeholder:text-[#b49f96]"
         />
         {type === "password" && (
-          <button type="button" onClick={() => setVisible((next) => !next)} className="text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={() => setVisible((next) => !next)} className="text-[#85736c] hover:text-[#884c2d]">
             {visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
@@ -118,7 +116,7 @@ function SubmitButton({ children, loading }) {
     <button
       type="submit"
       disabled={loading}
-      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2563EB] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-100 transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#884c2d] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#884c2d]/20 transition-colors hover:bg-[#6f381a] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
       <ArrowRight size={16} />

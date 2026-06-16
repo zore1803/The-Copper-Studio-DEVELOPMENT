@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Building2, Edit3, FolderKanban, Plus, Save, Search, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight, Building2, Edit3, FolderKanban, Plus, Save, Search, Users } from "lucide-react";
 import { Button, Avatar, StatusBadge } from "../../components/ui";
 import { companies as fallbackCompanies } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -20,6 +21,7 @@ function Field({ label, value, onChange, placeholder = "", type = "text" }) {
 }
 
 export default function Companies() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const { records: companies, save, loading } = useCrmRecords("companies", fallbackCompanies);
@@ -83,7 +85,14 @@ export default function Companies() {
 
         <div className="grid gap-4 p-4 xl:grid-cols-2">
           {filtered.map((company) => (
-            <button key={company._id || company.id} onClick={() => setEditing(company)} className="rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">
+            <div
+              key={company._id || company.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/admin/companies/${company.id}`)}
+              onKeyDown={(event) => event.key === "Enter" && navigate(`/admin/companies/${company.id}`)}
+              className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 text-left transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="grid h-11 w-11 place-items-center rounded-xl border border-gray-200 bg-gray-50 text-gray-400"><Building2 size={18} /></div>
@@ -109,8 +118,17 @@ export default function Companies() {
                   <p className="mt-2 text-xs font-bold text-blue-700">Review</p>
                 </div>
               </div>
-              <div className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#2563EB]"><Edit3 size={12} /> Edit company</div>
-            </button>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB]">View company <ArrowRight size={12} /></span>
+                <button
+                  type="button"
+                  onClick={(event) => { event.stopPropagation(); setEditing(company); }}
+                  className="inline-flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-gray-700"
+                >
+                  <Edit3 size={12} /> Edit
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </Card>

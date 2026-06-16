@@ -7,9 +7,13 @@ import { ToastProvider } from "./components/ToastProvider";
 
 import Dashboard from "./pages/Dashboard";
 import Companies from "./pages/crm/Companies";
+import CompanyDetail from "./pages/crm/CompanyDetail";
 import Contacts from "./pages/crm/Contacts";
 import Leads from "./pages/crm/Leads";
-import Projects from "./pages/projects/Projects";
+import ProjectsList from "./pages/projects/ProjectsList";
+import ProjectDetail from "./pages/projects/ProjectDetail";
+import ProjectGantt from "./pages/projects/ProjectGantt";
+import ProjectFiles from "./pages/projects/ProjectFiles";
 import KanbanBoard from "./pages/projects/KanbanBoard";
 import Orders from "./pages/billing/Orders";
 import Invoices from "./pages/billing/Invoices";
@@ -26,13 +30,12 @@ import {
 import { ForgotPasswordPage, LoginPage, SetPasswordPage } from "./pages/auth/AuthPages";
 import {
   DealsPage,
-  EmailTemplatesPage,
   ReportsPage,
   SettingsPage,
-  TasksPage,
-  WhatsAppPage
+  TasksPage
 } from "./pages/admin/AdminWorkflows";
-import { AnalyticsPage, DatabaseTablesPage, FoldersPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
+import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
+import Communication from "./pages/admin/Communication";
 
 export default function App() {
   return (
@@ -51,23 +54,25 @@ export default function App() {
               <Route index element={<Dashboard />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="companies" element={<Companies />} />
+              <Route path="companies/:companyId" element={<CompanyDetail />} />
+              <Route path="companies/:companyId/projects/:projectId" element={<ProjectDetail />} />
+              <Route path="companies/:companyId/projects/:projectId/tasks" element={<ProjectGantt />} />
+              <Route path="companies/:companyId/projects/:projectId/files" element={<ProjectFiles />} />
               <Route path="contacts" element={<Contacts />} />
               <Route path="leads" element={<Leads />} />
               <Route path="deals" element={<DealsPage />} />
-              <Route path="projects" element={<Projects />} />
+              <Route path="projects" element={<ProjectsList />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="orders" element={<Orders />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="coupons" element={<Coupons />} />
-              <Route path="email-templates" element={<EmailTemplatesPage />} />
-              <Route path="whatsapp" element={<WhatsAppPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="services" element={<Navigate to="/admin/services/coupon-generator" replace />} />
               <Route path="services/coupon-generator" element={<ServicesPage />} />
               <Route path="services/proposal-generator" element={<ProposalGeneratorPage />} />
+              <Route path="services/communications" element={<Communication />} />
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />
-              <Route path="folders" element={<FoldersPage />} />
               <Route path="database" element={<DatabaseTablesPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>

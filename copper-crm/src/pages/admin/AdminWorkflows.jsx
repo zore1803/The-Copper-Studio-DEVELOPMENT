@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
-  CheckCircle2, Edit3, Eye, FileText,
-  Mail, MessageSquare, MoreHorizontal, Plus, Save, Search, Send,
-  Settings as SettingsIcon, ShieldCheck, SlidersHorizontal, Tag, Trash2,
-  TrendingUp, UserPlus, Workflow
+  BellRing, Building2, CheckCircle2, CreditCard, Edit3, FileText,
+  Globe2, LockKeyhole, Mail, MoreHorizontal, Plus, Save,
+  Search, Send, Settings as SettingsIcon, SlidersHorizontal,
+  Trash2, TrendingUp, UploadCloud, UserPlus, Workflow
 } from "lucide-react";
 import { Button, StatusBadge, Avatar } from "../../components/ui";
 import { invoices, leads, orders, projects } from "../../data/mockData";
@@ -251,87 +251,6 @@ function TaskEditModal({ task, onClose }) {
   );
 }
 
-const emailTemplates = [
-  { name: "Payment success and portal invite", subject: "Your CRM portal is ready", status: "Active", sent: 34, type: "Transactional" },
-  { name: "Forgot password OTP", subject: "Your password reset OTP", status: "Active", sent: 18, type: "Security" },
-  { name: "Invoice generated", subject: "Invoice {{invoice_id}} from DataCircles", status: "Active", sent: 42, type: "Billing" },
-  { name: "Project milestone update", subject: "{{project_name}} milestone completed", status: "Draft", sent: 9, type: "Delivery" },
-];
-
-export function EmailTemplatesPage() {
-  const [selected, setSelected] = useState(emailTemplates[0]);
-  return (
-    <PageShell title="Email Templates" subtitle="Edit transactional emails used by OTP, invoice, payment, and portal workflows." action={<Button onClick={() => setSelected({ name: "New template", subject: "", status: "Draft", sent: 0, type: "Custom" })}><Plus size={14} /> New Template</Button>}>
-      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="divide-y divide-gray-100">
-          {emailTemplates.map((template) => (
-            <button key={template.name} onClick={() => setSelected(template)} className={`block w-full p-4 text-left hover:bg-gray-50 ${selected.name === template.name ? "bg-blue-50/60" : ""}`}>
-              <div className="flex items-center justify-between"><p className="text-sm font-bold text-gray-950">{template.name}</p><Mail size={15} className="text-gray-300" /></div>
-              <p className="mt-1 truncate text-xs text-gray-500">{template.subject}</p>
-            </button>
-          ))}
-        </Card>
-        <TemplateEditor template={selected} channel="email" />
-      </div>
-    </PageShell>
-  );
-}
-
-const whatsappTemplates = [
-  { name: "Payment received", subject: "Payment confirmed. Portal email has been sent.", status: "Active", sent: 25, type: "Billing" },
-  { name: "Kickoff reminder", subject: "Your kickoff call is scheduled for {{date}}.", status: "Active", sent: 16, type: "Delivery" },
-  { name: "Document required", subject: "Please share pending documents for {{project_name}}.", status: "Draft", sent: 8, type: "Support" },
-];
-
-export function WhatsAppPage() {
-  const [selected, setSelected] = useState(whatsappTemplates[0]);
-  return (
-    <PageShell title="WhatsApp" subtitle="Manage approved message templates for client updates and support follow-ups." action={<Button onClick={() => setSelected({ name: "New WhatsApp template", subject: "", status: "Draft", sent: 0, type: "Custom" })}><Plus size={14} /> New Template</Button>}>
-      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="divide-y divide-gray-100">
-          {whatsappTemplates.map((template) => (
-            <button key={template.name} onClick={() => setSelected(template)} className={`block w-full p-4 text-left hover:bg-gray-50 ${selected.name === template.name ? "bg-emerald-50/60" : ""}`}>
-              <div className="flex items-center justify-between"><p className="text-sm font-bold text-gray-950">{template.name}</p><MessageSquare size={15} className="text-gray-300" /></div>
-              <p className="mt-1 truncate text-xs text-gray-500">{template.subject}</p>
-            </button>
-          ))}
-        </Card>
-        <TemplateEditor template={selected} channel="whatsapp" />
-      </div>
-    </PageShell>
-  );
-}
-
-function TemplateEditor({ template, channel }) {
-  const [subject, setSubject] = useState(template.subject);
-  return (
-    <Card>
-      <div className="flex items-center justify-between border-b border-gray-100 p-4">
-        <div>
-          <h3 className="text-sm font-bold text-gray-950">{template.name}</h3>
-          <p className="text-xs text-gray-400">{template.type} - {template.sent} sends</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="inline-flex h-9 items-center gap-2 rounded-xl border border-gray-200 px-3 text-xs font-bold text-gray-600 hover:bg-gray-50"><Eye size={14} /> Preview</button>
-          <Button><Save size={14} /> Save</Button>
-        </div>
-      </div>
-      <div className="space-y-4 p-5">
-        <Field label={channel === "email" ? "Subject" : "Message title"} value={subject} onChange={setSubject} />
-        <label className="block">
-          <span className="text-xs font-bold text-gray-600">Body</span>
-          <textarea className="mt-1.5 min-h-56 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" defaultValue={`Hello {{customer_name}},\n\n${template.subject}\n\nRegards,\nDataCircles Team`} />
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {["{{customer_name}}", "{{project_name}}", "{{invoice_id}}", "{{portal_link}}", "{{otp}}"].map((tag) => (
-            <button key={tag} className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-bold text-gray-500"><Tag size={11} /> {tag}</button>
-          ))}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export function ReportsPage() {
   const totalInvoices = invoices.length;
   const paidOrders = orders.filter((order) => order.status === "Paid").length;
@@ -379,45 +298,342 @@ export function ReportsPage() {
   );
 }
 
-export function SettingsPage() {
-  const sections = [
-    { title: "Authentication", description: "JWT session lifetime, role access, password reset OTP.", icon: ShieldCheck },
-    { title: "Payment gateway", description: "Razorpay keys, invoice numbering, portal invite trigger.", icon: SlidersHorizontal },
-    { title: "Email SMTP", description: "Gmail app password, sender identity, delivery status.", icon: Mail },
-    { title: "Team roles", description: "SuperAdmin users, client portal users, disabled accounts.", icon: UserPlus },
-  ];
+function SettingsField({ label, value, onChange, type = "text", placeholder }) {
   return (
-    <PageShell title="Settings" subtitle="Configure core CRM, payment, authentication, and communication settings." action={<Button><Save size={14} /> Save Changes</Button>}>
-      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="divide-y divide-gray-100">
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+      />
+    </label>
+  );
+}
+
+function SettingsSelect({ label, value, onChange, options }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function SettingsToggle({ title, description, checked, onChange }) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+      <div>
+        <p className="text-sm font-semibold text-[#211a17]">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-[#6c6355]">{description}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#884c2d]" : "bg-[#d8c2b9]"}`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-6" : "left-1"}`}
+        />
+      </button>
+    </div>
+  );
+}
+
+export function SettingsPage() {
+  const { showToast } = useToast();
+  const sections = [
+    { key: "profile", title: "Profile", description: "Agency admin details and primary identity.", icon: UserPlus },
+    { key: "password", title: "Password", description: "Reset rules, OTP window, and secure access.", icon: LockKeyhole },
+    { key: "company", title: "Company Information", description: "Legal business details for billing and display.", icon: Building2 },
+    { key: "billing", title: "Billing Settings", description: "Gateway, invoice defaults, and invite triggers.", icon: CreditCard },
+    { key: "email", title: "Email Settings", description: "Sender identity, SMTP values, and onboarding mail flow.", icon: Mail },
+    { key: "notifications", title: "Notification Settings", description: "Workspace alerts, reminders, and operational notices.", icon: BellRing },
+  ];
+
+  const [activeSection, setActiveSection] = useState("profile");
+  const [profile, setProfile] = useState({
+    fullName: "Rohit Kumar",
+    email: "rohit@datacircles.in",
+    title: "Super Admin",
+    timezone: "Asia/Kolkata",
+    publicUrl: "http://localhost:5173",
+  });
+  const [password, setPassword] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    inviteExpiry: "48 hours",
+    otpExpiry: "10 minutes",
+  });
+  const [company, setCompany] = useState({
+    studioName: "The Copper Studio",
+    legalName: "The Copper Studio Private Limited",
+    gstin: "27ABCDE1234F1Z5",
+    billingEmail: "accounts@datacircles.in",
+    website: "https://thecopperstudio.com",
+    billingAddress: "Mumbai, Maharashtra, India",
+  });
+  const [billing, setBilling] = useState({
+    gateway: "Razorpay",
+    apiBase: "http://localhost:5000",
+    invoicePrefix: "INV",
+    defaultRole: "user",
+    autoInviteAfterPayment: true,
+    allowCouponAtCheckout: true,
+  });
+  const [email, setEmail] = useState({
+    senderName: "The Copper Studio",
+    senderEmail: "hello@thecopperstudio.com",
+    smtpHost: "smtp.gmail.com",
+    smtpPort: "587",
+    onboardingPath: "/client-secure-onboarding/access-setup",
+  });
+  const [notifications, setNotifications] = useState({
+    paymentSuccess: true,
+    failedPayments: true,
+    portalInviteSent: true,
+    overdueInvoices: true,
+  });
+
+  function saveSection(label) {
+    showToast({
+      title: `${label} updated`,
+      message: "Your settings have been saved successfully.",
+    });
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">Workspace administration</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#211a17]">Account Settings</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6c6355]">
+            Manage admin identity, secure password flows, company billing details, mail delivery, and the post-payment onboarding pipeline.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="secondary" size="lg">
+            <Globe2 size={15} />
+            Live workspace
+          </Button>
+          <Button size="lg" onClick={() => saveSection("Workspace")}>
+            <Save size={15} />
+            Save Changes
+          </Button>
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
+        <Card className="p-3 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
           {sections.map((section) => (
-            <button key={section.title} className="flex w-full items-start gap-3 p-4 text-left hover:bg-gray-50">
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-[#2563EB]"><section.icon size={16} /></div>
+            <button
+              key={section.key}
+              type="button"
+              onClick={() => setActiveSection(section.key)}
+              className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-colors ${
+                activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fff8f6]"
+              }`}
+            >
+              <div className={`grid h-10 w-10 place-items-center rounded-2xl ${
+                activeSection === section.key ? "bg-[#f3dfd7] text-[#884c2d]" : "bg-[#f5e6e1] text-[#6c6355]"
+              }`}>
+                <section.icon size={17} />
+              </div>
               <div>
-                <p className="text-sm font-bold text-gray-950">{section.title}</p>
-                <p className="mt-1 text-xs leading-5 text-gray-500">{section.description}</p>
+                <p className="text-sm font-bold text-[#211a17]">{section.title}</p>
+                <p className="mt-1 text-xs leading-5 text-[#6c6355]">{section.description}</p>
               </div>
             </button>
           ))}
         </Card>
-        <Card className="p-5">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gray-950 text-white"><SettingsIcon size={17} /></div>
+
+        <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          {activeSection === "profile" && (
             <div>
-              <h3 className="text-sm font-bold text-gray-950">Workspace configuration</h3>
-              <p className="text-xs text-gray-400">These values should map to your server environment.</p>
+              <div className="mb-6 flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#211a17] text-white"><SettingsIcon size={18} /></div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#211a17]">Personal Profile</h3>
+                  <p className="text-sm text-[#6c6355]">Update the primary super admin identity shown across the CRM.</p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Full Name" value={profile.fullName} onChange={(value) => setProfile((prev) => ({ ...prev, fullName: value }))} />
+                <SettingsField label="Email Address" value={profile.email} onChange={(value) => setProfile((prev) => ({ ...prev, email: value }))} />
+                <SettingsField label="Job Title" value={profile.title} onChange={(value) => setProfile((prev) => ({ ...prev, title: value }))} />
+                <SettingsSelect label="Timezone" value={profile.timezone} onChange={(value) => setProfile((prev) => ({ ...prev, timezone: value }))} options={["Asia/Kolkata", "Europe/London", "America/New_York"]} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="CRM Public URL" value={profile.publicUrl} onChange={(value) => setProfile((prev) => ({ ...prev, publicUrl: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Profile")}><Save size={14} /> Save Profile</Button>
+              </div>
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="CRM public URL" value="http://localhost:5173" onChange={() => {}} />
-            <Field label="API base URL" value="http://localhost:5000" onChange={() => {}} />
-            <Field label="Invite link expiry" value="48 hours" onChange={() => {}} />
-            <Field label="OTP expiry" value="10 minutes" onChange={() => {}} />
-            <Field label="Default sender" value="DataCircles CRM" onChange={() => {}} />
-            <Field label="Default role after payment" value="user" onChange={() => {}} />
-          </div>
+          )}
+
+          {activeSection === "password" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Password & Access</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Control reset behavior, onboarding link life, and OTP validity.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Current Password" type="password" value={password.currentPassword} onChange={(value) => setPassword((prev) => ({ ...prev, currentPassword: value }))} />
+                <SettingsField label="New Password" type="password" value={password.newPassword} onChange={(value) => setPassword((prev) => ({ ...prev, newPassword: value }))} />
+                <SettingsField label="Confirm Password" type="password" value={password.confirmPassword} onChange={(value) => setPassword((prev) => ({ ...prev, confirmPassword: value }))} />
+                <SettingsSelect label="Invite Link Expiry" value={password.inviteExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, inviteExpiry: value }))} options={["24 hours", "48 hours", "72 hours"]} />
+                <SettingsSelect label="OTP Expiry" value={password.otpExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, otpExpiry: value }))} options={["5 minutes", "10 minutes", "15 minutes"]} />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Password settings")}><Save size={14} /> Update Security</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "company" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Company Information</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Use these values for invoices, proposals, and client-facing mail content.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Studio Name" value={company.studioName} onChange={(value) => setCompany((prev) => ({ ...prev, studioName: value }))} />
+                <SettingsField label="Legal Name" value={company.legalName} onChange={(value) => setCompany((prev) => ({ ...prev, legalName: value }))} />
+                <SettingsField label="GSTIN" value={company.gstin} onChange={(value) => setCompany((prev) => ({ ...prev, gstin: value }))} />
+                <SettingsField label="Billing Email" value={company.billingEmail} onChange={(value) => setCompany((prev) => ({ ...prev, billingEmail: value }))} />
+                <SettingsField label="Website" value={company.website} onChange={(value) => setCompany((prev) => ({ ...prev, website: value }))} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="Billing Address" value={company.billingAddress} onChange={(value) => setCompany((prev) => ({ ...prev, billingAddress: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-[#d8c2b9] bg-[#fffdfc] px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><UploadCloud size={18} /></div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#211a17]">Logo Upload</p>
+                    <p className="text-xs text-[#6c6355]">Update the brand logo used in the client portal and proposal PDF exports.</p>
+                  </div>
+                </div>
+                <Button variant="secondary">Upload</Button>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Company information")}><Save size={14} /> Save Company</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "billing" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Billing & Gateway Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Configure checkout behavior, invoice defaults, and automatic portal access after payment.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsSelect label="Payment Gateway" value={billing.gateway} onChange={(value) => setBilling((prev) => ({ ...prev, gateway: value }))} options={["Razorpay", "Stripe", "Manual"]} />
+                <SettingsField label="API Base URL" value={billing.apiBase} onChange={(value) => setBilling((prev) => ({ ...prev, apiBase: value }))} />
+                <SettingsField label="Invoice Prefix" value={billing.invoicePrefix} onChange={(value) => setBilling((prev) => ({ ...prev, invoicePrefix: value }))} />
+                <SettingsSelect label="Default Role After Payment" value={billing.defaultRole} onChange={(value) => setBilling((prev) => ({ ...prev, defaultRole: value }))} options={["user", "superadmin"]} />
+              </div>
+              <div className="mt-6 space-y-3">
+                <SettingsToggle
+                  title="Auto-send portal invite after payment"
+                  description="Once checkout is successful, send the secure password setup link to the client automatically."
+                  checked={billing.autoInviteAfterPayment}
+                  onChange={(value) => setBilling((prev) => ({ ...prev, autoInviteAfterPayment: value }))}
+                />
+                <SettingsToggle
+                  title="Allow coupon codes during package checkout"
+                  description="Keep coupon application visible as an optional field inside the pricing and checkout flow."
+                  checked={billing.allowCouponAtCheckout}
+                  onChange={(value) => setBilling((prev) => ({ ...prev, allowCouponAtCheckout: value }))}
+                />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Billing settings")}><Save size={14} /> Save Billing</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "email" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Email Delivery Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Set the mail sender identity and the secure onboarding route used in invite messages.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Sender Name" value={email.senderName} onChange={(value) => setEmail((prev) => ({ ...prev, senderName: value }))} />
+                <SettingsField label="Sender Email" value={email.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} />
+                <SettingsField label="SMTP Host" value={email.smtpHost} onChange={(value) => setEmail((prev) => ({ ...prev, smtpHost: value }))} />
+                <SettingsField label="SMTP Port" value={email.smtpPort} onChange={(value) => setEmail((prev) => ({ ...prev, smtpPort: value }))} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="Secure Onboarding Path" value={email.onboardingPath} onChange={(value) => setEmail((prev) => ({ ...prev, onboardingPath: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+                <p className="text-sm font-semibold text-[#211a17]">Current flow</p>
+                <p className="mt-2 text-xs leading-6 text-[#6c6355]">
+                  Paid checkout, then success confirmation, then secure invite mail, then unique password setup, then redirect to the shared login page.
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Email settings")}><Save size={14} /> Save Email</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "notifications" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Notification Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Choose which operational events should surface inside the admin workspace.</p>
+              </div>
+              <div className="space-y-3">
+                <SettingsToggle
+                  title="Payment success alerts"
+                  description="Show a confirmation toast and admin alert when a package payment is completed."
+                  checked={notifications.paymentSuccess}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, paymentSuccess: value }))}
+                />
+                <SettingsToggle
+                  title="Failed payment alerts"
+                  description="Flag payment failures so the team can follow up quickly."
+                  checked={notifications.failedPayments}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, failedPayments: value }))}
+                />
+                <SettingsToggle
+                  title="Portal invite sent alerts"
+                  description="Notify admins when the onboarding email has been dispatched successfully."
+                  checked={notifications.portalInviteSent}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, portalInviteSent: value }))}
+                />
+                <SettingsToggle
+                  title="Overdue invoice alerts"
+                  description="Surface aged or unpaid invoices in the finance workflow."
+                  checked={notifications.overdueInvoices}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, overdueInvoices: value }))}
+                />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("Notification settings")}><Save size={14} /> Save Notifications</Button>
+              </div>
+            </div>
+          )}
         </Card>
-      </div>
-    </PageShell>
+      </section>
+    </div>
   );
 }

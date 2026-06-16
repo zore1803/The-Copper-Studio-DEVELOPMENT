@@ -167,34 +167,126 @@ export function ClientDocumentsPage() {
 
 export function ClientSettingsPage() {
   const auth = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
+  const [profile, setProfile] = useState({
+    name: auth.user?.name || "",
+    email: auth.user?.email || "",
+    phone: auth.user?.phone || "",
+    company: auth.user?.company || "",
+  });
+  const [password, setPassword] = useState({
+    current: "",
+    next: "",
+    confirm: "",
+  });
   return (
-    <Page title="Settings" subtitle="Update profile, password recovery, referral details, and meeting requests.">
-      <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <SectionCard className="p-4">
+    <Page title="Settings" subtitle="Manage profile, password access, referrals, and meetings in one cleaner client workspace.">
+      <div className="grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
+        <div className="rounded-[24px] border border-[#d8c2b9] bg-[#fff8f6] p-3 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
           {[
-            ["Update user profile", UserRound],
-            ["Forgot password", KeyRound],
-            ["Referral programme", Share2],
-            ["Book a meeting", CalendarDays],
-          ].map(([label, Icon]) => (
-            <button key={label} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-[#2563EB]">
+            ["profile", "Update profile", UserRound],
+            ["password", "Forgot password", KeyRound],
+            ["referral", "Referral programme", Share2],
+            ["meeting", "Book a meeting", CalendarDays],
+          ].map(([key, label, Icon]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key)}
+              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors ${
+                activeTab === key ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#6c6355] hover:bg-[#fff3ef]"
+              }`}
+            >
               <Icon size={16} />
               {label}
             </button>
           ))}
-        </SectionCard>
-        <SectionCard>
-          <div className="grid gap-4 p-5 sm:grid-cols-2">
-            <label className="block"><span className="text-xs font-bold text-gray-600">Full name</span><input defaultValue={auth.user?.name || ""} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" /></label>
-            <label className="block"><span className="text-xs font-bold text-gray-600">Email</span><input defaultValue={auth.user?.email || ""} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" /></label>
-            <label className="block"><span className="text-xs font-bold text-gray-600">Phone</span><input defaultValue={auth.user?.phone || ""} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" /></label>
-            <label className="block"><span className="text-xs font-bold text-gray-600">Company</span><input defaultValue={auth.user?.company || ""} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" /></label>
-          </div>
-          <div className="flex justify-end gap-2 border-t border-gray-100 p-4">
-            <Button variant="secondary"><Headphones size={14} /> Contact Support</Button>
-            <Button><CheckCircle2 size={14} /> Save Profile</Button>
-          </div>
-        </SectionCard>
+        </div>
+
+        <div className="rounded-[24px] border border-[#d8c2b9] bg-[#fff8f6] shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          {activeTab === "profile" && (
+            <>
+              <div className="border-b border-[#ead8d1] px-6 py-5">
+                <h3 className="text-lg font-semibold text-[#211a17]">User Profile</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Keep your portal identity and company details up to date.</p>
+              </div>
+              <div className="grid gap-4 p-6 sm:grid-cols-2">
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Full name</span><input value={profile.name} onChange={(e) => setProfile((prev) => ({ ...prev, name: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Email</span><input value={profile.email} onChange={(e) => setProfile((prev) => ({ ...prev, email: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Phone</span><input value={profile.phone} onChange={(e) => setProfile((prev) => ({ ...prev, phone: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Company</span><input value={profile.company} onChange={(e) => setProfile((prev) => ({ ...prev, company: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+              </div>
+              <div className="flex justify-end gap-2 border-t border-[#ead8d1] p-5">
+                <Button variant="secondary"><Headphones size={14} /> Contact Support</Button>
+                <Button><CheckCircle2 size={14} /> Save Profile</Button>
+              </div>
+            </>
+          )}
+
+          {activeTab === "password" && (
+            <>
+              <div className="border-b border-[#ead8d1] px-6 py-5">
+                <h3 className="text-lg font-semibold text-[#211a17]">Password Recovery</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Update your password and keep recovery access secure.</p>
+              </div>
+              <div className="grid gap-4 p-6 sm:grid-cols-2">
+                <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Current password</span><input type="password" value={password.current} onChange={(e) => setPassword((prev) => ({ ...prev, current: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">New password</span><input type="password" value={password.next} onChange={(e) => setPassword((prev) => ({ ...prev, next: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Confirm password</span><input type="password" value={password.confirm} onChange={(e) => setPassword((prev) => ({ ...prev, confirm: e.target.value }))} className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+              </div>
+              <div className="flex justify-end gap-2 border-t border-[#ead8d1] p-5">
+                <Button><KeyRound size={14} /> Update Password</Button>
+              </div>
+            </>
+          )}
+
+          {activeTab === "referral" && (
+            <>
+              <div className="border-b border-[#ead8d1] px-6 py-5">
+                <h3 className="text-lg font-semibold text-[#211a17]">Referral Programme</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Share your referral link and track partner benefits professionally.</p>
+              </div>
+              <div className="space-y-4 p-6">
+                <div className="rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Referral Link</p>
+                  <p className="mt-2 text-sm font-medium text-[#211a17]">https://thecopperstudio.com/ref/rohit-zone</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {[
+                    ["Successful referrals", "3"],
+                    ["Reward balance", "₹18,000"],
+                    ["Pending reviews", "1"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+                      <p className="text-xs text-[#6c6355]">{label}</p>
+                      <p className="mt-2 text-xl font-semibold text-[#211a17]">{value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 border-t border-[#ead8d1] p-5">
+                <Button><Share2 size={14} /> Share Referral Link</Button>
+              </div>
+            </>
+          )}
+
+          {activeTab === "meeting" && (
+            <>
+              <div className="border-b border-[#ead8d1] px-6 py-5">
+                <h3 className="text-lg font-semibold text-[#211a17]">Book a Meeting</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Request a delivery review or support call with the studio team.</p>
+              </div>
+              <div className="grid gap-4 p-6 sm:grid-cols-2">
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Preferred date</span><input type="date" className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Preferred time</span><input type="time" className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" /></label>
+                <label className="block sm:col-span-2"><span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">Agenda</span><textarea rows="4" className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]" placeholder="Share what you want to discuss in the meeting." /></label>
+              </div>
+              <div className="flex justify-end gap-2 border-t border-[#ead8d1] p-5">
+                <Button><CalendarDays size={14} /> Request Meeting</Button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </Page>
   );

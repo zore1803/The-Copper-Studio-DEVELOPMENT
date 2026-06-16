@@ -174,13 +174,98 @@ export const leads = {
   ],
 };
 
+// Projects — enriched with workspace metadata for the project detail view.
+// companyId links each project back to its row in `companies` so the
+// Companies -> Company -> Project -> Files drill-down can be routed for real
+// instead of relying on string matching.
 export const projects = [
-  { id: 1, name: "Zara Retail App", client: "Zara India", progress: 85, dueDate: "17 Jun 2026", team: ["M", "R", "A"], status: "In Progress", priority: "urgent" },
-  { id: 2, name: "CloudPOS Dashboard", client: "CloudStack", progress: 60, dueDate: "22 Jun 2026", team: ["D", "P"], status: "In Progress", priority: "upcoming" },
-  { id: 3, name: "Brand Identity Kit", client: "BrandMint", progress: 40, dueDate: "29 Jun 2026", team: ["A", "S"], status: "Design", priority: "on-track" },
-  { id: 4, name: "E-commerce Platform", client: "ShopNow", progress: 25, dueDate: "06 Jul 2026", team: ["R", "D", "M", "A"], status: "Development", priority: "on-track" },
-  { id: 5, name: "Mobile App Redesign", client: "NovaApps", progress: 10, dueDate: "20 Jul 2026", team: ["S"], status: "Requirement Gathering", priority: "on-track" },
-  { id: 6, name: "SEO & Content Strategy", client: "GreenLeaf", progress: 95, dueDate: "14 Jun 2026", team: ["P", "M"], status: "Review", priority: "urgent" },
+  {
+    id: 1, companyId: 5, name: "Zara Retail App", client: "Zara India", progress: 85, dueDate: "17 Jun 2026", team: ["M", "R", "A"], status: "In Progress", priority: "urgent",
+    startDate: "01 Apr 2026", packagePurchased: "Enterprise Studio + Native Mobile UI", budget: 1800000, budgetUsed: 1530000,
+    note: { text: "Zara's merchandising team wants the checkout flow tested on low-end Android devices before the next demo.", author: "Meera, Zara India" },
+    activity: [
+      { icon: "upload", text: "Rohit uploaded checkout_flow_v3.fig", time: "2 hours ago" },
+      { icon: "check", text: "System marked Design phase as complete", time: "Yesterday at 4:30 PM" },
+      { icon: "comment", text: "Meera (Client) left a comment on Product Listing screen", time: "11 Jun, 10:15 AM" },
+    ],
+    documents: [
+      { name: "Brand_Guidelines_V2.pdf", category: "Proposals", type: "pdf", sizeMB: 4.2, date: "17 Jun 2026", uploadedBy: "Rohit" },
+      { name: "Checkout_Flow_V3.fig", category: "Deliverables", type: "figma", sizeMB: 18.6, date: "14 Jun 2026", uploadedBy: "Rohit" },
+      { name: "Master_Service_Agreement.pdf", category: "Contracts", type: "pdf", sizeMB: 1.8, date: "02 Apr 2026", uploadedBy: "Meera" },
+      { name: "Retainer_Invoice_03.pdf", category: "Invoices", type: "pdf", sizeMB: 0.4, date: "01 Jun 2026", uploadedBy: "Aisha" },
+      { name: "QA_Device_Matrix.doc", category: "Internal", type: "doc", sizeMB: 0.6, date: "12 Jun 2026", uploadedBy: "Aisha" },
+    ],
+  },
+  {
+    id: 2, companyId: 3, name: "CloudPOS Dashboard", client: "CloudStack", progress: 60, dueDate: "22 Jun 2026", team: ["D", "P"], status: "In Progress", priority: "upcoming",
+    startDate: "10 Apr 2026", packagePurchased: "SaaS Dashboard + UI Package", budget: 950000, budgetUsed: 540000,
+    note: { text: "Dev wants the auth module demoed live before QA starts — keep the sandbox creds ready.", author: "Dev, CloudStack" },
+    activity: [
+      { icon: "upload", text: "Aisha uploaded dashboard_mockups_v2.pdf", time: "5 hours ago" },
+      { icon: "check", text: "System marked Requirement Gathering as complete", time: "2 days ago" },
+      { icon: "comment", text: "Dev (Client) approved the sidebar navigation", time: "08 Jun, 3:40 PM" },
+    ],
+    documents: [
+      { name: "Dashboard_Mockups_V2.pdf", category: "Deliverables", type: "pdf", sizeMB: 6.1, date: "11 Jun 2026", uploadedBy: "Aisha" },
+      { name: "SaaS_Proposal_Final.pdf", category: "Proposals", type: "pdf", sizeMB: 2.3, date: "12 Apr 2026", uploadedBy: "Priya" },
+      { name: "NDA_CloudStack.pdf", category: "Contracts", type: "pdf", sizeMB: 0.5, date: "10 Apr 2026", uploadedBy: "Dev" },
+    ],
+  },
+  {
+    id: 3, companyId: 2, name: "Brand Identity Kit", client: "BrandMint", progress: 40, dueDate: "29 Jun 2026", team: ["A", "S"], status: "Design", priority: "on-track",
+    startDate: "15 Apr 2026", packagePurchased: "Full Brand Identity", budget: 250000, budgetUsed: 98000,
+    note: { text: "Anjali loved the initial style guide — wants more copper accents across the deck.", author: "Anjali, BrandMint" },
+    activity: [
+      { icon: "upload", text: "Priya uploaded v2_style_guide.pdf", time: "3 hours ago" },
+      { icon: "comment", text: "Anjali (Client) requested bolder accent colors", time: "Yesterday at 1:10 PM" },
+    ],
+    documents: [
+      { name: "V2_Style_Guide.pdf", category: "Deliverables", type: "pdf", sizeMB: 9.4, date: "15 Jun 2026", uploadedBy: "Priya" },
+      { name: "Moodboard_Identity.jpg", category: "Deliverables", type: "image", sizeMB: 3.1, date: "02 Jun 2026", uploadedBy: "Priya" },
+      { name: "Brand_Retainer_Invoice.pdf", category: "Invoices", type: "pdf", sizeMB: 0.3, date: "20 Apr 2026", uploadedBy: "Anjali" },
+    ],
+  },
+  {
+    id: 4, companyId: 6, name: "E-commerce Platform", client: "ShopNow", progress: 25, dueDate: "06 Jul 2026", team: ["R", "D", "M", "A"], status: "Development", priority: "on-track",
+    startDate: "20 Apr 2026", packagePurchased: "Growth Studio + E-commerce Module", budget: 1100000, budgetUsed: 310000,
+    note: { text: "Aditya flagged Razorpay settlement delays — confirm webhook retries before go-live.", author: "Aditya, ShopNow" },
+    activity: [
+      { icon: "upload", text: "Rohit uploaded payment_flow_diagram.png", time: "1 day ago" },
+      { icon: "check", text: "System marked Requirement Gathering as complete", time: "4 days ago" },
+    ],
+    documents: [
+      { name: "Payment_Flow_Diagram.png", category: "Deliverables", type: "image", sizeMB: 2.7, date: "15 Jun 2026", uploadedBy: "Rohit" },
+      { name: "Ecommerce_Scope.doc", category: "Proposals", type: "doc", sizeMB: 1.1, date: "21 Apr 2026", uploadedBy: "Aditya" },
+      { name: "Module_Addendum.pdf", category: "Contracts", type: "pdf", sizeMB: 0.7, date: "25 Apr 2026", uploadedBy: "Meera" },
+    ],
+  },
+  {
+    id: 5, companyId: 4, name: "Mobile App Redesign", client: "NovaApps", progress: 10, dueDate: "20 Jul 2026", team: ["S"], status: "Requirement Gathering", priority: "on-track",
+    startDate: "05 Jun 2026", packagePurchased: "App Redesign Sprint", budget: 480000, budgetUsed: 32000,
+    note: { text: "Ritika wants the new IA validated with 3 internal users before wireframes start.", author: "Ritika, NovaApps" },
+    activity: [
+      { icon: "comment", text: "Ritika (Client) shared competitor app references", time: "6 hours ago" },
+    ],
+    documents: [
+      { name: "Competitor_App_References.pdf", category: "Internal", type: "pdf", sizeMB: 5.5, date: "10 Jun 2026", uploadedBy: "Ritika" },
+      { name: "Redesign_Sprint_Proposal.pdf", category: "Proposals", type: "pdf", sizeMB: 1.4, date: "01 Jun 2026", uploadedBy: "Siddharth" },
+    ],
+  },
+  {
+    id: 6, companyId: 7, name: "SEO & Content Strategy", client: "GreenLeaf", progress: 95, dueDate: "14 Jun 2026", team: ["P", "M"], status: "Review", priority: "urgent",
+    startDate: "01 May 2026", packagePurchased: "SEO & Content Package", budget: 180000, budgetUsed: 171000,
+    note: { text: "Pooja wants the keyword map reviewed once more before the final report goes out.", author: "Pooja, GreenLeaf" },
+    activity: [
+      { icon: "upload", text: "Priya uploaded seo_audit_final.pdf", time: "4 hours ago" },
+      { icon: "check", text: "System marked Development phase as complete", time: "3 days ago" },
+      { icon: "comment", text: "Pooja (Client) approved the keyword map", time: "10 Jun, 9:00 AM" },
+    ],
+    documents: [
+      { name: "SEO_Audit_Final.pdf", category: "Deliverables", type: "pdf", sizeMB: 7.8, date: "12 Jun 2026", uploadedBy: "Priya" },
+      { name: "Keyword_Map.doc", category: "Deliverables", type: "doc", sizeMB: 0.9, date: "08 Jun 2026", uploadedBy: "Priya" },
+      { name: "Content_Retainer_Invoice.pdf", category: "Invoices", type: "pdf", sizeMB: 0.3, date: "01 Jun 2026", uploadedBy: "Pooja" },
+    ],
+  },
 ];
 
 // Kanban tasks — enriched with project context, description, sub-counts
@@ -335,4 +420,68 @@ export const coupons = [
   { id: 2, code: "FLAT5K", type: "Fixed", value: "₹5,000", expiry: "15 Jul 2026", limit: 20, used: 8, status: "Active" },
   { id: 3, code: "SUMMER10", type: "Percentage", value: "10%", expiry: "31 May 2026", limit: 100, used: 100, status: "Expired" },
   { id: 4, code: "WELCOME15", type: "Percentage", value: "15%", expiry: "31 Dec 2026", limit: 200, used: 34, status: "Active" },
+];
+
+// Communication templates — one record can carry both an email and a
+// WhatsApp version, grouped by lifecycle category (Welcome, Proposal, etc.)
+export const communicationVariables = ["client_name", "project_title", "due_date", "invoice_amount", "portal_link", "sender_name"];
+
+export const communicationPreviewSample = {
+  client_name: "Alex Johnson",
+  project_title: "Nordic Living Identity",
+  due_date: "28 Jun 2026",
+  invoice_amount: "₹58,999",
+  portal_link: "https://portal.copperstudio.in/alex",
+  sender_name: "Sarah Miller",
+};
+
+export const communicationTemplates = [
+  {
+    id: "tmpl-welcome-standard", category: "Welcome", name: "Standard Onboarding Welcome", status: "Active", sentCount: 184,
+    email: {
+      subject: "Welcome to Copper Studio - Let's get started, {{client_name}}!",
+      body: "Hi {{client_name}},\n\nWe're thrilled to have you on board with Copper Studio! Our team is already preparing for our kickoff session.\n\nTo ensure we hit the ground running, please review the following:\n1. Complete the brand questionnaire\n2. Upload your existing assets to the shared drive\n3. Confirm the date for our strategy call\n\nLooking forward to creating something amazing together.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}! Welcome to Copper Studio. Your portal is ready at {{portal_link}} - take a look and let us know if you have questions before our kickoff call." },
+  },
+  {
+    id: "tmpl-welcome-enterprise", category: "Welcome", name: "Enterprise Onboarding Welcome", status: "Active", sentCount: 42,
+    email: {
+      subject: "Welcome aboard, {{client_name}} - your Enterprise team is ready",
+      body: "Hi {{client_name}},\n\nYour dedicated Copper Studio team is now assigned to {{project_title}}. Expect a detailed onboarding pack and a calendar invite for your strategy call shortly.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}! Your Enterprise onboarding for {{project_title}} has started. Check your inbox for the welcome pack." },
+  },
+  {
+    id: "tmpl-proposal-sent", category: "Proposal", name: "Proposal Delivered", status: "Active", sentCount: 96,
+    email: {
+      subject: "Your proposal for {{project_title}} is ready",
+      body: "Hi {{client_name}},\n\nWe've put together a proposal for {{project_title}}. You can review the scope, timeline, and pricing using the link below.\n\n{{portal_link}}\n\nWe're happy to walk through it together whenever suits you.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}, your proposal for {{project_title}} is ready to review: {{portal_link}}" },
+  },
+  {
+    id: "tmpl-payment-success", category: "Payment Success", name: "Payment Confirmation", status: "Active", sentCount: 121,
+    email: {
+      subject: "Payment received - {{invoice_amount}} confirmed",
+      body: "Hi {{client_name}},\n\nThis confirms we've received your payment of {{invoice_amount}}. A receipt has been sent to your billing email, and your project timeline remains on track.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}, we've received your payment of {{invoice_amount}}. Thank you!" },
+  },
+  {
+    id: "tmpl-project-kickoff", category: "Project Started", name: "Project Kickoff Notice", status: "Active", sentCount: 58,
+    email: {
+      subject: "{{project_title}} has officially kicked off",
+      body: "Hi {{client_name}},\n\n{{project_title}} is now underway. Your project workspace is live at {{portal_link}}, where you can track progress, files, and milestones in real time.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}, {{project_title}} has kicked off! Track progress here: {{portal_link}}" },
+  },
+  {
+    id: "tmpl-reminder-call", category: "Reminder", name: "Strategy Call Reminder", status: "Draft", sentCount: 27,
+    email: {
+      subject: "Reminder: your strategy call is on {{due_date}}",
+      body: "Hi {{client_name}},\n\nJust a quick reminder that our strategy call for {{project_title}} is scheduled for {{due_date}}. Let us know if you need to reschedule.\n\nBest regards,\n{{sender_name}}",
+    },
+    whatsapp: { body: "Hi {{client_name}}, reminder: your strategy call for {{project_title}} is on {{due_date}}." },
+  },
 ];
