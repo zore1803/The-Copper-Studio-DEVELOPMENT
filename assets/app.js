@@ -33,6 +33,7 @@ const defaultOrder = {
   customer: {},
   verified: { phone: false, email: false },
   otpSent: { phone: false, email: false },
+  coupon: null,
   paymentStatus: "pending",
   workspaceCreated: false
 };
@@ -44,7 +45,8 @@ function loadOrder() {
       ...defaultOrder,
       ...saved,
       verified: { ...defaultOrder.verified, ...(saved.verified || {}) },
-      otpSent: { ...defaultOrder.otpSent, ...(saved.otpSent || {}) }
+      otpSent: { ...defaultOrder.otpSent, ...(saved.otpSent || {}) },
+      coupon: saved.coupon || null
     };
   } catch {
     return { ...defaultOrder };
@@ -85,16 +87,26 @@ function selectedPackage() {
 }
 
 function packageTotal(pkg = selectedPackage()) {
-  return Math.round(pkg.price * 1.18);
+  const discount = order.coupon?.discount || 0;
+  return Math.round(Math.max(0, pkg.price - discount) * 1.18);
+}
+
+function packageGst(pkg = selectedPackage()) {
+  const discount = order.coupon?.discount || 0;
+  return Math.round(Math.max(0, pkg.price - discount) * 0.18);
 }
 
 function overviewTemplate(pkg = selectedPackage()) {
-  const gst = Math.round(pkg.price * 0.18);
+  const discount = order.coupon?.discount || 0;
+  const subtotal = Math.max(0, pkg.price - discount);
+  const gst = Math.round(subtotal * 0.18);
   return `
     <div class="overview-card">
       <h3>${pkg.name}</h3>
       <p>${pkg.label}</p>
       <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
+      ${discount ? `<div class="overview-row discount-row"><span>Coupon discount (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
+      <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
       <div class="overview-row"><span>GST estimate</span><strong>${formatCurrency(gst)}</strong></div>
       <div class="overview-row"><span>Setup timeline</span><strong>${pkg.duration}</strong></div>
       <div class="overview-row"><span>Confirmation</span><strong>Email after payment</strong></div>
@@ -145,7 +157,8 @@ function renderPackagesPage() {
       order = {
         ...defaultOrder,
         selectedPackageId: button.dataset.package,
-        customer: order.customer || {}
+        customer: order.customer || {},
+        coupon: null
       };
       saveOrder(order);
       window.location.href = "checkout.html";
@@ -180,6 +193,13 @@ function renderCheckoutPage() {
   const pkg = selectedPackage();
   document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
   document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+  const couponInput = document.getElementById("couponCode");
+  const couponStatus = document.getElementById("couponStatus");
+  if (couponInput && order.coupon?.code) {
+    couponInput.value = order.coupon.code;
+    couponStatus.textContent = `${order.coupon.code} applied. You saved ${formatCurrency(order.coupon.discount)}.`;
+    couponStatus.className = "coupon-success";
+  }
 
   Object.entries(order.customer || {}).forEach(([key, value]) => {
     const input = document.querySelector(`[name="${key}"]`);
@@ -187,6 +207,49 @@ function renderCheckoutPage() {
   });
 
   updateVerificationUI();
+
+  document.getElementById("applyCouponButton")?.addEventListener("click", async () => {
+    const code = couponInput.value.trim().toUpperCase();
+    if (!code) {
+      order.coupon = null;
+      saveOrder(order);
+      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
+      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      couponStatus.textContent = "Coupon removed.";
+      couponStatus.className = "";
+      return;
+    }
+
+    couponStatus.textContent = "Checking coupon...";
+    couponStatus.className = "";
+    try {
+      const applied = await apiRequest("/coupons/validate", {
+        method: "POST",
+        body: JSON.stringify({ code, selectedPackageId: order.selectedPackageId })
+      });
+      order.coupon = {
+        code: applied.code,
+        amount: applied.amount,
+        amountType: applied.amountType,
+        discount: applied.discount,
+        subtotal: applied.subtotal,
+        gst: applied.gst,
+        total: applied.total
+      };
+      saveOrder(order);
+      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
+      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      couponStatus.textContent = `${applied.code} applied. You saved ${formatCurrency(applied.discount)}.`;
+      couponStatus.className = "coupon-success";
+    } catch (error) {
+      order.coupon = null;
+      saveOrder(order);
+      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
+      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      couponStatus.textContent = error.message;
+      couponStatus.className = "coupon-error";
+    }
+  });
 
   document.querySelectorAll("[data-send-otp]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -279,7 +342,7 @@ function renderPaymentPage() {
         apiRequest("/razorpay/config"),
         apiRequest("/razorpay/order", {
           method: "POST",
-          body: JSON.stringify({ selectedPackageId: order.selectedPackageId })
+          body: JSON.stringify({ selectedPackageId: order.selectedPackageId, couponCode: order.coupon?.code || "" })
         })
       ]);
 
@@ -311,6 +374,7 @@ function renderPaymentPage() {
             body: JSON.stringify({
               ...response,
               selectedPackageId: order.selectedPackageId,
+              couponCode: order.coupon?.code || "",
               customer: order.customer,
               verified: order.verified
             })
@@ -362,85 +426,291 @@ function renderSuccessPage() {
 
   const pkg = selectedPackage();
   document.getElementById("successMessage").textContent =
-    `Payment for ${pkg.name} is confirmed. Invoice ${order.invoiceId} and a welcome message will be emailed to ${order.customer.customerEmail}.`;
+    `Payment for ${pkg.name} is confirmed. Invoice ${order.invoiceId} is generated, and a mail has been sent to ${order.customer.customerEmail} for the next process. Please open that email to set up your portal password and continue onboarding.`;
 }
 
-async function loadLatestOrderForAdmin() {
-  try {
-    const latest = await apiRequest("/orders/latest");
-    if (!latest) return;
-
-    order = {
-      ...order,
-      selectedPackageId: latest.package.id,
-      customer: latest.customer,
-      verified: {
-        phone: latest.verification.phoneVerified,
-        email: latest.verification.emailVerified
-      },
-      paymentStatus: latest.payment.status,
-      invoiceId: latest.payment.invoiceId,
-      paidAt: latest.payment.paidAt,
-      mongoOrderId: latest._id,
-      workspaceCreated: latest.workspace.status === "created"
-    };
-    saveOrder(order);
-  } catch (error) {
-    console.warn("Could not load latest MongoDB order, using local order:", error.message);
+const agencyProjects = [
+  {
+    client: "ABC Pvt Ltd",
+    name: "CRM Development",
+    progress: 68,
+    due: "20 Jun 2026",
+    status: "In Progress",
+    manager: "Rohit",
+    team: ["R", "J", "S"],
+    budget: 76770
+  },
+  {
+    client: "XYZ Pvt Ltd",
+    name: "Website Redesign",
+    progress: 42,
+    due: "30 Jun 2026",
+    status: "In Progress",
+    manager: "John",
+    team: ["R", "J"],
+    budget: 46375
+  },
+  {
+    client: "PQR Pvt Ltd",
+    name: "Mobile App",
+    progress: 20,
+    due: "15 Jul 2026",
+    status: "Planning",
+    manager: "Sarah",
+    team: ["S", "R"],
+    budget: 89499
+  },
+  {
+    client: "LMN Corp",
+    name: "Custom Software",
+    progress: 75,
+    due: "25 Jun 2026",
+    status: "Review",
+    manager: "Rohit",
+    team: ["R", "A", "J"],
+    budget: 120000
   }
+];
+
+const kanbanColumns = [
+  {
+    title: "Backlog",
+    tasks: [
+      { name: "User Authentication", project: "CRM Development", priority: "High", owner: "Rohit", due: "18 Jun" },
+      { name: "Database Design", project: "CRM Development", priority: "Medium", owner: "John", due: "20 Jun" },
+      { name: "API Documentation", project: "CRM Development", priority: "Low", owner: "Sarah", due: "24 Jun" }
+    ]
+  },
+  {
+    title: "To Do",
+    tasks: [
+      { name: "Dashboard UI", project: "CRM Development", priority: "High", owner: "Rohit", due: "21 Jun" },
+      { name: "Role Management", project: "CRM Development", priority: "Medium", owner: "John", due: "23 Jun" },
+      { name: "Email Integration", project: "CRM Development", priority: "Medium", owner: "Sarah", due: "25 Jun" }
+    ]
+  },
+  {
+    title: "In Progress",
+    tasks: [
+      { name: "Lead Management", project: "CRM Development", priority: "High", owner: "Rohit", due: "19 Jun" },
+      { name: "Contact Module", project: "CRM Development", priority: "Medium", owner: "John", due: "22 Jun" }
+    ]
+  },
+  {
+    title: "Review",
+    tasks: [
+      { name: "Deal Pipeline", project: "CRM Development", priority: "Medium", owner: "Rohit", due: "Today" },
+      { name: "Report Module", project: "CRM Development", priority: "Low", owner: "John", due: "Tomorrow" }
+    ]
+  },
+  {
+    title: "Completed",
+    tasks: [
+      { name: "Project Setup", project: "CRM Development", priority: "Done", owner: "Rohit", due: "10 Jun" },
+      { name: "Requirements Gathering", project: "CRM Development", priority: "Done", owner: "Sarah", due: "12 Jun" },
+      { name: "UX/UI Design", project: "CRM Development", priority: "Done", owner: "Sarah", due: "14 Jun" }
+    ]
+  }
+];
+
+function teamAvatars(team) {
+  return team.map((member) => `<span class="avatar">${member}</span>`).join("");
 }
 
-async function renderAdminPage() {
-  await loadLatestOrderForAdmin();
+function projectCardTemplate(project) {
+  return `
+    <article class="ops-card project-card">
+      <div class="card-topline">
+        <div>
+          <p class="mini-label">${project.client}</p>
+          <h3>${project.name}</h3>
+        </div>
+        <span class="status-pill">${project.status}</span>
+      </div>
+      <div class="progress-circle" style="--value:${project.progress}"><strong>${project.progress}%</strong></div>
+      <div class="thin-progress"><span style="width:${project.progress}%"></span></div>
+      <div class="project-meta">
+        <span>Due ${project.due}</span>
+        <span>${project.manager}</span>
+      </div>
+      <div class="avatar-row">${teamAvatars(project.team)}</div>
+    </article>
+  `;
+}
 
-  const hasOrder = order.paymentStatus === "paid";
-  const pkg = selectedPackage();
-  const customer = order.customer || {};
+function renderOpsOverview(root) {
+  root.innerHTML = `
+    <section class="metric-grid">
+      <article class="metric-card"><span>Total Revenue</span><strong>${formatCurrency(324560)}</strong><small>+18.2% from last month</small></article>
+      <article class="metric-card"><span>Active Projects</span><strong>12</strong><small>2 due this week</small></article>
+      <article class="metric-card"><span>New Purchases</span><strong>48</strong><small>Package orders received</small></article>
+      <article class="metric-card"><span>Pending Payments</span><strong>${formatCurrency(48450)}</strong><small>Needs follow-up</small></article>
+    </section>
+    <section class="ops-grid">
+      <div class="ops-panel wide-panel">
+        <div class="section-title"><h2>Priority Projects</h2><span>This week</span></div>
+        <div class="project-grid">${agencyProjects.map(projectCardTemplate).join("")}</div>
+      </div>
+      <div class="ops-panel">
+        <div class="section-title"><h2>Recent Orders</h2><span>Live</span></div>
+        ${agencyProjects.slice(0, 3).map((project, index) => `
+          <div class="activity-row">
+            <strong>#ORD-${1258 - index}</strong>
+            <span>${project.client}</span>
+            <b>${formatCurrency(project.budget)}</b>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
 
-  document.getElementById("adminNotification").textContent = hasOrder
-    ? `${customer.customerName} purchased ${pkg.name}. Payment captured through Razorpay.`
-    : "No recent payment found.";
-  document.getElementById("adminClientName").textContent = hasOrder ? customer.customerName : "Customer";
-  document.getElementById("adminClientContact").textContent = hasOrder
-    ? `${customer.customerEmail} | ${customer.customerPhone}`
-    : "Awaiting order";
-  document.getElementById("adminPackageName").textContent = hasOrder ? pkg.name : "-";
-  document.getElementById("adminPackagePrice").textContent = hasOrder ? formatCurrency(packageTotal(pkg)) : "-";
-  document.getElementById("workspaceStatus").textContent = !hasOrder
-    ? "Payment pending"
-    : order.workspaceCreated
-      ? "Workspace created"
-      : "Payment captured";
-  document.getElementById("workspaceSubstatus").textContent = order.workspaceCreated ? "Client tracking enabled" : "Workspace pending";
-  document.getElementById("workspaceTitle").textContent = order.workspaceCreated
-    ? `${customer.customerName} Portal Workspace`
-    : "Workspace not created yet";
-  document.getElementById("workspaceDescription").textContent = order.workspaceCreated
-    ? "Client can now track onboarding, project milestones, invoices, and support updates."
-    : "Create the project after verifying package and payment details.";
+function renderOpsProjects(root) {
+  root.innerHTML = `
+    <section class="ops-panel">
+      <div class="section-title"><h2>Active Projects</h2><button class="small-action" type="button">New Project</button></div>
+      <div class="project-grid">${agencyProjects.map(projectCardTemplate).join("")}</div>
+    </section>
+    <section class="ops-panel">
+      <div class="project-table">
+        <div class="table-row table-head"><span>Project</span><span>Client</span><span>Due</span><span>Progress</span><span>Status</span></div>
+        ${agencyProjects.map((project) => `
+          <div class="table-row">
+            <strong>${project.name}</strong>
+            <span>${project.client}</span>
+            <span>${project.due}</span>
+            <span><i class="table-progress"><em style="width:${project.progress}%"></em></i>${project.progress}%</span>
+            <span class="status-pill">${project.status}</span>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
 
-  document.querySelectorAll(".progress-step").forEach((step, index) => {
-    step.classList.toggle("is-active", order.workspaceCreated ? index <= 3 : index === 0);
+function renderOpsKanban(root) {
+  root.innerHTML = `
+    <section class="kanban-toolbar">
+      <div>
+        <h2>Project Kanban</h2>
+        <p>Simple task movement board for delivery work.</p>
+      </div>
+      <button class="small-action" type="button">Add Task</button>
+    </section>
+    <section class="kanban-board" aria-label="Project task board">
+      ${kanbanColumns.map((column) => `
+        <div class="kanban-column">
+          <header><strong>${column.title}</strong><span>${column.tasks.length}</span></header>
+          <div class="kanban-stack">
+            ${column.tasks.map((task) => `
+              <article class="task-card">
+                <h3>${task.name}</h3>
+                <p>${task.project}</p>
+                <div class="task-meta">
+                  <span class="priority-${task.priority.toLowerCase()}">${task.priority}</span>
+                  <span>${task.owner}</span>
+                  <span>${task.due}</span>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </section>
+  `;
+}
+
+function renderOpsInvoice(root) {
+  const subtotal = 80000;
+  const gst = Math.round(subtotal * 0.18);
+  root.innerHTML = `
+    <section class="invoice-preview">
+      <div class="invoice-paper">
+        <div class="invoice-head">
+          <strong>The Copper Studio</strong>
+          <span class="status-pill">Paid</span>
+        </div>
+        <p>123, Creative Street, Pune, Maharashtra</p>
+        <div class="invoice-meta">
+          <span>Invoice No: INV-2026-058</span>
+          <span>Due Date: 05 Jun 2026</span>
+        </div>
+        <h2>ABC Pvt Ltd</h2>
+        <div class="project-table">
+          <div class="table-row table-head"><span>Item</span><span>Description</span><span>Amount</span></div>
+          <div class="table-row"><span>1</span><span>Enterprise CRM Development</span><strong>${formatCurrency(76270)}</strong></div>
+          <div class="table-row"><span>2</span><span>UI/UX Design</span><strong>${formatCurrency(8475)}</strong></div>
+          <div class="table-row"><span>3</span><span>Integration & Testing</span><strong>${formatCurrency(4257)}</strong></div>
+        </div>
+        <div class="invoice-total">
+          <span>Subtotal ${formatCurrency(subtotal)}</span>
+          <span>GST ${formatCurrency(gst)}</span>
+          <strong>Total ${formatCurrency(subtotal + gst)}</strong>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderOpsClient(root) {
+  const project = agencyProjects[0];
+  root.innerHTML = `
+    <section class="client-view">
+      <div class="client-hero">
+        <p class="mini-label">Client Portal Preview</p>
+        <h1>Good Evening, Rohit</h1>
+        <p>Your active project is moving well. Next update is scheduled after the review milestone.</p>
+      </div>
+      <div class="client-grid">
+        ${projectCardTemplate(project)}
+        <article class="ops-card"><p class="mini-label">Total invoices</p><h3>${formatCurrency(89999)}</h3><span class="status-pill">Paid</span></article>
+        <article class="ops-card"><p class="mini-label">Upcoming milestone</p><h3>Testing Phase</h3><p>Starts in 3 days</p></article>
+      </div>
+      <section class="ops-panel">
+        <div class="timeline">
+          ${["Requirements Gathering", "UI/UX Design", "Development", "Testing", "Deployment"].map((item, index) => `
+            <div class="timeline-row ${index < 3 ? "is-done" : ""}">
+              <span></span><strong>${item}</strong><em>${index < 3 ? "Completed" : "Upcoming"}</em>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    </section>
+  `;
+}
+
+function renderAdminPage() {
+  const views = {
+    overview: renderOpsOverview,
+    projects: renderOpsProjects,
+    kanban: renderOpsKanban,
+    invoice: renderOpsInvoice,
+    client: renderOpsClient
+  };
+  const content = document.getElementById("adminContent");
+
+  Object.entries(views).forEach(([view, render]) => {
+    const panel = document.createElement("div");
+    panel.className = "admin-view";
+    panel.dataset.viewPanel = view;
+    render(panel);
+    content.appendChild(panel);
   });
 
-  document.getElementById("createWorkspaceButton").addEventListener("click", async () => {
-    if (!hasOrder) {
-      alert("No paid client is available yet.");
-      return;
-    }
-    order.workspaceCreated = true;
+  const switchView = (view) => {
+    document.querySelectorAll("[data-view]").forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.view === view);
+    });
+    document.querySelectorAll("[data-view-panel]").forEach((panel) => {
+      panel.classList.toggle("is-active", panel.dataset.viewPanel === view);
+    });
+  };
 
-    if (order.mongoOrderId) {
-      try {
-        await apiRequest(`/orders/${order.mongoOrderId}/workspace`, { method: "PATCH" });
-      } catch (error) {
-        console.warn("Workspace update failed in MongoDB, using local state:", error.message);
-      }
-    }
-
-    saveOrder(order);
-    renderAdminPage();
+  document.querySelectorAll("[data-view]").forEach((button) => {
+    button.addEventListener("click", () => switchView(button.dataset.view));
   });
+
+  switchView("kanban");
 }
 
 const pageRenderers = {

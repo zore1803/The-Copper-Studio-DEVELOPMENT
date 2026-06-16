@@ -2,3 +2,6 @@ node_modules/
 .env
 .DS_Store
 npm-debug.log*
+api.log
+api.err.log
+copper-crm/dist/

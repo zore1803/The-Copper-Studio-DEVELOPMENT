@@ -3,16 +3,25 @@ import cors from "cors";
 import crypto from "node:crypto";
 import dns from "node:dns";
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import Order from "./models/Order.js";
 import Lead from "./models/Lead.js";
+import User from "./models/User.js";
+import Coupon from "./models/Coupon.js";
+import authRoutes from "./routes/auth.js";
+import crmRoutes from "./routes/crm.js";
 import { packages } from "./data/packages.js";
+import { sendPortalInviteEmail } from "./services/email.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const app = express();
 const port = process.env.PORT || 5000;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const siteRoot = path.resolve(__dirname, "..");
 const razorpay =
   process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
     ? new Razorpay({
@@ -23,6 +32,105 @@ const razorpay =
 
 app.use(cors({ origin: true }));
 app.use(express.json());
+app.use("/api/auth", authRoutes);
+app.use("/api/crm", crmRoutes);
+
+function sha256(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+async function createPortalInvite(order) {
+  if (order.payment.status !== "paid") return null;
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  const customer = order.customer;
+
+  const user = await User.findOneAndUpdate(
+    { email: customer.customerEmail },
+    {
+      $set: {
+        name: customer.customerName,
+        email: customer.customerEmail,
+        phone: customer.customerPhone,
+        company: customer.customerCompany || "",
+        role: "user",
+        status: "invited",
+        invite: {
+          tokenHash: sha256(rawToken),
+          expiresAt,
+          sentAt: new Date()
+        }
+      },
+      $setOnInsert: { passwordHash: "" }
+    },
+    { upsert: true, new: true }
+  );
+
+  const crmUrl = process.env.CRM_PUBLIC_URL || "http://localhost:5173";
+  const setPasswordUrl = `${crmUrl}/client-secure-onboarding/access-setup?token=${rawToken}`;
+  await sendPortalInviteEmail({
+    to: user.email,
+    name: user.name,
+    packageName: order.package.name,
+    setPasswordUrl
+  });
+
+  order.email.credentialsQueued = false;
+  order.workspace.status = "created";
+  order.workspace.createdAt = new Date();
+  await order.save();
+
+  return { userId: user._id, setPasswordUrl };
+}
+
+function computeCouponDiscount(coupon, packagePrice) {
+  if (!coupon) return 0;
+  const numericAmount = Number(String(coupon.amount || "").replace(/[^\d.]/g, "")) || 0;
+  if (coupon.amountType === "fixed") return Math.min(packagePrice, numericAmount);
+  return Math.min(packagePrice, Math.round((packagePrice * numericAmount) / 100));
+}
+
+function couponExpiryDate(coupon) {
+  if (coupon.validUntil) return new Date(coupon.validUntil);
+  if (!coupon.validity) return null;
+  const parsed = new Date(coupon.validity);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+async function validateCouponForPackage(code, selectedPackage) {
+  if (!code) return { coupon: null, discount: 0, subtotal: selectedPackage.price, total: Math.round(selectedPackage.price * 1.18) };
+
+  const coupon = await Coupon.findOne({ code: String(code).trim().toUpperCase() });
+  if (!coupon) {
+    const error = new Error("Coupon code not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const expiryDate = couponExpiryDate(coupon);
+  if (expiryDate && expiryDate <= new Date() && ["Active", "Applied", "Not used"].includes(coupon.status)) {
+    coupon.status = "Expired";
+    await coupon.save();
+  }
+
+  if (!["Active", "Not used"].includes(coupon.status)) {
+    const error = new Error(`Coupon is ${coupon.status.toLowerCase()} and cannot be applied.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const discount = computeCouponDiscount(coupon, selectedPackage.price);
+  const subtotal = Math.max(0, selectedPackage.price - discount);
+  const total = Math.round(subtotal * 1.18);
+
+  return {
+    coupon,
+    discount,
+    subtotal,
+    total
+  };
+}
 
 app.get("/api", (_req, res) => {
   res.json({
@@ -31,6 +139,8 @@ app.get("/api", (_req, res) => {
     routes: {
       health: "/api/health",
       packages: "/api/packages",
+      pricing: "/pricing",
+      checkout: "/checkout",
       razorpayConfig: "/api/razorpay/config",
       latestOrder: "/api/orders/latest"
     }
@@ -43,6 +153,31 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/packages", (_req, res) => {
   res.json(packages);
+});
+
+app.post("/api/coupons/validate", async (req, res, next) => {
+  try {
+    const { code, selectedPackageId } = req.body;
+    if (!code) return res.status(400).json({ message: "Coupon code is required." });
+    const selectedPackage = packages.find((item) => item.id === selectedPackageId);
+    if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
+
+    const result = await validateCouponForPackage(code, selectedPackage);
+    res.json({
+      code: result.coupon.code,
+      amount: result.coupon.amount,
+      amountType: result.coupon.amountType,
+      status: result.coupon.status,
+      validUntil: result.coupon.validUntil,
+      discount: result.discount,
+      subtotal: result.subtotal,
+      gst: Math.round(result.subtotal * 0.18),
+      total: result.total,
+      packageName: selectedPackage.name
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/api/razorpay/config", (_req, res) => {
@@ -59,18 +194,21 @@ app.post("/api/razorpay/order", async (req, res, next) => {
       return res.status(503).json({ message: "Razorpay credentials are not configured." });
     }
 
-    const { selectedPackageId } = req.body;
+    const { selectedPackageId, couponCode } = req.body;
     const selectedPackage = packages.find((item) => item.id === selectedPackageId);
     if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
 
-    const total = Math.round(selectedPackage.price * 1.18);
+    const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
+    const total = couponResult.total;
     const razorpayOrder = await razorpay.orders.create({
       amount: total * 100,
       currency: "INR",
       receipt: `rcpt_${Date.now()}`,
       notes: {
         packageId: selectedPackage.id,
-        packageName: selectedPackage.name
+        packageName: selectedPackage.name,
+        couponCode: couponResult.coupon?.code || "",
+        couponDiscount: String(couponResult.discount)
       }
     });
 
@@ -79,6 +217,14 @@ app.post("/api/razorpay/order", async (req, res, next) => {
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
       package: selectedPackage,
+      coupon: couponResult.coupon ? {
+        code: couponResult.coupon.code,
+        amount: couponResult.coupon.amount,
+        amountType: couponResult.coupon.amountType,
+        discount: couponResult.discount
+      } : null,
+      subtotal: couponResult.subtotal,
+      gst: Math.round(couponResult.subtotal * 0.18),
       total
     });
   } catch (error) {
@@ -97,6 +243,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       razorpay_payment_id,
       razorpay_signature,
       selectedPackageId,
+      couponCode,
       customer,
       verified
     } = req.body;
@@ -121,7 +268,8 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       return res.status(400).json({ message: "Mobile and email must be verified before order creation." });
     }
 
-    const total = Math.round(selectedPackage.price * 1.18);
+    const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
+    const total = couponResult.total;
     const order = await Order.create({
       package: { ...selectedPackage, total },
       customer,
@@ -138,6 +286,12 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
         paidAt: new Date()
       }
     });
+    if (couponResult.coupon) {
+      couponResult.coupon.status = "Redeemed";
+      couponResult.coupon.redeemedAt = new Date();
+      await couponResult.coupon.save();
+    }
+    await createPortalInvite(order);
 
     res.status(201).json(order);
   } catch (error) {
@@ -147,7 +301,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
 
 app.post("/api/orders", async (req, res, next) => {
   try {
-    const { selectedPackageId, customer, verified, paymentStatus, paidAt, invoiceId } = req.body;
+    const { selectedPackageId, customer, verified, paymentStatus, paidAt, invoiceId, couponCode } = req.body;
     const selectedPackage = packages.find((item) => item.id === selectedPackageId);
 
     if (!selectedPackage) {
@@ -162,7 +316,8 @@ app.post("/api/orders", async (req, res, next) => {
       return res.status(400).json({ message: "Mobile and email must be verified before order creation." });
     }
 
-    const total = Math.round(selectedPackage.price * 1.18);
+    const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
+    const total = couponResult.total;
     const order = await Order.create({
       package: { ...selectedPackage, total },
       customer,
@@ -177,6 +332,12 @@ app.post("/api/orders", async (req, res, next) => {
         paidAt: paidAt ? new Date(paidAt) : new Date()
       }
     });
+    if (couponResult.coupon && order.payment.status === "paid") {
+      couponResult.coupon.status = "Redeemed";
+      couponResult.coupon.redeemedAt = new Date();
+      await couponResult.coupon.save();
+    }
+    await createPortalInvite(order);
 
     res.status(201).json(order);
   } catch (error) {
@@ -219,38 +380,20 @@ app.post("/api/leads", async (req, res, next) => {
   }
 });
 
-app.get("/api/orders/latest", async (_req, res, next) => {
-  try {
-    const order = await Order.findOne().sort({ createdAt: -1 });
-    res.json(order);
-  } catch (error) {
-    next(error);
-  }
+app.use(express.static(siteRoot));
+app.get(["/pricing", "/packages"], (_req, res) => {
+  res.sendFile(path.join(siteRoot, "index.html"));
 });
-
-app.patch("/api/orders/:id/workspace", async (req, res, next) => {
-  try {
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: {
-          "workspace.status": "created",
-          "workspace.createdAt": new Date()
-        }
-      },
-      { new: true }
-    );
-
-    if (!order) return res.status(404).json({ message: "Order not found." });
-    res.json(order);
-  } catch (error) {
-    next(error);
-  }
+app.get("/checkout", (_req, res) => {
+  res.sendFile(path.join(siteRoot, "checkout.html"));
+});
+app.get("/payment", (_req, res) => {
+  res.sendFile(path.join(siteRoot, "payment.html"));
 });
 
 app.use((error, _req, res, _next) => {
   console.error(error);
-  res.status(500).json({ message: "Server error." });
+  res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Server error." });
 });
 
 async function start() {
@@ -259,6 +402,23 @@ async function start() {
   }
 
   await mongoose.connect(process.env.MONGO_URI);
+
+  if (process.env.SUPERADMIN_EMAIL && process.env.SUPERADMIN_PASSWORD) {
+    const bcrypt = await import("bcryptjs");
+    await User.findOneAndUpdate(
+      { email: process.env.SUPERADMIN_EMAIL.toLowerCase() },
+      {
+        $set: { role: "superadmin", status: "active" },
+        $setOnInsert: {
+          name: process.env.SUPERADMIN_NAME || "Super Admin",
+          email: process.env.SUPERADMIN_EMAIL.toLowerCase(),
+          passwordHash: await bcrypt.default.hash(process.env.SUPERADMIN_PASSWORD, 12)
+        }
+      },
+      { upsert: true }
+    );
+  }
+
   app.listen(port, () => {
     console.log(`API running at http://localhost:${port}`);
   });
