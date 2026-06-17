@@ -1,43 +1,36 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Eye, LayoutGrid, List, Mail, MoreVertical, Pencil, Phone,
-  Plus, Search, SlidersHorizontal, Trash2
-} from "lucide-react";
+import { Building2, Link2, Mail, MessageCircle, Phone, Plus, Save, Search, Trash2 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
-import { contacts as fallbackContacts } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import SidePanel from "../../components/SidePanel";
 import { useToast } from "../../components/useToast";
 
-const TABS = ["All", "Leads", "Sales Qualified Lead", "Customers", "Hotlist"];
-const STAGES = ["New", "Contacted", "Interested", "Unqualified"];
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 12;
 
-function StatusPill({ status = "Accepted" }) {
-  const map = {
-    Accepted: "bg-blue-50 text-blue-600",
-    New: "bg-green-50 text-green-600",
-    Contacted: "bg-yellow-50 text-yellow-600",
-    Interested: "bg-purple-50 text-purple-600",
-    Unqualified: "bg-red-50 text-red-600",
-  };
+function EmptyState({ onCreate }) {
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>
-      {status}
-    </span>
+    <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+        <Phone size={20} />
+      </div>
+      <p className="text-sm font-semibold text-[#111827]">No contacts yet.</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">Contacts are people inside companies. Add them with company links so deals, projects, and communication history stay connected.</p>
+      <Button className="mt-4" onClick={onCreate}><Plus size={14} /> New Contact</Button>
+    </div>
   );
 }
 
-function Field({ label, value, onChange, placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "" }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-gray-600">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
+        type={type}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
       />
     </label>
   );
@@ -45,229 +38,157 @@ function Field({ label, value, onChange, placeholder = "" }) {
 
 export default function Contacts() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("All");
-  const [view, setView] = useState("list");
-  const [search, setSearch] = useState("");
+  const { showToast } = useToast();
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(null);
-  const { records: contacts, save, loading } = useCrmRecords("contacts", fallbackContacts);
-  const { showToast } = useToast();
+  const { records: contacts, save, remove, loading } = useCrmRecords("contacts");
+  const { records: companies } = useCrmRecords("companies");
+
+  const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
 
   const filtered = useMemo(() => {
-    let result = contacts;
-    if (tab !== "All") {
-      result = result.filter((c) => {
-        if (tab === "Leads") return /lead/i.test(c.status || "");
-        if (tab === "Sales Qualified Lead") return /qualified/i.test(c.status || "");
-        if (tab === "Customers") return /customer/i.test(c.status || "");
-        if (tab === "Hotlist") return /hot/i.test(c.status || "");
-        return true;
-      });
-    }
-    if (search) {
-      result = result.filter((c) =>
-        `${c.name} ${c.company} ${c.email} ${c.status}`.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-    return result;
-  }, [contacts, tab, search]);
+    const needle = query.trim().toLowerCase();
+    if (!needle) return contacts;
+    return contacts.filter((contact) =>
+      `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""} ${contact.email || ""} ${contact.phone || ""} ${contact.whatsapp || ""} ${contact.designation || ""} ${contact.company || ""}`.toLowerCase().includes(needle)
+    );
+  }, [contacts, query]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const rows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function fullName(contact) {
+    return contact.name || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.trim() || "Unnamed contact";
+  }
+
+  function companyName(contact) {
+    return companyMap.get(String(contact.companyId))?.companyName || companyMap.get(String(contact.companyId))?.name || contact.company || "Not linked";
+  }
 
   async function saveContact(contact) {
-    try {
-      const isNew = !contact._id;
-      await save({ ...contact, id: contact.id || `C-${Date.now()}` });
-      setEditing(null);
-      showToast({ title: isNew ? "Contact created" : "Contact updated", message: `${contact.name || "Contact"} saved successfully.` });
-    } catch (err) {
-      showToast({ type: "error", title: "Could not save contact", message: err.message });
-    }
+    const payload = {
+      ...contact,
+      id: contact.id || `contact-${Date.now()}`,
+      name: contact.name || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.trim(),
+    };
+    await save(payload);
+    setEditing(null);
+    showToast({ title: "Contact saved", message: `${payload.name || "Contact"} is linked to ${companyName(payload)}.` });
+  }
+
+  async function deleteContact(contact) {
+    await remove(contact);
+    showToast({ title: "Contact deleted", message: `${fullName(contact)} removed.` });
   }
 
   return (
-    <div className="p-5 xl:p-6 bg-[#f9fafb] min-h-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Contacts</h1>
-          <p className="text-sm text-gray-500">Manage your customer relationships</p>
-        </div>
-        <Button onClick={() => setEditing({ name: "", company: "", email: "", phone: "", status: "New" })}>
-          <Plus size={14} /> New Contact
-        </Button>
-      </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
-          <div className="flex gap-1">
-            {TABS.map((t) => (
-              <button
-                key={t}
-                onClick={() => { setTab(t); setPage(1); }}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t ? "border-b-2 border-[#2563EB] text-[#2563EB] rounded-none pb-1" : "text-gray-500 hover:text-gray-700"}`}
-              >
-                {t}
-              </button>
-            ))}
+    <div className="flex min-h-full flex-col bg-[#f5f6fa]">
+      <header className="border-b border-[#e5e7eb] bg-white px-6 py-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">CRM</p>
+            <h1 className="mt-1 text-2xl font-bold text-[#111827]">Contacts</h1>
+            <p className="mt-1 text-sm text-[#6b7280]">People inside companies, linked to communication, deals, projects, and activity.</p>
           </div>
-          <div className="ml-auto flex items-center gap-2">
-            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-xs text-gray-500">
-              <Search size={12} />
-              <input
-                className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs"
-                placeholder="Search by contact name, company, or status..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+              <Search size={14} className="text-[#9ca3af]" />
+              <input value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} placeholder="Search contacts" className="w-64 bg-transparent text-sm outline-none" />
             </div>
-            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50">
-              <SlidersHorizontal size={13} />
-            </button>
-            <button
-              onClick={() => setView("list")}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
-            >
-              <List size={13} />
-            </button>
-            <button
-              onClick={() => setView("kanban")}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}
-            >
-              <LayoutGrid size={13} />
-            </button>
+            <Button onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}>
+              <Plus size={14} /> New Contact
+            </Button>
           </div>
         </div>
+      </header>
 
-        {view === "list" ? (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px]">
-                <thead>
-                  <tr className="bg-gray-50/70">
-                    <th className="w-10 px-4 py-3">
-                      <input type="checkbox" className="rounded border-gray-300" />
-                    </th>
-                    {[
-                      ["Contact Name", "person"],
-                      ["Company", "building"],
-                      ["Email", "mail"],
-                      ["Phone", "phone"],
-                      ["Status", "badge"],
-                      ["Actions", ""],
-                    ].map(([h]) => (
-                      <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.map((c) => (
-                    <tr key={c._id || c.id} className="border-t border-gray-100 hover:bg-gray-50/60">
-                      <td className="px-4 py-3">
-                        <input type="checkbox" className="rounded border-gray-300" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar name={c.name} size="sm" />
-                          <span className="text-sm font-semibold text-gray-900">{c.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{c.company}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{c.email}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{c.phone}</td>
-                      <td className="px-4 py-3"><StatusPill status={c.status || "Accepted"} /></td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => navigate(`/admin/contacts/${c._id || c.id}`)} className="text-gray-400 hover:text-blue-500"><Eye size={15} /></button>
-                          <button onClick={() => setEditing(c)} className="text-gray-400 hover:text-blue-500"><Pencil size={14} /></button>
-                          <button className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {paginated.length === 0 && (
-                    <tr><td colSpan={7} className="py-12 text-center text-sm text-gray-400">No contacts found</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-              <span className="text-xs text-gray-500">
-                Showing {Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} Contacts
-              </span>
-              <div className="flex items-center gap-1">
-                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
-                ))}
-                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
+      <main className="flex-1 p-6">
+        <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+          <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_80px] gap-4 border-b border-[#f3f4f6] bg-[#fafafa] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+            <span>Contact</span><span>Associated Company</span><span>Email</span><span>WhatsApp</span><span>Status</span><span />
+          </div>
+          {loading ? (
+            <div className="p-10 text-center text-sm text-[#6b7280]">Loading contacts...</div>
+          ) : rows.length ? (
+            rows.map((contact) => (
+              <div key={contact._id || contact.id} className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_80px] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-sm hover:bg-[#fafafa]">
+                <button onClick={() => navigate(`/admin/contacts/${contact._id || contact.id}`)} className="flex min-w-0 items-center gap-3 text-left">
+                  <Avatar name={fullName(contact)} size="sm" />
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold text-[#111827]">{fullName(contact)}</span>
+                    <span className="block truncate text-xs text-[#6b7280]">{contact.designation || "No designation"}</span>
+                  </span>
+                </button>
+                <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Building2 size={13} className="text-[#9ca3af]" /> <span className="truncate">{companyName(contact)}</span></span>
+                <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Mail size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
+                <span className="flex min-w-0 items-center gap-2 text-[#374151]"><MessageCircle size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
+                <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
+                <span className="flex items-center justify-end gap-2">
+                  <button onClick={() => setEditing(contact)} className="text-[#6b7280] hover:text-[#884c2d]"><Link2 size={14} /></button>
+                  <button onClick={() => deleteContact(contact)} className="text-[#6b7280] hover:text-red-600"><Trash2 size={14} /></button>
+                </span>
               </div>
-            </div>
-          </>
-        ) : (
-          <div className="p-5">
-            <div className="grid grid-cols-4 gap-4 min-w-[800px] overflow-x-auto">
-              {STAGES.map((stage) => {
-                const stageContacts = contacts.filter((c) => (c.stage || "New") === stage);
-                return (
-                  <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">{stageContacts.length}</span></span>
-                      <button className="text-gray-400"><MoreVertical size={14} /></button>
-                    </div>
-                    <div className="space-y-2">
-                      {stageContacts.slice(0, 3).map((c) => (
-                        <div key={c._id || c.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-2">
-                              <Avatar name={c.name} size="sm" />
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900">{c.name}</p>
-                                <p className="text-xs text-gray-400">{c.company}</p>
-                              </div>
-                            </div>
-                            <button className="text-gray-300"><MoreVertical size={13} /></button>
-                          </div>
-                          <div className="mt-2.5 space-y-1.5">
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500"><Phone size={11} />{c.phone || "+91 000000000"}</div>
-                            <div className="flex items-center gap-1.5 text-xs text-gray-500"><Mail size={11} />{c.email || "email@example.com"}</div>
-                          </div>
-                        </div>
-                      ))}
-                      {stageContacts.length === 0 && (
-                        <div className="py-6 text-center text-xs text-gray-300">No contacts</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            ))
+          ) : <div className="p-5"><EmptyState onCreate={() => setEditing({ status: "Active" })} /></div>}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-sm text-[#6b7280]">
+          <span>Showing {rows.length} of {filtered.length} contacts</span>
+          <div className="flex items-center gap-1">
+            <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1 disabled:opacity-40">Prev</button>
+            <span className="px-2 text-xs font-semibold">Page {page} / {totalPages}</span>
+            <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1 disabled:opacity-40">Next</button>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
 
       {editing && (
-        <SidePanel
-          title={editing._id ? "Edit contact" : "New Contact"}
-          subtitle="Update contact profile and communication details."
+        <ContactPanel
+          contact={editing}
+          companies={companies}
           onClose={() => setEditing(null)}
-          footer={
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
-              <Button onClick={() => saveContact(editing)}>Save contact</Button>
-            </div>
-          }
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Name" value={editing.name} onChange={(v) => setEditing(p => ({ ...p, name: v }))} />
-            <Field label="Company" value={editing.company} onChange={(v) => setEditing(p => ({ ...p, company: v }))} />
-            <Field label="Email" value={editing.email} onChange={(v) => setEditing(p => ({ ...p, email: v }))} />
-            <Field label="Phone" value={editing.phone} onChange={(v) => setEditing(p => ({ ...p, phone: v }))} />
-            <Field label="Designation" value={editing.designation} onChange={(v) => setEditing(p => ({ ...p, designation: v }))} />
-            <Field label="Status" value={editing.status} onChange={(v) => setEditing(p => ({ ...p, status: v }))} />
-          </div>
-        </SidePanel>
+          onSave={saveContact}
+        />
       )}
     </div>
+  );
+}
+
+function ContactPanel({ contact, companies, onClose, onSave }) {
+  const [form, setForm] = useState(contact);
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  return (
+    <SidePanel
+      title={contact._id || contact.id ? "Edit Contact" : "New Contact"}
+      subtitle="Contacts are linked people inside a company."
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save Contact</Button>
+        </div>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Salutation" value={form.salutation} onChange={set("salutation")} placeholder="Mr / Ms / Dr" />
+        <Field label="First Name" value={form.firstName} onChange={set("firstName")} />
+        <Field label="Last Name" value={form.lastName} onChange={set("lastName")} />
+        <Field label="Email" type="email" value={form.email} onChange={set("email")} />
+        <Field label="Phone" value={form.phone} onChange={set("phone")} />
+        <Field label="WhatsApp" value={form.whatsapp} onChange={set("whatsapp")} />
+        <Field label="Position" value={form.designation} onChange={set("designation")} />
+        <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} />
+        <label className="block sm:col-span-2">
+          <span className="text-xs font-semibold text-[#374151]">Associated Company</span>
+          <select value={form.companyId || ""} onChange={(e) => set("companyId")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+            <option value="">Not linked</option>
+            {companies.map((company) => (
+              <option key={company.id || company._id} value={company.id || company._id}>{company.companyName || company.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </SidePanel>
   );
 }

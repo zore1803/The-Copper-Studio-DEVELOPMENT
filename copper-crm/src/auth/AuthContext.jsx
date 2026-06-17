@@ -29,7 +29,7 @@ function makeDemoSession(role) {
     token: "demo-local-bypass-token",
     user: {
       id: "demo-" + role,
-      name: role === "superadmin" ? "Super Admin" : "Demo Client",
+      name: role === "superadmin" ? "Super Admin" : "Client User",
       email: role === "superadmin" ? "admin@thecopperstudio.com" : "client@thecopperstudio.com",
       phone: "",
       company: "The Copper Studio",

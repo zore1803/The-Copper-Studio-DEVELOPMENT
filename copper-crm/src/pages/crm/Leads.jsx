@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Plus, MoreHorizontal, Mail, Phone, Zap, ArrowRight, Save } from "lucide-react";
 import { Button, Avatar } from "../../components/ui";
-import { leads as initialLeads } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -17,6 +16,8 @@ const stageConfig = {
   "Lost":          { dot: "bg-red-400",     accent: "border-t-red-300",    pill: "bg-red-50 text-red-600",      total: (cards) => cards.reduce((s, c) => s + amountValue(c.value), 0) },
 };
 
+const LEAD_STAGES = ["New Lead", "Contacted", "Qualified", "Proposal Sent", "Negotiation", "Won", "Lost"];
+
 const sourceColor = {
   Instagram:      "bg-pink-50 text-pink-600",
   Referral:       "bg-emerald-50 text-emerald-700",
@@ -27,9 +28,9 @@ const sourceColor = {
 };
 
 function fmt(n) {
-  if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
-  if (n >= 1000) return `₹${(n / 1000).toFixed(0)}k`;
-  return `₹${n}`;
+  if (n >= 100000) return `Rs ${(n / 100000).toFixed(1)}L`;
+  if (n >= 1000) return `Rs ${(n / 1000).toFixed(0)}k`;
+  return `Rs ${n}`;
 }
 
 function amountValue(value) {
@@ -37,18 +38,14 @@ function amountValue(value) {
 }
 
 export default function Leads() {
-  const [columns, setColumns] = useState(initialLeads);
+  const [columns, setColumns] = useState(() => Object.fromEntries(LEAD_STAGES.map((stage) => [stage, []])));
   const [dragging, setDragging] = useState(false);
   const [leadEditor, setLeadEditor] = useState(null);
   const { showToast } = useToast();
-  const fallbackLeads = useMemo(
-    () => Object.entries(initialLeads).flatMap(([stage, cards]) => cards.map((card) => ({ ...card, stage }))),
-    []
-  );
-  const { records: dbLeads, save: saveDbLead } = useCrmRecords("leads", fallbackLeads);
+  const { records: dbLeads, save: saveDbLead } = useCrmRecords("leads");
 
   useEffect(() => {
-    const nextColumns = Object.fromEntries(Object.keys(initialLeads).map((key) => [key, []]));
+    const nextColumns = Object.fromEntries(LEAD_STAGES.map((key) => [key, []]));
     dbLeads.forEach((lead) => {
       const stage = nextColumns[lead.stage] ? lead.stage : "New Lead";
       nextColumns[stage].push(lead);
@@ -117,7 +114,7 @@ export default function Leads() {
             <Zap size={11} className="text-amber-400" />
             Drag cards to move stages
           </div>
-          <Button onClick={() => setLeadEditor({ stage: "New Lead", lead: { name: "", company: "", value: "Rs 0", service: "", source: "Website", lastActivity: "Created now", email: "", phone: "" } })}><Plus size={13} strokeWidth={2.5} /> Add Lead</Button>
+          <Button onClick={() => setLeadEditor({ stage: "New Lead", lead: { name: "", company: "", value: "", service: "", source: "Website", lastActivity: "Created now", email: "", phone: "" } })}><Plus size={13} strokeWidth={2.5} /> Add Lead</Button>
         </div>
       </div>
 
@@ -139,7 +136,7 @@ export default function Leads() {
                     {stageTotal > 0 && (
                       <span className="text-[10px] font-bold text-gray-500">{fmt(stageTotal)}</span>
                     )}
-                    <button onClick={() => setLeadEditor({ stage, lead: { name: "", company: "", value: "Rs 0", service: "", source: "Website", lastActivity: "Created now", email: "", phone: "" } })} className="text-gray-300 hover:text-gray-500 transition-colors">
+                    <button onClick={() => setLeadEditor({ stage, lead: { name: "", company: "", value: "", service: "", source: "Website", lastActivity: "Created now", email: "", phone: "" } })} className="text-gray-300 hover:text-gray-500 transition-colors">
                       <Plus size={13} />
                     </button>
                   </div>
@@ -160,8 +157,10 @@ export default function Leads() {
                       }`}
                     >
                       <div className="space-y-2">
-                        {cards.map((card, index) => (
-                          <Draggable key={card.id} draggableId={card.id} index={index}>
+                        {cards.map((card, index) => {
+                          const dragId = String(card.id || card._id || `${stage}-${index}`);
+                          return (
+                          <Draggable key={dragId} draggableId={dragId} index={index}>
                             {(prov, snap) => (
                               <div
                                 ref={prov.innerRef}
@@ -206,7 +205,7 @@ export default function Leads() {
 
                                   {/* Divider */}
                                   <div className="border-t border-gray-50 pt-2 flex items-center justify-between">
-                                    <span className="text-xs font-bold text-gray-900">{card.value}</span>
+                                    <span className="text-xs font-bold text-gray-900">{card.value || "Value not set"}</span>
                                     <div className="flex items-center gap-1">
                                       <button className="w-5 h-5 rounded-full flex items-center justify-center text-gray-300 hover:text-blue-500 hover:bg-blue-50 transition-all">
                                         <Mail size={10} />
@@ -223,7 +222,7 @@ export default function Leads() {
                               </div>
                             )}
                           </Draggable>
-                        ))}
+                        )})}
                       </div>
                       {provided.placeholder}
 

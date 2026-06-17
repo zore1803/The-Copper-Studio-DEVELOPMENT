@@ -5,19 +5,23 @@ import {
   Edit3, GripVertical, ListFilter, Save, Sparkles, Trash2
 } from "lucide-react";
 import { Button } from "../../components/ui";
-import { kanbanTasks as initialTasks } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 
 const colConfig = {
   "Backlog": { dot: "bg-gray-400", ring: "ring-gray-200", header: "bg-gray-50" },
+  "To Do": { dot: "bg-sky-500", ring: "ring-sky-100", header: "bg-sky-50" },
+  "In Progress": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
   "Requirement Gathering": { dot: "bg-blue-500", ring: "ring-blue-100", header: "bg-blue-50" },
   "Design": { dot: "bg-violet-500", ring: "ring-violet-100", header: "bg-violet-50" },
   "Development": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
   "Testing": { dot: "bg-yellow-500", ring: "ring-yellow-100", header: "bg-yellow-50" },
   "Review": { dot: "bg-indigo-500", ring: "ring-indigo-100", header: "bg-indigo-50" },
   "Completed": { dot: "bg-emerald-500", ring: "ring-emerald-100", header: "bg-emerald-50" },
+  "Blocked": { dot: "bg-red-500", ring: "ring-red-100", header: "bg-red-50" },
 };
+
+const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 
 const priorityConfig = {
   High: "bg-red-50 text-red-600 border-red-100",
@@ -26,7 +30,7 @@ const priorityConfig = {
 };
 
 const assigneeColor = ["bg-[#2563EB]", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"];
-function assigneeIdx(letter) { return letter.charCodeAt(0) % assigneeColor.length; }
+function assigneeIdx(letter = "A") { return String(letter || "A").charCodeAt(0) % assigneeColor.length; }
 
 function reorder(list, startIndex, endIndex) {
   const result = Array.from(list);
@@ -47,18 +51,14 @@ function move(source, destination, droppableSource, droppableDestination) {
 }
 
 export default function KanbanBoard() {
-  const [columns, setColumns] = useState(initialTasks);
+  const [columns, setColumns] = useState(() => Object.fromEntries(TASK_STATUSES.map((key) => [key, []])));
   const [activeTaskId, setActiveTaskId] = useState("");
   const [taskEditor, setTaskEditor] = useState(null);
   const { showToast } = useToast();
-  const fallbackTasks = useMemo(
-    () => Object.entries(initialTasks).flatMap(([status, tasks]) => tasks.map((task) => ({ ...task, status }))),
-    []
-  );
-  const { records: dbTasks, save: saveDbTask, remove: removeDbTask } = useCrmRecords("tasks", fallbackTasks);
+  const { records: dbTasks, save: saveDbTask, remove: removeDbTask } = useCrmRecords("tasks");
 
   useEffect(() => {
-    const nextColumns = Object.fromEntries(Object.keys(initialTasks).map((key) => [key, []]));
+    const nextColumns = Object.fromEntries(TASK_STATUSES.map((key) => [key, []]));
     dbTasks.forEach((task) => {
       const status = nextColumns[task.status] ? task.status : "Backlog";
       nextColumns[status].push(task);
@@ -221,7 +221,7 @@ export default function KanbanBoard() {
                           const isDone = col === "Completed";
                           const priority = priorityConfig[task.priority] || priorityConfig.Low;
                           return (
-                            <Draggable key={task.id} draggableId={task.id} index={index}>
+                            <Draggable key={task.id || task._id} draggableId={String(task.id || task._id)} index={index}>
                               {(prov, snap) => (
                                 <article
                                   ref={prov.innerRef}
@@ -251,9 +251,9 @@ export default function KanbanBoard() {
                                         <GripVertical size={12} />
                                       </button>
                                       <div className="min-w-0 flex-1">
-                                        <p className="truncate text-[10px] font-bold uppercase tracking-wide text-gray-400">{task.project}</p>
+                                        <p className="truncate text-[10px] font-bold uppercase tracking-wide text-gray-400">{task.project || "No project linked"}</p>
                                         <h3 className={`mt-0.5 text-[13px] font-bold leading-snug ${isDone ? "text-gray-400 line-through" : "text-gray-900"}`}>
-                                          {task.title}
+                                          {task.title || task.taskName || "Untitled task"}
                                         </h3>
                                       </div>
                                       <button
@@ -269,13 +269,13 @@ export default function KanbanBoard() {
                                       </button>
                                     </div>
 
-                                    <p className="mb-2.5 line-clamp-2 text-[11px] leading-4 text-gray-500">{task.description}</p>
+                                    <p className="mb-2.5 line-clamp-2 text-[11px] leading-4 text-gray-500">{task.description || "No description added."}</p>
 
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
                                       <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${priority}`}>{task.priority}</span>
                                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-400">
                                         <Calendar size={11} />
-                                        {task.deadline}
+                                        {task.deadline || task.dueDate || "No due date"}
                                       </span>
                                     </div>
 
@@ -283,11 +283,11 @@ export default function KanbanBoard() {
                                       <div className="flex items-center gap-2.5 text-[10px] font-bold text-gray-400">
                                         <span className="inline-flex items-center gap-1">
                                           <CheckSquare size={11} />
-                                          {task.subtasks}
+                                          {task.subtasks || 0}
                                         </span>
                                         <span className="inline-flex items-center gap-1">
                                           <MessageSquare size={11} />
-                                          {task.comments}
+                                          {task.comments || 0}
                                         </span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
@@ -302,8 +302,8 @@ export default function KanbanBoard() {
                                         >
                                           <Edit3 size={11} />
                                         </button>
-                                        <div className={`grid h-6 w-6 place-items-center rounded-full text-[9px] font-bold text-white ${assigneeColor[assigneeIdx(task.assignee)]}`}>
-                                          {task.assignee}
+                                        <div className={`grid h-6 w-6 place-items-center rounded-full text-[9px] font-bold text-white ${assigneeColor[assigneeIdx(task.assignee || task.assignedTo)]}`}>
+                                          {(task.assignee || task.assignedTo || "U").slice(0, 1).toUpperCase()}
                                         </div>
                                       </div>
                                     </div>

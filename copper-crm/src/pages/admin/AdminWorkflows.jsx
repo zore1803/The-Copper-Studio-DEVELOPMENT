@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BellRing, Building2, Calendar, CheckCircle2, CreditCard, Edit3, Eye,
@@ -8,7 +8,6 @@ import {
   Trash2, TrendingUp, UploadCloud, User, UserPlus, Workflow
 } from "lucide-react";
 import { Button, StatusBadge, Avatar } from "../../components/ui";
-import { invoices, leads, orders, projects } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -57,31 +56,15 @@ function Field({ label, value, onChange, placeholder, type = "text" }) {
   );
 }
 
-const dealSeed = Object.values(leads).flat().filter((lead) => ["Qualified", "Proposal Sent", "Negotiation", "Won"].includes(lead.stage || ""));
-const dealsSeed = [
-  { id: "D-101", name: "Retail app redesign", account: "Zara India", owner: "Meera Kapoor", value: "Rs 89,999", stage: "Negotiation", probability: 72, close: "20 Jun 2026" },
-  { id: "D-102", name: "Enterprise dashboard", account: "LogiTrack", owner: "Vikram Nair", value: "Rs 1,19,999", stage: "Proposal Sent", probability: 55, close: "24 Jun 2026" },
-  { id: "D-103", name: "SaaS dashboard UI", account: "CloudStack", owner: "Dev Malhotra", value: "Rs 89,999", stage: "Qualified", probability: 48, close: "28 Jun 2026" },
-  { id: "D-104", name: "E-commerce platform", account: "ShopNow", owner: "Aditya Roy", value: "Rs 49,999", stage: "Won", probability: 100, close: "12 Jun 2026" },
-  ...dealSeed.slice(0, 2).map((lead, index) => ({
-    id: `D-20${index + 1}`,
-    name: lead.service,
-    account: lead.company,
-    owner: lead.name,
-    value: lead.value.replace("₹", "Rs "),
-    stage: "Qualified",
-    probability: 44 + index * 8,
-    close: "30 Jun 2026"
-  }))
-];
+const DEAL_STAGES = ["New", "Qualified", "Proposal Sent", "Negotiation", "Won", "Lost"];
 
-const DEAL_STAGES = ["Onboarding", "Need Analysis", "Proposal Sent", "Negotiation", "Won", "Lost"];
-const DEAL_KPI = [
-  { icon: Target, label: "Pipeline Summary", value: "₹2,93,898", change: "+12% Last week", positive: true },
-  { icon: TrendingUp, label: "Deals Won", value: "₹1,80,374", change: "+12% Last week", positive: true },
-  { icon: User, label: "Average Deal Size", value: "182", change: "+12% Last week", positive: true },
-  { icon: FileText, label: "Deals Lost", value: "₹43,000", change: "-12% Last week", positive: false },
-];
+function numericAmount(value) {
+  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
+}
+
+function formatAmount(value) {
+  return `Rs ${Math.round(value || 0).toLocaleString("en-IN")}`;
+}
 
 function StagePill({ status = "Accepted" }) {
   const map = {
@@ -103,11 +86,35 @@ export function DealsPage() {
   const [view, setView] = useState("list");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
-  const { records: dealRecords, save: saveDeal } = useCrmRecords("deals", dealsSeed);
+  const { records: dealRecords, save: saveDeal } = useCrmRecords("deals");
   const { showToast } = useToast();
   const PAGE_SIZE = 10;
 
-  const deals = dealRecords.filter((d) => `${d.name} ${d.account} ${d.owner}`.toLowerCase().includes(query.toLowerCase()));
+  const normalizedDeals = useMemo(() => dealRecords.map((deal) => ({
+    ...deal,
+    id: deal.id || deal.dealId || deal._id,
+    name: deal.name || deal.dealName || "",
+    account: deal.account || deal.company || deal.companyName || "",
+    owner: deal.owner || deal.contact || deal.contactName || "",
+    value: deal.value ?? deal.amount ?? "",
+    stage: deal.stage || "New",
+    close: deal.close || deal.expectedCloseDate || deal.dueDate || "",
+  })), [dealRecords]);
+  const deals = normalizedDeals.filter((d) => `${d.name} ${d.account} ${d.owner} ${d.stage}`.toLowerCase().includes(query.toLowerCase()));
+  const dealMetrics = useMemo(() => {
+    const pipeline = deals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
+    const wonDeals = deals.filter((deal) => deal.stage === "Won");
+    const lostDeals = deals.filter((deal) => deal.stage === "Lost");
+    const won = wonDeals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
+    const lost = lostDeals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
+    const average = Math.round(pipeline / Math.max(deals.length, 1));
+    return [
+      { icon: Target, label: "Pipeline Summary", value: formatAmount(pipeline), hint: `${deals.length} deals` },
+      { icon: TrendingUp, label: "Deals Won", value: formatAmount(won), hint: `${wonDeals.length} won` },
+      { icon: User, label: "Average Deal Size", value: formatAmount(average), hint: "Across pipeline" },
+      { icon: FileText, label: "Deals Lost", value: formatAmount(lost), hint: `${lostDeals.length} lost` },
+    ];
+  }, [deals]);
   const totalPages = Math.max(1, Math.ceil(deals.length / PAGE_SIZE));
   const paginated = deals.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -138,20 +145,20 @@ export function DealsPage() {
           <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><SlidersHorizontal size={14} /></button>
           <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={14} /></button>
           <button onClick={() => setView("kanban")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={14} /></button>
-          <button onClick={() => setSelected({ name: "", account: "", owner: "", value: "", stage: "Qualified", probability: 50, close: "" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+          <button onClick={() => setSelected({ name: "", account: "", owner: "", value: "", stage: "New", probability: 50, close: "" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
             <Plus size={14} /> Add Deal
           </button>
         </div>
       </div>
 
       <div className="mb-4 grid grid-cols-4 gap-4">
-        {DEAL_KPI.map(({ icon: Icon, label, value, change, positive }) => (
+        {dealMetrics.map(({ icon: Icon, label, value, hint }) => (
           <div key={label} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><Icon size={18} /></div>
             <div>
               <p className="text-xs text-gray-400">{label}</p>
               <p className="text-lg font-bold text-gray-900">{value}</p>
-              <p className={`text-[11px] font-semibold ${positive ? "text-green-500" : "text-red-500"}`}>{positive ? "▲" : "▼"} {change}</p>
+              <p className="text-[11px] font-semibold text-gray-400">{hint}</p>
             </div>
           </div>
         ))}
@@ -274,23 +281,7 @@ function EditDealModal({ deal, onClose, onSave }) {
   );
 }
 
-const taskRows = projects.flatMap((project) => [
-  { id: `${project.id}-brief`, title: "Confirm scope and deliverables", relatedTo: project.name, relatedType: "Deal/Contact/Company", assigned: "+91 1234567890", due: project.dueDate || "07/03/2026", status: "Accepted", priority: project.priority === "urgent" ? "High" : "Medium" },
-  { id: `${project.id}-review`, title: "Client review checkpoint", relatedTo: project.name, relatedType: "Deal/Contact/Company", assigned: "+91 9876543210", due: project.dueDate || "07/03/2026", status: "Accepted", priority: project.priority === "urgent" ? "High" : "Low" },
-]);
-
-const meetingRows = projects.slice(0, 9).map((project, i) => ({
-  id: `M-${project.id}`,
-  title: "Lorem ipsum dolor self amet",
-  type: "Zoom / Gmeet",
-  scheduled: "DD/MM/YYYY",
-  duration: "HH:MM, 60 mins",
-  priority: "Accepted",
-  contact: "Contact Name",
-  contactType: "Type",
-}));
-
-const TASK_STAGES = ["Onboarding", "Need Analysis", "In Progress", "Review"];
+const TASK_STAGES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 
 function TaskStatusPill({ status = "Accepted" }) {
   const map = { Accepted: "bg-blue-50 text-blue-600", High: "bg-red-50 text-red-600", Medium: "bg-yellow-50 text-yellow-600", Low: "bg-gray-100 text-gray-500" };
@@ -303,8 +294,32 @@ export function TasksPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
+  const { records: taskRecords } = useCrmRecords("tasks");
+  const { records: meetingRecords } = useCrmRecords("meetings");
   const PAGE_SIZE = 10;
 
+  const taskRows = useMemo(() => taskRecords.map((task) => ({
+    ...task,
+    id: task.id || task.taskId || task._id,
+    title: task.title || task.taskName || "",
+    relatedTo: task.relatedTo || task.project || task.projectName || "",
+    relatedType: task.relatedType || "Project",
+    assigned: task.assigned || task.assignedTo || "",
+    due: task.due || task.dueDate || "",
+    status: task.status || "Backlog",
+    priority: task.priority || "Medium",
+  })), [taskRecords]);
+  const meetingRows = useMemo(() => meetingRecords.map((meeting) => ({
+    ...meeting,
+    id: meeting.id || meeting.meetingId || meeting._id,
+    title: meeting.title || meeting.subject || "",
+    type: meeting.type || meeting.channel || "",
+    scheduled: meeting.scheduled || meeting.scheduledAt || "",
+    duration: meeting.duration || "",
+    priority: meeting.priority || meeting.status || "Scheduled",
+    contact: meeting.contact || meeting.contactName || "",
+    contactType: meeting.contactType || meeting.companyName || "",
+  })), [meetingRecords]);
   const filteredTasks = taskRows.filter((t) => `${t.title} ${t.relatedTo} ${t.status}`.toLowerCase().includes(query.toLowerCase()));
   const filteredMeetings = meetingRows.filter((m) => `${m.title} ${m.contact}`.toLowerCase().includes(query.toLowerCase()));
 
@@ -441,16 +456,26 @@ export function TasksPage() {
           </>
         ) : (
           <div className="p-5">
-            <div className="grid grid-cols-4 gap-4 min-w-[800px]">
-              {TASK_STAGES.map((stage) => (
+            <div className="grid grid-cols-5 gap-4 min-w-[1000px]">
+              {TASK_STAGES.map((stage) => {
+                const stageItems = filteredTasks.filter((task) => task.status === stage);
+                return (
                 <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">6</span></span>
+                    <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">{stageItems.length}</span></span>
                     <button className="text-gray-400"><MoreVertical size={14} /></button>
                   </div>
-                  <div className="py-6 text-center text-xs text-gray-300">No items</div>
+                  <div className="space-y-2">
+                    {stageItems.map((task) => (
+                      <button key={task.id} onClick={() => setSelected(task)} className="w-full rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm">
+                        <p className="text-xs font-bold text-gray-900">{task.title || "Untitled task"}</p>
+                        <p className="mt-1 text-[11px] text-gray-400">{task.relatedTo || "No project linked"}</p>
+                      </button>
+                    ))}
+                    {stageItems.length === 0 && <div className="py-6 text-center text-xs text-gray-300">No items</div>}
+                  </div>
                 </div>
-              ))}
+              );})}
             </div>
           </div>
         )}
@@ -483,16 +508,25 @@ export function TasksPage() {
 }
 
 export function ReportsPage() {
-  const totalInvoices = invoices.length;
-  const paidOrders = orders.filter((order) => order.status === "Paid").length;
+  const { records: orders } = useCrmRecords("orders");
+  const { records: invoices } = useCrmRecords("invoices");
+  const { records: projects } = useCrmRecords("projects");
+  const { records: leads } = useCrmRecords("leads");
+  const { records: proposals } = useCrmRecords("proposals");
+  const paidOrders = orders.filter((order) => ["paid", "completed", "success"].includes(String(order.status || "").toLowerCase())).length;
+  const qualifiedLeads = leads.filter((lead) => ["qualified", "proposal sent", "negotiation", "won"].includes(String(lead.stage || lead.status || "").toLowerCase())).length;
+  const paidRate = Math.round((paidOrders / Math.max(orders.length, 1)) * 100);
+  const qualificationRate = Math.round((qualifiedLeads / Math.max(leads.length, 1)) * 100);
+  const proposalRate = Math.round((proposals.filter((proposal) => ["accepted", "sent", "viewed"].includes(String(proposal.status || "").toLowerCase())).length / Math.max(proposals.length, 1)) * 100);
+  const deliveryRate = Math.round((projects.filter((project) => ["completed", "delivered"].includes(String(project.status || project.clientStatus || "").toLowerCase())).length / Math.max(projects.length, 1)) * 100);
   return (
     <PageShell title="Reports" subtitle="Review revenue, conversion, delivery, and client onboarding metrics." action={<Button><FileText size={14} /> Export Report</Button>}>
       <div className="grid gap-4 md:grid-cols-4">
         {[
           ["Paid orders", paidOrders, TrendingUp],
-          ["Invoices", totalInvoices, FileText],
+          ["Invoices", invoices.length, FileText],
           ["Active projects", projects.length, Workflow],
-          ["Templates sent", 94, Send],
+          ["Proposals", proposals.length, Send],
         ].map(([label, value, Icon]) => (
           <Card key={label} className="p-4">
             <Icon size={18} className="text-[#2563EB]" />
@@ -505,10 +539,15 @@ export function ReportsPage() {
         <Card className="p-5">
           <h3 className="text-sm font-bold text-gray-950">Conversion summary</h3>
           <div className="mt-5 space-y-4">
-            {["Lead to qualified", "Proposal to payment", "Payment to portal login", "Project on-time delivery"].map((label, index) => (
+            {[
+              ["Lead to qualified", qualificationRate],
+              ["Proposal activity", proposalRate],
+              ["Payment completion", paidRate],
+              ["Project delivered", deliveryRate],
+            ].map(([label, value]) => (
               <div key={label}>
-                <div className="mb-1 flex justify-between text-xs font-bold"><span className="text-gray-600">{label}</span><span className="text-gray-400">{[64, 48, 82, 71][index]}%</span></div>
-                <div className="h-2 rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${[64, 48, 82, 71][index]}%` }} /></div>
+                <div className="mb-1 flex justify-between text-xs font-bold"><span className="text-gray-600">{label}</span><span className="text-gray-400">{value}%</span></div>
+                <div className="h-2 rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${value}%` }} /></div>
               </div>
             ))}
           </div>
@@ -594,11 +633,11 @@ export function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState("profile");
   const [profile, setProfile] = useState({
-    fullName: "Rohit Kumar",
-    email: "rohit@datacircles.in",
-    title: "Super Admin",
+    fullName: "",
+    email: "",
+    title: "",
     timezone: "Asia/Kolkata",
-    publicUrl: "http://localhost:5173",
+    publicUrl: "",
   });
   const [password, setPassword] = useState({
     currentPassword: "",
@@ -609,15 +648,15 @@ export function SettingsPage() {
   });
   const [company, setCompany] = useState({
     studioName: "The Copper Studio",
-    legalName: "The Copper Studio Private Limited",
-    gstin: "27ABCDE1234F1Z5",
-    billingEmail: "accounts@datacircles.in",
-    website: "https://thecopperstudio.com",
-    billingAddress: "Mumbai, Maharashtra, India",
+    legalName: "",
+    gstin: "",
+    billingEmail: "",
+    website: "",
+    billingAddress: "",
   });
   const [billing, setBilling] = useState({
     gateway: "Razorpay",
-    apiBase: "http://localhost:5000",
+    apiBase: "",
     invoicePrefix: "INV",
     defaultRole: "user",
     autoInviteAfterPayment: true,
@@ -625,8 +664,8 @@ export function SettingsPage() {
   });
   const [email, setEmail] = useState({
     senderName: "The Copper Studio",
-    senderEmail: "hello@thecopperstudio.com",
-    smtpHost: "smtp.gmail.com",
+    senderEmail: "",
+    smtpHost: "",
     smtpPort: "587",
     onboardingPath: "/client-secure-onboarding/access-setup",
   });
@@ -868,3 +907,4 @@ export function SettingsPage() {
     </div>
   );
 }
+

@@ -9,7 +9,6 @@ import {
   Pie, PieChart as RePieChart, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from "recharts";
 import { Button } from "../../components/ui";
-import { coupons, dailyRevenue, orders, projects } from "../../data/mockData";
 import { useToast } from "../../components/useToast";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 
@@ -80,18 +79,6 @@ function DateTimeField({ label, value, onChange }) {
   );
 }
 
-const statusData = [
-  { name: "On time", value: 71, color: "#10b981" },
-  { name: "Delayed", value: 18, color: "#f59e0b" },
-  { name: "At risk", value: 11, color: "#ef4444" },
-];
-
-const packageRevenue = [
-  { name: "Starter", revenue: 29499, tier: 9 },
-  { name: "Growth", revenue: 176997, tier: 14 },
-  { name: "Enterprise", revenue: 212398, tier: 8 },
-];
-
 function toDateTimeLocal(date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) {
   const zoned = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return zoned.toISOString().slice(0, 16);
@@ -112,22 +99,61 @@ function safeFileName(value) {
   return String(value || "proposal").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function moneyValue(value) {
+  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
+}
+
+function formatMoney(value) {
+  return `Rs ${Math.round(value || 0).toLocaleString("en-IN")}`;
+}
+
 export function AnalyticsPage() {
   const [timeFilter, setTimeFilter] = useState("Last 30 days");
-  const revenue = 298520;
-  const paidOrders = orders.filter((order) => order.status === "Paid").length;
-  const paymentRate = Math.round((paidOrders / orders.length) * 100);
-  const avgProjectValue = Math.round(revenue / projects.length);
+  const { records: orders } = useCrmRecords("orders");
+  const { records: payments } = useCrmRecords("payments");
+  const { records: projects } = useCrmRecords("projects");
+  const { records: companies } = useCrmRecords("companies");
+
+  const paidOrders = orders.filter((order) => ["paid", "completed", "success"].includes(String(order.status || "").toLowerCase()));
+  const paidPayments = payments.filter((payment) => ["paid", "completed", "success", "received"].includes(String(payment.status || "").toLowerCase()));
+  const revenue = [...paidOrders, ...paidPayments].reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.total), 0);
+  const paymentRate = Math.round((paidOrders.length / Math.max(orders.length, 1)) * 100);
+  const avgProjectValue = Math.round(revenue / Math.max(projects.length, 1));
+  const completedProjects = projects.filter((project) => ["completed", "delivered"].includes(String(project.status || project.clientStatus || "").toLowerCase())).length;
+  const delayedProjects = projects.filter((project) => {
+    const due = new Date(project.dueDate || project.expectedCompletion || project.expectedEndDate || "");
+    return due.toString() !== "Invalid Date" && due < new Date() && !["completed", "delivered"].includes(String(project.status || project.clientStatus || "").toLowerCase());
+  }).length;
+  const statusData = [
+    { name: "On track", value: Math.max(projects.length - completedProjects - delayedProjects, 0), color: "#10b981" },
+    { name: "Delayed", value: delayedProjects, color: "#f59e0b" },
+    { name: "Completed", value: completedProjects, color: "#2563eb" },
+  ].filter((item) => item.value > 0);
+  const packageRevenue = Object.values(orders.reduce((acc, order) => {
+    const name = order.package || order.packageName || order.projectType || "Unassigned";
+    acc[name] = acc[name] || { name, revenue: 0, tier: 0 };
+    acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.total);
+    acc[name].tier += 1;
+    return acc;
+  }, {}));
+  const revenueGraph = Object.values([...orders, ...payments].reduce((acc, item) => {
+    const created = new Date(item.createdAt || item.date || item.paidAt || item.generatedAt || Date.now());
+    const day = created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+    acc[day] = acc[day] || { day, revenue: 0, trend: 0 };
+    acc[day].revenue += moneyValue(item.amount ?? item.value ?? item.total);
+    acc[day].trend = acc[day].revenue;
+    return acc;
+  }, {}));
 
   const metrics = [
-    ["Total revenue", `Rs ${revenue.toLocaleString("en-IN")}`, WalletCards],
+    ["Total revenue", formatMoney(revenue), WalletCards],
     ["Total projects", projects.length, PackageCheck],
-    ["Avg project value", `Rs ${avgProjectValue.toLocaleString("en-IN")}`, TrendingUp],
-    ["New clients", 12, Users],
+    ["Avg project value", formatMoney(avgProjectValue), TrendingUp],
+    ["Companies", companies.length, Users],
     ["Payment rate", `${paymentRate}%`, ReceiptText],
-    ["Avg completion", "18 days", BarChart3],
-    ["On-time", "71%", PieChart],
-    ["Delayed", 3, FileText],
+    ["Completed projects", completedProjects, BarChart3],
+    ["On track", statusData.find((item) => item.name === "On track")?.value || 0, PieChart],
+    ["Delayed", delayedProjects, FileText],
   ];
 
   return (
@@ -158,7 +184,7 @@ export function AnalyticsPage() {
           </div>
           <div className="h-80 p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dailyRevenue.slice(-45)}>
+              <LineChart data={revenueGraph.slice(-45)}>
                 <CartesianGrid vertical={false} stroke="#eef2f7" />
                 <XAxis dataKey="day" hide />
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
@@ -177,15 +203,15 @@ export function AnalyticsPage() {
           <div className="h-64 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <RePieChart>
-                <Pie data={statusData} dataKey="value" innerRadius={54} outerRadius={86} paddingAngle={4}>
-                  {statusData.map((item) => <Cell key={item.name} fill={item.color} />)}
+                <Pie data={statusData.length ? statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]} dataKey="value" innerRadius={54} outerRadius={86} paddingAngle={4}>
+                  {(statusData.length ? statusData : [{ name: "No data", color: "#e5e7eb" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
                 </Pie>
                 <Tooltip />
               </RePieChart>
             </ResponsiveContainer>
           </div>
           <div className="grid grid-cols-3 gap-2 px-4 pb-4">
-            {statusData.map((item) => (
+            {(statusData.length ? statusData : [{ name: "No data", value: 0, color: "#e5e7eb" }]).map((item) => (
               <div key={item.name} className="rounded-xl bg-gray-50 p-3">
                 <span className="block h-2 w-2 rounded-full" style={{ background: item.color }} />
                 <p className="mt-2 text-xs font-bold text-gray-700">{item.name}</p>
@@ -201,7 +227,7 @@ export function AnalyticsPage() {
               <h3 className="text-sm font-bold text-gray-950">Top products by revenue</h3>
               <div className="mt-4 h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={packageRevenue}>
+                  <BarChart data={packageRevenue.length ? packageRevenue : [{ name: "No orders", revenue: 0 }]}>
                     <CartesianGrid vertical={false} stroke="#eef2f7" />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} />
                     <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
@@ -214,13 +240,13 @@ export function AnalyticsPage() {
             <div>
               <h3 className="text-sm font-bold text-gray-950">Total tier under package</h3>
               <div className="mt-4 space-y-3">
-                {packageRevenue.map((item) => (
+                {(packageRevenue.length ? packageRevenue : [{ name: "No packages yet", revenue: 0, tier: 0 }]).map((item) => (
                   <div key={item.name} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-bold text-gray-900">{item.name}</p>
                       <p className="text-xs font-bold text-[#2563EB]">{item.tier} tiers</p>
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">Rs {item.revenue.toLocaleString("en-IN")} revenue</p>
+                    <p className="mt-1 text-xs text-gray-500">{formatMoney(item.revenue)} revenue</p>
                   </div>
                 ))}
               </div>
@@ -235,11 +261,11 @@ export function AnalyticsPage() {
 export function ProposalGeneratorPage() {
   const { showToast } = useToast();
   const [proposal, setProposal] = useState({
-    client: "Zara India",
-    company: "Zara India Pvt Ltd",
-    gstin: "27ABCDE1234F1Z5",
-    service: "Retail App Design",
-    value: "89999",
+    client: "",
+    company: "",
+    gstin: "",
+    service: "",
+    value: "",
     timeline: "21 days",
   });
 
@@ -266,7 +292,7 @@ export function ProposalGeneratorPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(24);
-    doc.text("DataCircles", margin, 58);
+    doc.text("The Copper Studio", margin, 58);
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("The Copper Studio Proposal", margin, 82);
@@ -343,7 +369,7 @@ export function ProposalGeneratorPage() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(37, 99, 235);
-    doc.text("DataCircles Technology", margin, 802);
+    doc.text("The Copper Studio", margin, 802);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(107, 114, 128);
     doc.text("Contact us for package confirmation, onboarding, and next steps.", margin, 818);
@@ -381,23 +407,11 @@ export function ProposalGeneratorPage() {
 
 export function ServicesPage() {
   const { showToast } = useToast();
-  const couponFallback = useMemo(() => coupons.map((coupon) => ({
-    code: coupon.code,
-    generatedAt: "15 Jun 2026 10:30",
-    validity: coupon.expiry,
-    amountType: coupon.type === "Percentage" ? "percentage" : "fixed",
-    amount: coupon.value,
-    status: coupon.status,
-    clientName: "",
-    companyName: "",
-    email: "",
-    phone: "",
-  })), []);
-  const { records: savedCoupons, save: saveCoupon } = useCrmRecords("coupons", couponFallback);
+  const { records: savedCoupons, save: saveCoupon } = useCrmRecords("coupons");
   const [coupon, setCoupon] = useState({
-    prefix: "DATACIRCLES",
-    discount: "15",
-    packageName: "Growth Studio",
+    prefix: "COP-STU",
+    discount: "",
+    packageName: "",
     validity: toDateTimeLocal(),
     amountType: "percentage",
     clientName: "",
@@ -406,7 +420,7 @@ export function ServicesPage() {
     phone: "",
   });
 
-  const couponCode = `${coupon.prefix}-${coupon.discount}-${coupon.packageName.replace(/\s+/g, "").toUpperCase()}`.slice(0, 28);
+  const couponCode = `${coupon.prefix || "COP"}-${coupon.discount || "VALUE"}-${(coupon.packageName || "PACKAGE").replace(/\s+/g, "").toUpperCase()}`.slice(0, 28);
 
   async function copyText(text, title) {
     await navigator.clipboard.writeText(text);
@@ -563,4 +577,3 @@ export function DatabaseTablesPage() {
     </PageShell>
   );
 }
-

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
-import { projects } from "../../data/mockData";
+import { FolderKanban, Search } from "lucide-react";
+import { Button } from "../../components/ui";
+import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { TODAY, daysBetween, parseFullDate } from "../../lib/dates";
 import ProjectCard from "../../components/ProjectCard";
 
@@ -21,7 +22,7 @@ function DeadlineTimeline({ items }) {
   const { rows, months, minDate, totalMs } = useMemo(() => {
     const computed = items.map((project) => {
       const start = parseFullDate(project.startDate);
-      const end = parseFullDate(project.dueDate);
+      const end = parseFullDate(project.dueDate || project.expectedEndDate);
       const daysLeft = daysBetween(TODAY, end);
       const overdue = daysLeft < 0 && project.status !== "Completed";
       return { project, start, end, daysLeft, overdue };
@@ -61,7 +62,7 @@ function DeadlineTimeline({ items }) {
           {rows.map(({ project }) => (
             <Link
               key={project.id}
-              to={`/admin/companies/${project.companyId}/projects/${project.id}`}
+              to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
               className="flex h-12 items-center border-b border-[#ead8d1]/60 px-4 hover:bg-white"
             >
               <div className="min-w-0">
@@ -99,7 +100,7 @@ function DeadlineTimeline({ items }) {
                 return (
                   <Link
                     key={project.id}
-                    to={`/admin/companies/${project.companyId}/projects/${project.id}`}
+                    to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
                     className="relative block h-12 border-b border-[#ead8d1]/40"
                   >
                     <span
@@ -124,6 +125,7 @@ function DeadlineTimeline({ items }) {
 
 export default function ProjectsList() {
   const [search, setSearch] = useState("");
+  const { records: projects, loading } = useCrmRecords("projects");
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -131,7 +133,7 @@ export default function ProjectsList() {
     return projects.filter((project) =>
       `${project.name} ${project.client} ${project.status}`.toLowerCase().includes(query)
     );
-  }, [search]);
+  }, [projects, search]);
 
   return (
     <div className="space-y-6">
@@ -151,18 +153,23 @@ export default function ProjectsList() {
         </div>
       </div>
 
-      <DeadlineTimeline items={filtered} />
+      {!loading && <DeadlineTimeline items={filtered} />}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          <ProjectCard key={project.id || project._id} project={project} />
         ))}
       </div>
 
-      {!filtered.length && (
-        <p className="rounded-2xl border border-dashed border-[#d8c2b9] p-10 text-center text-sm text-[#6c6355]">
-          No projects match your search.
-        </p>
+      {!loading && !filtered.length && (
+        <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-white p-10 text-center">
+          <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+            <FolderKanban size={20} />
+          </div>
+          <p className="text-sm font-semibold text-[#211a17]">{search ? "No projects match your search." : "No projects yet."}</p>
+          <p className="mt-1 text-sm text-[#6c6355]">Create a project from a company profile to keep it linked to the right client.</p>
+          <Button variant="secondary" className="mt-4" onClick={() => window.history.back()}>Back</Button>
+        </div>
       )}
     </div>
   );

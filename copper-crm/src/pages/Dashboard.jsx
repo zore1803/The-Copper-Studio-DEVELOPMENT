@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDownRight, ArrowUpRight, BarChart2, BriefcaseBusiness,
   CalendarDays, ChevronDown, IndianRupee, TrendingUp, UserPlus,
-  Clock3, Activity, Download
+  Clock3, Activity, Download, Users, Package, CheckCircle2,
 } from "lucide-react";
-import { companies, orders, projects, recentLeads, revenueData, salesData } from "../data/mockData";
+import { storeGet } from "../lib/store";
 
 function parseCurrency(v) {
   return Number(String(v).replace(/[^\d.-]/g, "")) || 0;
@@ -46,21 +46,17 @@ function SalesRevenueChart({ data }) {
   }).join(" ");
   const area = `${pts} 100,100 0,100`;
 
-  const yLabels = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180].filter((v) => v <= Math.ceil(maxVal / 10000) * 10000).reverse().slice(0, 8);
-
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="px-6 py-4 border-b border-[#f3f4f6]">
         <h3 className="text-sm font-bold text-[#111827]">Sales Revenue</h3>
       </div>
       <div className="px-6 py-4 flex gap-4">
-        {/* Y-axis */}
-        <div className="flex flex-col justify-between text-[10px] text-[#9ca3af] py-1" style={{ minWidth: 36 }}>
-          {[180, 160, 140, 120, 100, 80, 60, 40, 20, 0].map((v) => (
-            <span key={v}>₹{v}k</span>
+        <div className="flex flex-col justify-between text-[10px] text-[#9ca3af] py-1" style={{ minWidth: 44 }}>
+          {[1, 0.8, 0.6, 0.4, 0.2, 0].map((ratio) => (
+            <span key={ratio}>{formatCompact(maxVal * ratio)}</span>
           ))}
         </div>
-        {/* Chart */}
         <div className="flex-1 min-w-0">
           <div className="h-56 relative">
             <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" preserveAspectRatio="none">
@@ -75,22 +71,8 @@ function SalesRevenueChart({ data }) {
               ))}
               <polygon points={area} fill="url(#areaGrad)" />
               <polyline points={pts} fill="none" stroke="#884c2d" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
-              {/* Trend dashes */}
-              <polyline
-                points={data.map((_, i) => {
-                  const x = (i / Math.max(data.length - 1, 1)) * 100;
-                  const y = 100 - (((i / (data.length - 1)) * 0.6 + 0.2) * 80);
-                  return `${x},${y}`;
-                }).join(" ")}
-                fill="none"
-                stroke="#22c55e"
-                strokeWidth="0.8"
-                strokeDasharray="2.5 2"
-                opacity="0.7"
-              />
             </svg>
           </div>
-          {/* X-axis */}
           <div className="flex justify-between pt-2">
             {data.map((d) => (
               <span key={d.month} className="text-[10px] text-[#9ca3af]">{d.month}</span>
@@ -101,122 +83,270 @@ function SalesRevenueChart({ data }) {
     </div>
   );
 }
+function InvoicesCard({ orders }) {
+  const paid = orders.filter(o => o.status === "Paid");
+  const totalRevenue = paid.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
+  const pctCleared = Math.round((paid.length / Math.max(orders.length, 1)) * 100);
+  const byPkg = orders.reduce((acc, o) => {
+    acc[o.package] = (acc[o.package] || 0) + parseCurrency(o.amount);
+    return acc;
+  }, {});
+  const topPackages = Object.entries(byPkg).slice(0, 2);
+  const maxPkg = Math.max(...Object.values(byPkg), 1);
 
-function InvoicesCard({ totalRevenue, paidOrders, totalOrders }) {
-  const pctCleared = Math.round((paidOrders / Math.max(totalOrders, 1)) * 100);
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <p className="text-xs text-[#6b7280] font-medium mb-1">Total Invoices Issued</p>
+      <p className="text-xs text-[#6b7280] font-medium mb-1">Total Revenue from Orders</p>
       <p className="text-xl font-bold text-[#111827]">{formatINR(totalRevenue)}</p>
-      <p className="text-xs text-[#6b7280] mt-0.5">{pctCleared}% Cleared</p>
-      <div className="mt-4">
-        <div className="flex justify-between text-xs text-[#6b7280] mb-1">
-          <span>DataCircles</span>
-          <span className="font-semibold text-[#111827]">60%</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden mb-2">
-          <div className="h-full rounded-full bg-[#884c2d]" style={{ width: "60%" }} />
-        </div>
-        <div className="flex justify-between text-xs text-[#6b7280]">
-          <span>Website Project</span>
-          <span>Invoices Paid</span>
-        </div>
-        <p className="text-[11px] text-[#9ca3af] mt-1">1 of 3</p>
+      <p className="text-xs text-[#6b7280] mt-0.5">{pctCleared}% orders paid</p>
+      <div className="mt-4 space-y-2">
+        {topPackages.map(([pkg, amt]) => (
+          <div key={pkg}>
+            <div className="flex justify-between text-xs text-[#6b7280] mb-1">
+              <span className="truncate max-w-[120px]">{pkg}</span>
+              <span className="font-semibold text-[#111827]">{formatCompact(amt)}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
+              <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${Math.round((amt / maxPkg) * 100)}%` }} />
+            </div>
+          </div>
+        ))}
       </div>
       <div className="mt-4 h-[80px] relative">
         <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
           <polyline
             points="0,38 15,35 25,30 35,28 45,22 55,18 65,14 75,10 85,8 100,4"
-            fill="none"
-            stroke="#884c2d"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
+            fill="none" stroke="#884c2d" strokeWidth="1.5" strokeLinejoin="round"
           />
         </svg>
         <div className="flex justify-between text-[10px] text-[#9ca3af] mt-1">
           {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"].map((m) => <span key={m}>{m}</span>)}
         </div>
       </div>
-      <p className="text-xs text-[#6b7280] mt-2">Payment Progress</p>
+      <p className="text-xs text-[#6b7280] mt-2">Revenue Trend</p>
     </div>
   );
 }
 
-function EarningsCard() {
-  const [quarter, setQuarter] = useState("Q1");
+function EarningsCard({ orders }) {
+  const quarters = ["Q1", "Q2", "Q3", "Q4"];
+  const [quarter, setQuarter] = useState("Q2");
+  const qIndex = quarters.indexOf(quarter);
+  const monthRows = useMemo(() => orders.reduce((acc, order) => {
+    const date = new Date(order.date || order.createdAt || order.paidAt || Date.now());
+    const monthIndex = Number.isNaN(date.getTime()) ? new Date().getMonth() : date.getMonth();
+    const month = Number.isNaN(date.getTime()) ? "Current" : date.toLocaleDateString("en-IN", { month: "short" });
+    acc[monthIndex] = acc[monthIndex] || { month, revenue: 0 };
+    acc[monthIndex].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
+    return acc;
+  }, {}), [orders]);
+  const revenue = Object.entries(monthRows)
+    .filter(([monthIndex]) => Math.floor(Number(monthIndex) / 3) === qIndex)
+    .map(([, row]) => row);
+  const totalRevenue = revenue.reduce((sum, m) => sum + m.revenue, 0);
+  const profit = Math.round(totalRevenue * 0.35);
+  const prevRevenue = Object.entries(monthRows)
+    .filter(([monthIndex]) => Math.floor(Number(monthIndex) / 3) === qIndex - 1)
+    .reduce((s, [, row]) => s + row.revenue, 0);
+  const growth = prevRevenue > 0 ? Math.round(((totalRevenue - prevRevenue) / prevRevenue) * 100) : 0;
+  const maxR = Math.max(...revenue.map(m => m.revenue), 1);
+
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <p className="text-sm font-bold text-[#111827] mb-1">{quarter} Earnings</p>
-      <p className="text-xl font-bold text-[#111827]">5,39,200 INR</p>
-      <p className="text-xs text-[#6b7280]">6.4% from last quarter</p>
-      <p className="text-xs font-semibold text-emerald-600 mt-1">Outperforming benchmark by 2.5%</p>
-      <div className="mt-4 flex items-center gap-2 text-xs text-[#6b7280] border border-[#e5e7eb] rounded-lg px-3 py-1.5 w-fit">
-        <span className="font-semibold text-[#111827]">{quarter}</span>
-        <ChevronDown size={12} />
+      <p className="text-xl font-bold text-[#111827]">{formatCompact(totalRevenue)}</p>
+      <p className="text-xs text-[#6b7280]">{Math.abs(growth)}% {growth >= 0 ? "↑" : "↓"} from last quarter</p>
+      {growth > 0 && <p className="text-xs font-semibold text-emerald-600 mt-1">Outperforming previous quarter</p>}
+      <div className="mt-4 flex items-center gap-1">
+        {quarters.map(q => (
+          <button
+            key={q}
+            onClick={() => setQuarter(q)}
+            className={`flex-1 py-1 text-xs font-semibold rounded-lg border transition-colors ${
+              q === quarter ? "bg-[#884c2d] text-white border-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+            }`}
+          >
+            {q}
+          </button>
+        ))}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-[#6b7280]">
         <div>
           <p>Revenue</p>
-          <p className="font-bold text-[#111827] text-sm">₹3,49,000</p>
+          <p className="font-bold text-[#111827] text-sm">{formatCompact(totalRevenue)}</p>
         </div>
         <div>
-          <p>Profit</p>
-          <p className="font-bold text-[#111827] text-sm">₹1,23,000</p>
+          <p>Profit (est.)</p>
+          <p className="font-bold text-[#111827] text-sm">{formatCompact(profit)}</p>
         </div>
       </div>
-      <p className="text-xs text-[#6b7280] mt-4 mb-2">Earnings Performance</p>
-      <div className="space-y-2">
-        <div>
-          <div className="flex justify-between text-[11px] text-[#6b7280] mb-1">
-            <span>Revenue</span><span className="text-[#884c2d] font-semibold">8.1</span>
+      <div className="mt-4 flex items-end gap-1 h-12">
+        {revenue.map((m, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              className="w-full rounded-t bg-[#884c2d]/80"
+              style={{ height: `${Math.round((m.revenue / maxR) * 40)}px` }}
+            />
+            <span className="text-[9px] text-[#9ca3af]">{m.month}</span>
           </div>
-          <div className="h-2.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-            <div className="h-full rounded-full bg-[#884c2d]" style={{ width: "75%" }} />
-          </div>
-        </div>
-        <div>
-          <div className="flex justify-between text-[11px] text-[#6b7280] mb-1">
-            <span>Profit</span><span className="text-emerald-600 font-semibold">6.2</span>
-          </div>
-          <div className="h-2.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-            <div className="h-full rounded-full bg-emerald-500" style={{ width: "58%" }} />
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-3 mt-3 text-[11px] text-[#6b7280]">
-        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#884c2d] inline-block rounded" />Revenue</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-emerald-500 inline-block rounded" />Profit</span>
+        ))}
       </div>
     </div>
   );
 }
 
-function RecentDealsCard({ recentDeals }) {
+function RecentDealsCard({ deals }) {
+  const navigate = useNavigate();
+  const top = deals.slice(0, 6);
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <div className="px-5 py-4 flex items-center justify-between border-b border-[#f3f4f6]">
         <div>
           <p className="text-xs text-[#6b7280] font-medium">Recent Deals</p>
-          <p className="text-base font-bold text-[#111827]">{recentDeals[0]?.client || "Cottson Clothing"}</p>
-          <p className="text-xs text-[#6b7280]">INR 1,39,200 deal value</p>
+          <p className="text-base font-bold text-[#111827]">{top[0]?.name || "No deals yet"}</p>
         </div>
-        <span className="bg-[#884c2d]/10 text-[#884c2d] text-[11px] font-semibold px-2 py-0.5 rounded-full">Top Deal</span>
+        <button onClick={() => navigate("/admin/deals")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-[#f3f4f6]">
-              <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Client</th>
-              <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Deal</th>
-              <th className="px-4 py-2.5 text-right font-semibold text-[#6b7280]">Amount</th>
+      {top.length === 0 ? (
+        <p className="p-5 text-sm text-[#9ca3af]">No deals recorded yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-[#f3f4f6]">
+                <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Deal</th>
+                <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Stage</th>
+                <th className="px-4 py-2.5 text-right font-semibold text-[#6b7280]">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {top.map((deal, i) => (
+                <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
+                  <td className="px-4 py-2.5 font-medium text-[#374151]">{deal.name || deal.client}</td>
+                  <td className="px-4 py-2.5 text-[#6b7280]">{deal.stage}</td>
+                  <td className="px-4 py-2.5 text-right font-semibold text-[#111827]">{deal.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CrmTab({ leads, companies, contacts }) {
+  const stageCounts = leads.reduce((acc, l) => {
+    acc[l.stage] = (acc[l.stage] || 0) + 1;
+    return acc;
+  }, {});
+  const stages = ["New Lead", "Contacted", "Qualified", "Proposal Sent", "Negotiation", "Won", "Lost"];
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-3">
+        {stages.map(stage => (
+          <div key={stage} className="bg-white rounded-xl border border-[#e5e7eb] p-3 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <p className="text-xl font-bold text-[#111827]">{stageCounts[stage] || 0}</p>
+            <p className="text-[10px] font-semibold text-[#6b7280] mt-1 leading-tight">{stage}</p>
+          </div>
+        ))}
+      </div>
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#111827]">Recent Leads</h3>
+          <span className="text-xs text-[#6b7280]">{leads.length} total</span>
+        </div>
+        <table className="min-w-full text-xs">
+          <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+            <tr>
+              {["Name", "Company", "Service", "Stage", "Last Activity"].map(h => (
+                <th key={h} className="px-5 py-3 text-left font-semibold text-[#6b7280] uppercase tracking-wider text-[10px]">{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {recentDeals.map((deal, i) => (
+            {leads.slice(0, 8).map((lead, i) => (
               <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
-                <td className="px-4 py-2.5 font-medium text-[#374151]">{deal.client}</td>
-                <td className="px-4 py-2.5 text-[#6b7280]">{deal.deal}</td>
-                <td className="px-4 py-2.5 text-right font-semibold text-[#111827]">{deal.amount}</td>
+                <td className="px-5 py-3 font-semibold text-[#111827]">{lead.name}</td>
+                <td className="px-5 py-3 text-[#374151]">{lead.company}</td>
+                <td className="px-5 py-3 text-[#6b7280]">{lead.service}</td>
+                <td className="px-5 py-3">
+                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    lead.stage === "Won" ? "bg-emerald-50 text-emerald-700" :
+                    lead.stage === "Lost" ? "bg-red-50 text-red-600" :
+                    lead.stage === "Negotiation" ? "bg-violet-50 text-violet-700" :
+                    "bg-[#884c2d]/10 text-[#884c2d]"
+                  }`}>
+                    {lead.stage}
+                  </span>
+                </td>
+                <td className="px-5 py-3 text-[#9ca3af]">{lead.lastActivity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function InvoicesTab({ orders }) {
+  const summary = {
+    total: orders.reduce((sum, o) => sum + parseCurrency(o.amount), 0),
+    paid: orders.filter(o => o.status === "Paid").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
+    pending: orders.filter(o => o.status === "Pending").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
+    failed: orders.filter(o => o.status === "Failed").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
+  };
+  const statusColor = {
+    Paid: "bg-emerald-50 text-emerald-700",
+    Pending: "bg-amber-50 text-amber-700",
+    Failed: "bg-red-50 text-red-600",
+  };
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        {[
+          { label: "Total Invoiced", value: formatINR(summary.total), iconBg: "bg-[#884c2d]", icon: IndianRupee },
+          { label: "Collected", value: formatINR(summary.paid), iconBg: "bg-emerald-600", icon: CheckCircle2 },
+          { label: "Pending", value: formatINR(summary.pending), iconBg: "bg-amber-500", icon: Clock3 },
+          { label: "Failed / Overdue", value: formatINR(summary.failed), iconBg: "bg-red-500", icon: ArrowDownRight },
+        ].map(k => (
+          <div key={k.label} className="bg-white rounded-xl border border-[#e5e7eb] p-5 flex items-start justify-between shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+            <div>
+              <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-2">{k.label}</p>
+              <p className="text-lg font-bold text-[#111827]">{k.value}</p>
+            </div>
+            <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${k.iconBg}`}>
+              <k.icon size={17} className="text-white" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#f3f4f6]">
+          <h3 className="text-sm font-bold text-[#111827]">All Orders</h3>
+        </div>
+        <table className="min-w-full">
+          <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+            <tr>
+              {["Order ID", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order, i) => (
+              <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
+                <td className="px-5 py-3 text-xs font-mono text-[#6b7280]">{order.id}</td>
+                <td className="px-5 py-3 text-sm font-semibold text-[#111827]">{order.customer}</td>
+                <td className="px-5 py-3 text-sm text-[#374151]">{order.package}</td>
+                <td className="px-5 py-3 text-sm font-bold text-[#111827]">{order.amount}</td>
+                <td className="px-5 py-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${statusColor[order.status] || "bg-gray-100 text-gray-600"}`}>
+                    {order.status}
+                  </span>
+                </td>
+                <td className="px-5 py-3 text-sm text-[#374151]">{order.date}</td>
               </tr>
             ))}
           </tbody>
@@ -231,49 +361,65 @@ const TABS = ["Overview", "CRM", "Invoices"];
 export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Overview");
+  const [orders, setOrders] = useState(() => storeGet("orders"));
+  const [leads, setLeads] = useState(() => storeGet("leads"));
+  const [projects, setProjects] = useState(() => storeGet("projects"));
+  const [deals, setDeals] = useState(() => storeGet("deals"));
+  const [companies, setCompanies] = useState(() => storeGet("companies"));
+  const [contacts, setContacts] = useState(() => storeGet("contacts"));
+
+  useEffect(() => {
+    function onUpdate(e) {
+      const t = e.detail?.type;
+      if (t === "orders") setOrders(storeGet("orders"));
+      if (t === "leads") setLeads(storeGet("leads"));
+      if (t === "projects") setProjects(storeGet("projects"));
+      if (t === "deals") setDeals(storeGet("deals"));
+      if (t === "companies") setCompanies(storeGet("companies"));
+      if (t === "contacts") setContacts(storeGet("contacts"));
+    }
+    window.addEventListener("cs-store", onUpdate);
+    return () => window.removeEventListener("cs-store", onUpdate);
+  }, []);
 
   const metrics = useMemo(() => {
-    const paidOrders = orders.filter((o) => o.status === "Paid");
+    const paidOrders = orders.filter(o => o.status === "Paid");
     const totalRevenue = paidOrders.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
-    const activeProjects = projects.filter((p) => p.status !== "Completed");
-    const totalDeals = projects.length;
+    const activeProjects = projects.filter(p => p.clientStatus !== "completed" && p.progress < 100);
+    const totalDeals = deals.length || projects.length;
     const avgDealValue = Math.round(totalRevenue / Math.max(paidOrders.length, 1));
-
     const today = new Date();
-    const timeline = activeProjects.map((p) => {
-      const due = new Date(p.dueDate);
+    const timeline = activeProjects.map(p => {
+      const due = new Date(p.dueDate || p.expectedEndDate || Date.now() + 86400000 * 30);
       return { ...p, daysLeft: Math.ceil((due - today) / 86400000) };
     });
-    const onTimeCount = timeline.filter((p) => p.daysLeft > 3 || p.progress >= 80).length;
-    const onTimeRate = Math.round((onTimeCount / Math.max(timeline.length, 1)) * 100);
-
+    const onTimeCount = timeline.filter(p => p.daysLeft > 3 || (p.progress || 0) >= 80).length;
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
       totalDeals,
-      dealValueOvertime: avgDealValue,
+      avgDealValue,
       activeProjects: activeProjects.length,
-      onTimeRate,
       paidOrders: paidOrders.length,
       totalOrders: orders.length,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
-  }, []);
+  }, [orders, projects, deals]);
 
-  const recentDeals = [
-    { client: "Cottson Clothing", deal: "Website Project", amount: "1,39,200 INR" },
-    { client: "Asterisks.Inc", deal: "Digital Product", amount: "40,100 INR" },
-    { client: "DataCircles", deal: "Branding", amount: "41,000 INR" },
-    { client: "DataCircles", deal: "Branding", amount: "41,000 INR" },
-    { client: "DataCircles", deal: "Branding", amount: "41,000 INR" },
-    { client: "Cottson Clothing", deal: "Clothing", amount: "41,500 INR" },
-  ];
-
-  const chartData = revenueData.slice(-12);
+  const chartData = useMemo(() => {
+    const months = orders.reduce((acc, order) => {
+      const date = new Date(order.date || order.createdAt || order.paidAt || Date.now());
+      const key = Number.isNaN(date.getTime()) ? "Current" : date.toLocaleDateString("en-IN", { month: "short" });
+      acc[key] = acc[key] || { month: key, revenue: 0 };
+      acc[key].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
+      return acc;
+    }, {});
+    const rows = Object.values(months);
+    return rows.length ? rows.slice(-12) : [{ month: "No data", revenue: 0 }];
+  }, [orders]);
 
   return (
     <div className="flex flex-col min-h-full">
-      {/* Tabs */}
       <div className="bg-white border-b border-[#e5e7eb] px-6">
         <div className="flex items-center gap-1">
           {TABS.map((t) => (
@@ -281,9 +427,7 @@ export default function Dashboard() {
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                tab === t
-                  ? "border-[#884c2d] text-[#884c2d]"
-                  : "border-transparent text-[#6b7280] hover:text-[#374151]"
+                tab === t ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#374151]"
               }`}
             >
               {t}
@@ -293,92 +437,99 @@ export default function Dashboard() {
       </div>
 
       <div className="flex-1 p-6 space-y-5">
-        {/* Page title */}
-        <div>
-          <h2 className="text-lg font-bold text-[#111827]">Overview</h2>
-          <p className="text-sm text-[#6b7280]">Visual summary of key lead performance metrics and your data</p>
-        </div>
-
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={12} up icon={IndianRupee} iconBg="bg-[#884c2d]" />
-          <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={12} up icon={BarChart2} iconBg="bg-[#6b7280]" />
-          <KpiCard label="Total Deals Closed" value={metrics.totalDeals} change={12} up icon={TrendingUp} iconBg="bg-[#884c2d]/80" />
-          <KpiCard label="Deal Value Overtime" value={formatCompact(metrics.dealValueOvertime)} change={12} up={false} icon={BriefcaseBusiness} iconBg="bg-[#6b7280]/80" />
-        </div>
-
-        {/* Sales Revenue Chart */}
-        <SalesRevenueChart data={chartData} />
-
-        {/* Bottom row */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          <InvoicesCard
-            totalRevenue={metrics.totalRevenue}
-            paidOrders={metrics.paidOrders}
-            totalOrders={metrics.totalOrders}
-          />
-          <EarningsCard />
-          <RecentDealsCard recentDeals={recentDeals} />
-        </div>
-
-        {/* Priority Projects */}
-        <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#111827]">Priority Projects</h3>
-            <button
-              onClick={() => navigate("/admin/projects")}
-              className="text-xs font-semibold text-[#884c2d] hover:underline"
-            >
-              View all →
-            </button>
-          </div>
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-[#fafafa] border-b border-[#f3f4f6]">
-                {["Project", "Client", "Progress", "Due", "Status"].map((h) => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {metrics.priorityProjects.map((project) => {
-                const isAtRisk = project.daysLeft <= 3 && project.progress < 80;
-                return (
-                  <tr
-                    key={project.id}
-                    onClick={() => navigate(`/admin/companies/${project.companyId}/projects/${project.id}`)}
-                    className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
-                  >
-                    <td className="px-5 py-4">
-                      <p className="text-sm font-semibold text-[#111827]">{project.name}</p>
-                      <p className="text-xs text-[#9ca3af] mt-0.5">{project.status}</p>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-[#374151]">{project.client}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-1.5 w-24 rounded-full bg-[#f3f4f6] overflow-hidden">
-                          <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${project.progress}%` }} />
-                        </div>
-                        <span className="text-xs font-semibold text-[#374151]">{project.progress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-[#374151]">
-                      {project.daysLeft <= 0 ? "Due now" : `${project.daysLeft} days`}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                        isAtRisk ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
-                      }`}>
-                        {isAtRisk ? "Needs attention" : "On track"}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {tab === "CRM" ? (
+          <>
+            <div>
+              <h2 className="text-lg font-bold text-[#111827]">CRM Overview</h2>
+              <p className="text-sm text-[#6b7280]">Lead pipeline, stage breakdown, and recent activity</p>
+            </div>
+            <CrmTab leads={leads} companies={companies} contacts={contacts} />
+          </>
+        ) : tab === "Invoices" ? (
+          <>
+            <div>
+              <h2 className="text-lg font-bold text-[#111827]">Revenue & Orders</h2>
+              <p className="text-sm text-[#6b7280]">All orders, payment status, and collected revenue</p>
+            </div>
+            <InvoicesTab orders={orders} />
+          </>
+        ) : (
+          <>
+            <div>
+              <h2 className="text-lg font-bold text-[#111827]">Overview</h2>
+              <p className="text-sm text-[#6b7280]">Visual summary of key metrics and project health</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={12} up icon={IndianRupee} iconBg="bg-[#884c2d]" />
+              <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={12} up icon={BarChart2} iconBg="bg-[#6b7280]" />
+              <KpiCard label="Active Projects" value={metrics.activeProjects} change={8} up icon={TrendingUp} iconBg="bg-[#884c2d]/80" />
+              <KpiCard label="Avg Deal Value" value={formatCompact(metrics.avgDealValue)} change={5} up={false} icon={BriefcaseBusiness} iconBg="bg-[#6b7280]/80" />
+            </div>
+            <SalesRevenueChart data={chartData} />
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+              <InvoicesCard orders={orders} />
+              <EarningsCard orders={orders} />
+              <RecentDealsCard deals={deals} />
+            </div>
+            <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+              <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#111827]">Priority Projects</h3>
+                <button onClick={() => navigate("/admin/projects")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+              </div>
+              {metrics.priorityProjects.length === 0 ? (
+                <p className="p-5 text-sm text-[#9ca3af]">No active projects.</p>
+              ) : (
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="bg-[#fafafa] border-b border-[#f3f4f6]">
+                      {["Project", "Client", "Progress", "Due", "Status"].map(h => (
+                        <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.priorityProjects.map((project) => {
+                      const isAtRisk = project.daysLeft <= 3 && (project.progress || 0) < 80;
+                      return (
+                        <tr
+                          key={project.id}
+                          onClick={() => navigate(`/admin/companies/${project.companyId}/projects/${project.id}`)}
+                          className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
+                        >
+                          <td className="px-5 py-4">
+                            <p className="text-sm font-semibold text-[#111827]">{project.name}</p>
+                            <p className="text-xs text-[#9ca3af] mt-0.5">{project.currentPhase || project.status}</p>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-[#374151]">{project.client}</td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="h-1.5 w-24 rounded-full bg-[#f3f4f6] overflow-hidden">
+                                <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${project.progress || 0}%` }} />
+                              </div>
+                              <span className="text-xs font-semibold text-[#374151]">{project.progress || 0}%</span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-sm text-[#374151]">
+                            {project.daysLeft <= 0 ? "Due now" : `${project.daysLeft}d`}
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                              isAtRisk ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
+                            }`}>
+                              {isAtRisk ? "At Risk" : "On Track"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
 }
+

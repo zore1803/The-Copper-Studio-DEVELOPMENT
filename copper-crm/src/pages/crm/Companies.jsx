@@ -5,7 +5,6 @@ import {
   Globe, MoreVertical, Plus, Save, Search, SlidersHorizontal
 } from "lucide-react";
 import { Button } from "../../components/ui";
-import { companies as fallbackCompanies } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -40,7 +39,7 @@ function DocSignedBadge({ status }) {
   );
 }
 
-function CompanyRow({ company, onEdit, onClick }) {
+function CompanyRow({ company, onEdit, onDelete, onClick }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -81,7 +80,7 @@ function CompanyRow({ company, onEdit, onClick }) {
       <td className="px-4 py-3.5">
         <DocSignedBadge status={company.status === "Active" ? "Accepted" : company.status === "Prospect" ? "Pending" : company.status} />
       </td>
-      <td className="px-4 py-3.5 text-sm text-[#374151]">Reference</td>
+      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.leadSource || "—"}</td>
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
           <button
@@ -101,7 +100,10 @@ function CompanyRow({ company, onEdit, onClick }) {
               <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
                 Move to Folder
               </button>
-              <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50">
+              <button
+                onClick={() => { setMenuOpen(false); onDelete(company); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+              >
                 Delete
               </button>
             </div>
@@ -117,7 +119,7 @@ export default function Companies() {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
   const [page, setPage] = useState(1);
-  const { records: companies, save, loading } = useCrmRecords("companies", fallbackCompanies);
+  const { records: companies, save, remove, loading } = useCrmRecords("companies");
   const { showToast } = useToast();
 
   const filtered = useMemo(() =>
@@ -131,7 +133,7 @@ export default function Companies() {
   async function saveCompany(company) {
     try {
       const isNew = !company._id;
-      await save({ ...company, id: company.id || `CO-${Date.now()}`, projects: Number(company.projects) || 0 });
+      await save({ ...company, id: company.id || `company-${Date.now()}`, projects: Number(company.projects) || 0 });
       setEditing(null);
       showToast({ title: isNew ? "Company created" : "Company updated", message: `${company.name || "Company"} saved.` });
     } catch (err) {
@@ -139,22 +141,27 @@ export default function Companies() {
     }
   }
 
+  async function deleteCompany(company) {
+    await remove(company);
+    showToast({ title: "Company deleted", message: `${company.name || "Company"} removed.` });
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Page header */}
       <div className="px-6 py-5 bg-white border-b border-[#e5e7eb]">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <h1 className="text-lg font-bold text-[#111827]">Companies</h1>
             <p className="text-sm text-[#6b7280] mt-0.5">Manage your organisation contracts</p>
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             {/* Search */}
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 w-60 focus-within:border-[#884c2d] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#884c2d]/20 transition-all">
+            <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 focus-within:border-[#884c2d] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#884c2d]/20 transition-all sm:w-80">
               <Search size={13} className="text-[#9ca3af] shrink-0" />
               <input
                 className="w-full bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
-                placeholder="Search by contact by name, industry, or status..."
+                placeholder="Search name, industry, contact, or status"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
@@ -164,10 +171,10 @@ export default function Companies() {
             </button>
             <button className="flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors">
               <Filter size={14} />
-              Hoslist
+              Filters
             </button>
             <button
-              onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", notes: "" })}
+                onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" })}
               className="flex h-9 items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 text-sm font-semibold text-white hover:bg-[#6f381a] transition-colors shadow-sm"
             >
               <Plus size={14} />
@@ -240,7 +247,8 @@ export default function Companies() {
                 key={company._id || company.id}
                 company={company}
                 onEdit={setEditing}
-                onClick={() => navigate(`/admin/companies/${company.id}`)}
+                onDelete={deleteCompany}
+                onClick={() => navigate(`/admin/companies/${company.id || company._id}`)}
               />
             ))}
           </tbody>
@@ -313,6 +321,7 @@ function CompanyModal({ company, onClose, onSave }) {
         <Field label="Status" value={form.status} onChange={set("status")} />
         <Field label="Website" value={form.website} onChange={set("website")} />
         <Field label="Address" value={form.address} onChange={set("address")} />
+        <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea
@@ -325,3 +334,7 @@ function CompanyModal({ company, onClose, onSave }) {
     </SidePanel>
   );
 }
+  async function deleteCompany(company) {
+    await remove(company);
+    showToast({ title: "Company deleted", message: `${company.name || "Company"} removed.` });
+  }

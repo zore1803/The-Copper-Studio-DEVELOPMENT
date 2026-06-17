@@ -1,18 +1,18 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  BarChart2, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight,
-  FileSignature, FileText, FolderKanban, LayoutDashboard, Layers,
-  LogOut, MessageCircle, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, Tag, UserRound, Users, Wallet, BookOpen,
+  Activity, BarChart2, Bell, Building2, CalendarClock, ChevronDown, ChevronLeft, ChevronRight,
+  CreditCard, FileSignature, FileText, FolderKanban, FolderOpen, LayoutDashboard, Layers,
+  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Send, Settings,
+  Share2, ShoppingCart, Tag, UserRound, Users, Wallet, BookOpen,
   TrendingUp
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
-import { companies, contacts, coupons, invoices, leads, orders, projects } from "../data/mockData";
+import { storeGet } from "../lib/store";
 
 const NAV_GROUPS = [
   {
-    label: "Overview",
+    label: "",
     items: [
       { icon: LayoutDashboard, to: "/admin", label: "Dashboard", end: true },
     ],
@@ -27,17 +27,20 @@ const NAV_GROUPS = [
     ],
   },
   {
-    label: "Projects",
+    label: "Project Operations",
     items: [
       { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
       { icon: Layers, to: "/admin/client-projects", label: "Client Projects" },
       { icon: LayoutDashboard, to: "/admin/kanban", label: "Kanban Board" },
+      { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
+      { icon: FileText, to: "/admin/tasks", label: "Tasks" },
     ],
   },
   {
     label: "Finance",
     items: [
       { icon: ShoppingCart, to: "/admin/orders", label: "Orders" },
+      { icon: CreditCard, to: "/admin/payments", label: "Payments" },
       { icon: ReceiptText, to: "/admin/invoices", label: "Invoices" },
       { icon: Wallet, to: "/admin/coupons", label: "Coupons" },
     ],
@@ -45,16 +48,45 @@ const NAV_GROUPS = [
   {
     label: "Services",
     items: [
-      { icon: Tag, to: "/admin/services/coupon-generator", label: "Coupon Codes" },
-      { icon: FileSignature, to: "/admin/services/proposal-generator", label: "Proposals" },
-      { icon: MessageCircle, to: "/admin/services/communications", label: "Communication" },
+      { icon: FileSignature, to: "/admin/services/proposal-generator", label: "Proposal Generator" },
+      { icon: Tag, to: "/admin/services/coupon-generator", label: "Coupon Generator" },
     ],
   },
   {
-    label: "System",
+    label: "Document Center",
+    items: [
+      { icon: Building2, to: "/admin/documents/company-folders", label: "Company Folders" },
+      { icon: FolderOpen, to: "/admin/documents/project-folders", label: "Project Folders" },
+      { icon: FileText, to: "/admin/documents/internal", label: "Internal Documents" },
+      { icon: Share2, to: "/admin/documents/client-shared", label: "Client Shared Documents" },
+    ],
+  },
+  {
+    label: "Communication",
+    items: [
+      { icon: Mail, to: "/admin/communication/email-templates", label: "Email Templates" },
+      { icon: MessageCircle, to: "/admin/communication/whatsapp-templates", label: "WhatsApp Templates" },
+      { icon: Send, to: "/admin/communication/logs", label: "Communication Logs" },
+      { icon: CalendarClock, to: "/admin/communication/scheduled", label: "Scheduled Messages" },
+      { icon: BarChart2, to: "/admin/communication/campaigns", label: "Campaigns" },
+      { icon: Activity, to: "/admin/communication/activity", label: "Activity Feed" },
+    ],
+  },
+  {
+    label: "",
     items: [
       { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
+    ],
+  },
+  {
+    label: "",
+    items: [
       { icon: BookOpen, to: "/admin/reports", label: "Reports" },
+    ],
+  },
+  {
+    label: "",
+    items: [
       { icon: Settings, to: "/admin/settings", label: "Settings" },
     ],
   },
@@ -63,6 +95,8 @@ const NAV_GROUPS = [
 const pageNames = {
   "/admin": "Dashboard",
   "/admin/analytics": "Analytics",
+  "/admin/timeline": "Timeline",
+  "/admin/payments": "Payments",
   "/admin/companies": "Companies",
   "/admin/contacts": "Contacts",
   "/admin/leads": "Leads",
@@ -78,6 +112,16 @@ const pageNames = {
   "/admin/services/coupon-generator": "Coupon Generator",
   "/admin/services/proposal-generator": "Proposal Generator",
   "/admin/services/communications": "Communication",
+  "/admin/communication/email-templates": "Email Templates",
+  "/admin/communication/whatsapp-templates": "WhatsApp Templates",
+  "/admin/communication/logs": "Communication Logs",
+  "/admin/communication/scheduled": "Scheduled Messages",
+  "/admin/communication/campaigns": "Campaigns",
+  "/admin/communication/activity": "Activity Feed",
+  "/admin/documents/company-folders": "Company Folders",
+  "/admin/documents/project-folders": "Project Folders",
+  "/admin/documents/internal": "Internal Documents",
+  "/admin/documents/client-shared": "Client Shared Documents",
   "/admin/database": "Database",
   "/admin/settings": "Settings",
 };
@@ -90,21 +134,28 @@ const searchablePages = [
   { label: "Leads", to: "/admin/leads", keywords: "leads prospects sales pipeline enquiry" },
   { label: "Deals", to: "/admin/deals", keywords: "deals opportunity pipeline value stage" },
   { label: "Projects", to: "/admin/projects", keywords: "project delivery timeline active orders" },
+  { label: "Client Projects", to: "/admin/client-projects", keywords: "client projects portal project operations" },
   { label: "Kanban Board", to: "/admin/kanban", keywords: "tasks board drag status todo progress done" },
+  { label: "Timeline", to: "/admin/timeline", keywords: "project timeline gantt schedule milestones" },
+  { label: "Tasks", to: "/admin/tasks", keywords: "tasks meetings activities reminders" },
   { label: "Orders", to: "/admin/orders", keywords: "payment portal purchase package checkout" },
+  { label: "Payments", to: "/admin/payments", keywords: "payments collection transaction gateway" },
   { label: "Invoices", to: "/admin/invoices", keywords: "billing invoice gst payment" },
+  { label: "Coupons", to: "/admin/coupons", keywords: "coupons discount codes finance" },
   { label: "Coupon Generator", to: "/admin/services/coupon-generator", keywords: "coupon code discount" },
   { label: "Proposal Generator", to: "/admin/services/proposal-generator", keywords: "proposal pdf client" },
-  { label: "Communication", to: "/admin/services/communications", keywords: "email whatsapp templates" },
+  { label: "Company Folders", to: "/admin/documents/company-folders", keywords: "documents company folders files" },
+  { label: "Project Folders", to: "/admin/documents/project-folders", keywords: "documents project folders files" },
+  { label: "Internal Documents", to: "/admin/documents/internal", keywords: "internal documents files" },
+  { label: "Client Shared Documents", to: "/admin/documents/client-shared", keywords: "client shared documents files" },
+  { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
+  { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
+  { label: "Communication Logs", to: "/admin/communication/logs", keywords: "communication logs email whatsapp history" },
+  { label: "Scheduled Messages", to: "/admin/communication/scheduled", keywords: "scheduled messages reminders automation communication" },
+  { label: "Campaigns", to: "/admin/communication/campaigns", keywords: "campaigns email marketing offers communication" },
+  { label: "Activity Feed", to: "/admin/communication/activity", keywords: "activity feed communication events" },
+  { label: "Reports", to: "/admin/reports", keywords: "reports export insights" },
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
-];
-
-const recordIndex = [
-  ...companies.map((c) => ({ type: "Company", label: c.name, sublabel: c.industry, to: `/admin/companies/${c.id}` })),
-  ...contacts.map((c) => ({ type: "Contact", label: c.name, sublabel: c.company, to: "/admin/contacts" })),
-  ...projects.map((p) => ({ type: "Project", label: p.name, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id}` })),
-  ...orders.map((o) => ({ type: "Order", label: o.id, sublabel: o.customer, to: "/admin/orders" })),
-  ...invoices.map((i) => ({ type: "Invoice", label: i.id, sublabel: i.client, to: "/admin/invoices" })),
 ];
 
 function getBreadcrumbs(pathname) {
@@ -156,11 +207,35 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [recordIndex, setRecordIndex] = useState([]);
   const searchRef = useRef(null);
 
   const name = auth.user?.name || "Admin";
   const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
   const breadcrumbs = getBreadcrumbs(location.pathname);
+
+  useEffect(() => {
+    function buildIndex() {
+      const companies = storeGet("companies");
+      const contacts = storeGet("contacts");
+      const projects = storeGet("projects");
+      const orders = storeGet("orders");
+      const invoices = storeGet("invoices");
+      const documents = storeGet("documents");
+      setRecordIndex([
+        ...companies.map((c) => ({ type: "Company", label: c.companyName || c.name, sublabel: c.industry, to: `/admin/companies/${c.id || c._id}` })),
+        ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
+        ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
+        ...orders.map((o) => ({ type: "Order", label: o.orderId || o.id || o._id, sublabel: o.company || o.customer, to: "/admin/orders" })),
+        ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
+        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
+      ].filter((item) => item.label));
+    }
+    buildIndex();
+    function onUpdate() { buildIndex(); }
+    window.addEventListener("cs-store", onUpdate);
+    return () => window.removeEventListener("cs-store", onUpdate);
+  }, []);
 
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -220,7 +295,7 @@ export default function AdminLayout() {
         <nav className="flex-1 overflow-y-auto py-3 space-y-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.label}>
-              {!collapsed && (
+              {!collapsed && group.label && (
                 <p className="px-5 mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">
                   {group.label}
                 </p>

@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, MessageSquare, CheckSquare } from "lucide-react";
 import { Avatar, Badge, Button } from "../../components/ui";
-import { companies as fallbackCompanies, projects, kanbanTasks } from "../../data/mockData";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -30,29 +29,31 @@ export default function ProjectGantt() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { records: companies } = useCrmRecords("companies", fallbackCompanies);
+  const { records: companies } = useCrmRecords("companies");
+  const { records: projects } = useCrmRecords("projects");
+  const { records: tasks } = useCrmRecords("tasks");
   const [zoom, setZoom] = useState("Week");
   const [collapsed, setCollapsed] = useState({});
   const [activeTask, setActiveTask] = useState(null);
 
-  const company = useMemo(() => companies.find((c) => String(c.id) === companyId), [companies, companyId]);
+  const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const project = useMemo(
-    () => projects.find((p) => String(p.id) === projectId && String(p.companyId) === companyId),
-    [companyId, projectId]
+    () => projects.find((p) => String(p.id || p._id) === projectId && String(p.companyId) === companyId),
+    [projects, companyId, projectId]
   );
 
   const { phases, minDate, maxDate, weeks } = useMemo(() => {
     if (!project) return { phases: [], minDate: TODAY, maxDate: TODAY, weeks: [] };
 
-    const referenceYear = parseFullDate(project.dueDate).getFullYear();
-    const allTasks = Object.entries(kanbanTasks).flatMap(([status, list]) =>
-      list.filter((task) => task.project === project.name).map((task) => {
-        const end = parseShortDate(task.deadline, referenceYear);
-        const span = Math.max(2, Math.min(task.subtasks || 2, 7));
-        const start = new Date(end.getTime() - span * DAY_MS);
-        return { ...task, status, start, end };
-      })
-    );
+    const referenceYear = parseFullDate(project.dueDate || project.expectedEndDate || new Date()).getFullYear();
+    const allTasks = tasks
+      .filter((task) => String(task.projectId) === String(project.id || project._id) || task.project === project.name)
+      .map((task) => {
+        const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseShortDate(task.deadline, referenceYear) : new Date(TODAY.getTime() + 7 * DAY_MS);
+        const span = Math.max(1, Math.min(Number(task.estimatedDays || task.subtasks || 2), 14));
+        const start = task.startDate ? parseFullDate(task.startDate) : new Date(end.getTime() - span * DAY_MS);
+        return { ...task, status: task.status || "Backlog", start, end };
+      });
 
     // Anchor the visible range to where the tasks actually are, not the
     // project's full start-to-due window (which is mostly empty of tasks).
@@ -73,7 +74,7 @@ export default function ProjectGantt() {
     });
 
     return { phases: phaseGroups, minDate: min, maxDate: max, weeks: weekCols };
-  }, [project]);
+  }, [project, tasks]);
 
   if (!company || !project) {
     return (
@@ -151,9 +152,9 @@ export default function ProjectGantt() {
                   <span className="text-sm font-bold text-[#211a17]">{group.phase}</span>
                   <span className="ml-auto text-[10px] font-bold text-[#85736c]">{group.tasks.length}</span>
                 </button>
-                {!collapsed[group.phase] && group.tasks.map((task) => (
+                    {!collapsed[group.phase] && group.tasks.map((task) => (
                   <button
-                    key={task.id}
+                    key={task.id || task._id}
                     type="button"
                     onClick={() => setActiveTask(task)}
                     className="flex h-10 w-full items-center gap-2 px-6 text-left hover:bg-white"
@@ -193,7 +194,7 @@ export default function ProjectGantt() {
                       const width = Math.max(4, toPct(task.end) - left);
                       const isDone = group.phase === "Completed";
                       return (
-                        <div key={task.id} className="relative h-10 border-b border-[#ead8d1]/40">
+                        <div key={task.id || task._id} className="relative h-10 border-b border-[#ead8d1]/40">
                           <button
                             type="button"
                             onClick={() => setActiveTask(task)}
@@ -204,8 +205,8 @@ export default function ProjectGantt() {
                                 : "border-[#ffb693]/50 bg-[#ffdbcc] text-[#6f381a]"
                             }`}
                           >
-                            <span className="truncate text-[11px] font-bold">{task.title}</span>
-                            <Avatar name={task.assignee} size="sm" />
+                            <span className="truncate text-[11px] font-bold">{task.title || task.taskName}</span>
+                            <Avatar name={task.assignee || task.assignedTo} size="sm" />
                           </button>
                         </div>
                       );
@@ -220,28 +221,28 @@ export default function ProjectGantt() {
 
       {activeTask && (
         <SidePanel
-          title={activeTask.title}
-          subtitle={`${activeTask.status} - ${activeTask.project}`}
+          title={activeTask.title || activeTask.taskName}
+          subtitle={`${activeTask.status || "Backlog"} - ${activeTask.project || project.name}`}
           onClose={() => setActiveTask(null)}
         >
           <div className="space-y-5">
             <div className="flex items-center gap-2">
               <Badge color={activeTask.priority === "High" ? "red" : activeTask.priority === "Medium" ? "orange" : "gray"}>
-                {activeTask.priority} priority
+                {activeTask.priority || "Medium"} priority
               </Badge>
               <Badge color="gray">{formatRange(activeTask.start, activeTask.end)}</Badge>
             </div>
-            <p className="text-sm leading-6 text-gray-600">{activeTask.description}</p>
+            <p className="text-sm leading-6 text-gray-600">{activeTask.description || "No task description added yet."}</p>
             <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-              <Avatar name={activeTask.assignee} />
+              <Avatar name={activeTask.assignee || activeTask.assignedTo} />
               <div>
                 <p className="text-xs font-bold text-gray-950">Assignee</p>
-                <p className="text-xs text-gray-500">{activeTask.assignee}</p>
+                <p className="text-xs text-gray-500">{activeTask.assignee || activeTask.assignedTo || "Unassigned"}</p>
               </div>
             </div>
             <div className="flex items-center gap-5 text-xs font-bold text-gray-500">
-              <span className="inline-flex items-center gap-1.5"><CheckSquare size={13} /> {activeTask.subtasks} subtasks</span>
-              <span className="inline-flex items-center gap-1.5"><MessageSquare size={13} /> {activeTask.comments} comments</span>
+              <span className="inline-flex items-center gap-1.5"><CheckSquare size={13} /> {activeTask.subtasks || 0} subtasks</span>
+              <span className="inline-flex items-center gap-1.5"><MessageSquare size={13} /> {activeTask.comments || 0} comments</span>
             </div>
             <Button className="w-full justify-center" onClick={() => navigate("/admin/kanban")}>Open in Kanban Board</Button>
           </div>

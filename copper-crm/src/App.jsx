@@ -38,7 +38,8 @@ import {
   TasksPage
 } from "./pages/admin/AdminWorkflows";
 import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
-import Communication from "./pages/admin/Communication";
+import CommunicationCenter from "./pages/admin/CommunicationCenter";
+import DocumentCenter from "./pages/admin/DocumentCenter";
 import ClientProjectsPage from "./pages/admin/ClientProjectsPage";
 
 export default function App() {
@@ -68,16 +69,28 @@ export default function App() {
               <Route path="deals" element={<DealsPage />} />
               <Route path="deals/:dealId" element={<DealDetail />} />
               <Route path="projects" element={<ProjectsList />} />
+              <Route path="timeline" element={<ProjectsList />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="payments" element={<Orders mode="payments" />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="reports" element={<ReportsPage />} />
-              <Route path="services" element={<Navigate to="/admin/services/coupon-generator" replace />} />
+              <Route path="services" element={<Navigate to="/admin/services/proposal-generator" replace />} />
               <Route path="services/coupon-generator" element={<ServicesPage />} />
               <Route path="services/proposal-generator" element={<ProposalGeneratorPage />} />
-              <Route path="services/communications" element={<Communication />} />
+              <Route path="services/communications" element={<Navigate to="/admin/communication/email-templates" replace />} />
+              <Route path="documents/company-folders" element={<DocumentCenter mode="company" />} />
+              <Route path="documents/project-folders" element={<DocumentCenter mode="project" />} />
+              <Route path="documents/internal" element={<DocumentCenter mode="internal" />} />
+              <Route path="documents/client-shared" element={<DocumentCenter mode="client" />} />
+              <Route path="communication/email-templates" element={<CommunicationCenter mode="email" />} />
+              <Route path="communication/whatsapp-templates" element={<CommunicationCenter mode="whatsapp" />} />
+              <Route path="communication/logs" element={<CommunicationCenter mode="logs" />} />
+              <Route path="communication/scheduled" element={<CommunicationCenter mode="scheduled" />} />
+              <Route path="communication/campaigns" element={<CommunicationCenter mode="campaigns" />} />
+              <Route path="communication/activity" element={<CommunicationCenter mode="logs" />} />
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />
               <Route path="database" element={<DatabaseTablesPage />} />
               <Route path="settings" element={<SettingsPage />} />

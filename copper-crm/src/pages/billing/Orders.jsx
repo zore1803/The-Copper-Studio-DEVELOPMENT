@@ -1,273 +1,168 @@
 import { useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  ArrowUpRight,
-  CalendarDays,
-  CircleDollarSign,
-  CreditCard,
-  Download,
-  Filter,
-  IndianRupee,
-  ReceiptText,
-  RefreshCcw,
-  Search,
-  ShieldCheck
-} from "lucide-react";
-import { Badge, Button, Card } from "../../components/ui";
-import { invoices, orders } from "../../data/mockData";
+import { CalendarDays, CreditCard, FileText, PackageCheck, Plus, ReceiptText, Search, WalletCards } from "lucide-react";
+import { Button } from "../../components/ui";
+import { useCrmRecords } from "../../hooks/useCrmRecords";
 
-const tabs = ["All Orders", "Paid", "Pending", "Failed"];
-
-function parseCurrency(value) {
-  return Number(String(value).replace(/[^\d.-]/g, "")) || 0;
+function money(value) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
 }
 
-function MetricCard({ icon: Icon, title, value, hint, tone = "copper" }) {
-  const tones = {
-    copper: "bg-[#f3dfd7] text-[#884c2d]",
-    green: "bg-[#dff4eb] text-[#026769]",
-    amber: "bg-[#f8ead0] text-[#99621b]",
-    rose: "bg-[#f6dddc] text-[#a23b33]",
-  };
+function parseMoney(value) {
+  return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
+}
 
+function Metric({ label, value, icon: Icon }) {
   return (
-    <Card className="p-5 shadow-[0_14px_35px_rgba(79,39,16,0.06)]">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">{title}</p>
-          <p className="mt-3 text-2xl font-semibold tracking-tight text-[#211a17]">{value}</p>
-          <p className="mt-1 text-xs text-[#6c6355]">{hint}</p>
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+          <Icon size={17} />
         </div>
-        <div className={`grid h-11 w-11 place-items-center rounded-full ${tones[tone]}`}>
-          <Icon size={18} strokeWidth={2} />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
-function statusTone(status) {
-  if (status === "Paid") return "green";
-  if (status === "Pending") return "orange";
-  return "red";
+function EmptyState({ title, text }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+        <PackageCheck size={20} />
+      </div>
+      <p className="text-sm font-semibold text-[#111827]">{title}</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">{text}</p>
+    </div>
+  );
 }
 
-export default function Orders() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [query, setQuery] = useState(location.state?.query || "");
-  const [activeTab, setActiveTab] = useState("All Orders");
+export default function Orders({ mode = "orders" }) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("All");
+  const { records: orders } = useCrmRecords("orders");
+  const { records: payments } = useCrmRecords("payments");
+  const { records: invoices } = useCrmRecords("invoices");
 
-  const metrics = useMemo(() => {
-    const totalRevenue = orders
-      .filter((order) => order.status === "Paid")
-      .reduce((sum, order) => sum + parseCurrency(order.amount), 0);
-    const paid = orders.filter((order) => order.status === "Paid").length;
-    const pendingValue = orders
-      .filter((order) => order.status === "Pending")
-      .reduce((sum, order) => sum + parseCurrency(order.amount), 0);
-    const refundCount = invoices.filter((invoice) => invoice.status === "Overdue").length;
+  const rows = mode === "payments" ? payments : orders;
+  const filtered = useMemo(() => rows.filter((row) => {
+    const rowStatus = row.status || row.paymentStatus || "Created";
+    const matchesStatus = status === "All" || rowStatus === status;
+    const haystack = `${row.orderId || row.paymentId || row.id || ""} ${row.company || ""} ${row.client || row.customer || ""} ${row.package || row.packageName || ""} ${rowStatus}`.toLowerCase();
+    return matchesStatus && haystack.includes(query.toLowerCase());
+  }), [query, rows, status]);
 
-    return {
-      totalRevenue,
-      paid,
-      pendingValue,
-      refundCount,
-    };
-  }, []);
+  const successfulPayments = payments.filter((payment) => ["Success", "Paid", "successful"].includes(payment.status));
+  const paidOrders = orders.filter((order) => ["Paid", "Success"].includes(order.status || order.paymentStatus));
+  const revenue = successfulPayments.reduce((sum, payment) => sum + parseMoney(payment.amount), 0) ||
+    paidOrders.reduce((sum, order) => sum + parseMoney(order.finalAmount || order.amount), 0);
+  const pending = orders.filter((order) => /pending/i.test(order.status || order.paymentStatus || "")).reduce((sum, order) => sum + parseMoney(order.finalAmount || order.amount), 0);
 
-  const filtered = useMemo(() => {
-    return orders.filter((order) => {
-      const matchesTab = activeTab === "All Orders" || order.status === activeTab;
-      const haystack = `${order.id} ${order.customer} ${order.package} ${order.invoice}`.toLowerCase();
-      return matchesTab && haystack.includes(query.toLowerCase());
-    });
-  }, [activeTab, query]);
+  const title = mode === "payments" ? "Payments" : "Orders";
+  const subtitle = mode === "payments"
+    ? "Actual money received, Razorpay mapping, refund state, and payment audit."
+    : "Purchase intent, coupon application, payment status, invoice handoff, and project activation.";
 
   return (
-    <div className="space-y-6">
-      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div className="min-h-full bg-[#f5f6fa] p-6">
+      <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">Finance workspace</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#211a17]">Orders & Payments</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6c6355]">
-            Track checkout activity, order collection, invoice handoff, and payment health from one clean finance dashboard.
-          </p>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">Finance</p>
+          <h1 className="mt-1 text-2xl font-bold text-[#111827]">{title}</h1>
+          <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">{subtitle}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
+            <CalendarDays size={14} className="text-[#9ca3af]" />
+            <span className="text-sm text-[#374151]">All time</span>
+          </div>
+          <Button><Plus size={14} /> New {mode === "payments" ? "Payment" : "Order"}</Button>
+        </div>
+      </div>
+
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Metric label="Total Revenue" value={money(revenue)} icon={WalletCards} />
+        <Metric label="Pending Payments" value={money(pending)} icon={CreditCard} />
+        <Metric label="Successful Payments" value={successfulPayments.length || paidOrders.length} icon={PackageCheck} />
+        <Metric label="Invoices" value={invoices.length} icon={ReceiptText} />
+      </div>
+
+      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+        <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {["All", "Created", "Pending Payment", "Paid", "Failed", "Refunded", "Cancelled", "Success"].map((item) => (
+              <button
+                key={item}
+                onClick={() => setStatus(item)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"}`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+            <Search size={14} className="text-[#9ca3af]" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${title.toLowerCase()}`} className="w-64 bg-transparent text-sm outline-none" />
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-11 items-center gap-3 rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] px-4">
-            <CalendarDays size={16} className="text-[#884c2d]" />
-            <span className="text-sm font-semibold text-[#211a17]">Last 30 days</span>
-          </div>
-          <Button variant="secondary" size="lg">
-            <Filter size={15} />
-            Filters
-          </Button>
-          <Button size="lg">
-            <Download size={15} />
-            Export CSV
-          </Button>
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          icon={IndianRupee}
-          title="Total Revenue"
-          value={new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(metrics.totalRevenue)}
-          hint="Paid collections this cycle"
-        />
-        <MetricCard
-          icon={ShieldCheck}
-          title="Successful"
-          value={metrics.paid}
-          hint="Orders captured successfully"
-          tone="green"
-        />
-        <MetricCard
-          icon={CircleDollarSign}
-          title="Pending"
-          value={new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(metrics.pendingValue)}
-          hint="Awaiting payment confirmation"
-          tone="amber"
-        />
-        <MetricCard
-          icon={RefreshCcw}
-          title="Attention"
-          value={metrics.refundCount}
-          hint="Invoices or payment issues to review"
-          tone="rose"
-        />
-      </section>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <Card className="overflow-hidden shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-          <div className="border-b border-[#ead8d1] bg-[#fff3ef] px-6 py-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap items-center gap-5">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setActiveTab(tab)}
-                    className={`border-b-2 pb-1 text-sm font-semibold transition-colors ${
-                      activeTab === tab
-                        ? "border-[#884c2d] text-[#884c2d]"
-                        : "border-transparent text-[#6c6355] hover:text-[#211a17]"
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] px-3 py-2.5">
-                <Search size={15} className="text-[#7b6f63]" />
-                <input
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search orders, clients, package, invoice..."
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#a8948b]"
-                />
-              </div>
-            </div>
-          </div>
-
+        {filtered.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-[#fffaf8]">
-                <tr className="text-left text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">
-                  {["Order ID", "Client", "Package", "Amount", "Invoice", "Status", "Date", "Action"].map((heading) => (
-                    <th key={heading} className="px-6 py-4">{heading}</th>
-                  ))}
+              <thead className="bg-[#fafafa]">
+                <tr className="text-left text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+                  {(mode === "payments"
+                    ? ["Payment ID", "Order ID", "Company", "Amount", "Method", "Gateway", "Status"]
+                    : ["Order ID", "Company", "Client", "Package", "Coupon", "Amount", "Payment", "Project"]
+                  ).map((head) => <th key={head} className="px-4 py-3">{head}</th>)}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f1e2dd] bg-[#fff8f6]">
-                {filtered.map((order) => (
-                  <tr key={order.id} className="transition-colors hover:bg-[#fff3ef]">
-                    <td className="px-6 py-4 text-xs font-mono font-semibold text-[#884c2d]">{order.id}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-9 w-9 place-items-center rounded-full bg-[#f0dfd7] text-xs font-bold text-[#884c2d]">
-                          {order.customer.split(" ").map((part) => part[0]).join("").slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-[#211a17]">{order.customer}</p>
-                          <p className="text-xs text-[#6c6355]">Checkout linked to {order.invoice}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[#4b433d]">{order.package}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-[#211a17]">{order.amount}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#f5e6e1] px-2.5 py-1 text-[11px] font-bold text-[#6c6355]">
-                        <ReceiptText size={12} />
-                        {order.invoice}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge color={statusTone(order.status)}>{order.status}</Badge>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[#6c6355]">{order.date}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        type="button"
-                        onClick={() => navigate("/admin/invoices", { state: { query: order.invoice } })}
-                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-[#884c2d] transition-colors hover:bg-[#f3dfd7]"
-                      >
-                        View Invoice
-                        <ArrowUpRight size={12} />
-                      </button>
-                    </td>
+              <tbody className="divide-y divide-[#f3f4f6]">
+                {filtered.map((row) => mode === "payments" ? (
+                  <tr key={row._id || row.id || row.paymentId} className="hover:bg-[#fafafa]">
+                    <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.paymentId || row.id || row._id}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.orderId || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.company || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(row.amount))}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.paymentMethod || row.method || "Not added"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.gateway || "Razorpay"}</td>
+                    <td className="px-4 py-3"><Status value={row.status || "Pending"} /></td>
+                  </tr>
+                ) : (
+                  <tr key={row._id || row.id || row.orderId} className="hover:bg-[#fafafa]">
+                    <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.orderId || row.id || row._id}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.company || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.client || row.customer || "Not added"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.package || row.packageName || "Not added"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.couponCode || row.couponId || "None"}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(row.finalAmount || row.amount))}</td>
+                    <td className="px-4 py-3"><Status value={row.paymentStatus || row.status || "Created"} /></td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{row.projectStatus || "Not created"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Card>
-
-        <div className="space-y-6">
-          <Card className="p-5 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-[#211a17]">Payment Health</h3>
-                <p className="mt-1 text-sm text-[#6c6355]">Quick revenue posture for the live order flow.</p>
-              </div>
-              <CreditCard size={18} className="text-[#884c2d]" />
-            </div>
-
-            <div className="mt-6 space-y-4">
-              {[
-                ["Collection rate", `${Math.round((orders.filter((order) => order.status === "Paid").length / orders.length) * 100)}%`],
-                ["Failed attempts", `${orders.filter((order) => order.status === "Failed").length}`],
-                ["GST invoices", `${invoices.length}`],
-                ["Average order value", new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(metrics.totalRevenue / Math.max(orders.length, 1))],
-              ].map(([label, value]) => (
-                <div key={label} className="flex items-center justify-between rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-3">
-                  <span className="text-sm text-[#6c6355]">{label}</span>
-                  <span className="text-sm font-semibold text-[#211a17]">{value}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-            <h3 className="text-lg font-semibold text-[#211a17]">Recent Billing Notes</h3>
-            <div className="mt-5 space-y-3">
-              {[
-                "Payment success email and portal invite should trigger right after paid checkout.",
-                "Pending orders need follow-up if they remain unpaid for more than 24 hours.",
-                "Failed payments should surface a retry path before manual intervention.",
-              ].map((note) => (
-                <div key={note} className="rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4 text-sm leading-6 text-[#4b433d]">
-                  {note}
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+        ) : (
+          <EmptyState
+            title={`No ${title.toLowerCase()} yet.`}
+            text={mode === "payments" ? "Successful Razorpay payments and refunds will appear here." : "Orders will be created from accepted proposals, coupons, and checkout/payment flows."}
+          />
+        )}
       </section>
     </div>
   );
+}
+
+function Status({ value }) {
+  const tone = /paid|success/i.test(value)
+    ? "bg-emerald-50 text-emerald-700"
+    : /fail|cancel|refund/i.test(value)
+      ? "bg-red-50 text-red-600"
+      : /pending|processing/i.test(value)
+        ? "bg-amber-50 text-amber-700"
+        : "bg-[#f3f4f6] text-[#6b7280]";
+  return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
 }
