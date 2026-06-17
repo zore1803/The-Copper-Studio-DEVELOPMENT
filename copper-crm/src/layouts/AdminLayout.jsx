@@ -4,7 +4,7 @@ import {
   Bell, Building2, ChevronRight, Command, FileSignature, FileText,
   FolderKanban, LayoutDashboard, LogOut, MessageCircle, ReceiptText,
   Search, Settings, ShieldCheck, ShoppingCart, Tag, UserRound, Users,
-  Wallet
+  Wallet, Layers
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { companies, contacts, coupons, invoices, leads, orders, projects } from "../data/mockData";
@@ -26,6 +26,7 @@ const navItems = [
   { icon: Building2, to: "/admin/companies", label: "Companies" },
   { icon: Users, to: "/admin/contacts", label: "Contacts" },
   { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
+  { icon: Layers, to: "/admin/client-projects", label: "Client Projects" },
   { icon: Wallet, to: "/admin/orders", label: "Finance", children: financeItems },
   { icon: Tag, to: "/admin/services/coupon-generator", label: "Services", children: serviceItems },
   { icon: FileSignature, to: "/admin/reports", label: "Reports" },
@@ -53,12 +54,14 @@ const pageNames = {
   "/admin/proposal-generator": "Proposal Generator",
   "/admin/database": "Database Tables",
   "/admin/settings": "Settings",
+  "/admin/client-projects": "Client Projects",
 };
 
 const customHeaderRoutes = new Set([
   "/admin",
   "/admin/contacts",
   "/admin/projects",
+  "/admin/client-projects",
   "/admin/kanban",
   "/admin/orders",
   "/admin/invoices",
