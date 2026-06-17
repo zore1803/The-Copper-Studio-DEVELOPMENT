@@ -11,6 +11,7 @@ channel = "stable-25_05"
 [userenv.shared]
 PORT = "3000"
 NODE_ENV = "development"
+MONGO_URI = "mongodb+srv://rohitzore_db_user:MAwPvTrAY0WLgRCO@thecopperstudio.xj0szqj.mongodb.net/?appName=TheCopperStudio"
 
 [workflows]
 runButton = "Project"
