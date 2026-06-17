@@ -47,6 +47,10 @@ export function AuthProvider({ children }) {
       saveSession(nextSession);
       return nextSession;
     },
+    updateUser(updatedUser) {
+      const nextSession = { ...session, user: { ...session.user, ...updatedUser } };
+      saveSession(nextSession);
+    },
     logout() {
       setSession(null);
       localStorage.removeItem(STORAGE_KEY);

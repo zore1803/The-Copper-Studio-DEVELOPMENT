@@ -6,12 +6,24 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     phone: { type: String, trim: true, default: "" },
     company: { type: String, trim: true, default: "" },
+    jobTitle: { type: String, trim: true, default: "" },
     role: { type: String, enum: ["user", "superadmin"], default: "user" },
     passwordHash: { type: String, default: "" },
     status: {
       type: String,
       enum: ["invited", "active", "disabled"],
       default: "invited"
+    },
+    preferences: {
+      language: { type: String, default: "en" },
+      timezone: { type: String, default: "Asia/Kolkata" },
+      notifications: {
+        email: { type: Boolean, default: true },
+        browser: { type: Boolean, default: false },
+        weeklyReports: { type: Boolean, default: true },
+        meetingReminders: { type: Boolean, default: true },
+        billingAlerts: { type: Boolean, default: false }
+      }
     },
     invite: {
       tokenHash: { type: String, default: "" },

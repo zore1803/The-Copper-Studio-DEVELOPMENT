@@ -22,6 +22,7 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import {
   ClientBillingPage,
   ClientDocumentsPage,
+  ClientMeetingsPage,
   ClientPurchasesPage,
   ClientSettingsPage,
   ClientSupportPage,
@@ -84,6 +85,7 @@ export default function App() {
               <Route index element={<ClientDashboard />} />
               <Route path="purchases" element={<ClientPurchasesPage />} />
               <Route path="projects" element={<ClientTimelinePage />} />
+              <Route path="meetings" element={<ClientMeetingsPage />} />
               <Route path="documents" element={<ClientDocumentsPage />} />
               <Route path="invoices" element={<ClientBillingPage />} />
               <Route path="support" element={<ClientSupportPage />} />

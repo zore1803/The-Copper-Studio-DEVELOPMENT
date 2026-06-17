@@ -4,6 +4,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { sendForgotPasswordOtpEmail } from "../services/email.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET || "replace-this-development-secret";
@@ -21,26 +22,17 @@ function publicUser(user) {
     id: user._id,
     name: user.name,
     email: user.email,
+    phone: user.phone || "",
+    company: user.company || "",
+    jobTitle: user.jobTitle || "",
     role: user.role,
-    status: user.status
+    status: user.status,
+    preferences: user.preferences || {}
   };
 }
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
-}
-
-function requireAuth(req, res, next) {
-  const header = req.get("authorization") || "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : "";
-  if (!token) return res.status(401).json({ message: "Authentication required." });
-
-  try {
-    req.auth = jwt.verify(token, jwtSecret);
-    next();
-  } catch {
-    res.status(401).json({ message: "Invalid or expired session." });
-  }
 }
 
 router.post("/login", async (req, res, next) => {

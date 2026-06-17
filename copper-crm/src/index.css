@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
 
 @tailwind base;
 @tailwind components;
@@ -32,10 +33,35 @@ body {
   --studio-copper-soft: #ffdbcc;
   --studio-copper-light: #ffb693;
   --studio-teal: #026769;
+
+  /* Copper Studio OS design tokens (from UI reference) */
+  --cs-primary: #894d0d;
+  --cs-primary-container: #a76526;
+  --cs-on-primary: #ffffff;
+  --cs-primary-fixed: #ffdcc2;
+  --cs-primary-fixed-dim: #ffb77b;
+  --cs-background: #f8f9fb;
+  --cs-surface: #f8f9fb;
+  --cs-surface-container-lowest: #ffffff;
+  --cs-surface-container-low: #f2f4f6;
+  --cs-surface-container: #edeef0;
+  --cs-surface-container-high: #e7e8ea;
+  --cs-surface-container-highest: #e1e2e4;
+  --cs-outline-variant: #d8c3b4;
+  --cs-on-surface: #191c1e;
+  --cs-on-surface-variant: #524439;
+  --cs-secondary: #555f6d;
+  --cs-error: #ba1a1a;
 }
 
 h1, h2, h3, .font-display {
   font-family: "Syne", "DM Sans", system-ui, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+  line-height: 1;
 }
 
 .studio-gradient {
@@ -61,6 +87,7 @@ h1, h2, h3, .font-display {
   letter-spacing: -0.04em;
 }
 
+/* Color remaps for legacy admin pages */
 .bg-\[\#2563EB\] { background-color: var(--studio-copper) !important; }
 .hover\:bg-blue-700:hover { background-color: #6f381a !important; }
 .text-\[\#2563EB\] { color: var(--studio-copper) !important; }
@@ -73,7 +100,6 @@ h1, h2, h3, .font-display {
 .focus\:ring-blue-50:focus, .focus-within\:ring-blue-50:focus-within { --tw-ring-color: rgba(255, 182, 147, 0.28) !important; }
 .shadow-blue-100, .shadow-blue-200 { --tw-shadow-color: rgba(136, 76, 45, 0.20) !important; }
 
-/* Reference UI layer: apply the Copper Studio OS surface system across existing pages. */
 .bg-white { background-color: var(--studio-surface) !important; }
 .bg-gray-50 { background-color: var(--studio-card-soft) !important; }
 .bg-gray-100 { background-color: var(--studio-card) !important; }
@@ -141,23 +167,62 @@ input:focus, select:focus, textarea:focus {
 }
 
 @keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes panel-in {
-  from {
-    opacity: 0;
-    transform: translateX(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
 }
+
+/* Copper Studio portal specific animations */
+@keyframes copper-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.copper-focus:focus {
+  outline: none;
+  border-color: var(--cs-primary) !important;
+  box-shadow: 0 0 0 3px rgba(137, 77, 13, 0.15) !important;
+}
+
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* CS toggle switch */
+.cs-toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.cs-toggle input { opacity: 0; width: 0; height: 0; }
+.cs-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #d1d5db;
+  border-radius: 9999px;
+  transition: 0.2s;
+}
+.cs-toggle-slider:before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.cs-toggle input:checked + .cs-toggle-slider { background: var(--cs-primary); }
+.cs-toggle input:checked + .cs-toggle-slider:before { transform: translateX(20px); }
