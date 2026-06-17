@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Building2, ChevronLeft, ChevronRight, Filter,
-  Globe, MoreVertical, Plus, Save, Search, SlidersHorizontal
+  Building2, ChevronLeft, ChevronRight, Download, Eye, Filter,
+  Globe, MoreVertical, Plus, Save, Search, SlidersHorizontal, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -39,7 +39,7 @@ function DocSignedBadge({ status }) {
   );
 }
 
-function CompanyRow({ company, onEdit, onDelete, onClick }) {
+function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -85,20 +85,29 @@ function CompanyRow({ company, onEdit, onDelete, onClick }) {
         <div className="relative">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="h-7 w-7 flex items-center justify-center rounded-lg text-[#9ca3af] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors opacity-0 group-hover:opacity-100"
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
           >
             <MoreVertical size={14} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 z-10 mt-1 w-36 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1">
+            <div className="absolute right-0 z-20 mt-1 w-44 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1">
+              <button
+                onClick={() => { setMenuOpen(false); onOpen(company); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+              >
+                <Eye size={14} /> Open workspace
+              </button>
               <button
                 onClick={() => { setMenuOpen(false); onEdit(company); }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
               >
-                Edit
+                Edit company
               </button>
-              <button className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
-                Move to Folder
+              <button
+                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("cs-open-document-center", { detail: { companyId: company.id || company._id } })); }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+              >
+                Move to folder
               </button>
               <button
                 onClick={() => { setMenuOpen(false); onDelete(company); }}
@@ -118,14 +127,22 @@ export default function Companies() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [industryFilter, setIndustryFilter] = useState("All");
   const [page, setPage] = useState(1);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
   const { showToast } = useToast();
 
+  const industries = useMemo(() => ["All", ...Array.from(new Set(companies.map((company) => company.industry).filter(Boolean)))], [companies]);
   const filtered = useMemo(() =>
-    companies.filter((c) =>
-      `${c.name} ${c.industry} ${c.contact} ${c.status}`.toLowerCase().includes(search.toLowerCase())
-    ), [companies, search]);
+    companies.filter((c) => {
+      const matchesSearch = `${c.name} ${c.industry} ${c.contact} ${c.status} ${c.gstin} ${c.leadSource}`.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "All" || c.status === statusFilter || (statusFilter === "Accepted" && c.status === "Active") || (statusFilter === "Pending" && c.status === "Prospect");
+      const matchesIndustry = industryFilter === "All" || c.industry === industryFilter;
+      return matchesSearch && matchesStatus && matchesIndustry;
+    }), [companies, industryFilter, search, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -144,6 +161,24 @@ export default function Companies() {
   async function deleteCompany(company) {
     await remove(company);
     showToast({ title: "Company deleted", message: `${company.name || "Company"} removed.` });
+  }
+
+  function openCompany(company) {
+    navigate(`/admin/companies/${company.id || company._id}`);
+  }
+
+  function exportCompanies() {
+    const headers = ["Company Name", "Industry", "GSTIN", "Status", "Lead Source", "Website"];
+    const rows = filtered.map((company) => [company.name, company.industry, company.gstin, company.status, company.leadSource, company.website]);
+    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "companies.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+    setActionsOpen(false);
   }
 
   return (
@@ -166,10 +201,22 @@ export default function Companies() {
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
             </div>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] transition-colors">
-              <MoreVertical size={15} />
-            </button>
-            <button className="flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors">
+            <div className="relative">
+              <button onClick={() => setActionsOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] transition-colors">
+                <MoreVertical size={15} />
+              </button>
+              {actionsOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                  <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                    <Download size={14} /> Export filtered CSV
+                  </button>
+                  <button onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                    <X size={14} /> Clear filters
+                  </button>
+                </div>
+              )}
+            </div>
+            <button onClick={() => setFiltersOpen((value) => !value)} className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}>
               <Filter size={14} />
               Filters
             </button>
@@ -182,6 +229,25 @@ export default function Companies() {
             </button>
           </div>
         </div>
+        {filtersOpen && (
+          <div className="mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
+            <label className="block">
+              <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
+              <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                {["All", "Accepted", "Pending", "Rejected", "Active", "Prospect"].map((status) => <option key={status}>{status}</option>)}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-[#6b7280]">Industry</span>
+              <select value={industryFilter} onChange={(event) => { setIndustryFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                {industries.map((industry) => <option key={industry}>{industry}</option>)}
+              </select>
+            </label>
+            <div className="flex items-end gap-2">
+              <Button variant="secondary" onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setPage(1); }}><X size={14} /> Reset</Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -248,7 +314,8 @@ export default function Companies() {
                 company={company}
                 onEdit={setEditing}
                 onDelete={deleteCompany}
-                onClick={() => navigate(`/admin/companies/${company.id || company._id}`)}
+                onOpen={openCompany}
+                onClick={() => openCompany(company)}
               />
             ))}
           </tbody>
@@ -334,7 +401,3 @@ function CompanyModal({ company, onClose, onSave }) {
     </SidePanel>
   );
 }
-  async function deleteCompany(company) {
-    await remove(company);
-    showToast({ title: "Company deleted", message: `${company.name || "Company"} removed.` });
-  }

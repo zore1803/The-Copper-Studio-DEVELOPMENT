@@ -231,16 +231,23 @@ export default function ProjectDetail() {
     return () => window.removeEventListener("cs-store", onUpdate);
   }, []);
 
-  const company = useMemo(
-    () => companies.find((c) => String(c.id) === companyId || String(c._id) === companyId),
-    [companies, companyId]
-  );
   const project = useMemo(
-    () => allProjects.find((p) => String(p.id || p._id) === projectId && String(p.companyId) === companyId),
-    [allProjects, companyId, projectId]
+    () => allProjects.find((p) => String(p.id || p._id) === projectId),
+    [allProjects, projectId]
+  );
+  const company = useMemo(
+    () => companies.find((c) =>
+      String(c.id) === companyId ||
+      String(c._id) === companyId ||
+      String(c.id || c._id) === String(project?.companyId) ||
+      c.name === project?.client ||
+      c.name === project?.company ||
+      c.name === project?.companyName
+    ),
+    [companies, companyId, project]
   );
 
-  if (!company || !project) {
+  if (!project) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
         <p className="text-sm font-semibold text-[#6c6355]">We couldn't find that project for this company.</p>
@@ -251,9 +258,10 @@ export default function ProjectDetail() {
 
   const phaseIndex = getPhaseIndex(project);
   const budgetPct = Math.min(100, Math.round(((project.budgetUsed || 0) / Math.max(project.budget || 1, 1)) * 100));
+  const currentCompany = company || { id: companyId, name: project.client || project.company || project.companyName || "Company" };
 
   function handleShare() {
-    navigator.clipboard?.writeText(`${window.location.origin}/admin/companies/${company.id}/projects/${project.id}`);
+    navigator.clipboard?.writeText(`${window.location.origin}/admin/companies/${currentCompany.id}/projects/${project.id || project._id}`);
     showToast({ title: "Link copied", message: "Project workspace link copied to clipboard." });
   }
 
@@ -291,7 +299,7 @@ export default function ProjectDetail() {
   return (
     <div className="space-y-6">
       <ProjectHeader
-        company={company}
+        company={currentCompany}
         project={project}
         activeTab="Timeline"
         onShare={handleShare}
@@ -410,7 +418,7 @@ export default function ProjectDetail() {
                 )}
               </div>
               {!addingNote && (
-                <Button variant="secondary" className="mt-6 w-full justify-center" onClick={() => navigate(`/admin/companies/${company.id}/projects/${project.id}/files`)}>
+                <Button variant="secondary" className="mt-6 w-full justify-center" onClick={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/files`)}>
                   Open Client Workspace
                 </Button>
               )}
@@ -476,7 +484,7 @@ export default function ProjectDetail() {
             </div>
           </Card>
 
-          <InviteCollaborators client={company.name} />
+          <InviteCollaborators client={currentCompany.name} />
         </div>
       </section>
 
