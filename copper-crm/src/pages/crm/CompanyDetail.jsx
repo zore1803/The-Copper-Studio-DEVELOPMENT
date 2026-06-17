@@ -454,6 +454,77 @@ function buildActivity(linked, company) {
     .sort((a, b) => b.sortDate - a.sortDate);
 }
 
+function addDays(value, days) {
+  const base = value ? new Date(value) : new Date();
+  if (Number.isNaN(base.getTime())) return "";
+  base.setDate(base.getDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function createDefaultTimeline(startDate) {
+  const stages = [
+    ["Requirement Gathering", 0, 4],
+    ["Design", 5, 12],
+    ["Development", 13, 28],
+    ["Testing", 29, 35],
+    ["Review", 36, 40],
+    ["Deployment", 41, 45],
+  ];
+  return stages.map(([name, startOffset, dueOffset], index) => ({
+    id: `milestone-${Date.now()}-${index}`,
+    name,
+    startDate: addDays(startDate, startOffset),
+    dueDate: addDays(startDate, dueOffset),
+    status: index === 0 ? "On Track" : "Upcoming",
+    owner: "",
+    completion: 0,
+    clientVisible: true,
+  }));
+}
+
+function createStarterTasks(project, company, timeline) {
+  return timeline.map((milestone, index) => ({
+    id: `task-${Date.now()}-${index}`,
+    taskId: `TASK-${String(index + 1).padStart(3, "0")}`,
+    title: `${milestone.name} checkpoint`,
+    taskName: `${milestone.name} checkpoint`,
+    companyId: company.id || company._id,
+    company: company.name,
+    projectId: project.id,
+    projectName: project.name,
+    project: project.id,
+    assignedTo: Array.isArray(project.assignedTeam) ? project.assignedTeam[0] || "" : "",
+    priority: project.priority || "Medium",
+    status: index === 0 ? "To Do" : "Backlog",
+    startDate: milestone.startDate,
+    dueDate: milestone.dueDate,
+    estimatedHours: "",
+    actualHours: "",
+    tags: [milestone.name, ...(project.tags || [])],
+    clientVisible: false,
+    createdAt: new Date().toISOString(),
+  }));
+}
+
+function createProjectFolders(project, company) {
+  return ["Proposals", "Contracts", "Invoices", "Design Files", "Development Files", "Deliverables", "Internal Documents", "Client Shared Documents"].map((name, index) => ({
+    id: `folder-${Date.now()}-${index}`,
+    folderId: `folder-${Date.now()}-${index}`,
+    fileName: name,
+    name,
+    type: "folder",
+    fileType: "Folder",
+    companyId: company.id || company._id,
+    company: company.name,
+    projectId: project.id,
+    projectName: project.name,
+    visibility: name.includes("Client") ? "Client Visible" : name.includes("Internal") ? "Private" : "Project Team",
+    category: name,
+    tags: [project.packageName, project.priority].filter(Boolean),
+    createdAt: new Date().toISOString(),
+  }));
+}
+
 export default function CompanyDetail() {
   const { companyId } = useParams();
   const navigate = useNavigate();
@@ -540,20 +611,48 @@ export default function CompanyDetail() {
       showToast({ type: "error", title: "Project name required", message: "Add a name before creating the project." });
       return;
     }
-    const created = await saveProject({
+    const projectId = `project-${Date.now()}`;
+    const timeline = createDefaultTimeline(form.startDate);
+    const folderRecords = createProjectFolders({ ...form, id: projectId }, company);
+    const projectPayload = {
       ...form,
-      id: `project-${Date.now()}`,
+      id: projectId,
+      projectId: form.projectCode || projectId,
       companyId: company.id || company._id,
+      companyName: company.name,
       client: company.name,
       budget: Number(form.budget) || 0,
+      packageValue: Number(form.budget) || 0,
+      discountApplied: Number(form.discount) || 0,
+      finalAmount: Number(form.finalAmount) || Math.max(Number(form.budget || 0) - Number(form.discount || 0), 0),
+      linkedInvoiceId: form.linkedInvoiceId,
       budgetUsed: 0,
       progress: Number(form.progress) || 0,
-      documents: [],
-      customFolders: [],
-      activity: [],
-    });
+      stages: timeline.map((item) => ({ name: item.name, status: item.status === "On Track" ? "in_progress" : "not_started" })),
+      timeline,
+      tasksBoard: ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"],
+      documents: folderRecords,
+      customFolders: folderRecords,
+      activity: [
+        { icon: "check", text: "Project workspace created", time: "Just now" },
+        { icon: "check", text: "Timeline initialized", time: "Just now" },
+        { icon: "check", text: "Tasks board initialized", time: "Just now" },
+        { icon: "upload", text: "Document folders initialized", time: "Just now" },
+      ],
+      history: [
+        { event: "Project Created", createdAt: new Date().toISOString() },
+        { event: "Timeline Generated", createdAt: new Date().toISOString() },
+        { event: "Tasks Created", createdAt: new Date().toISOString() },
+        { event: "Document Folders Created", createdAt: new Date().toISOString() },
+      ],
+      createdAt: new Date().toISOString(),
+    };
+    const starterTasks = createStarterTasks(projectPayload, company, timeline);
+    const created = await saveProject(projectPayload);
+    await Promise.all(starterTasks.map((task) => saveTask(task)));
+    await Promise.all(folderRecords.map((folder) => saveDocument(folder)));
     setCreatingProject(false);
-    showToast({ title: "Project created", message: `${created.name} is linked to ${company.name}.` });
+    showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
   }
 
   async function handleSaveContact(form) {
@@ -562,14 +661,23 @@ export default function CompanyDetail() {
       showToast({ type: "error", title: "Contact name required", message: "Add at least a first name or contact name." });
       return;
     }
-    await saveContact({
+    const savedContact = await saveContact({
       ...form,
       id: form.id || form._id || `contact-${Date.now()}`,
       name: form.name || fullName,
+      phone: form.phone || form.whatsapp || form.alternatePhone,
       companyId: company.id || company._id,
       company: company.name,
       companyName: company.name,
     });
+    if (form.isPrimary) {
+      await saveCompany({
+        ...company,
+        primaryContact: savedContact.name || fullName,
+        primaryContactEmail: savedContact.email,
+        contact: savedContact.name || company.contact,
+      });
+    }
     setEditingContact(null);
     showToast({ title: "Contact saved", message: `${fullName || form.name} is linked to ${company.name}.` });
   }
@@ -764,7 +872,7 @@ export default function CompanyDetail() {
         {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
       </div>
 
-      {creatingProject && <ProjectPanel company={company} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
+      {creatingProject && <ProjectPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
       {selectedInvoice && <InvoicePanel invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} onDownload={downloadInvoicePdf} onMarkPaid={handleMarkInvoicePaid} />}
