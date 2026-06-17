@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
-import { Download, FileText, Plus, ReceiptText, Search, Send, WalletCards } from "lucide-react";
+import { Download, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { useToast } from "../../components/useToast";
+import SidePanel from "../../components/SidePanel";
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -27,10 +29,57 @@ function Metric({ label, value, icon: Icon }) {
   );
 }
 
+function Field({ label, value, onChange, type = "text", options }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      {options ? (
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          {options.map((opt) => <option key={opt}>{opt}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+      )}
+    </label>
+  );
+}
+
+function InvoiceModal({ companies, onClose, onSave }) {
+  const [form, setForm] = useState({ company: "", project: "", total: "", tax: "", issueDate: "", dueDate: "", status: "Draft" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title="Generate Invoice"
+      subtitle="Create an invoice linked to a company and project."
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save Invoice</Button>
+        </div>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Company" value={form.company} onChange={set("company")} options={["", ...companies.map((c) => c.name)]} />
+        <Field label="Project" value={form.project} onChange={set("project")} />
+        <Field label="Amount" type="number" value={form.total} onChange={set("total")} />
+        <Field label="GST / Tax" type="number" value={form.tax} onChange={set("tax")} />
+        <Field label="Issue date" type="date" value={form.issueDate} onChange={set("issueDate")} />
+        <Field label="Due date" type="date" value={form.dueDate} onChange={set("dueDate")} />
+        <Field label="Status" value={form.status} onChange={set("status")} options={["Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"]} />
+      </div>
+    </SidePanel>
+  );
+}
+
 export default function Invoices() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
-  const { records: invoices } = useCrmRecords("invoices");
+  const [creating, setCreating] = useState(false);
+  const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
+  const { records: companies } = useCrmRecords("companies");
+  const { showToast } = useToast();
 
   const filtered = useMemo(() => invoices.filter((invoice) => {
     const invoiceStatus = invoice.status || "Draft";
@@ -46,6 +95,49 @@ export default function Invoices() {
     overdue: invoices.filter((invoice) => invoice.status === "Overdue").length,
   }), [invoices]);
 
+  async function handleCreate(form) {
+    const invoiceNumber = `INV-${Date.now().toString().slice(-8)}`;
+    const created = await saveInvoice({ ...form, id: `invoice-${Date.now()}`, invoiceNumber, createdAt: new Date().toISOString() });
+    setCreating(false);
+    showToast({ title: "Invoice generated", message: `${created.invoiceNumber || invoiceNumber} saved.` });
+  }
+
+  async function downloadInvoice(invoice) {
+    const { jsPDF } = await import("jspdf");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const invoiceNo = invoice.invoiceNumber || invoice.id || invoice._id;
+    doc.setFillColor(136, 76, 45);
+    doc.rect(0, 0, 595, 118, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("The Copper Studio", 48, 52);
+    doc.setFontSize(12);
+    doc.text(`Invoice ${invoiceNo}`, 48, 78);
+    doc.setTextColor(17, 24, 39);
+    doc.setFontSize(16);
+    doc.text(invoice.company || invoice.client || "Company", 48, 158);
+    doc.setFontSize(10);
+    const rows = [
+      ["Invoice Number", invoiceNo],
+      ["Company", invoice.company || invoice.client || "-"],
+      ["Project", invoice.project || "-"],
+      ["Amount", money(parseMoney(invoice.total || invoice.amount))],
+      ["GST / Tax", money(parseMoney(invoice.tax || invoice.gst))],
+      ["Status", invoice.status || "Draft"],
+      ["Issue Date", invoice.issueDate || invoice.date || "-"],
+      ["Due Date", invoice.dueDate || "-"],
+    ];
+    rows.forEach(([label, value], index) => {
+      const y = 205 + index * 28;
+      doc.setFont("helvetica", "bold");
+      doc.text(label, 48, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(String(value || "-"), 180, y);
+    });
+    doc.save(`${String(invoiceNo || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`);
+  }
+
   return (
     <div className="min-h-full bg-[#f5f6fa] p-6">
       <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -54,7 +146,7 @@ export default function Invoices() {
           <h1 className="mt-1 text-2xl font-bold text-[#111827]">Invoices</h1>
           <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">Legal billing documents, PDF generation, customer mapping, payment mapping, and activity.</p>
         </div>
-        <Button><Plus size={14} /> Generate Invoice</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Generate Invoice</Button>
       </div>
 
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -96,7 +188,7 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-sm text-[#374151]">{invoice.issueDate || invoice.date || "Not set"}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{invoice.dueDate || "Not set"}</td>
                     <td className="px-4 py-3"><Status value={invoice.status || "Draft"} /></td>
-                    <td className="px-4 py-3"><button className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
+                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -109,6 +201,8 @@ export default function Invoices() {
           </div>
         )}
       </section>
+
+      {creating && <InvoiceModal companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
     </div>
   );
 }

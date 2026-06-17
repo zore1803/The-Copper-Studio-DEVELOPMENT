@@ -1,13 +1,12 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  BellRing, Building2, Calendar, CheckCircle2, CreditCard, Edit3, Eye,
+  BellRing, Building2, Calendar, CreditCard, Edit3, Eye,
   FileText, Globe2, LayoutGrid, List, LockKeyhole, Mail, MoreHorizontal,
-  MoreVertical, Phone, Plus, Save, Search, Send,
-  Settings as SettingsIcon, SlidersHorizontal, Target,
-  Trash2, TrendingUp, UploadCloud, User, UserPlus, Workflow
+  MoreVertical, Plus, Save, Search, Send,
+  Settings as SettingsIcon, SlidersHorizontal,
+  Trash2, TrendingUp, UploadCloud, UserPlus, Workflow
 } from "lucide-react";
-import { Button, StatusBadge, Avatar } from "../../components/ui";
+import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -32,15 +31,6 @@ function Card({ children, className = "" }) {
   return <section className={`rounded-xl border border-gray-200 bg-white shadow-sm shadow-gray-100/60 ${className}`}>{children}</section>;
 }
 
-function SearchBar({ value, onChange, placeholder = "Search..." }) {
-  return (
-    <div className="flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 focus-within:border-blue-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-blue-50">
-      <Search size={14} className="text-gray-400" />
-      <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="w-full bg-transparent text-sm outline-none placeholder:text-gray-400" />
-    </div>
-  );
-}
-
 function Field({ label, value, onChange, placeholder, type = "text" }) {
   return (
     <label className="block">
@@ -53,231 +43,6 @@ function Field({ label, value, onChange, placeholder, type = "text" }) {
         className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
       />
     </label>
-  );
-}
-
-const DEAL_STAGES = ["New", "Qualified", "Proposal Sent", "Negotiation", "Won", "Lost"];
-
-function numericAmount(value) {
-  return Number(String(value ?? "").replace(/[^\d.-]/g, "")) || 0;
-}
-
-function formatAmount(value) {
-  return `Rs ${Math.round(value || 0).toLocaleString("en-IN")}`;
-}
-
-function StagePill({ status = "Accepted" }) {
-  const map = {
-    Accepted: "bg-blue-50 text-blue-600",
-    Won: "bg-green-50 text-green-600",
-    Lost: "bg-red-50 text-red-600",
-    Negotiation: "bg-yellow-50 text-yellow-600",
-    "Proposal Sent": "bg-purple-50 text-purple-600",
-    Qualified: "bg-blue-50 text-blue-600",
-    Onboarding: "bg-teal-50 text-teal-600",
-    "Need Analysis": "bg-orange-50 text-orange-600",
-  };
-  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>{status}</span>;
-}
-
-export function DealsPage() {
-  const navigate = useNavigate();
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState("list");
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState(null);
-  const { records: dealRecords, save: saveDeal } = useCrmRecords("deals");
-  const { showToast } = useToast();
-  const PAGE_SIZE = 10;
-
-  const normalizedDeals = useMemo(() => dealRecords.map((deal) => ({
-    ...deal,
-    id: deal.id || deal.dealId || deal._id,
-    name: deal.name || deal.dealName || "",
-    account: deal.account || deal.company || deal.companyName || "",
-    owner: deal.owner || deal.contact || deal.contactName || "",
-    value: deal.value ?? deal.amount ?? "",
-    stage: deal.stage || "New",
-    close: deal.close || deal.expectedCloseDate || deal.dueDate || "",
-  })), [dealRecords]);
-  const deals = normalizedDeals.filter((d) => `${d.name} ${d.account} ${d.owner} ${d.stage}`.toLowerCase().includes(query.toLowerCase()));
-  const dealMetrics = useMemo(() => {
-    const pipeline = deals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
-    const wonDeals = deals.filter((deal) => deal.stage === "Won");
-    const lostDeals = deals.filter((deal) => deal.stage === "Lost");
-    const won = wonDeals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
-    const lost = lostDeals.reduce((sum, deal) => sum + numericAmount(deal.value), 0);
-    const average = Math.round(pipeline / Math.max(deals.length, 1));
-    return [
-      { icon: Target, label: "Pipeline Summary", value: formatAmount(pipeline), hint: `${deals.length} deals` },
-      { icon: TrendingUp, label: "Deals Won", value: formatAmount(won), hint: `${wonDeals.length} won` },
-      { icon: User, label: "Average Deal Size", value: formatAmount(average), hint: "Across pipeline" },
-      { icon: FileText, label: "Deals Lost", value: formatAmount(lost), hint: `${lostDeals.length} lost` },
-    ];
-  }, [deals]);
-  const totalPages = Math.max(1, Math.ceil(deals.length / PAGE_SIZE));
-  const paginated = deals.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  async function persistDeal(deal) {
-    try {
-      const isNew = !deal._id;
-      await saveDeal({ ...deal, id: deal.id || `D-${Date.now().toString().slice(-6)}`, probability: Number(deal.probability) || 0 });
-      setSelected(null);
-      showToast({ title: isNew ? "Deal created" : "Deal updated", message: `${deal.name || "Deal"} saved successfully.` });
-    } catch (error) {
-      showToast({ type: "error", title: "Could not save deal", message: error.message });
-    }
-  }
-
-  return (
-    <div className="p-5 xl:p-6 bg-[#f9fafb] min-h-full">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Deals</h1>
-          <p className="text-sm text-gray-500">Manage your sales pipeline</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 text-xs text-gray-500">
-            <Search size={12} />
-            <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder="Search by deal name, company, or status..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
-          </div>
-          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><MoreVertical size={14} /></button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><SlidersHorizontal size={14} /></button>
-          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={14} /></button>
-          <button onClick={() => setView("kanban")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={14} /></button>
-          <button onClick={() => setSelected({ name: "", account: "", owner: "", value: "", stage: "New", probability: 50, close: "" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
-            <Plus size={14} /> Add Deal
-          </button>
-        </div>
-      </div>
-
-      <div className="mb-4 grid grid-cols-4 gap-4">
-        {dealMetrics.map(({ icon: Icon, label, value, hint }) => (
-          <div key={label} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><Icon size={18} /></div>
-            <div>
-              <p className="text-xs text-gray-400">{label}</p>
-              <p className="text-lg font-bold text-gray-900">{value}</p>
-              <p className="text-[11px] font-semibold text-gray-400">{hint}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {view === "list" ? (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px]">
-              <thead>
-                <tr className="bg-gray-50/70">
-                  {["Deal ID", "Deal Name", "Company", "Contact", "Stage", "Amount", "Due Date", "Actions"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {paginated.map((deal) => (
-                  <tr key={deal._id || deal.id} className="border-t border-gray-100 hover:bg-gray-50/60">
-                    <td className="px-4 py-3 text-xs font-mono text-gray-500">{deal.id}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">{deal.name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{deal.account}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{deal.owner}</td>
-                    <td className="px-4 py-3"><StagePill status={deal.stage} /></td>
-                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">{deal.value}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{deal.close}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => navigate(`/admin/deals/${deal._id || deal.id}`)} className="text-gray-400 hover:text-blue-500"><Eye size={15} /></button>
-                        <button onClick={() => setSelected(deal)} className="text-gray-400 hover:text-blue-500"><Edit3 size={14} /></button>
-                        <button className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {paginated.length === 0 && (
-                  <tr><td colSpan={8} className="py-12 text-center text-sm text-gray-400">No deals found</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
-            <span className="text-xs text-gray-500">Showing {Math.min((page - 1) * PAGE_SIZE + 1, deals.length)}–{Math.min(page * PAGE_SIZE, deals.length)} of {deals.length} Deals</span>
-            <div className="flex items-center gap-1">
-              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
-              ))}
-              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <div className="flex gap-4 min-w-[900px]">
-            {DEAL_STAGES.map((stage) => {
-              const stageDeals = deals.filter((d) => (d.stage || "Onboarding") === stage);
-              const isLost = stage === "Lost";
-              const isWon = stage === "Won";
-              return (
-                <div key={stage} className={`flex-1 min-w-[200px] rounded-xl border p-3 ${isLost ? "bg-red-50/40 border-red-100" : isWon ? "bg-green-50/40 border-green-100" : "bg-gray-50/60 border-gray-200"}`}>
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">{stageDeals.length}</span></span>
-                    <button className="text-gray-400"><MoreVertical size={14} /></button>
-                  </div>
-                  <div className="space-y-2">
-                    {stageDeals.map((d) => (
-                      <div key={d._id || d.id} className={`rounded-xl border bg-white p-3 shadow-sm ${isLost ? "border-red-100" : isWon ? "border-green-100" : "border-gray-200"}`}>
-                        <div className="mb-2 flex items-center justify-between">
-                          <p className={`text-base font-bold ${isLost ? "text-red-500" : isWon ? "text-green-600" : "text-gray-900"}`}>{d.value}</p>
-                          <span className="text-[11px] font-semibold text-green-500">+{d.probability}%</span>
-                        </div>
-                        <p className="text-xs font-semibold text-gray-700">{d.name}</p>
-                        <p className="text-[11px] text-gray-400">{d.id}</p>
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="flex items-center gap-1"><Avatar name={d.account} size="xs" /><span className="text-[11px] text-gray-500">{d.account}</span></div>
-                          <button><MoreVertical size={12} className="text-gray-300" /></button>
-                        </div>
-                      </div>
-                    ))}
-                    {stageDeals.length === 0 && <div className="py-6 text-center text-xs text-gray-300">No deals</div>}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {selected && <EditDealModal deal={selected} onClose={() => setSelected(null)} onSave={persistDeal} />}
-    </div>
-  );
-}
-
-function EditDealModal({ deal, onClose, onSave }) {
-  const [form, setForm] = useState(deal);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-  return (
-    <SidePanel
-      title={deal._id ? "Edit deal" : "Create deal"}
-      subtitle="Update deal owner, value, stage, probability, and closing timeline."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save deal</Button>
-        </div>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Deal name" value={form.name} onChange={set("name")} />
-        <Field label="Account" value={form.account} onChange={set("account")} />
-        <Field label="Owner" value={form.owner} onChange={set("owner")} />
-        <Field label="Value" value={form.value} onChange={set("value")} />
-        <Field label="Stage" value={form.stage} onChange={set("stage")} />
-        <Field label="Probability" type="number" value={form.probability} onChange={set("probability")} />
-        <Field label="Close date" value={form.close} onChange={set("close")} />
-      </div>
-    </SidePanel>
   );
 }
 

@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, Download,
+  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
+import {
+  AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, Globe,
   Link as LinkIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
-  Save, Search, Send, StickyNote, Target, Trash2, Users
+  Save, Search, Send, StickyNote, Target, Trash2, TrendingDown, TrendingUp, Users
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -401,6 +404,62 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function computeTrend(rows, key) {
+  if (rows.length < 2) return null;
+  const prev = rows[rows.length - 2][key];
+  const curr = rows[rows.length - 1][key];
+  if (!prev) return null;
+  const pct = Math.round(((curr - prev) / prev) * 100);
+  return { pct, up: pct >= 0 };
+}
+
+function OverviewStatCard({ label, value, icon: Icon, trend }) {
+  return (
+    <div className="flex flex-1 flex-col gap-3.5 rounded-xl border border-[#E1E4EA] bg-white p-4">
+      <div className="flex items-end gap-3.5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#E1E4EA]">
+          <Icon size={18} className="text-[#C57E5B]" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-[#525866]">{label}</p>
+          <p className="mt-0.5 text-lg font-semibold text-[#0E121B]">{value}</p>
+        </div>
+      </div>
+      {trend && (
+        <div className={`flex items-center gap-1 text-xs ${trend.up ? "text-[#00C950]" : "text-[#E82222]"}`}>
+          {trend.up ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+          <span>{Math.abs(trend.pct)}% vs last month</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SalesRevenueChart({ data }) {
+  const chartData = data.map((row) => ({ month: row.month, revenue: row.collected + row.outstanding }));
+  return (
+    <Section title="Sales Revenue">
+      <div className="h-72">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0C4FCD" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#0C4FCD" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="#E7E4E3" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "rgba(33,32,31,0.56)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 12, fill: "rgba(33,32,31,0.56)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${Math.round(v / 1000)}k`} />
+            <Tooltip formatter={(value) => formatINR(value)} />
+            <Area type="monotone" dataKey="revenue" stroke="#0C4FCD" strokeWidth={2} fill="url(#revenueFill)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </Section>
+  );
+}
+
 function buildRevenueTrend(invoices) {
   const months = {};
   invoices.forEach((invoice) => {
@@ -545,9 +604,9 @@ export default function CompanyDetail() {
   const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
-  const { records: tasks } = useCrmRecords("tasks");
+  const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: meetings } = useCrmRecords("meetings");
-  const { records: documents } = useCrmRecords("documents");
+  const { records: documents, save: saveDocument } = useCrmRecords("documents");
 
   const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const linked = useMemo(() => {
@@ -593,6 +652,9 @@ export default function CompanyDetail() {
   const activityItems = buildActivity(linked, company);
   const lastActivity = activityItems[0]?.dateLabel || "None";
   const revenueTrend = buildRevenueTrend(linked.invoices);
+  const incomeTrend = computeTrend(revenueTrend.map((row) => ({ ...row, total: row.collected + row.outstanding })), "total");
+  const revenueGeneratedTrend = computeTrend(revenueTrend, "collected");
+  const projectsCompleted = linked.projects.filter((project) => String(project.status || project.currentPhase || "").toLowerCase() === "completed").length;
   const projectPackages = ["All", ...Array.from(new Set(linked.projects.map((project) => project.packageName || project.package).filter(Boolean)))];
   const projectManagers = ["All", ...Array.from(new Set(linked.projects.map((project) => project.projectManager || project.manager).filter(Boolean)))];
   const visibleProjects = linked.projects.filter((project) => {
@@ -792,7 +854,7 @@ export default function CompanyDetail() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`whitespace-nowrap border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#374151]"}`}
+              className={`whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#1D1E22] hover:text-[#884c2d]"}`}
             >
               {tab}
             </button>
@@ -804,7 +866,13 @@ export default function CompanyDetail() {
         {activeTab === "Overview" && (
           <div className="grid gap-5 xl:grid-cols-3">
             <div className="space-y-5 xl:col-span-2">
-              <RevenueGraph data={revenueTrend} />
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <OverviewStatCard label="Total Income" value={formatINR(companyValue)} icon={Target} trend={incomeTrend} />
+                <OverviewStatCard label="Revenue Generated" value={formatINR(collected)} icon={CreditCard} trend={revenueGeneratedTrend} />
+                <OverviewStatCard label="Projects Completed" value={projectsCompleted} icon={FolderKanban} />
+                <OverviewStatCard label="Outstanding Value" value={formatINR(outstanding)} icon={ReceiptText} />
+              </div>
+              <SalesRevenueChart data={revenueTrend} />
               <Section title="Linked Projects" action={<Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>}>
                 {linked.projects.length ? <ProjectsTable projects={linked.projects} companyId={companyId} onOpen={navigate} /> : <EmptyState icon={FolderKanban} title="No linked projects yet." text="Create the first project from this company so files, invoices, and updates stay connected." action={<Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>} />}
               </Section>
@@ -889,31 +957,6 @@ function Section({ title, action, children }) {
       </div>
       <div className="p-5">{children}</div>
     </section>
-  );
-}
-
-function RevenueGraph({ data }) {
-  const max = Math.max(...data.map((item) => item.collected + item.outstanding), 1);
-  return (
-    <Section title="Revenue Trend">
-      <div className="grid gap-4">
-        <div className="flex items-center gap-4 text-xs font-semibold text-[#6b7280]">
-          <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#884c2d]" /> Collected Revenue</span>
-          <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#f59e0b]" /> Outstanding Revenue</span>
-        </div>
-        <div className="flex h-52 items-end gap-3">
-          {data.map((item) => (
-            <div key={item.month} className="flex flex-1 flex-col items-center gap-2">
-              <div className="flex h-40 w-full max-w-16 items-end gap-1">
-                <div className="w-1/2 rounded-t bg-[#884c2d]" style={{ height: `${Math.max((item.collected / max) * 100, item.collected ? 6 : 0)}%` }} />
-                <div className="w-1/2 rounded-t bg-[#f59e0b]" style={{ height: `${Math.max((item.outstanding / max) * 100, item.outstanding ? 6 : 0)}%` }} />
-              </div>
-              <span className="text-xs font-semibold text-[#6b7280]">{item.month}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </Section>
   );
 }
 

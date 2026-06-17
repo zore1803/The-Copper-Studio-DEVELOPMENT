@@ -195,96 +195,52 @@ function EarningsCard({ orders }) {
   );
 }
 
-function RecentDealsCard({ deals }) {
+function CrmTab({ companies, contacts }) {
   const navigate = useNavigate();
-  const top = deals.slice(0, 6);
+  const recentCompanies = companies.slice(0, 8);
   return (
-    <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="px-5 py-4 flex items-center justify-between border-b border-[#f3f4f6]">
-        <div>
-          <p className="text-xs text-[#6b7280] font-medium">Recent Deals</p>
-          <p className="text-base font-bold text-[#111827]">{top[0]?.name || "No deals yet"}</p>
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+        <div className="bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <p className="text-xl font-bold text-[#111827]">{companies.length}</p>
+          <p className="text-xs font-semibold text-[#6b7280] mt-1">Companies</p>
         </div>
-        <button onClick={() => navigate("/admin/deals")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+        <div className="bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <p className="text-xl font-bold text-[#111827]">{contacts.length}</p>
+          <p className="text-xs font-semibold text-[#6b7280] mt-1">Contacts</p>
+        </div>
       </div>
-      {top.length === 0 ? (
-        <p className="p-5 text-sm text-[#9ca3af]">No deals recorded yet.</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-[#f3f4f6]">
-                <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Deal</th>
-                <th className="px-4 py-2.5 text-left font-semibold text-[#6b7280]">Stage</th>
-                <th className="px-4 py-2.5 text-right font-semibold text-[#6b7280]">Value</th>
+      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#111827]">Recent Companies</h3>
+          <button onClick={() => navigate("/admin/companies")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+        </div>
+        {recentCompanies.length === 0 ? (
+          <p className="p-5 text-sm text-[#9ca3af]">No companies added yet.</p>
+        ) : (
+          <table className="min-w-full text-xs">
+            <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+              <tr>
+                {["Name", "Industry", "Status"].map(h => (
+                  <th key={h} className="px-5 py-3 text-left font-semibold text-[#6b7280] uppercase tracking-wider text-[10px]">{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {top.map((deal, i) => (
-                <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
-                  <td className="px-4 py-2.5 font-medium text-[#374151]">{deal.name || deal.client}</td>
-                  <td className="px-4 py-2.5 text-[#6b7280]">{deal.stage}</td>
-                  <td className="px-4 py-2.5 text-right font-semibold text-[#111827]">{deal.value}</td>
+              {recentCompanies.map((company) => (
+                <tr
+                  key={company.id || company._id}
+                  onClick={() => navigate(`/admin/companies/${company.id || company._id}`)}
+                  className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
+                >
+                  <td className="px-5 py-3 font-semibold text-[#111827]">{company.name}</td>
+                  <td className="px-5 py-3 text-[#374151]">{company.industry || "—"}</td>
+                  <td className="px-5 py-3 text-[#6b7280]">{company.status || "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CrmTab({ leads, companies, contacts }) {
-  const stageCounts = leads.reduce((acc, l) => {
-    acc[l.stage] = (acc[l.stage] || 0) + 1;
-    return acc;
-  }, {});
-  const stages = ["New Lead", "Contacted", "Qualified", "Proposal Sent", "Negotiation", "Won", "Lost"];
-  return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-3">
-        {stages.map(stage => (
-          <div key={stage} className="bg-white rounded-xl border border-[#e5e7eb] p-3 text-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-            <p className="text-xl font-bold text-[#111827]">{stageCounts[stage] || 0}</p>
-            <p className="text-[10px] font-semibold text-[#6b7280] mt-1 leading-tight">{stage}</p>
-          </div>
-        ))}
-      </div>
-      <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#111827]">Recent Leads</h3>
-          <span className="text-xs text-[#6b7280]">{leads.length} total</span>
-        </div>
-        <table className="min-w-full text-xs">
-          <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
-            <tr>
-              {["Name", "Company", "Service", "Stage", "Last Activity"].map(h => (
-                <th key={h} className="px-5 py-3 text-left font-semibold text-[#6b7280] uppercase tracking-wider text-[10px]">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {leads.slice(0, 8).map((lead, i) => (
-              <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
-                <td className="px-5 py-3 font-semibold text-[#111827]">{lead.name}</td>
-                <td className="px-5 py-3 text-[#374151]">{lead.company}</td>
-                <td className="px-5 py-3 text-[#6b7280]">{lead.service}</td>
-                <td className="px-5 py-3">
-                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                    lead.stage === "Won" ? "bg-emerald-50 text-emerald-700" :
-                    lead.stage === "Lost" ? "bg-red-50 text-red-600" :
-                    lead.stage === "Negotiation" ? "bg-violet-50 text-violet-700" :
-                    "bg-[#884c2d]/10 text-[#884c2d]"
-                  }`}>
-                    {lead.stage}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-[#9ca3af]">{lead.lastActivity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        )}
       </div>
     </div>
   );
@@ -362,9 +318,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Overview");
   const [orders, setOrders] = useState(() => storeGet("orders"));
-  const [leads, setLeads] = useState(() => storeGet("leads"));
   const [projects, setProjects] = useState(() => storeGet("projects"));
-  const [deals, setDeals] = useState(() => storeGet("deals"));
   const [companies, setCompanies] = useState(() => storeGet("companies"));
   const [contacts, setContacts] = useState(() => storeGet("contacts"));
 
@@ -372,9 +326,7 @@ export default function Dashboard() {
     function onUpdate(e) {
       const t = e.detail?.type;
       if (t === "orders") setOrders(storeGet("orders"));
-      if (t === "leads") setLeads(storeGet("leads"));
       if (t === "projects") setProjects(storeGet("projects"));
-      if (t === "deals") setDeals(storeGet("deals"));
       if (t === "companies") setCompanies(storeGet("companies"));
       if (t === "contacts") setContacts(storeGet("contacts"));
     }
@@ -386,8 +338,6 @@ export default function Dashboard() {
     const paidOrders = orders.filter(o => o.status === "Paid");
     const totalRevenue = paidOrders.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
     const activeProjects = projects.filter(p => p.clientStatus !== "completed" && p.progress < 100);
-    const totalDeals = deals.length || projects.length;
-    const avgDealValue = Math.round(totalRevenue / Math.max(paidOrders.length, 1));
     const today = new Date();
     const timeline = activeProjects.map(p => {
       const due = new Date(p.dueDate || p.expectedEndDate || Date.now() + 86400000 * 30);
@@ -397,14 +347,12 @@ export default function Dashboard() {
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
-      totalDeals,
-      avgDealValue,
       activeProjects: activeProjects.length,
       paidOrders: paidOrders.length,
       totalOrders: orders.length,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
-  }, [orders, projects, deals]);
+  }, [orders, projects]);
 
   const chartData = useMemo(() => {
     const months = orders.reduce((acc, order) => {
@@ -443,7 +391,7 @@ export default function Dashboard() {
               <h2 className="text-lg font-bold text-[#111827]">CRM Overview</h2>
               <p className="text-sm text-[#6b7280]">Lead pipeline, stage breakdown, and recent activity</p>
             </div>
-            <CrmTab leads={leads} companies={companies} contacts={contacts} />
+            <CrmTab companies={companies} contacts={contacts} />
           </>
         ) : tab === "Invoices" ? (
           <>
@@ -463,13 +411,12 @@ export default function Dashboard() {
               <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={12} up icon={IndianRupee} iconBg="bg-[#884c2d]" />
               <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={12} up icon={BarChart2} iconBg="bg-[#6b7280]" />
               <KpiCard label="Active Projects" value={metrics.activeProjects} change={8} up icon={TrendingUp} iconBg="bg-[#884c2d]/80" />
-              <KpiCard label="Avg Deal Value" value={formatCompact(metrics.avgDealValue)} change={5} up={false} icon={BriefcaseBusiness} iconBg="bg-[#6b7280]/80" />
+              <KpiCard label="Total Orders" value={metrics.totalOrders} change={5} up icon={BriefcaseBusiness} iconBg="bg-[#6b7280]/80" />
             </div>
             <SalesRevenueChart data={chartData} />
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
               <InvoicesCard orders={orders} />
               <EarningsCard orders={orders} />
-              <RecentDealsCard deals={deals} />
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
               <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">

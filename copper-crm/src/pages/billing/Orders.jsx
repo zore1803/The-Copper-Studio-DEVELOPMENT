@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
-import { CalendarDays, CreditCard, FileText, PackageCheck, Plus, ReceiptText, Search, WalletCards } from "lucide-react";
+import { CalendarDays, CreditCard, FileText, PackageCheck, Plus, ReceiptText, Save, Search, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { useToast } from "../../components/useToast";
+import SidePanel from "../../components/SidePanel";
 
 function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
@@ -39,12 +41,74 @@ function EmptyState({ title, text }) {
   );
 }
 
+function Field({ label, value, onChange, type = "text", options }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      {options ? (
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          {options.map((opt) => <option key={opt}>{opt}</option>)}
+        </select>
+      ) : (
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+      )}
+    </label>
+  );
+}
+
+function OrderModal({ mode, companies, onClose, onSave }) {
+  const isPayment = mode === "payments";
+  const [form, setForm] = useState(isPayment
+    ? { orderId: "", company: "", amount: "", method: "UPI", gateway: "Razorpay", status: "Success" }
+    : { company: "", client: "", package: "", couponCode: "", amount: "", paymentStatus: "Created", projectStatus: "Not created" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title={isPayment ? "New Payment" : "New Order"}
+      subtitle={isPayment ? "Record a payment received against an order." : "Create a new order to track purchase intent."}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save {isPayment ? "Payment" : "Order"}</Button>
+        </div>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        {isPayment ? (
+          <>
+            <Field label="Order ID" value={form.orderId} onChange={set("orderId")} />
+            <Field label="Company" value={form.company} onChange={set("company")} options={["", ...companies.map((c) => c.name)]} />
+            <Field label="Amount" type="number" value={form.amount} onChange={set("amount")} />
+            <Field label="Method" value={form.method} onChange={set("method")} options={["UPI", "Card", "Netbanking", "Wallet", "Bank Transfer"]} />
+            <Field label="Gateway" value={form.gateway} onChange={set("gateway")} options={["Razorpay", "Stripe", "Manual"]} />
+            <Field label="Status" value={form.status} onChange={set("status")} options={["Success", "Pending", "Failed", "Refunded"]} />
+          </>
+        ) : (
+          <>
+            <Field label="Company" value={form.company} onChange={set("company")} options={["", ...companies.map((c) => c.name)]} />
+            <Field label="Client" value={form.client} onChange={set("client")} />
+            <Field label="Package" value={form.package} onChange={set("package")} />
+            <Field label="Coupon code" value={form.couponCode} onChange={set("couponCode")} />
+            <Field label="Amount" type="number" value={form.amount} onChange={set("amount")} />
+            <Field label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={["Created", "Pending Payment", "Paid", "Failed", "Refunded", "Cancelled"]} />
+          </>
+        )}
+      </div>
+    </SidePanel>
+  );
+}
+
 export default function Orders({ mode = "orders" }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
-  const { records: orders } = useCrmRecords("orders");
-  const { records: payments } = useCrmRecords("payments");
+  const [creating, setCreating] = useState(false);
+  const { records: companies } = useCrmRecords("companies");
+  const { records: orders, save: saveOrder } = useCrmRecords("orders");
+  const { records: payments, save: savePayment } = useCrmRecords("payments");
   const { records: invoices } = useCrmRecords("invoices");
+  const { showToast } = useToast();
 
   const rows = mode === "payments" ? payments : orders;
   const filtered = useMemo(() => rows.filter((row) => {
@@ -65,6 +129,17 @@ export default function Orders({ mode = "orders" }) {
     ? "Actual money received, Razorpay mapping, refund state, and payment audit."
     : "Purchase intent, coupon application, payment status, invoice handoff, and project activation.";
 
+  async function handleCreate(form) {
+    if (mode === "payments") {
+      const created = await savePayment({ ...form, id: `payment-${Date.now()}`, paymentId: `PAY-${Date.now().toString().slice(-8)}`, createdAt: new Date().toISOString() });
+      showToast({ title: "Payment recorded", message: `${created.paymentId} saved.` });
+    } else {
+      const created = await saveOrder({ ...form, id: `order-${Date.now()}`, orderId: `ORD-${Date.now().toString().slice(-8)}`, createdAt: new Date().toISOString() });
+      showToast({ title: "Order created", message: `${created.orderId} saved.` });
+    }
+    setCreating(false);
+  }
+
   return (
     <div className="min-h-full bg-[#f5f6fa] p-6">
       <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -78,7 +153,7 @@ export default function Orders({ mode = "orders" }) {
             <CalendarDays size={14} className="text-[#9ca3af]" />
             <span className="text-sm text-[#374151]">All time</span>
           </div>
-          <Button><Plus size={14} /> New {mode === "payments" ? "Payment" : "Order"}</Button>
+          <Button onClick={() => setCreating(true)}><Plus size={14} /> New {mode === "payments" ? "Payment" : "Order"}</Button>
         </div>
       </div>
 
@@ -152,6 +227,8 @@ export default function Orders({ mode = "orders" }) {
           />
         )}
       </section>
+
+      {creating && <OrderModal mode={mode} companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
     </div>
   );
 }

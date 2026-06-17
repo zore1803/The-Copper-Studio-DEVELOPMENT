@@ -30,7 +30,7 @@ function initials(name = "") {
 
 function Pill({ label, color = "default" }) {
   const styles = {
-    default: "bg-[#eee1cf] text-[#6c6355]",
+    default: "bg-[#F1F1F5] text-[#525866]",
     green:   "bg-emerald-50 text-emerald-700",
     amber:   "bg-amber-50 text-amber-700",
     red:     "bg-red-50 text-red-700",
@@ -83,7 +83,7 @@ function Toast({ message, type = "success", onClose }) {
 
 function SectionCard({ children, className = "" }) {
   return (
-    <div className={`rounded-xl border border-[#d8c2b9] bg-[#fff8f6] shadow-sm ${className}`}>
+    <div className={`rounded-xl border border-[#E1E4EA] bg-[#FFFFFF] shadow-sm ${className}`}>
       {children}
     </div>
   );
@@ -107,7 +107,7 @@ function StageEditor({ stages, onChange }) {
   return (
     <div className="space-y-3">
       {stages.map((stage, i) => (
-        <div key={i} className="rounded-xl border border-[#d8c2b9] bg-[#f9ebe6]/60 p-4">
+        <div key={i} className="rounded-xl border border-[#E1E4EA] bg-[#FAFAFA]/60 p-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-6 h-6 rounded-full bg-[#884c2d] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
               {i + 1}
@@ -116,38 +116,38 @@ function StageEditor({ stages, onChange }) {
               value={stage.name}
               onChange={e => update(i, { name: e.target.value })}
               placeholder="Stage name (e.g. Discovery & Research)"
-              className="flex-1 rounded-lg border border-[#d8c2b9] bg-white px-3 py-1.5 text-sm font-semibold outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#ffdbcc]/60"
+              className="flex-1 rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-sm font-semibold outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#C57E5B]/60"
             />
             <select
               value={stage.status}
               onChange={e => update(i, { status: e.target.value })}
-              className="rounded-lg border border-[#d8c2b9] bg-white px-2 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d]"
+              className="rounded-lg border border-[#E1E4EA] bg-white px-2 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d]"
             >
               <option value="pending">Pending</option>
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
-            <button onClick={() => remove(i)} className="rounded-lg p-1.5 text-[#6c6355] hover:bg-red-50 hover:text-red-600 transition-colors">
+            <button onClick={() => remove(i)} className="rounded-lg p-1.5 text-[#525866] hover:bg-red-50 hover:text-red-600 transition-colors">
               <Trash2 size={13} />
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <label className="block">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Start Date</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#525866]">Start Date</span>
               <input
                 type="date"
                 value={fmt(stage.startDate)}
                 onChange={e => update(i, { startDate: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-[#d8c2b9] bg-white px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#ffdbcc]/60"
+                className="mt-1 w-full rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#C57E5B]/60"
               />
             </label>
             <label className="block">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">End Date</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#525866]">End Date</span>
               <input
                 type="date"
                 value={fmt(stage.endDate)}
                 onChange={e => update(i, { endDate: e.target.value })}
-                className="mt-1 w-full rounded-lg border border-[#d8c2b9] bg-white px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#ffdbcc]/60"
+                className="mt-1 w-full rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#C57E5B]/60"
               />
             </label>
           </div>
@@ -156,13 +156,13 @@ function StageEditor({ stages, onChange }) {
             onChange={e => update(i, { notes: e.target.value })}
             placeholder="Stage notes (visible to client)…"
             rows={2}
-            className="w-full rounded-lg border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#ffdbcc]/60"
+            className="w-full rounded-lg border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#C57E5B]/60"
           />
         </div>
       ))}
       <button
         onClick={add}
-        className="flex items-center gap-2 w-full justify-center rounded-xl border-2 border-dashed border-[#d8c2b9] py-3 text-xs font-bold text-[#884c2d] hover:border-[#884c2d] hover:bg-[#fff1ec] transition-all"
+        className="flex items-center gap-2 w-full justify-center rounded-xl border-2 border-dashed border-[#E1E4EA] py-3 text-xs font-bold text-[#884c2d] hover:border-[#884c2d] hover:bg-[#fff1ec] transition-all"
       >
         <Plus size={14} /> Add Stage
       </button>
@@ -229,24 +229,24 @@ function ProjectForm({ initial, clientId, token, onSaved, onCancel }) {
         {/* Basic Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="block sm:col-span-2">
-            <span className="text-xs font-bold text-[#6c6355]">Project Name *</span>
+            <span className="text-xs font-bold text-[#525866]">Project Name *</span>
             <input value={form.name} onChange={e => patch("name", e.target.value)} placeholder="e.g. Monolith Architectural Identity"
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Package / Service</span>
+            <span className="text-xs font-bold text-[#525866]">Package / Service</span>
             <input value={form.packageName} onChange={e => patch("packageName", e.target.value)} placeholder="e.g. Growth Studio"
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Current Phase</span>
+            <span className="text-xs font-bold text-[#525866]">Current Phase</span>
             <input value={form.currentPhase} onChange={e => patch("currentPhase", e.target.value)} placeholder="e.g. Logo Development"
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Status</span>
+            <span className="text-xs font-bold text-[#525866]">Status</span>
             <select value={form.status} onChange={e => patch("status", e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
               <option value="not_started">Not Started</option>
               <option value="in_progress">In Progress</option>
               <option value="on_hold">On Hold</option>
@@ -255,7 +255,7 @@ function ProjectForm({ initial, clientId, token, onSaved, onCancel }) {
             </select>
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Progress %</span>
+            <span className="text-xs font-bold text-[#525866]">Progress %</span>
             <div className="mt-1.5 flex items-center gap-3">
               <input type="range" min={0} max={100} step={5} value={form.progress}
                 onChange={e => patch("progress", Number(e.target.value))}
@@ -264,42 +264,42 @@ function ProjectForm({ initial, clientId, token, onSaved, onCancel }) {
             </div>
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Start Date</span>
+            <span className="text-xs font-bold text-[#525866]">Start Date</span>
             <input type="date" value={form.startDate} onChange={e => patch("startDate", e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
           </label>
           <label className="block">
-            <span className="text-xs font-bold text-[#6c6355]">Expected End Date</span>
+            <span className="text-xs font-bold text-[#525866]">Expected End Date</span>
             <input type="date" value={form.expectedEndDate} onChange={e => patch("expectedEndDate", e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+              className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
           </label>
         </div>
 
         {/* Description */}
         <label className="block">
-          <span className="text-xs font-bold text-[#6c6355]">Description (internal)</span>
+          <span className="text-xs font-bold text-[#525866]">Description (internal)</span>
           <textarea value={form.description} onChange={e => patch("description", e.target.value)}
             rows={2} placeholder="Brief internal description of this project…"
-            className="mt-1.5 w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+            className="mt-1.5 w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
         </label>
 
         {/* Admin Notes (visible to client) */}
         <label className="block">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-bold text-[#6c6355]">Notes for Client</span>
+            <span className="text-xs font-bold text-[#525866]">Notes for Client</span>
             <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-700 uppercase tracking-wide">
               <Info size={9} /> Client visible
             </span>
           </div>
           <textarea value={form.adminNotes} onChange={e => patch("adminNotes", e.target.value)}
             rows={3} placeholder="These notes are visible to the client in their portal timeline…"
-            className="w-full rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#ffdbcc]/50" />
+            className="w-full rounded-xl border border-[#E1E4EA] bg-white px-3 py-2 text-sm outline-none resize-none focus:border-[#884c2d] focus:ring-4 focus:ring-[#C57E5B]/50" />
         </label>
 
         {/* Stages */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold text-[#6c6355]">Project Stages</span>
+            <span className="text-xs font-bold text-[#525866]">Project Stages</span>
             <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-700 uppercase tracking-wide">
               <Info size={9} /> Client visible
             </span>
@@ -318,7 +318,7 @@ function ProjectForm({ initial, clientId, token, onSaved, onCancel }) {
 
         <div className="flex items-center gap-3 justify-end pt-2">
           <button type="button" onClick={onCancel}
-            className="h-9 rounded-xl border border-[#d8c2b9] bg-white px-4 text-xs font-bold text-[#6c6355] hover:bg-[#f9ebe6] transition-colors">
+            className="h-9 rounded-xl border border-[#E1E4EA] bg-white px-4 text-xs font-bold text-[#525866] hover:bg-[#FAFAFA] transition-colors">
             Cancel
           </button>
           <button type="submit" disabled={saving}
@@ -347,7 +347,7 @@ function MeetingsPanel({ meetings, token, onUpdated }) {
 
   if (meetings.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center text-[#6c6355]">
+      <div className="flex flex-col items-center justify-center py-10 text-center text-[#525866]">
         <Calendar size={32} className="mb-2 opacity-30" />
         <p className="text-sm font-semibold">No meeting requests</p>
       </div>
@@ -357,21 +357,21 @@ function MeetingsPanel({ meetings, token, onUpdated }) {
   const statusColor = { requested: "amber", confirmed: "copper", completed: "green", cancelled: "default" };
 
   return (
-    <div className="divide-y divide-[#d8c2b9]/50">
+    <div className="divide-y divide-[#E1E4EA]/50">
       {meetings.map(m => (
         <div key={m._id} className="py-4 px-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-bold text-[#211a17] truncate">{m.title}</p>
+                <p className="text-sm font-bold text-[#0E121B] truncate">{m.title}</p>
                 <Pill label={m.status} color={statusColor[m.status] || "default"} />
               </div>
-              <p className="text-xs text-[#6c6355] mt-0.5">
+              <p className="text-xs text-[#525866] mt-0.5">
                 {m.type?.replace(/_/g, " ")} ·{" "}
                 {m.preferredDate ? `Preferred: ${new Date(m.preferredDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : "No date set"}
                 {m.preferredTime ? ` at ${m.preferredTime}` : ""}
               </p>
-              {m.agenda && <p className="text-xs text-[#6c6355] mt-1 italic">"{m.agenda}"</p>}
+              {m.agenda && <p className="text-xs text-[#525866] mt-1 italic">"{m.agenda}"</p>}
             </div>
             {updatingId === m._id ? (
               <Spinner size={14} />
@@ -501,9 +501,9 @@ export default function ClientProjectsPage() {
       <Toast message={toast.msg} type={toast.type} onClose={() => setToast({ msg: "", type: "success" })} />
 
       {/* ── COL 1: Client List ── */}
-      <aside className="w-72 flex-shrink-0 flex flex-col border-r border-[#d8c2b9] bg-[#eee1cf]">
+      <aside className="w-72 flex-shrink-0 flex flex-col border-r border-[#E1E4EA] bg-[#F1F1F5]">
         <div className="px-4 pt-5 pb-3">
-          <h2 className="text-base font-bold text-[#211a17] mb-3 flex items-center gap-2">
+          <h2 className="text-base font-bold text-[#0E121B] mb-3 flex items-center gap-2">
             <Users size={16} className="text-[#884c2d]" />
             Clients
             {!clientsLoading && (
@@ -512,10 +512,10 @@ export default function ClientProjectsPage() {
               </span>
             )}
           </h2>
-          <div className="flex h-9 items-center gap-2 rounded-xl border border-[#d8c2b9] bg-white px-3 focus-within:border-[#884c2d] focus-within:ring-2 focus-within:ring-[#ffdbcc]/60">
-            <Search size={13} className="text-[#6c6355]" />
+          <div className="flex h-9 items-center gap-2 rounded-xl border border-[#E1E4EA] bg-white px-3 focus-within:border-[#884c2d] focus-within:ring-2 focus-within:ring-[#C57E5B]/60">
+            <Search size={13} className="text-[#525866]" />
             <input value={clientSearch} onChange={e => setClientSearch(e.target.value)}
-              placeholder="Search clients…" className="w-full bg-transparent text-xs outline-none placeholder:text-[#6c6355]/60" />
+              placeholder="Search clients…" className="w-full bg-transparent text-xs outline-none placeholder:text-[#525866]/60" />
           </div>
         </div>
 
@@ -524,9 +524,9 @@ export default function ClientProjectsPage() {
             <div className="flex justify-center pt-12"><Spinner /></div>
           ) : filteredClients.length === 0 ? (
             <div className="pt-12 text-center">
-              <Users size={28} className="mx-auto mb-2 text-[#6c6355]/30" />
-              <p className="text-xs font-semibold text-[#6c6355]">{clientSearch ? "No matches" : "No clients yet"}</p>
-              <p className="text-[11px] text-[#6c6355]/70 mt-1">Clients appear after paying for a package.</p>
+              <Users size={28} className="mx-auto mb-2 text-[#525866]/30" />
+              <p className="text-xs font-semibold text-[#525866]">{clientSearch ? "No matches" : "No clients yet"}</p>
+              <p className="text-[11px] text-[#525866]/70 mt-1">Clients appear after paying for a package.</p>
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -537,7 +537,7 @@ export default function ClientProjectsPage() {
                   className={`w-full rounded-xl p-3 text-left transition-all ${
                     selectedClient?._id === client._id
                       ? "bg-[#884c2d] text-white shadow-md"
-                      : "bg-white hover:bg-[#fff1ec] text-[#211a17]"
+                      : "bg-white hover:bg-[#fff1ec] text-[#0E121B]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -547,14 +547,14 @@ export default function ClientProjectsPage() {
                       {initials(client.name)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-xs font-bold truncate ${selectedClient?._id === client._id ? "text-white" : "text-[#211a17]"}`}>
+                      <p className={`text-xs font-bold truncate ${selectedClient?._id === client._id ? "text-white" : "text-[#0E121B]"}`}>
                         {client.name}
                       </p>
-                      <p className={`text-[10px] truncate ${selectedClient?._id === client._id ? "text-white/70" : "text-[#6c6355]"}`}>
+                      <p className={`text-[10px] truncate ${selectedClient?._id === client._id ? "text-white/70" : "text-[#525866]"}`}>
                         {client.company || client.email}
                       </p>
                     </div>
-                    <ChevronRight size={13} className={selectedClient?._id === client._id ? "text-white/70" : "text-[#6c6355]/50"} />
+                    <ChevronRight size={13} className={selectedClient?._id === client._id ? "text-white/70" : "text-[#525866]/50"} />
                   </div>
                 </button>
               ))}
@@ -564,21 +564,21 @@ export default function ClientProjectsPage() {
       </aside>
 
       {/* ── COL 2: Project List ── */}
-      <div className="w-72 flex-shrink-0 flex flex-col border-r border-[#d8c2b9] bg-[#f0ede4]">
+      <div className="w-72 flex-shrink-0 flex flex-col border-r border-[#E1E4EA] bg-[#F1F1F5]">
         {!selectedClient ? (
           <div className="flex flex-col items-center justify-center flex-1 text-center px-6">
-            <FolderOpen size={36} className="mb-3 text-[#6c6355]/25" />
-            <p className="text-sm font-semibold text-[#6c6355]">Select a client</p>
-            <p className="text-xs text-[#6c6355]/70 mt-1">Choose a client from the left panel to see their projects.</p>
+            <FolderOpen size={36} className="mb-3 text-[#525866]/25" />
+            <p className="text-sm font-semibold text-[#525866]">Select a client</p>
+            <p className="text-xs text-[#525866]/70 mt-1">Choose a client from the left panel to see their projects.</p>
           </div>
         ) : (
           <>
-            <div className="px-4 pt-5 pb-3 border-b border-[#d8c2b9]">
+            <div className="px-4 pt-5 pb-3 border-b border-[#E1E4EA]">
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Client</p>
-                  <h3 className="text-sm font-bold text-[#211a17] truncate">{selectedClient.name}</h3>
-                  <p className="text-xs text-[#6c6355] truncate">{selectedClient.company || selectedClient.email}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#525866]">Client</p>
+                  <h3 className="text-sm font-bold text-[#0E121B] truncate">{selectedClient.name}</h3>
+                  <p className="text-xs text-[#525866] truncate">{selectedClient.company || selectedClient.email}</p>
                 </div>
                 <button
                   onClick={() => { setSelectedProject(null); setEditMode("create"); setRightTab("timeline"); }}
@@ -594,8 +594,8 @@ export default function ClientProjectsPage() {
                 <div className="flex justify-center pt-12"><Spinner /></div>
               ) : clientProjects.length === 0 ? (
                 <div className="flex flex-col items-center pt-12 text-center">
-                  <FolderOpen size={28} className="mb-2 text-[#6c6355]/30" />
-                  <p className="text-xs font-semibold text-[#6c6355]">No projects yet</p>
+                  <FolderOpen size={28} className="mb-2 text-[#525866]/30" />
+                  <p className="text-xs font-semibold text-[#525866]">No projects yet</p>
                   <button
                     onClick={() => { setSelectedProject(null); setEditMode("create"); }}
                     className="mt-3 flex items-center gap-1 text-xs font-bold text-[#884c2d] hover:underline"
@@ -615,16 +615,16 @@ export default function ClientProjectsPage() {
                         className={`w-full rounded-xl border p-3.5 text-left transition-all ${
                           isSelected
                             ? "border-[#884c2d] bg-[#fff1ec] shadow-sm"
-                            : "border-[#d8c2b9] bg-white hover:border-[#884c2d]/40"
+                            : "border-[#E1E4EA] bg-white hover:border-[#884c2d]/40"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <p className="text-xs font-bold text-[#211a17] leading-tight">{p.name}</p>
+                          <p className="text-xs font-bold text-[#0E121B] leading-tight">{p.name}</p>
                           <Pill label={s.label} color={s.color} />
                         </div>
-                        <p className="text-[11px] text-[#6c6355] mb-2">{p.packageName || "No package"}</p>
+                        <p className="text-[11px] text-[#525866] mb-2">{p.packageName || "No package"}</p>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-[#d8c2b9] overflow-hidden">
+                          <div className="flex-1 h-1.5 rounded-full bg-[#E1E4EA] overflow-hidden">
                             <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${p.progress || 0}%` }} />
                           </div>
                           <span className="text-[10px] font-bold text-[#884c2d]">{p.progress || 0}%</span>
@@ -640,14 +640,14 @@ export default function ClientProjectsPage() {
       </div>
 
       {/* ── COL 3: Project Detail / Form ── */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#f0ede4]">
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#F1F1F5]">
         {!selectedClient ? (
           <div className="flex flex-col items-center justify-center flex-1 text-center px-10">
             <div className="w-16 h-16 rounded-2xl bg-[#884c2d]/10 flex items-center justify-center mb-4">
               <FolderOpen size={30} className="text-[#884c2d]" />
             </div>
-            <h2 className="text-xl font-bold text-[#211a17] mb-2">Client Projects Panel</h2>
-            <p className="text-sm text-[#6c6355] max-w-md">
+            <h2 className="text-xl font-bold text-[#0E121B] mb-2">Client Projects Panel</h2>
+            <p className="text-sm text-[#525866] max-w-md">
               Select a client to view their projects, create new ones, and update project stages. All changes sync instantly to the client portal.
             </p>
           </div>
@@ -656,14 +656,14 @@ export default function ClientProjectsPage() {
           <div className="flex-1 overflow-y-auto p-6">
             <div className="max-w-2xl mx-auto">
               <div className="flex items-center gap-3 mb-5">
-                <button onClick={() => setEditMode(false)} className="p-2 rounded-xl border border-[#d8c2b9] bg-white hover:bg-[#fff1ec] transition-colors">
-                  <X size={14} className="text-[#6c6355]" />
+                <button onClick={() => setEditMode(false)} className="p-2 rounded-xl border border-[#E1E4EA] bg-white hover:bg-[#fff1ec] transition-colors">
+                  <X size={14} className="text-[#525866]" />
                 </button>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#6c6355]">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#525866]">
                     {editMode === "edit" ? "Edit Project" : "New Project"} · {selectedClient.name}
                   </p>
-                  <h2 className="text-lg font-bold text-[#211a17]">
+                  <h2 className="text-lg font-bold text-[#0E121B]">
                     {editMode === "edit" ? selectedProject?.name : "Create Project"}
                   </h2>
                 </div>
@@ -683,14 +683,14 @@ export default function ClientProjectsPage() {
           /* ── Project Detail ── */
           <div className="flex-1 overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-[#f0ede4]/90 backdrop-blur border-b border-[#d8c2b9] px-6 py-4">
+            <div className="sticky top-0 z-10 bg-[#F1F1F5]/90 backdrop-blur border-b border-[#E1E4EA] px-6 py-4">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <h2 className="text-lg font-bold text-[#211a17] truncate">{selectedProject.name}</h2>
+                    <h2 className="text-lg font-bold text-[#0E121B] truncate">{selectedProject.name}</h2>
                     <Pill {...statusPill(selectedProject.status)} />
                   </div>
-                  <p className="text-xs text-[#6c6355]">
+                  <p className="text-xs text-[#525866]">
                     {selectedProject.packageName || "No package"} · {selectedClient.name}
                     {selectedProject.expectedEndDate && ` · Due ${fmtDisplay(selectedProject.expectedEndDate)}`}
                   </p>
@@ -698,7 +698,7 @@ export default function ClientProjectsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => setEditMode("edit")}
-                    className="flex h-8 items-center gap-1.5 rounded-xl border border-[#d8c2b9] bg-white px-3 text-xs font-bold text-[#884c2d] hover:bg-[#fff1ec] transition-colors"
+                    className="flex h-8 items-center gap-1.5 rounded-xl border border-[#E1E4EA] bg-white px-3 text-xs font-bold text-[#884c2d] hover:bg-[#fff1ec] transition-colors"
                   >
                     <Edit3 size={12} /> Edit
                   </button>
@@ -714,7 +714,7 @@ export default function ClientProjectsPage() {
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-1 mt-3 border-b border-[#d8c2b9]">
+              <div className="flex gap-1 mt-3 border-b border-[#E1E4EA]">
                 {[
                   { key: "timeline", label: "Timeline & Stages" },
                   { key: "meetings", label: `Meetings ${clientMeetings.length ? `(${clientMeetings.length})` : ""}` },
@@ -723,7 +723,7 @@ export default function ClientProjectsPage() {
                     className={`pb-2.5 px-1 mr-4 text-xs font-bold border-b-2 transition-all ${
                       rightTab === tab.key
                         ? "border-[#884c2d] text-[#884c2d]"
-                        : "border-transparent text-[#6c6355] hover:text-[#211a17]"
+                        : "border-transparent text-[#525866] hover:text-[#0E121B]"
                     }`}>
                     {tab.label}
                   </button>
@@ -736,7 +736,7 @@ export default function ClientProjectsPage() {
                 <>
                   {/* Overview */}
                   <SectionCard className="p-5">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#6c6355] mb-4">Project Overview</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#525866] mb-4">Project Overview</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       {[
                         { label: "Progress", value: `${selectedProject.progress || 0}%` },
@@ -745,13 +745,13 @@ export default function ClientProjectsPage() {
                         { label: "Expected End", value: fmtDisplay(selectedProject.expectedEndDate) },
                       ].map(r => (
                         <div key={r.label}>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">{r.label}</p>
-                          <p className="text-sm font-bold text-[#211a17] mt-0.5 truncate">{r.value}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#525866]">{r.label}</p>
+                          <p className="text-sm font-bold text-[#0E121B] mt-0.5 truncate">{r.value}</p>
                         </div>
                       ))}
                     </div>
                     <div className="flex items-center gap-3 mt-2">
-                      <div className="flex-1 h-3 rounded-full bg-[#d8c2b9] overflow-hidden">
+                      <div className="flex-1 h-3 rounded-full bg-[#E1E4EA] overflow-hidden">
                         <div className="h-full rounded-full bg-[#884c2d] transition-all duration-700"
                           style={{ width: `${selectedProject.progress || 0}%` }} />
                       </div>
@@ -763,31 +763,31 @@ export default function ClientProjectsPage() {
                   {selectedProject.adminNotes && (
                     <SectionCard className="p-5">
                       <div className="flex items-center gap-2 mb-3">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#6c6355]">Notes for Client</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#525866]">Notes for Client</h3>
                         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-700 uppercase">Visible</span>
                       </div>
-                      <p className="text-sm text-[#211a17] leading-relaxed">{selectedProject.adminNotes}</p>
+                      <p className="text-sm text-[#0E121B] leading-relaxed">{selectedProject.adminNotes}</p>
                     </SectionCard>
                   )}
 
                   {/* Stages */}
                   <SectionCard>
-                    <div className="px-5 py-4 border-b border-[#d8c2b9] flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#6c6355]">
+                    <div className="px-5 py-4 border-b border-[#E1E4EA] flex items-center justify-between">
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-[#525866]">
                         Stages ({selectedProject.stages?.length || 0})
                       </h3>
                       <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-700 uppercase">Client visible</span>
                     </div>
                     {!selectedProject.stages?.length ? (
                       <div className="flex flex-col items-center py-8 text-center px-6">
-                        <p className="text-xs text-[#6c6355]">No stages defined. Click Edit to add stages.</p>
+                        <p className="text-xs text-[#525866]">No stages defined. Click Edit to add stages.</p>
                         <button onClick={() => setEditMode("edit")}
                           className="mt-3 flex items-center gap-1 text-xs font-bold text-[#884c2d] hover:underline">
                           <Plus size={12} /> Add Stages
                         </button>
                       </div>
                     ) : (
-                      <div className="divide-y divide-[#d8c2b9]/40">
+                      <div className="divide-y divide-[#E1E4EA]/40">
                         {selectedProject.stages.map((stage, i) => {
                           const sp = stagePill(stage.status);
                           return (
@@ -795,25 +795,25 @@ export default function ClientProjectsPage() {
                               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 ${
                                 stage.status === "completed" ? "bg-emerald-100 text-emerald-700" :
                                 stage.status === "in_progress" ? "bg-[#fff1ec] text-[#884c2d]" :
-                                "bg-[#eee1cf] text-[#6c6355]"
+                                "bg-[#F1F1F5] text-[#525866]"
                               }`}>
                                 {stage.status === "completed" ? <Check size={14} /> : i + 1}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1">
-                                  <p className="text-sm font-bold text-[#211a17]">{stage.name}</p>
+                                  <p className="text-sm font-bold text-[#0E121B]">{stage.name}</p>
                                   <Pill label={sp.label} color={sp.color} />
                                 </div>
-                                {stage.notes && <p className="text-xs text-[#6c6355] mt-1">{stage.notes}</p>}
+                                {stage.notes && <p className="text-xs text-[#525866] mt-1">{stage.notes}</p>}
                                 {(stage.startDate || stage.endDate) && (
                                   <div className="flex items-center gap-3 mt-1.5">
                                     {stage.startDate && (
-                                      <span className="flex items-center gap-1 text-[11px] text-[#6c6355]">
+                                      <span className="flex items-center gap-1 text-[11px] text-[#525866]">
                                         <Calendar size={11} /> {fmtDisplay(stage.startDate)}
                                       </span>
                                     )}
                                     {stage.endDate && (
-                                      <span className="flex items-center gap-1 text-[11px] text-[#6c6355]">
+                                      <span className="flex items-center gap-1 text-[11px] text-[#525866]">
                                         → {fmtDisplay(stage.endDate)}
                                       </span>
                                     )}
@@ -831,9 +831,9 @@ export default function ClientProjectsPage() {
 
               {rightTab === "meetings" && (
                 <SectionCard>
-                  <div className="px-5 py-4 border-b border-[#d8c2b9]">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#6c6355]">Meeting Requests</h3>
-                    <p className="text-xs text-[#6c6355]/70 mt-0.5">Approve or cancel client meeting requests from here.</p>
+                  <div className="px-5 py-4 border-b border-[#E1E4EA]">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#525866]">Meeting Requests</h3>
+                    <p className="text-xs text-[#525866]/70 mt-0.5">Approve or cancel client meeting requests from here.</p>
                   </div>
                   <MeetingsPanel
                     meetings={clientMeetings}
@@ -850,8 +850,8 @@ export default function ClientProjectsPage() {
             <div className="w-14 h-14 rounded-2xl bg-[#884c2d]/10 flex items-center justify-center mb-3">
               <FolderOpen size={26} className="text-[#884c2d]" />
             </div>
-            <p className="text-sm font-semibold text-[#211a17] mb-1">Select or create a project</p>
-            <p className="text-xs text-[#6c6355]">Pick a project from the list or create a new one.</p>
+            <p className="text-sm font-semibold text-[#0E121B] mb-1">Select or create a project</p>
+            <p className="text-xs text-[#525866]">Pick a project from the list or create a new one.</p>
             {selectedClient && (
               <button onClick={() => setEditMode("create")}
                 className="mt-4 flex items-center gap-2 rounded-xl bg-[#884c2d] px-4 py-2 text-xs font-bold text-white hover:bg-[#6f381a] transition-colors">

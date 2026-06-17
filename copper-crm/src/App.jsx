@@ -10,11 +10,9 @@ import Companies from "./pages/crm/Companies";
 import CompanyDetail from "./pages/crm/CompanyDetail";
 import Contacts from "./pages/crm/Contacts";
 import ContactDetail from "./pages/crm/ContactDetail";
-import DealDetail from "./pages/crm/DealDetail";
-import Leads from "./pages/crm/Leads";
 import ProjectsList from "./pages/projects/ProjectsList";
 import ProjectDetail from "./pages/projects/ProjectDetail";
-import ProjectGantt from "./pages/projects/ProjectGantt";
+import ProjectTimeline from "./pages/projects/ProjectTimeline";
 import ProjectFiles from "./pages/projects/ProjectFiles";
 import KanbanBoard from "./pages/projects/KanbanBoard";
 import Orders from "./pages/billing/Orders";
@@ -32,7 +30,6 @@ import {
 } from "./pages/client/ClientPages";
 import { ForgotPasswordPage, LoginPage, SetPasswordPage } from "./pages/auth/AuthPages";
 import {
-  DealsPage,
   ReportsPage,
   SettingsPage,
   TasksPage
@@ -61,18 +58,14 @@ export default function App() {
               <Route path="companies" element={<Companies />} />
               <Route path="companies/:companyId" element={<CompanyDetail />} />
               <Route path="companies/:companyId/projects/:projectId" element={<ProjectDetail />} />
-              <Route path="companies/:companyId/projects/:projectId/tasks" element={<ProjectGantt />} />
+              <Route path="companies/:companyId/projects/:projectId/tasks" element={<ProjectTimeline />} />
               <Route path="companies/:companyId/projects/:projectId/files" element={<ProjectFiles />} />
               <Route path="contacts" element={<Contacts />} />
               <Route path="contacts/:contactId" element={<ContactDetail />} />
-              <Route path="leads" element={<Leads />} />
-              <Route path="deals" element={<DealsPage />} />
-              <Route path="deals/:dealId" element={<DealDetail />} />
               <Route path="projects" element={<ProjectsList />} />
               <Route path="timeline" element={<ProjectsList />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />
-              <Route path="orders" element={<Orders />} />
               <Route path="payments" element={<Orders mode="payments" />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="coupons" element={<Coupons />} />
@@ -90,7 +83,6 @@ export default function App() {
               <Route path="communication/logs" element={<CommunicationCenter mode="logs" />} />
               <Route path="communication/scheduled" element={<CommunicationCenter mode="scheduled" />} />
               <Route path="communication/campaigns" element={<CommunicationCenter mode="campaigns" />} />
-              <Route path="communication/activity" element={<CommunicationCenter mode="logs" />} />
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />
               <Route path="database" element={<DatabaseTablesPage />} />
               <Route path="settings" element={<SettingsPage />} />

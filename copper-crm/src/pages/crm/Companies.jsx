@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Building2, ChevronLeft, ChevronRight, Download, Eye, Filter,
-  Globe, MoreVertical, Plus, Save, Search, SlidersHorizontal, X
+  Building2, ChevronLeft, ChevronRight, Download, Eye, Filter, FolderPlus,
+  Folder as FolderIcon, Globe, Grid2x2, List, MoreVertical, Plus, Save, Search,
+  SlidersHorizontal, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -10,6 +11,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 
 const PAGE_SIZE = 10;
+const DEFAULT_FOLDERS = ["Key Accounts", "New Prospects", "Renewals Due", "High Value"];
 
 function Field({ label, value, onChange, placeholder = "", type = "text" }) {
   return (
@@ -123,17 +125,50 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
   );
 }
 
+function FolderCard({ folder, count, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
+        active ? "border-[#C57E5B] bg-[#fff8f6]" : "border-[#E1E4EA] bg-white hover:bg-[#fafafa]"
+      }`}
+    >
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#C57E5B] text-[#C57E5B]" : "border-[#E1E4EA] text-[#525866]"}`}>
+        <FolderIcon size={18} />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
+        <p className="text-xs text-[#525866] mt-0.5">{count} companies</p>
+      </div>
+    </button>
+  );
+}
+
 export default function Companies() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(() => (location.state?.openCreate
+    ? { name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" }
+    : null));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [industryFilter, setIndustryFilter] = useState("All");
   const [page, setPage] = useState(1);
+  const [view, setView] = useState("table");
+  const [folders, setFolders] = useState(DEFAULT_FOLDERS);
+  const [folderSearch, setFolderSearch] = useState("");
+  const [activeFolder, setActiveFolder] = useState(null);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const industries = useMemo(() => ["All", ...Array.from(new Set(companies.map((company) => company.industry).filter(Boolean)))], [companies]);
   const filtered = useMemo(() =>
@@ -146,6 +181,21 @@ export default function Companies() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const visibleFolders = useMemo(
+    () => folders.filter((f) => f.toLowerCase().includes(folderSearch.toLowerCase())),
+    [folders, folderSearch]
+  );
+
+  function folderCount(index) {
+    if (companies.length === 0 || folders.length === 0) return 0;
+    return companies.filter((_, i) => i % folders.length === index).length;
+  }
+
+  function addFolder() {
+    const name = window.prompt("New folder name");
+    if (name && name.trim()) setFolders((prev) => [...prev, name.trim()]);
+  }
 
   async function saveCompany(company) {
     try {
@@ -182,181 +232,261 @@ export default function Companies() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Page header */}
-      <div className="px-6 py-5 bg-white border-b border-[#e5e7eb]">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-[#111827]">Companies</h1>
-            <p className="text-sm text-[#6b7280] mt-0.5">Manage your organisation contracts</p>
+    <div className="flex flex-col h-full bg-white">
+      {/* Sub-header */}
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contracts</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Search */}
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+            <input
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+              placeholder="Search by name, industry, or status…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            {/* Search */}
-            <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 focus-within:border-[#884c2d] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#884c2d]/20 transition-all sm:w-80">
-              <Search size={13} className="text-[#9ca3af] shrink-0" />
-              <input
-                className="w-full bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
-                placeholder="Search name, industry, contact, or status"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              />
-            </div>
-            <div className="relative">
-              <button onClick={() => setActionsOpen((value) => !value)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] transition-colors">
-                <MoreVertical size={15} />
-              </button>
-              {actionsOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                  <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
-                    <Download size={14} /> Export filtered CSV
-                  </button>
-                  <button onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
-                    <X size={14} /> Clear filters
-                  </button>
-                </div>
-              )}
-            </div>
-            <button onClick={() => setFiltersOpen((value) => !value)} className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm font-medium transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}>
-              <Filter size={14} />
-              Filters
+          <div className="relative">
+            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
+              <MoreVertical size={16} />
             </button>
-            <button
-                onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" })}
-              className="flex h-9 items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 text-sm font-semibold text-white hover:bg-[#6f381a] transition-colors shadow-sm"
-            >
-              <Plus size={14} />
-              Add Company
-            </button>
+            {actionsOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                  <Download size={14} /> Export filtered CSV
+                </button>
+                <button onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                  <X size={14} /> Clear filters
+                </button>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setFiltersOpen((value) => !value)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+          >
+            <Filter size={16} />
+          </button>
+          {/* View toggle */}
+          <button
+            onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
+            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#F1F1F5]"}`}
+          >
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
+              <Grid2x2 size={16} className={view === "hotlist" ? "text-[#C57E5B]" : "text-[#1F2937]"} />
+              <span className={view === "hotlist" ? "text-[#C57E5B]" : "text-[#1F2937]"}>Hotlist</span>
+            </span>
+          </button>
+          <button
+            onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" })}
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
+          >
+            <Plus size={16} />
+            Add Company
+          </button>
+        </div>
+      </div>
+
+      {filtersOpen && (
+        <div className="mx-6 mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
+            <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              {["All", "Accepted", "Pending", "Rejected", "Active", "Prospect"].map((status) => <option key={status}>{status}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">Industry</span>
+            <select value={industryFilter} onChange={(event) => { setIndustryFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              {industries.map((industry) => <option key={industry}>{industry}</option>)}
+            </select>
+          </label>
+          <div className="flex items-end gap-2">
+            <Button variant="secondary" onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setPage(1); }}><X size={14} /> Reset</Button>
           </div>
         </div>
-        {filtersOpen && (
-          <div className="mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
-            <label className="block">
-              <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
-              <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-                {["All", "Accepted", "Pending", "Rejected", "Active", "Prospect"].map((status) => <option key={status}>{status}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-[#6b7280]">Industry</span>
-              <select value={industryFilter} onChange={(event) => { setIndustryFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-                {industries.map((industry) => <option key={industry}>{industry}</option>)}
-              </select>
-            </label>
-            <div className="flex items-end gap-2">
-              <Button variant="secondary" onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setPage(1); }}><X size={14} /> Reset</Button>
+      )}
+
+      {/* Body */}
+      <div className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
+        {view === "table" ? (
+          <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
+            <div className="overflow-auto">
+              <table className="min-w-full">
+                <thead className="bg-[#F5F7FA] border-b border-[#E1E4EA]">
+                  <tr>
+                    <th className="px-3 py-3 w-12">
+                      <input type="checkbox" className="rounded border-[#d1d5db] accent-[#884c2d]" />
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        <Building2 size={13} />
+                        Company Name
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        <SlidersHorizontal size={13} />
+                        Industry
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        Location
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        <Globe size={13} />
+                        Website
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        GSTIN
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        Document Signed
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        Lead Source
+                      </div>
+                    </th>
+                    <th className="px-3 py-3 w-10" />
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6b7280]">Loading companies…</td>
+                    </tr>
+                  ) : paginated.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6b7280]">No companies found.</td>
+                    </tr>
+                  ) : paginated.map((company) => (
+                    <CompanyRow
+                      key={company._id || company.id}
+                      company={company}
+                      onEdit={setEditing}
+                      onDelete={deleteCompany}
+                      onOpen={openCompany}
+                      onClick={() => openCompany(company)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+              <p className="text-sm text-[#6b7280]">
+                Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
+                <span className="font-semibold text-[#111827]">{filtered.length}</span> Companies
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                      p === page
+                        ? "bg-[#884c2d] text-white"
+                        : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {/* Company Hotlists panel */}
+            <div className="flex flex-col gap-4 rounded-lg border border-[#E1E4EA] bg-white p-6 shadow-[0_4px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-base font-medium text-[#0E121B]">Company Hotlists</p>
+                <p className="text-xs text-[#525866] mt-0.5">Organise your companies into custom folders</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+                  <Search size={15} className="text-[#1F2937]/50 shrink-0" />
+                  <input
+                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1F2937]/50"
+                    placeholder="Search by companies by name, industry, or location…"
+                    value={folderSearch}
+                    onChange={(e) => setFolderSearch(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={addFolder}
+                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#C57E5B] px-3.5 text-xs font-medium text-white hover:bg-[#b06a48] transition-colors"
+                >
+                  <FolderPlus size={15} />
+                  New Folder
+                </button>
+              </div>
+            </div>
+
+            {/* Density / count row */}
+            <div className="flex items-center justify-between px-1">
+              <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
+              <div className="flex items-center gap-1.5">
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors">
+                  <List size={16} className="opacity-50" />
+                </button>
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C57E5B] text-white">
+                  1
+                </button>
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors">
+                  2
+                </button>
+                <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Folder grid */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {visibleFolders.map((folder) => (
+                <FolderCard
+                  key={folder}
+                  folder={folder}
+                  count={folderCount(folders.indexOf(folder))}
+                  active={activeFolder === folder}
+                  onClick={() => setActiveFolder((f) => (f === folder ? null : folder))}
+                />
+              ))}
+              {visibleFolders.length === 0 && (
+                <p className="col-span-full text-center text-sm text-[#6b7280] py-12">No folders found.</p>
+              )}
             </div>
           </div>
         )}
-      </div>
-
-      {/* Table */}
-      <div className="flex-1 overflow-auto">
-        <table className="min-w-full">
-          <thead className="sticky top-0 bg-white border-b border-[#e5e7eb] z-10">
-            <tr>
-              <th className="px-4 py-3 w-10">
-                <input type="checkbox" className="rounded border-[#d1d5db] accent-[#884c2d]" />
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  <Building2 size={12} />
-                  Company Name
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  <SlidersHorizontal size={12} />
-                  Industry
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  Location
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  <Globe size={12} />
-                  Website
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  GSTIN
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  Document Signed
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#6b7280] uppercase tracking-wider">
-                  Lead Source
-                </div>
-              </th>
-              <th className="px-4 py-3 w-10" />
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {loading ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6b7280]">Loading companies…</td>
-              </tr>
-            ) : paginated.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6b7280]">No companies found.</td>
-              </tr>
-            ) : paginated.map((company) => (
-              <CompanyRow
-                key={company._id || company.id}
-                company={company}
-                onEdit={setEditing}
-                onDelete={deleteCompany}
-                onOpen={openCompany}
-                onClick={() => openCompany(company)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between px-6 py-3.5 bg-white border-t border-[#e5e7eb]">
-        <p className="text-sm text-[#6b7280]">
-          Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
-          <span className="font-semibold text-[#111827]">{filtered.length}</span> Companies
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft size={14} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                p === page
-                  ? "bg-[#884c2d] text-white"
-                  : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight size={14} />
-          </button>
-        </div>
       </div>
 
       {editing && <CompanyModal company={editing} onClose={() => setEditing(null)} onSave={saveCompany} />}

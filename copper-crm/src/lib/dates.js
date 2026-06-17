@@ -1,5 +1,12 @@
-export const TODAY = new Date();
 export const DAY_MS = 1000 * 60 * 60 * 24;
+
+// Always returns the real current date (midnight, local time) — never a
+// stale snapshot captured once at module load.
+export function today() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
 
 const MONTHS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
 

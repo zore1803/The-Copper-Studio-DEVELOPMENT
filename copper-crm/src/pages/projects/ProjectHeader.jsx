@@ -19,22 +19,18 @@ const priorityPill = {
 };
 
 function tabsFor(company, project) {
-  const base = `/admin/companies/${company.id}/projects/${project.id}`;
+  const base = `/admin/companies/${company.id || company._id}/projects/${project.id || project._id}`;
   return [
-    { label: "Overview", to: null },
-    { label: "Timeline", to: base },
-    { label: "Tasks", to: `${base}/tasks` },
-    { label: "Invoices", to: null },
+    { label: "Overview", to: base },
+    { label: "Timeline", to: `${base}/tasks` },
     { label: "Files", to: `${base}/files` },
-    { label: "Internal Notes", to: null },
-    { label: "Client Notes", to: null },
-    { label: "History", to: null },
   ];
 }
 
 export default function ProjectHeader({ company, project, activeTab, onShare, onNewTask }) {
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
   const tabs = tabsFor(company, project);
+  const team = project.team || project.assignedTeam || [];
 
   return (
     <>
@@ -43,29 +39,31 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
           <Breadcrumb
             items={[
               { label: "Companies", to: "/admin/companies" },
-              { label: company.name, to: `/admin/companies/${company.id}` },
-              { label: "Projects", to: `/admin/companies/${company.id}` },
+              { label: company.name, to: `/admin/companies/${company.id || company._id}` },
+              { label: "Projects", to: `/admin/companies/${company.id || company._id}` },
               { label: project.name, to: null },
             ]}
           />
-          <h2 className="font-display text-3xl font-semibold tracking-tight text-[#211a17]">{project.name}</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-[#0E121B]">{project.name}</h2>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <Badge color={statusColor[project.status] || "gray"}>{project.status}</Badge>
             <Badge color={pill.color}>
               <pill.icon size={12} className="mr-1 inline" />{pill.label}
             </Badge>
-            <div className="ml-1 flex -space-x-2">
-              {project.team.slice(0, 3).map((member, index) => (
-                <div key={index} className="rounded-full ring-2 ring-[#fff8f6]">
-                  <Avatar name={member} size="sm" />
-                </div>
-              ))}
-              {project.team.length > 3 && (
-                <div className="grid h-7 w-7 place-items-center rounded-full bg-[#6c6355] text-[10px] font-bold text-white ring-2 ring-[#fff8f6]">
-                  +{project.team.length - 3}
-                </div>
-              )}
-            </div>
+            {team.length > 0 && (
+              <div className="ml-1 flex -space-x-2">
+                {team.slice(0, 3).map((member, index) => (
+                  <div key={index} className="rounded-full ring-2 ring-white">
+                    <Avatar name={member} size="sm" />
+                  </div>
+                ))}
+                {team.length > 3 && (
+                  <div className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
+                    +{team.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -74,24 +72,18 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
         </div>
       </section>
 
-      <div className="flex gap-7 overflow-x-auto border-b border-[#d8c2b9]">
-        {tabs.map((tab) =>
-          tab.to ? (
-            <Link
-              key={tab.label}
-              to={tab.to}
-              className={`whitespace-nowrap pb-3 text-xs font-bold ${
-                tab.label === activeTab ? "border-b-2 border-[#884c2d] text-[#884c2d]" : "text-[#6c6355] hover:text-[#211a17]"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ) : (
-            <button key={tab.label} type="button" className="whitespace-nowrap pb-3 text-xs font-bold text-[#6c6355] hover:text-[#211a17]">
-              {tab.label}
-            </button>
-          )
-        )}
+      <div className="flex gap-7 overflow-x-auto border-b border-[#E1E4EA]">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.label}
+            to={tab.to}
+            className={`whitespace-nowrap pb-3 text-xs font-bold ${
+              tab.label === activeTab ? "border-b-2 border-[#C57E5B] text-[#C57E5B]" : "text-[#525866] hover:text-[#111827]"
+            }`}
+          >
+            {tab.label}
+          </Link>
+        ))}
       </div>
     </>
   );

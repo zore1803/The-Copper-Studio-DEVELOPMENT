@@ -5,7 +5,7 @@ import {
   Paperclip, UploadCloud, CheckCircle2, MessageSquare, Send, Calendar,
   Settings2, Save, ChevronDown,
 } from "lucide-react";
-import { Button, Card } from "../../components/ui";
+import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import { storeGet, saveProject } from "../../lib/store";
@@ -53,12 +53,12 @@ function formatINR(value) {
 function MetaRow({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center gap-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#ede0db] text-[#884c2d]">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#F1F1F5] text-[#884c2d]">
         <Icon size={17} />
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wide text-[#7b6f63]">{label}</p>
-        <p className="text-sm font-bold text-[#211a17]">{value || "—"}</p>
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+        <p className="text-sm font-bold text-[#0E121B]">{value || "—"}</p>
       </div>
     </div>
   );
@@ -249,8 +249,8 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
-        <p className="text-sm font-semibold text-[#6c6355]">We couldn't find that project for this company.</p>
+      <div className="rounded-2xl border border-[#E1E4EA] bg-[#FFFFFF] p-10 text-center">
+        <p className="text-sm font-semibold text-[#525866]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
     );
@@ -301,29 +301,24 @@ export default function ProjectDetail() {
       <ProjectHeader
         company={currentCompany}
         project={project}
-        activeTab="Timeline"
+        activeTab="Overview"
         onShare={handleShare}
-        onNewTask={() => navigate("/admin/kanban")}
-        actions={
-          <Button size="sm" onClick={() => setManaging(true)}>
-            <Settings2 size={14} /> Manage Project
-          </Button>
-        }
+        onNewTask={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/tasks`)}
       />
 
       <section className="grid grid-cols-12 gap-5">
         <div className="col-span-12 space-y-5 lg:col-span-7 xl:col-span-8">
-          <Card className="p-5 sm:p-7 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          <div className="rounded-2xl border border-[#E1E4EA] bg-white p-5 sm:p-7 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
             <div className="mb-8 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="font-display text-lg font-semibold text-[#211a17]">Phase Roadmap</h3>
+              <h3 className="font-display text-lg font-semibold text-[#0E121B]">Phase Roadmap</h3>
               <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold text-[#6c6355]">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-[#525866]">
                   <span className="h-2 w-2 rounded-full bg-[#884c2d]" />
                   Current: {PHASES[phaseIndex]?.label || project.currentPhase}
                 </span>
                 <button
                   onClick={() => setManaging(true)}
-                  className="flex items-center gap-1.5 rounded-lg border border-[#d8c2b9] bg-white px-2.5 py-1 text-xs font-semibold text-[#6c6355] hover:bg-[#fff8f6] transition-colors"
+                  className="flex items-center gap-1.5 rounded-lg border border-[#E1E4EA] bg-white px-2.5 py-1 text-xs font-semibold text-[#525866] hover:bg-[#FFFFFF] transition-colors"
                 >
                   <Settings2 size={11} /> Update
                 </button>
@@ -342,54 +337,54 @@ export default function ProjectDetail() {
                       <div className={`relative flex ${PHASE_NODE_SIZE} items-center justify-center`}>
                         {isCurrent ? (
                           <>
-                            <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full border-4 border-[#884c2d] bg-[#fff8f6] text-xs font-extrabold text-[#884c2d]`}>
+                            <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full border-4 border-[#884c2d] bg-[#FFFFFF] text-xs font-extrabold text-[#884c2d]`}>
                               {project.progress}%
                             </div>
-                            <div className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full border-2 border-[#fff8f6] bg-[#026769]">
+                            <div className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full border-2 border-[#FFFFFF] bg-[#0085FF]">
                               <Zap size={11} className="text-white" />
                             </div>
                           </>
                         ) : (
-                          <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full ${isDone ? "bg-[#884c2d] text-white shadow-lg shadow-[#884c2d]/25" : "bg-[#ede0db] text-[#6c6355]"}`}>
+                          <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full ${isDone ? "bg-[#884c2d] text-white shadow-lg shadow-[#884c2d]/25" : "bg-[#F1F1F5] text-[#525866]"}`}>
                             <Icon size={20} />
                           </div>
                         )}
                       </div>
                       <div>
-                        <p className={`text-xs sm:text-sm font-bold ${isCurrent ? "text-[#884c2d]" : "text-[#211a17]"}`}>{phase.label}</p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${isCurrent ? "text-[#026769]" : "text-[#6c6355]"}`}>
+                        <p className={`text-xs sm:text-sm font-bold ${isCurrent ? "text-[#884c2d]" : "text-[#0E121B]"}`}>{phase.label}</p>
+                        <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${isCurrent ? "text-[#0085FF]" : "text-[#525866]"}`}>
                           {isDone ? "Completed" : isCurrent ? "Current" : "Upcoming"}
                         </p>
                       </div>
                     </div>
                     {!isLast && (
                       <div className={`flex ${PHASE_NODE_HEIGHT} min-w-[16px] flex-1 items-center`}>
-                        <div className={`h-[2px] w-full ${index < phaseIndex ? "bg-[#884c2d]" : "bg-[#ede0db]"}`} />
+                        <div className={`h-[2px] w-full ${index < phaseIndex ? "bg-[#884c2d]" : "bg-[#F1F1F5]"}`} />
                       </div>
                     )}
                   </Fragment>
                 );
               })}
             </div>
-          </Card>
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Card className="relative overflow-hidden p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+            <div className="rounded-2xl border border-[#E1E4EA] bg-white relative overflow-hidden p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
               <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#884c2d]">Critical Focus</p>
-              <p className="text-sm text-[#6c6355]">View and manage tasks from the Kanban board. Open a task to set priority and assign team members.</p>
+              <p className="text-sm text-[#525866]">View and manage this project's tasks as a Kanban board or Gantt timeline. Open a task to set priority and assign team members.</p>
               <button
                 type="button"
-                onClick={() => navigate("/admin/kanban")}
+                onClick={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/tasks`)}
                 className="mt-4 text-xs font-bold text-[#884c2d] hover:underline"
               >
-                Open Kanban →
+                Open Project Timeline →
               </button>
-            </Card>
+            </div>
 
-            <div className="flex flex-col justify-between rounded-2xl border border-[#d8c2b9] bg-[#f0ede4] p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+            <div className="flex flex-col justify-between rounded-2xl border border-[#E1E4EA] bg-[#F1F1F5] p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#6c6355]">Note for Client</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#525866]">Note for Client</p>
                   <button
                     onClick={() => setAddingNote(v => !v)}
                     className="text-[11px] font-bold text-[#884c2d] hover:underline"
@@ -404,7 +399,7 @@ export default function ProjectDetail() {
                       onChange={e => setNoteText(e.target.value)}
                       placeholder="Message to show the client…"
                       rows={3}
-                      className="w-full rounded-lg border border-[#d8c2b9] bg-white px-3 py-2 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30 resize-none"
+                      className="w-full rounded-lg border border-[#E1E4EA] bg-white px-3 py-2 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30 resize-none"
                       autoFocus
                     />
                     <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
@@ -412,7 +407,7 @@ export default function ProjectDetail() {
                     </button>
                   </form>
                 ) : (
-                  <p className="text-sm italic leading-5 text-[#211a17]">
+                  <p className="text-sm italic leading-5 text-[#0E121B]">
                     &ldquo;{project.adminNotes || "No note for client yet. Click Edit to add one."}&rdquo;
                   </p>
                 )}
@@ -427,9 +422,9 @@ export default function ProjectDetail() {
         </div>
 
         <div className="col-span-12 space-y-5 lg:col-span-5 xl:col-span-4">
-          <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          <div className="rounded-2xl border border-[#E1E4EA] bg-white p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-display text-lg font-semibold text-[#211a17]">Project Metadata</h3>
+              <h3 className="font-display text-lg font-semibold text-[#0E121B]">Project Metadata</h3>
               <button
                 onClick={() => setManaging(true)}
                 className="flex items-center gap-1 text-xs font-semibold text-[#884c2d] hover:underline"
@@ -441,17 +436,17 @@ export default function ProjectDetail() {
               <MetaRow icon={Calendar} label="Start Date" value={project.startDate} />
               <MetaRow icon={Calendar} label="Expected Completion" value={project.dueDate || project.expectedEndDate} />
               <MetaRow icon={ListChecks} label="Package Purchased" value={project.packagePurchased || project.packageName} />
-              <div className="border-t border-[#ead8d1] pt-5">
-                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#6c6355]">
+              <div className="border-t border-[#E1E4EA] pt-5">
+                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#525866]">
                   <span>Budget Usage</span>
-                  <span className="text-[#211a17]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
+                  <span className="text-[#0E121B]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#ede0db]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#F1F1F5]">
                   <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${budgetPct}%` }} />
                 </div>
               </div>
-              <div className="border-t border-[#ead8d1] pt-4">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#7b6f63] mb-1">Client Status</p>
+              <div className="border-t border-[#E1E4EA] pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af] mb-1">Client Status</p>
                 <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-bold ${
                   project.clientStatus === "completed" ? "bg-emerald-50 text-emerald-700" :
                   project.clientStatus === "on_hold" ? "bg-amber-50 text-amber-700" :
@@ -462,27 +457,27 @@ export default function ProjectDetail() {
                 </span>
               </div>
             </div>
-          </Card>
+          </div>
 
-          <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-            <h3 className="font-display mb-5 text-lg font-semibold text-[#211a17]">Activity</h3>
+          <div className="rounded-2xl border border-[#E1E4EA] bg-white p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+            <h3 className="font-display mb-5 text-lg font-semibold text-[#0E121B]">Activity</h3>
             <div className="space-y-5">
               {project.activity?.length ? project.activity.map((item, index) => {
                 const Icon = activityIcon[item.icon] || CheckCircle2;
                 return (
                   <div key={index} className="flex gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#ede0db] text-[#6c6355]">
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#F1F1F5] text-[#525866]">
                       <Icon size={14} />
                     </div>
                     <div>
-                      <p className="text-sm text-[#211a17]">{item.text}</p>
-                      <p className="text-[10px] uppercase text-[#7b6f63]">{item.time}</p>
+                      <p className="text-sm text-[#0E121B]">{item.text}</p>
+                      <p className="text-[10px] uppercase text-[#9ca3af]">{item.time}</p>
                     </div>
                   </div>
                 );
-              }) : <p className="text-sm text-[#6c6355]">No activity recorded yet.</p>}
+              }) : <p className="text-sm text-[#525866]">No activity recorded yet.</p>}
             </div>
-          </Card>
+          </div>
 
           <InviteCollaborators client={currentCompany.name} />
         </div>
