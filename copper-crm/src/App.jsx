@@ -9,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Companies from "./pages/crm/Companies";
 import CompanyDetail from "./pages/crm/CompanyDetail";
 import Contacts from "./pages/crm/Contacts";
+import ContactDetail from "./pages/crm/ContactDetail";
+import DealDetail from "./pages/crm/DealDetail";
 import Leads from "./pages/crm/Leads";
 import ProjectsList from "./pages/projects/ProjectsList";
 import ProjectDetail from "./pages/projects/ProjectDetail";
@@ -61,8 +63,10 @@ export default function App() {
               <Route path="companies/:companyId/projects/:projectId/tasks" element={<ProjectGantt />} />
               <Route path="companies/:companyId/projects/:projectId/files" element={<ProjectFiles />} />
               <Route path="contacts" element={<Contacts />} />
+              <Route path="contacts/:contactId" element={<ContactDetail />} />
               <Route path="leads" element={<Leads />} />
               <Route path="deals" element={<DealsPage />} />
+              <Route path="deals/:dealId" element={<DealDetail />} />
               <Route path="projects" element={<ProjectsList />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />

@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  BellRing, Building2, CheckCircle2, CreditCard, Edit3, FileText,
-  Globe2, LockKeyhole, Mail, MoreHorizontal, Plus, Save,
-  Search, Send, Settings as SettingsIcon, SlidersHorizontal,
-  Trash2, TrendingUp, UploadCloud, UserPlus, Workflow
+  BellRing, Building2, Calendar, CheckCircle2, CreditCard, Edit3, Eye,
+  FileText, Globe2, LayoutGrid, List, LockKeyhole, Mail, MoreHorizontal,
+  MoreVertical, Phone, Plus, Save, Search, Send,
+  Settings as SettingsIcon, SlidersHorizontal, Target,
+  Trash2, TrendingUp, UploadCloud, User, UserPlus, Workflow
 } from "lucide-react";
 import { Button, StatusBadge, Avatar } from "../../components/ui";
 import { invoices, leads, orders, projects } from "../../data/mockData";
@@ -73,79 +75,174 @@ const dealsSeed = [
   }))
 ];
 
+const DEAL_STAGES = ["Onboarding", "Need Analysis", "Proposal Sent", "Negotiation", "Won", "Lost"];
+const DEAL_KPI = [
+  { icon: Target, label: "Pipeline Summary", value: "₹2,93,898", change: "+12% Last week", positive: true },
+  { icon: TrendingUp, label: "Deals Won", value: "₹1,80,374", change: "+12% Last week", positive: true },
+  { icon: User, label: "Average Deal Size", value: "182", change: "+12% Last week", positive: true },
+  { icon: FileText, label: "Deals Lost", value: "₹43,000", change: "-12% Last week", positive: false },
+];
+
+function StagePill({ status = "Accepted" }) {
+  const map = {
+    Accepted: "bg-blue-50 text-blue-600",
+    Won: "bg-green-50 text-green-600",
+    Lost: "bg-red-50 text-red-600",
+    Negotiation: "bg-yellow-50 text-yellow-600",
+    "Proposal Sent": "bg-purple-50 text-purple-600",
+    Qualified: "bg-blue-50 text-blue-600",
+    Onboarding: "bg-teal-50 text-teal-600",
+    "Need Analysis": "bg-orange-50 text-orange-600",
+  };
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>{status}</span>;
+}
+
 export function DealsPage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [view, setView] = useState("list");
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const { records: dealRecords, save: saveDeal } = useCrmRecords("deals", dealsSeed);
   const { showToast } = useToast();
-  const deals = dealRecords.filter((deal) => `${deal.name} ${deal.account} ${deal.owner}`.toLowerCase().includes(query.toLowerCase()));
+  const PAGE_SIZE = 10;
+
+  const deals = dealRecords.filter((d) => `${d.name} ${d.account} ${d.owner}`.toLowerCase().includes(query.toLowerCase()));
+  const totalPages = Math.max(1, Math.ceil(deals.length / PAGE_SIZE));
+  const paginated = deals.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   async function persistDeal(deal) {
     try {
       const isNew = !deal._id;
-      await saveDeal({
-        ...deal,
-        id: deal.id || `D-${Date.now().toString().slice(-6)}`,
-        probability: Number(deal.probability) || 0
-      });
+      await saveDeal({ ...deal, id: deal.id || `D-${Date.now().toString().slice(-6)}`, probability: Number(deal.probability) || 0 });
       setSelected(null);
-      showToast({
-        title: isNew ? "Deal created" : "Deal updated",
-        message: `${deal.name || "Deal"} saved successfully.`,
-      });
+      showToast({ title: isNew ? "Deal created" : "Deal updated", message: `${deal.name || "Deal"} saved successfully.` });
     } catch (error) {
       showToast({ type: "error", title: "Could not save deal", message: error.message });
     }
   }
 
   return (
-    <PageShell title="Deals" subtitle="Track active opportunities from qualification through payment." action={<Button onClick={() => setSelected({ name: "", account: "", owner: "", value: "", stage: "Qualified", probability: 50, close: "" })}><Plus size={14} /> New Deal</Button>}>
-      <Card>
-        <div className="grid gap-3 border-b border-gray-100 p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-          <SearchBar value={query} onChange={setQuery} placeholder="Search deals, clients, owners" />
-          <button className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 hover:bg-gray-50">
-            <SlidersHorizontal size={14} />
-            Pipeline filters
+    <div className="p-5 xl:p-6 bg-[#f9fafb] min-h-full">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Deals</h1>
+          <p className="text-sm text-gray-500">Manage your sales pipeline</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 text-xs text-gray-500">
+            <Search size={12} />
+            <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder="Search by deal name, company, or status..." value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+          </div>
+          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><MoreVertical size={14} /></button>
+          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><SlidersHorizontal size={14} /></button>
+          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={14} /></button>
+          <button onClick={() => setView("kanban")} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={14} /></button>
+          <button onClick={() => setSelected({ name: "", account: "", owner: "", value: "", stage: "Qualified", probability: 50, close: "" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+            <Plus size={14} /> Add Deal
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[850px]">
-            <thead>
-              <tr className="bg-gray-50/80">
-                {["Deal", "Account", "Owner", "Value", "Stage", "Probability", "Close", ""].map((header) => (
-                  <th key={header} className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {deals.map((deal) => (
-                <tr key={deal.id} className="border-t border-gray-100 hover:bg-gray-50/70">
-                  <td className="px-5 py-3">
-                    <p className="text-sm font-bold text-gray-950">{deal.name}</p>
-                    <p className="font-mono text-[11px] text-gray-400">{deal.id}</p>
-                  </td>
-                  <td className="px-5 py-3 text-sm font-semibold text-gray-700">{deal.account}</td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-2"><Avatar name={deal.owner} size="sm" /><span className="text-xs font-bold text-gray-700">{deal.owner}</span></div>
-                  </td>
-                  <td className="px-5 py-3 text-sm font-bold text-gray-950">{deal.value}</td>
-                  <td className="px-5 py-3"><StatusBadge status={deal.stage} /></td>
-                  <td className="px-5 py-3">
-                    <div className="h-1.5 w-24 rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${deal.probability}%` }} /></div>
-                    <p className="mt-1 text-[10px] font-bold text-gray-400">{deal.probability}%</p>
-                  </td>
-                  <td className="px-5 py-3 text-xs font-semibold text-gray-500">{deal.close}</td>
-                  <td className="px-5 py-3 text-right">
-                    <button onClick={() => setSelected(deal)} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold text-[#2563EB] hover:bg-blue-50"><Edit3 size={12} /> Edit</button>
-                  </td>
+      </div>
+
+      <div className="mb-4 grid grid-cols-4 gap-4">
+        {DEAL_KPI.map(({ icon: Icon, label, value, change, positive }) => (
+          <div key={label} className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-500"><Icon size={18} /></div>
+            <div>
+              <p className="text-xs text-gray-400">{label}</p>
+              <p className="text-lg font-bold text-gray-900">{value}</p>
+              <p className={`text-[11px] font-semibold ${positive ? "text-green-500" : "text-red-500"}`}>{positive ? "▲" : "▼"} {change}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {view === "list" ? (
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[850px]">
+              <thead>
+                <tr className="bg-gray-50/70">
+                  {["Deal ID", "Deal Name", "Company", "Contact", "Stage", "Amount", "Due Date", "Actions"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                  ))}
                 </tr>
+              </thead>
+              <tbody>
+                {paginated.map((deal) => (
+                  <tr key={deal._id || deal.id} className="border-t border-gray-100 hover:bg-gray-50/60">
+                    <td className="px-4 py-3 text-xs font-mono text-gray-500">{deal.id}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">{deal.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{deal.account}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{deal.owner}</td>
+                    <td className="px-4 py-3"><StagePill status={deal.stage} /></td>
+                    <td className="px-4 py-3 text-sm font-semibold text-gray-900">{deal.value}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{deal.close}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => navigate(`/admin/deals/${deal._id || deal.id}`)} className="text-gray-400 hover:text-blue-500"><Eye size={15} /></button>
+                        <button onClick={() => setSelected(deal)} className="text-gray-400 hover:text-blue-500"><Edit3 size={14} /></button>
+                        <button className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {paginated.length === 0 && (
+                  <tr><td colSpan={8} className="py-12 text-center text-sm text-gray-400">No deals found</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
+            <span className="text-xs text-gray-500">Showing {Math.min((page - 1) * PAGE_SIZE + 1, deals.length)}–{Math.min(page * PAGE_SIZE, deals.length)} of {deals.length} Deals</span>
+            <div className="flex items-center gap-1">
+              <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
               ))}
-            </tbody>
-          </table>
+              <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
+            </div>
+          </div>
         </div>
-      </Card>
+      ) : (
+        <div className="overflow-x-auto">
+          <div className="flex gap-4 min-w-[900px]">
+            {DEAL_STAGES.map((stage) => {
+              const stageDeals = deals.filter((d) => (d.stage || "Onboarding") === stage);
+              const isLost = stage === "Lost";
+              const isWon = stage === "Won";
+              return (
+                <div key={stage} className={`flex-1 min-w-[200px] rounded-xl border p-3 ${isLost ? "bg-red-50/40 border-red-100" : isWon ? "bg-green-50/40 border-green-100" : "bg-gray-50/60 border-gray-200"}`}>
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">{stageDeals.length}</span></span>
+                    <button className="text-gray-400"><MoreVertical size={14} /></button>
+                  </div>
+                  <div className="space-y-2">
+                    {stageDeals.map((d) => (
+                      <div key={d._id || d.id} className={`rounded-xl border bg-white p-3 shadow-sm ${isLost ? "border-red-100" : isWon ? "border-green-100" : "border-gray-200"}`}>
+                        <div className="mb-2 flex items-center justify-between">
+                          <p className={`text-base font-bold ${isLost ? "text-red-500" : isWon ? "text-green-600" : "text-gray-900"}`}>{d.value}</p>
+                          <span className="text-[11px] font-semibold text-green-500">+{d.probability}%</span>
+                        </div>
+                        <p className="text-xs font-semibold text-gray-700">{d.name}</p>
+                        <p className="text-[11px] text-gray-400">{d.id}</p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex items-center gap-1"><Avatar name={d.account} size="xs" /><span className="text-[11px] text-gray-500">{d.account}</span></div>
+                          <button><MoreVertical size={12} className="text-gray-300" /></button>
+                        </div>
+                      </div>
+                    ))}
+                    {stageDeals.length === 0 && <div className="py-6 text-center text-xs text-gray-300">No deals</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {selected && <EditDealModal deal={selected} onClose={() => setSelected(null)} onSave={persistDeal} />}
-    </PageShell>
+    </div>
   );
 }
 
@@ -154,7 +251,7 @@ function EditDealModal({ deal, onClose, onSave }) {
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
   return (
     <SidePanel
-      title={deal.id ? "Edit deal" : "Create deal"}
+      title={deal._id ? "Edit deal" : "Create deal"}
       subtitle="Update deal owner, value, stage, probability, and closing timeline."
       onClose={onClose}
       footer={
@@ -178,76 +275,210 @@ function EditDealModal({ deal, onClose, onSave }) {
 }
 
 const taskRows = projects.flatMap((project) => [
-  { id: `${project.id}-brief`, title: "Confirm scope and deliverables", project: project.name, owner: project.team[0], due: project.dueDate, status: project.status, priority: project.priority === "urgent" ? "High" : "Medium" },
-  { id: `${project.id}-review`, title: "Client review checkpoint", project: project.name, owner: project.team[1] || project.team[0], due: project.dueDate, status: "Review", priority: project.priority === "urgent" ? "High" : "Low" },
+  { id: `${project.id}-brief`, title: "Confirm scope and deliverables", relatedTo: project.name, relatedType: "Deal/Contact/Company", assigned: "+91 1234567890", due: project.dueDate || "07/03/2026", status: "Accepted", priority: project.priority === "urgent" ? "High" : "Medium" },
+  { id: `${project.id}-review`, title: "Client review checkpoint", relatedTo: project.name, relatedType: "Deal/Contact/Company", assigned: "+91 9876543210", due: project.dueDate || "07/03/2026", status: "Accepted", priority: project.priority === "urgent" ? "High" : "Low" },
 ]);
 
-export function TasksPage() {
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState(null);
-  const filtered = taskRows.filter((task) => `${task.title} ${task.project} ${task.status}`.toLowerCase().includes(query.toLowerCase()));
+const meetingRows = projects.slice(0, 9).map((project, i) => ({
+  id: `M-${project.id}`,
+  title: "Lorem ipsum dolor self amet",
+  type: "Zoom / Gmeet",
+  scheduled: "DD/MM/YYYY",
+  duration: "HH:MM, 60 mins",
+  priority: "Accepted",
+  contact: "Contact Name",
+  contactType: "Type",
+}));
 
-  return (
-    <PageShell title="Tasks" subtitle="Manage project actions, owners, due dates, and completion state." action={<Button onClick={() => setSelected({ title: "", project: "", owner: "", due: "", status: "Backlog", priority: "Medium" })}><Plus size={14} /> New Task</Button>}>
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <Card>
-          <div className="border-b border-gray-100 p-4"><SearchBar value={query} onChange={setQuery} placeholder="Search tasks or projects" /></div>
-          <div className="divide-y divide-gray-100">
-            {filtered.map((task) => (
-              <div key={task.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50/70">
-                <button onClick={() => setSelected(task)} className="grid h-8 w-8 place-items-center rounded-lg border border-gray-200 text-gray-400 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600"><CheckCircle2 size={15} /></button>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-gray-950">{task.title}</p>
-                  <p className="truncate text-xs text-gray-400">{task.project} - {task.status}</p>
-                </div>
-                <span className="rounded-full bg-gray-50 px-2 py-1 text-[11px] font-bold text-gray-500">{task.priority}</span>
-                <span className="w-24 text-xs font-semibold text-gray-500">{task.due}</span>
-                <button onClick={() => setSelected(task)} className="rounded-lg p-2 text-gray-400 hover:bg-blue-50 hover:text-[#2563EB]"><Edit3 size={14} /></button>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card className="p-5">
-          <h3 className="text-sm font-bold text-gray-950">Task health</h3>
-          <div className="mt-4 space-y-3">
-            {["High priority", "Due this week", "In review", "Completed today"].map((item, index) => (
-              <div key={item} className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-3">
-                <span className="text-xs font-bold text-gray-600">{item}</span>
-                <span className="text-sm font-bold text-gray-950">{[6, 14, 5, 3][index]}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-      {selected && <TaskEditModal task={selected} onClose={() => setSelected(null)} />}
-    </PageShell>
-  );
+const TASK_STAGES = ["Onboarding", "Need Analysis", "In Progress", "Review"];
+
+function TaskStatusPill({ status = "Accepted" }) {
+  const map = { Accepted: "bg-blue-50 text-blue-600", High: "bg-red-50 text-red-600", Medium: "bg-yellow-50 text-yellow-600", Low: "bg-gray-100 text-gray-500" };
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>{status}</span>;
 }
 
-function TaskEditModal({ task, onClose }) {
-  const [form, setForm] = useState(task);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+export function TasksPage() {
+  const [tab, setTab] = useState("Tasks");
+  const [view, setView] = useState("list");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState(null);
+  const PAGE_SIZE = 10;
+
+  const filteredTasks = taskRows.filter((t) => `${t.title} ${t.relatedTo} ${t.status}`.toLowerCase().includes(query.toLowerCase()));
+  const filteredMeetings = meetingRows.filter((m) => `${m.title} ${m.contact}`.toLowerCase().includes(query.toLowerCase()));
+
+  const activeRows = tab === "Tasks" ? filteredTasks : filteredMeetings;
+  const totalPages = Math.max(1, Math.ceil(activeRows.length / PAGE_SIZE));
+  const paginated = activeRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
-    <SidePanel
-      title={task.id ? "Edit task" : "Create task"}
-      subtitle="Update task owner, date, status, and priority."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-between">
-          <button className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><Trash2 size={14} /> Delete</button>
-          <div className="flex gap-2"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={onClose}><Save size={14} /> Save task</Button></div>
+    <div className="p-5 xl:p-6 bg-[#f9fafb] min-h-full">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Tasks &amp; Meetings</h1>
+          <p className="text-sm text-gray-500">Manage your Tasks &amp; reminders</p>
         </div>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Task title" value={form.title} onChange={set("title")} />
-        <Field label="Project" value={form.project} onChange={set("project")} />
-        <Field label="Owner" value={form.owner} onChange={set("owner")} />
-        <Field label="Due date" value={form.due} onChange={set("due")} />
-        <Field label="Status" value={form.status} onChange={set("status")} />
-        <Field label="Priority" value={form.priority} onChange={set("priority")} />
+        <div className="flex items-center gap-2">
+          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><MoreVertical size={14} /></button>
+          <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Accepted", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+            <Plus size={14} /> New Activity
+          </button>
+        </div>
       </div>
-    </SidePanel>
+
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
+          <div className="flex gap-1">
+            {["Tasks", "Meetings"].map((t) => (
+              <button key={t} onClick={() => { setTab(t); setPage(1); }} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t ? "border-b-2 border-[#2563EB] text-[#2563EB] rounded-none pb-1" : "text-gray-500 hover:text-gray-700"}`}>{t}</button>
+            ))}
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-xs text-gray-500">
+              <Search size={12} />
+              <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            </div>
+            <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50"><SlidersHorizontal size={13} /></button>
+            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
+            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
+            {tab === "Meetings" && (
+              <button className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 px-2.5 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                <Calendar size={12} /> View in Calendar
+              </button>
+            )}
+          </div>
+        </div>
+
+        {view === "list" ? (
+          <>
+            <div className="overflow-x-auto">
+              {tab === "Tasks" ? (
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="bg-gray-50/70">
+                      <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></th>
+                      {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map((task) => (
+                      <tr key={task.id} className="border-t border-gray-100 hover:bg-gray-50/60">
+                        <td className="px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900 max-w-[200px] truncate">{task.title}</td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{task.relatedTo}</p>
+                          <p className="text-[11px] text-gray-400">{task.relatedType}</p>
+                        </td>
+                        <td className="px-4 py-3"><TaskStatusPill status={task.status} /></td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{task.assigned}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{task.due}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setSelected(task)} className="text-gray-400 hover:text-blue-500"><Eye size={15} /></button>
+                            <button onClick={() => setSelected(task)} className="text-gray-400 hover:text-blue-500"><Edit3 size={14} /></button>
+                            <button className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {paginated.length === 0 && <tr><td colSpan={7} className="py-12 text-center text-sm text-gray-400">No tasks found</td></tr>}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="bg-gray-50/70">
+                      <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></th>
+                      {["Meeting", "Scheduled", "Priority", "With", "Actions"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map((mtg) => (
+                      <tr key={mtg.id} className="border-t border-gray-100 hover:bg-gray-50/60">
+                        <td className="px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-semibold text-gray-900">{mtg.title}</p>
+                          <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">{mtg.type}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{mtg.scheduled}</p>
+                          <p className="text-[11px] text-gray-400">{mtg.duration}</p>
+                        </td>
+                        <td className="px-4 py-3"><TaskStatusPill status={mtg.priority} /></td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{mtg.contact}</p>
+                          <p className="text-[11px] text-gray-400">{mtg.contactType}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button className="text-gray-400 hover:text-blue-500"><Eye size={15} /></button>
+                            <button className="text-gray-400 hover:text-blue-500"><Edit3 size={14} /></button>
+                            <button className="text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {paginated.length === 0 && <tr><td colSpan={6} className="py-12 text-center text-sm text-gray-400">No meetings found</td></tr>}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
+              <span className="text-xs text-gray-500">Showing {Math.min((page - 1) * PAGE_SIZE + 1, activeRows.length)}–{Math.min(page * PAGE_SIZE, activeRows.length)} of {activeRows.length} {tab}</span>
+              <div className="flex items-center gap-1">
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
+                ))}
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="p-5">
+            <div className="grid grid-cols-4 gap-4 min-w-[800px]">
+              {TASK_STAGES.map((stage) => (
+                <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">6</span></span>
+                    <button className="text-gray-400"><MoreVertical size={14} /></button>
+                  </div>
+                  <div className="py-6 text-center text-xs text-gray-300">No items</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selected && (
+        <SidePanel
+          title={selected.id ? "Edit task" : "New Task"}
+          subtitle="Update task title, related entity, status, and due date."
+          onClose={() => setSelected(null)}
+          footer={
+            <div className="flex justify-between">
+              <button className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><Trash2 size={14} /> Delete</button>
+              <div className="flex gap-2"><Button variant="secondary" onClick={() => setSelected(null)}>Cancel</Button><Button onClick={() => setSelected(null)}><Save size={14} /> Save</Button></div>
+            </div>
+          }
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Task title" value={selected.title} onChange={(v) => setSelected(p => ({ ...p, title: v }))} />
+            <Field label="Related To" value={selected.relatedTo} onChange={(v) => setSelected(p => ({ ...p, relatedTo: v }))} />
+            <Field label="Assigned" value={selected.assigned} onChange={(v) => setSelected(p => ({ ...p, assigned: v }))} />
+            <Field label="Due date" value={selected.due} onChange={(v) => setSelected(p => ({ ...p, due: v }))} />
+            <Field label="Status" value={selected.status} onChange={(v) => setSelected(p => ({ ...p, status: v }))} />
+            <Field label="Priority" value={selected.priority} onChange={(v) => setSelected(p => ({ ...p, priority: v }))} />
+          </div>
+        </SidePanel>
+      )}
+    </div>
   );
 }
 

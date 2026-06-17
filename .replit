@@ -12,6 +12,9 @@ channel = "stable-25_05"
 PORT = "3000"
 NODE_ENV = "development"
 MONGO_URI = "mongodb+srv://rohitzore_db_user:MAwPvTrAY0WLgRCO@thecopperstudio.xj0szqj.mongodb.net/?appName=TheCopperStudio"
+SUPERADMIN_EMAIL = "rohit.zore@datacircles.in"
+SUPERADMIN_NAME = "Super Admin"
+SUPERADMIN_PASSWORD = "RohitZore@18"
 
 [workflows]
 runButton = "Project"

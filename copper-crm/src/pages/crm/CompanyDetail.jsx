@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Building2, Calendar, ChevronRight, Edit2, FileText, FolderOpen,
-  Globe, Info, Link2, Linkedin, Mail, MoreVertical, Phone,
+  Globe, Info, Link2, Mail, MoreVertical, Phone,
   Plus, Save, StickyNote, Target, Share2, Users, X
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -385,9 +385,9 @@ export default function CompanyDetail() {
             </div>
             <div className="flex items-center gap-2">
               <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Info size={14} /></button>
-              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Twitter size={14} /></button>
-              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Linkedin size={14} /></button>
-              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Instagram size={14} /></button>
+              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Share2 size={14} /></button>
+              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Link2 size={14} /></button>
+              <button className="h-8 w-8 flex items-center justify-center rounded-lg border border-[#e5e7eb] text-[#9ca3af] hover:bg-[#f9fafb]"><Globe size={14} /></button>
               <button className="flex h-8 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#374151] hover:bg-[#f9fafb]">
                 <Edit2 size={12} /> Edit
               </button>
