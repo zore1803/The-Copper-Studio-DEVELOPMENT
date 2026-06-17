@@ -7,7 +7,7 @@ function isLocalId(id, type) {
 }
 
 export function useCrmRecords(type, fallback = []) {
-  const [records, setRecords] = useState(() => storeGet(type));
+  const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -17,20 +17,26 @@ export function useCrmRecords(type, fallback = []) {
     apiGet(`/api/crm/${type}`)
       .then((data) => {
         if (!alive) return;
-        if (data.length) {
-          storeSet(type, data);
-          setRecords(data);
+        const records = Array.isArray(data) ? data : (data.records || []);
+        if (records.length) {
+          storeSet(type, records);
+          setRecords(records);
+        } else {
+          setRecords([]);
         }
         setError("");
       })
-      .catch(() => {
+      .catch((err) => {
         if (!alive) return;
-        setError("");
+        setError(err.message || "Failed to fetch records");
+        // Fallback to localStorage only if API fails
+        const cached = storeGet(type);
+        setRecords(cached.length ? cached : fallback);
       })
       .finally(() => alive && setLoading(false));
 
     return () => { alive = false; };
-  }, [type]);
+  }, [type, fallback]);
 
   useEffect(() => {
     function onUpdate(e) {

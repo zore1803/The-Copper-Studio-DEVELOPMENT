@@ -43,11 +43,15 @@ function makeDemoSession(role) {
 }
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(readStoredAuth);
+  const [session, setSession] = useState(null);
 
   const saveSession = (nextSession) => {
     setSession(nextSession);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+    if (nextSession) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
   };
 
   const value = useMemo(() => ({
