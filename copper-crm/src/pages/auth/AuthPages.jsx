@@ -155,6 +155,17 @@ export function LoginPage() {
     }
   }
 
+  async function handleDemoLogin(demoRole) {
+    setLoading(true);
+    try {
+      const session = await auth.login({ email: "demo@thecopperstudio.com", password: "demo", role: demoRole });
+      const fallback = demoRole === "superadmin" ? "/admin" : "/client";
+      navigate(location.state?.from?.pathname || fallback, { replace: true });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AuthShell title="Log in to CRM" subtitle="Choose your role and sign in to continue.">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,6 +179,27 @@ export function LoginPage() {
         <Message type="error">{error}</Message>
         <SubmitButton loading={loading}>Log in</SubmitButton>
       </form>
+      <div className="mt-4 border-t border-[#e8d9d3] pt-4">
+        <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-widest text-[#b49f96]">Quick Demo Access</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => handleDemoLogin("superadmin")}
+            disabled={loading}
+            className="rounded-xl border border-[#d8c2b9] bg-[#fff8f6] py-2 text-xs font-bold text-[#884c2d] hover:bg-[#fff1ec] disabled:opacity-50"
+          >
+            Admin Demo
+          </button>
+          <button
+            type="button"
+            onClick={() => handleDemoLogin("user")}
+            disabled={loading}
+            className="rounded-xl border border-[#d8c2b9] bg-[#fff8f6] py-2 text-xs font-bold text-[#6c6355] hover:bg-[#fff1ec] disabled:opacity-50"
+          >
+            Client Demo
+          </button>
+        </div>
+      </div>
     </AuthShell>
   );
 }

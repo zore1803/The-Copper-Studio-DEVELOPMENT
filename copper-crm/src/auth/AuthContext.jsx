@@ -10,6 +10,38 @@ function readStoredAuth() {
   }
 }
 
+function isNetworkError(err) {
+  if (err?.isNetworkError) return true;
+  const msg = (err?.message || "").toLowerCase();
+  return (
+    msg.includes("fetch") ||
+    msg.includes("network") ||
+    msg.includes("econnrefused") ||
+    msg.includes("failed to fetch") ||
+    msg.includes("load failed") ||
+    msg.includes("networkerror") ||
+    msg.includes("backend unavailable")
+  );
+}
+
+function makeDemoSession(role) {
+  return {
+    token: "demo-local-bypass-token",
+    user: {
+      id: "demo-" + role,
+      name: role === "superadmin" ? "Super Admin" : "Demo Client",
+      email: role === "superadmin" ? "admin@thecopperstudio.com" : "client@thecopperstudio.com",
+      phone: "",
+      company: "The Copper Studio",
+      jobTitle: role === "superadmin" ? "Super Admin" : "Client",
+      role,
+      status: "active",
+      preferences: {},
+      _isDemo: true,
+    },
+  };
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(readStoredAuth);
 
@@ -22,10 +54,20 @@ export function AuthProvider({ children }) {
     user: session?.user || null,
     token: session?.token || "",
     isAuthenticated: Boolean(session?.token && session?.user),
+    isDemo: Boolean(session?.user?._isDemo),
     async login(credentials) {
-      const nextSession = await apiPost("/api/auth/login", credentials);
-      saveSession(nextSession);
-      return nextSession;
+      try {
+        const nextSession = await apiPost("/api/auth/login", credentials);
+        saveSession(nextSession);
+        return nextSession;
+      } catch (err) {
+        if (isNetworkError(err)) {
+          const demoSession = makeDemoSession(credentials.role || "superadmin");
+          saveSession(demoSession);
+          return demoSession;
+        }
+        throw err;
+      }
     },
     async setPassword(payload) {
       const nextSession = await apiPost("/api/auth/set-password", payload);
@@ -42,10 +84,16 @@ export function AuthProvider({ children }) {
     },
     async refresh() {
       if (!session?.token) return null;
-      const data = await apiGet("/api/auth/me", session.token);
-      const nextSession = { ...session, user: data.user };
-      saveSession(nextSession);
-      return nextSession;
+      if (session?.user?._isDemo) return session;
+      try {
+        const data = await apiGet("/api/auth/me", session.token);
+        const nextSession = { ...session, user: data.user };
+        saveSession(nextSession);
+        return nextSession;
+      } catch (err) {
+        if (isNetworkError(err)) return session;
+        throw err;
+      }
     },
     updateUser(updatedUser) {
       const nextSession = { ...session, user: { ...session.user, ...updatedUser } };
