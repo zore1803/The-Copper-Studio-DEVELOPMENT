@@ -702,11 +702,10 @@ export default function CompanyDetail() {
       showToast({ type: "error", title: "Project name required", message: "Add a name before creating the project." });
       return;
     }
-    const { payload, folderRecords, starterTasks } = buildProjectPayload(form, targetCompany);
+    const { payload, starterTasks } = buildProjectPayload(form, targetCompany);
     const created = await saveProject(payload);
     const realProjectId = created._id || created.id;
     await Promise.all(starterTasks.map((task) => saveTask({ ...task, projectId: realProjectId })));
-    await Promise.all(folderRecords.map((folder) => saveDocument({ ...folder, projectId: realProjectId })));
     setCreatingProject(false);
     showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
   }

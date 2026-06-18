@@ -138,7 +138,6 @@ export default function ProjectsList() {
   const { records: contacts } = useCrmRecords("contacts");
   const { records: invoices } = useCrmRecords("invoices");
   const { save: saveTask } = useCrmRecords("tasks");
-  const { save: saveDocument } = useCrmRecords("documents");
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -149,11 +148,10 @@ export default function ProjectsList() {
   }, [projects, search]);
 
   async function handleCreate(company, form) {
-    const { payload, folderRecords, starterTasks } = buildProjectPayload(form, company);
+    const { payload, starterTasks } = buildProjectPayload(form, company);
     const created = await save(payload);
     const realProjectId = created._id || created.id;
     await Promise.all(starterTasks.map((task) => saveTask({ ...task, projectId: realProjectId })));
-    await Promise.all(folderRecords.map((folder) => saveDocument({ ...folder, projectId: realProjectId })));
     setCreating(false);
     showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
     navigate(`/admin/companies/${company.id || company._id}/projects/${created.id || created._id}`);
