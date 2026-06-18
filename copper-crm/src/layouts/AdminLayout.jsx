@@ -55,6 +55,7 @@ const NAV_SECTIONS = [
         icon: FolderKanban, label: "Projects",
         children: [
           { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
+          { icon: LayoutDashboard, to: "/admin/client-projects", label: "Client Projects" },
           { icon: LayoutDashboard, to: "/admin/kanban", label: "Kanban Board" },
           { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
           { icon: FileText, to: "/admin/tasks", label: "Tasks" },
@@ -85,6 +86,7 @@ const pageNames = {
   "/admin/companies": "Companies",
   "/admin/contacts": "Contacts",
   "/admin/projects": "Projects",
+  "/admin/client-projects": "Client Projects",
   "/admin/kanban": "Kanban Board",
   "/admin/tasks": "Tasks",
   "/admin/invoices": "Invoices",
@@ -106,6 +108,7 @@ const searchablePages = [
   { label: "Companies", to: "/admin/companies", keywords: "accounts gstin company industry client business" },
   { label: "Contacts", to: "/admin/contacts", keywords: "people email phone designation client contact" },
   { label: "Projects", to: "/admin/projects", keywords: "project delivery timeline active orders" },
+  { label: "Client Projects", to: "/admin/client-projects", keywords: "client projects portal timeline stages meetings" },
   { label: "Kanban Board", to: "/admin/kanban", keywords: "tasks board drag status todo progress done" },
   { label: "Timeline", to: "/admin/timeline", keywords: "project timeline gantt schedule milestones" },
   { label: "Tasks", to: "/admin/tasks", keywords: "tasks meetings activities reminders" },
