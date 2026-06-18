@@ -1,0 +1,253 @@
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Calendar, CheckCircle2, Circle, Clock3, FolderKanban, Search } from "lucide-react";
+import { useCrmRecords } from "../../hooks/useCrmRecords";
+
+const STAGE_STYLE = {
+  completed: { bar: "bg-emerald-500", chip: "bg-emerald-50 text-emerald-700", icon: CheckCircle2 },
+  in_progress: { bar: "bg-[#884c2d]", chip: "bg-[#fff1ec] text-[#884c2d]", icon: Clock3 },
+  not_started: { bar: "bg-[#d1d5db]", chip: "bg-gray-100 text-gray-500", icon: Circle },
+};
+
+function statusPillClass(status) {
+  const map = {
+    not_started: "bg-gray-100 text-gray-600",
+    in_progress: "bg-[#fff1ec] text-[#884c2d]",
+    on_hold: "bg-amber-50 text-amber-700",
+    completed: "bg-emerald-50 text-emerald-700",
+    cancelled: "bg-red-50 text-red-700",
+  };
+  return map[status] || "bg-gray-100 text-gray-600";
+}
+
+function fmt(date) {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Resolve a project's milestone list with real dates, in priority order:
+ *  1. the auto-generated `timeline` array (has real startDate/dueDate per milestone)
+ *  2. `stages` evenly spread across project.startDate -> expectedEndDate if no timeline exists
+ */
+function resolveMilestones(project) {
+  if (project.timeline?.length) {
+    return project.timeline.map((m) => ({
+      name: m.name,
+      start: new Date(m.startDate),
+      end: new Date(m.dueDate || m.startDate),
+      status: m.status === "On Track" ? "in_progress" : m.status === "Completed" ? "completed" : project.stages?.find((s) => s.name === m.name)?.status || (m.status === "Upcoming" ? "not_started" : "not_started"),
+    })).map((m, i, arr) => {
+      // prefer the live status from project.stages (kept in sync by Manage Project), fall back to the timeline's own status
+      const live = project.stages?.find((s) => s.name === m.name);
+      return { ...m, status: live?.status || m.status, index: i, total: arr.length };
+    });
+  }
+  if (project.stages?.length && project.startDate) {
+    const start = new Date(project.startDate);
+    const end = new Date(project.expectedEndDate || project.dueDate || start);
+    const span = Math.max(end.getTime() - start.getTime(), 86400000);
+    const step = span / project.stages.length;
+    return project.stages.map((s, i) => ({
+      name: s.name,
+      start: new Date(start.getTime() + step * i),
+      end: new Date(start.getTime() + step * (i + 1)),
+      status: s.status,
+      index: i,
+      total: project.stages.length,
+    }));
+  }
+  return [];
+}
+
+function ProjectGanttChart({ project }) {
+  const milestones = useMemo(() => resolveMilestones(project), [project]);
+
+  if (!milestones.length) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E1E4EA] bg-[#FAFAFA] py-16 text-center">
+        <Calendar size={28} className="mb-3 text-[#9ca3af]" />
+        <p className="text-sm font-semibold text-[#525866]">No timeline data for this project yet.</p>
+        <p className="mt-1 text-xs text-[#9ca3af]">Set a start date and stages from the project's Manage panel to generate one.</p>
+      </div>
+    );
+  }
+
+  const todayDate = new Date();
+  const min = new Date(Math.min(...milestones.map((m) => m.start.getTime())));
+  const max = new Date(Math.max(...milestones.map((m) => m.end.getTime())));
+  const cursor = new Date(min.getFullYear(), min.getMonth(), 1);
+  const months = [];
+  while (cursor <= max) {
+    months.push({ label: cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }), date: new Date(cursor) });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  const rangeStart = months[0]?.date.getTime() ?? min.getTime();
+  const rangeEnd = new Date(cursor).getTime();
+  const totalSpan = Math.max(rangeEnd - rangeStart, 86400000);
+  const toPct = (date) => Math.min(100, Math.max(0, ((date.getTime() - rangeStart) / totalSpan) * 100));
+  const todayPct = todayDate.getTime() >= rangeStart && todayDate.getTime() <= rangeEnd ? toPct(todayDate) : null;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
+      <div className="flex items-center justify-between border-b border-[#f1f1f5] bg-[#FAFAFA] px-5 py-3.5">
+        <div>
+          <h3 className="text-sm font-bold text-[#0E121B]">{project.name} — Timeline</h3>
+          <p className="mt-0.5 text-xs text-[#525866]">
+            {fmt(min)} → {fmt(max)} · {milestones.length} stage{milestones.length === 1 ? "" : "s"}
+          </p>
+        </div>
+        <div className="flex items-center gap-3 text-[11px] font-semibold text-[#525866]">
+          {Object.entries({ not_started: "Not Started", in_progress: "In Progress", completed: "Completed" }).map(([key, label]) => (
+            <span key={key} className="flex items-center gap-1.5">
+              <span className={`h-2 w-2 rounded-full ${STAGE_STYLE[key].bar}`} /> {label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto p-5">
+        <div style={{ minWidth: `${Math.max(months.length * 110, 600)}px` }}>
+          {/* Month scale header */}
+          <div className="relative mb-2 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+            {months.map((m) => (
+              <div key={m.label} className="border-l border-[#f1f1f5] pl-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                {m.label}
+              </div>
+            ))}
+          </div>
+
+          {/* Gantt rows */}
+          <div className="relative space-y-3 rounded-lg border border-[#f1f1f5] bg-[#FAFAFA] p-3">
+            {/* month gridlines */}
+            <div className="pointer-events-none absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+              {months.map((m) => <div key={m.label} className="border-l border-[#ECECEC] first:border-l-0" />)}
+            </div>
+            {/* today marker */}
+            {todayPct !== null && (
+              <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${todayPct}%` }}>
+                <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded bg-red-400 px-1.5 py-0.5 text-[9px] font-bold text-white">Today</span>
+              </div>
+            )}
+
+            {milestones.map((m) => {
+              const style = STAGE_STYLE[m.status] || STAGE_STYLE.not_started;
+              const Icon = style.icon;
+              const left = toPct(m.start);
+              const width = Math.max(toPct(m.end) - left, 4);
+              const dateLabel = `${fmt(m.start)} – ${fmt(m.end)}`;
+              return (
+                <div key={m.name} className="relative grid grid-cols-[180px_1fr] items-center gap-3">
+                  <div className="flex items-center gap-2 pr-2">
+                    <Icon size={14} className={style.chip.includes("emerald") ? "text-emerald-600" : style.chip.includes("884c2d") ? "text-[#884c2d]" : "text-gray-400"} />
+                    <span className="truncate text-xs font-bold text-[#0E121B]">{m.name}</span>
+                  </div>
+                  <div className="relative h-9">
+                    <div
+                      className={`absolute top-1 flex h-7 items-center rounded-lg px-2.5 text-[10px] font-bold text-white shadow-sm ${style.bar}`}
+                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
+                      title={dateLabel}
+                    >
+                      <span className="truncate">{dateLabel}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function TimelinePage() {
+  const navigate = useNavigate();
+  const { records: projects, loading } = useCrmRecords("projects");
+  const { records: companies } = useCrmRecords("companies");
+  const [search, setSearch] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+
+  const companyName = useCallback((project) => {
+    const cid = project.companyId;
+    const found = companies.find((c) => String(c._id) === String(cid) || String(c.id) === String(cid));
+    return found?.name || project.companyName || project.client || "Unknown company";
+  }, [companies]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return projects;
+    return projects.filter((p) => `${p.name} ${companyName(p)}`.toLowerCase().includes(q));
+  }, [projects, search, companyName]);
+
+  const selected = projects.find((p) => String(p.id || p._id) === selectedId) || filtered[0] || null;
+
+  return (
+    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-5">
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight text-[#0E121B]">Project Timelines</h2>
+        <p className="mt-1 text-sm text-[#525866]">Pick a project to see its accurate, date-based Gantt timeline.</p>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-20 text-sm text-[#525866]">Loading projects…</div>
+      ) : !projects.length ? (
+        <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+          <FolderKanban size={28} className="mx-auto mb-3 text-[#884c2d]" />
+          <p className="text-sm font-semibold text-[#0E121B]">No projects yet.</p>
+          <p className="mt-1 text-sm text-[#525866]">Create a project from a company workspace to see its timeline here.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-12 gap-5">
+          <div className="col-span-12 lg:col-span-4 xl:col-span-3">
+            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
+              <div className="border-b border-[#f1f1f5] bg-[#FAFAFA] p-3">
+                <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3">
+                  <Search size={14} className="text-[#9ca3af] shrink-0" />
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search projects…" className="w-full bg-transparent text-sm outline-none" />
+                </div>
+              </div>
+              <div className="max-h-[60vh] divide-y divide-[#f3f4f6] overflow-y-auto">
+                {filtered.map((p) => {
+                  const isSelected = selected && String(selected.id || selected._id) === String(p.id || p._id);
+                  return (
+                    <button
+                      key={p.id || p._id}
+                      onClick={() => setSelectedId(String(p.id || p._id))}
+                      className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors ${isSelected ? "bg-[#fff1ec]" : "hover:bg-[#fafafa]"}`}
+                    >
+                      <span className="truncate text-sm font-bold text-[#0E121B]">{p.name}</span>
+                      <span className="truncate text-xs text-[#525866]">{companyName(p)}</span>
+                      <span className={`mt-1 inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusPillClass(p.clientStatus || p.status)}`}>
+                        {(p.clientStatus || p.status || "not_started").replace(/_/g, " ")}
+                      </span>
+                    </button>
+                  );
+                })}
+                {!filtered.length && <p className="px-4 py-6 text-center text-sm text-[#9ca3af]">No projects match your search.</p>}
+              </div>
+            </div>
+          </div>
+
+          <div className="col-span-12 lg:col-span-8 xl:col-span-9">
+            {selected ? (
+              <div className="space-y-3">
+                <ProjectGanttChart project={selected} />
+                <button
+                  onClick={() => navigate(`/admin/companies/${selected.companyId}/projects/${selected.id || selected._id}`)}
+                  className="text-xs font-bold text-[#884c2d] hover:underline"
+                >
+                  Open full project workspace →
+                </button>
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-[#E1E4EA] bg-white p-16 text-center text-sm text-[#525866]">
+                Select a project to view its timeline.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -13,6 +13,7 @@ import ContactDetail from "./pages/crm/ContactDetail";
 import ProjectsList from "./pages/projects/ProjectsList";
 import ProjectDetail from "./pages/projects/ProjectDetail";
 import ProjectTimeline from "./pages/projects/ProjectTimeline";
+import TimelinePage from "./pages/projects/TimelinePage";
 import ProjectFiles from "./pages/projects/ProjectFiles";
 import KanbanBoard from "./pages/projects/KanbanBoard";
 import Orders from "./pages/billing/Orders";
@@ -64,7 +65,7 @@ export default function App() {
               <Route path="contacts" element={<Contacts />} />
               <Route path="contacts/:contactId" element={<ContactDetail />} />
               <Route path="projects" element={<ProjectsList />} />
-              <Route path="timeline" element={<ProjectsList />} />
+              <Route path="timeline" element={<TimelinePage />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="payments" element={<Orders mode="payments" />} />
