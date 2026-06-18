@@ -38,7 +38,6 @@ import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage 
 import CommunicationCenter from "./pages/admin/CommunicationCenter";
 import DocumentCenter from "./pages/admin/DocumentCenter";
 import PublicPackages from "./pages/public/PublicPackages";
-import ClientProjectsPage from "./pages/admin/ClientProjectsPage";
 
 export default function App() {
   return (
@@ -68,7 +67,6 @@ export default function App() {
               <Route path="projects" element={<ProjectsList />} />
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="kanban" element={<KanbanBoard />} />
-              <Route path="client-projects" element={<ClientProjectsPage />} />
               <Route path="tasks" element={<TasksPage />} />
               <Route path="payments" element={<Orders mode="payments" />} />
               <Route path="invoices" element={<Invoices />} />
