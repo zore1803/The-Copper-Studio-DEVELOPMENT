@@ -13,7 +13,8 @@ const meetingSchema = new mongoose.Schema(
       enum: ["requested", "confirmed", "completed", "cancelled"],
       default: "requested"
     },
-    clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", default: null, index: true },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     preferredDate: { type: Date },
     preferredTime: { type: String, default: "" },
@@ -30,7 +31,7 @@ const meetingSchema = new mongoose.Schema(
       }
     ]
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Meeting", meetingSchema);

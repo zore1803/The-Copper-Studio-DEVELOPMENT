@@ -17,7 +17,8 @@ const documentSchema = new mongoose.Schema(
       default: "client_shared"
     },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
-    clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", default: null, index: true },
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     uploadedById: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     uploadedByName: { type: String, default: "The Copper Studio" },
     version: { type: String, default: "1.0" },
@@ -30,7 +31,7 @@ const documentSchema = new mongoose.Schema(
       }
     ]
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Document", documentSchema);

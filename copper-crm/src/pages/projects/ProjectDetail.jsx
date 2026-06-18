@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
@@ -8,7 +8,6 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
-import { storeGet, saveProject } from "../../lib/store";
 import SidePanel from "../../components/SidePanel";
 import ProjectHeader from "./ProjectHeader";
 
@@ -218,18 +217,10 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
-  const [allProjects, setAllProjects] = useState(() => storeGet("projects"));
+  const { records: allProjects, save: saveProject } = useCrmRecords("projects");
   const [managing, setManaging] = useState(false);
   const [addingNote, setAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
-
-  useEffect(() => {
-    function onUpdate(e) {
-      if (e.detail?.type === "projects") setAllProjects(storeGet("projects"));
-    }
-    window.addEventListener("cs-store", onUpdate);
-    return () => window.removeEventListener("cs-store", onUpdate);
-  }, []);
 
   const project = useMemo(
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
@@ -265,7 +256,7 @@ export default function ProjectDetail() {
     showToast({ title: "Link copied", message: "Project workspace link copied to clipboard." });
   }
 
-  function handleSaveProject(updates) {
+  async function handleSaveProject(updates) {
     const updatedProject = {
       ...project,
       progress: Number(updates.progress),
@@ -274,12 +265,12 @@ export default function ProjectDetail() {
       adminNotes: updates.adminNotes,
       stages: updates.stages,
     };
-    saveProject(updatedProject);
+    await saveProject(updatedProject);
     setManaging(false);
     showToast({ title: "Project updated", message: "Progress and notes are now visible to the client." });
   }
 
-  function handleAddNote(e) {
+  async function handleAddNote(e) {
     e.preventDefault();
     if (!noteText.trim()) return;
     const updatedProject = {
@@ -290,7 +281,7 @@ export default function ProjectDetail() {
         ...(project.activity || []).slice(0, 9),
       ],
     };
-    saveProject(updatedProject);
+    await saveProject(updatedProject);
     setNoteText("");
     setAddingNote(false);
     showToast({ title: "Note saved", message: "Client can now see this note in their portal." });

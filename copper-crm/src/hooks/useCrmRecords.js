@@ -18,12 +18,10 @@ export function useCrmRecords(type, fallback = []) {
       .then((data) => {
         if (!alive) return;
         const records = Array.isArray(data) ? data : (data.records || []);
-        if (records.length) {
-          storeSet(type, records);
-          setRecords(records);
-        } else {
-          setRecords([]);
-        }
+        // Always sync the cache to the server's response, even when empty,
+        // so stale demo/offline records don't linger after the database changes.
+        storeSet(type, records);
+        setRecords(records);
         setError("");
       })
       .catch((err) => {
@@ -66,7 +64,10 @@ export function useCrmRecords(type, fallback = []) {
           setRecords(storeGet(type));
           return created;
         }
-      } catch {}
+      } catch (err) {
+        console.error(`Failed to persist ${type} record to the database:`, err);
+        setError(err.message || `Failed to save ${type}.`);
+      }
 
       return saved;
     },
@@ -79,7 +80,10 @@ export function useCrmRecords(type, fallback = []) {
         if (record._id && !isLocalId(record._id, type)) {
           await apiDelete(`/api/crm/${type}/${record._id}`);
         }
-      } catch {}
+      } catch (err) {
+        console.error(`Failed to delete ${type} record from the database:`, err);
+        setError(err.message || `Failed to delete ${type}.`);
+      }
     },
 
     setRecords,

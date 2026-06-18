@@ -21,7 +21,7 @@ const KEYS = {
 };
 
 const STORE_VERSION_KEY = "cs_store_version";
-const CURRENT_STORE_VERSION = "db-sync-v1";
+const CURRENT_STORE_VERSION = "db-sync-v2";
 
 function migrateStore() {
   try {

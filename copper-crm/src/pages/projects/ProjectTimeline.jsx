@@ -10,7 +10,9 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ProjectHeader from "./ProjectHeader";
-import { TODAY, DAY_MS, parseFullDate, parseShortDate, formatRange } from "../../lib/dates";
+import { today, DAY_MS, parseFullDate, parseShortDate, formatRange } from "../../lib/dates";
+
+const TODAY = today();
 
 const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 

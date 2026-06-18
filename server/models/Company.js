@@ -1,5 +1,15 @@
 import mongoose from "mongoose";
 
+const activitySchema = new mongoose.Schema(
+  {
+    type: { type: String, default: "note" },
+    text: { type: String, required: true },
+    actor: { type: String, default: "Admin" },
+    createdAt: { type: Date, default: Date.now }
+  },
+  { _id: true }
+);
+
 const companySchema = new mongoose.Schema(
   {
     id: { type: String, index: true },
@@ -11,7 +21,9 @@ const companySchema = new mongoose.Schema(
     status: { type: String, default: "Prospect", index: true },
     address: { type: String, default: "" },
     website: { type: String, default: "" },
-    notes: { type: String, default: "" }
+    notes: { type: String, default: "" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    activity: [activitySchema]
   },
   { timestamps: true }
 );

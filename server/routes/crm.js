@@ -5,6 +5,9 @@ import Coupon from "../models/Coupon.js";
 import CrmLead from "../models/CrmLead.js";
 import Deal from "../models/Deal.js";
 import Task from "../models/Task.js";
+import Project from "../models/Project.js";
+import Document from "../models/Document.js";
+import Meeting from "../models/Meeting.js";
 
 const router = express.Router();
 const models = {
@@ -13,8 +16,13 @@ const models = {
   coupons: Coupon,
   deals: Deal,
   leads: CrmLead,
-  tasks: Task
+  tasks: Task,
+  projects: Project,
+  documents: Document,
+  meetings: Meeting
 };
+
+const companyLinkedTypes = new Set(["projects", "documents", "meetings"]);
 
 const expirableCouponStatuses = ["Active", "Applied", "Not used"];
 
@@ -59,6 +67,23 @@ async function expireOldCoupons() {
   );
 }
 
+async function withClientLink(type, payload) {
+  if (!companyLinkedTypes.has(type) || !payload.companyId || payload.clientId) return payload;
+  const company = await Company.findById(payload.companyId).select("userId").catch(() => null);
+  if (company?.userId) return { ...payload, clientId: company.userId };
+  return payload;
+}
+
+async function cascadeClientLink(companyId, userId) {
+  const filter = { companyId };
+  const update = { $set: { clientId: userId || null } };
+  await Promise.all([
+    Project.updateMany(filter, update),
+    Document.updateMany(filter, update),
+    Meeting.updateMany(filter, update)
+  ]);
+}
+
 router.get("/:type", validateType, async (req, res, next) => {
   try {
     const Model = models[req.params.type];
@@ -72,8 +97,10 @@ router.get("/:type", validateType, async (req, res, next) => {
 
 router.post("/:type", validateType, async (req, res, next) => {
   try {
-    const Model = models[req.params.type];
-    const payload = req.params.type === "coupons" ? couponPayload(req.body) : req.body;
+    const { type } = req.params;
+    const Model = models[type];
+    let payload = type === "coupons" ? couponPayload(req.body) : req.body;
+    payload = await withClientLink(type, payload);
     const record = await Model.create(payload);
     res.status(201).json(asPublicRecord(record));
   } catch (error) {
@@ -83,10 +110,15 @@ router.post("/:type", validateType, async (req, res, next) => {
 
 router.put("/:type/:id", validateType, async (req, res, next) => {
   try {
-    const Model = models[req.params.type];
-    const payload = req.params.type === "coupons" ? couponPayload(req.body) : req.body;
+    const { type } = req.params;
+    const Model = models[type];
+    let payload = type === "coupons" ? couponPayload(req.body) : req.body;
+    payload = await withClientLink(type, payload);
     const record = await Model.findByIdAndUpdate(req.params.id, payload, { new: true });
     if (!record) return res.status(404).json({ message: "CRM record not found." });
+    if (type === "companies" && Object.prototype.hasOwnProperty.call(payload, "userId")) {
+      await cascadeClientLink(record._id, payload.userId);
+    }
     res.json(asPublicRecord(record));
   } catch (error) {
     next(error);
