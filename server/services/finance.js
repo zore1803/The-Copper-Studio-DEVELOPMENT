@@ -4,6 +4,10 @@ import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import User from "../models/User.js";
 
+const BACKFILL_INTERVAL_MS = 5 * 60 * 1000;
+let lastBackfillAt = 0;
+let backfillInFlight = null;
+
 function asDate(value) {
   if (!value) return undefined;
   const date = new Date(value);
@@ -105,6 +109,33 @@ export async function syncFinanceForOrder(orderInput) {
 }
 
 export async function syncPaidOrderFinance() {
-  const paidOrders = await Order.find({ "payment.status": "paid" }).sort({ createdAt: -1 });
-  await Promise.all(paidOrders.map((order) => syncFinanceForOrder(order)));
+  const now = Date.now();
+  if (backfillInFlight) return backfillInFlight;
+  if (now - lastBackfillAt < BACKFILL_INTERVAL_MS) return null;
+
+  backfillInFlight = (async () => {
+    const [paymentOrderIds, invoiceOrderIds] = await Promise.all([
+      Payment.distinct("sourceOrderId", { sourceOrderId: { $ne: null } }),
+      Invoice.distinct("sourceOrderId", { sourceOrderId: { $ne: null } })
+    ]);
+    const invoiced = new Set(invoiceOrderIds.map(String));
+    const fullySyncedIds = paymentOrderIds.filter((id) => invoiced.has(String(id)));
+
+    const missingOrders = await Order.find({
+      "payment.status": "paid",
+      _id: { $nin: fullySyncedIds }
+    })
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    await Promise.all(missingOrders.map((order) => syncFinanceForOrder(order)));
+    lastBackfillAt = Date.now();
+    return missingOrders.length;
+  })();
+
+  try {
+    return await backfillInFlight;
+  } finally {
+    backfillInFlight = null;
+  }
 }
