@@ -843,25 +843,18 @@ export default function CompanyDetail() {
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
       <div className="border-b border-[#e5e7eb] bg-white">
-        <div className="px-6 py-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-[#e5e7eb] bg-[#f9fafb]">
-                <Building2 size={20} className="text-[#884c2d]" />
+        <div className="px-6 py-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
+                <Building2 size={24} className="text-[#884c2d]" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-lg font-bold text-[#111827]">{company.name}</h2>
-                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
+                <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
                   {company.industry && <span>{company.industry}</span>}
                   {company.phone && <span className="inline-flex items-center gap-1"><Phone size={12} /> {company.phone}</span>}
                   {company.website && <a className="inline-flex items-center gap-1 text-[#884c2d] hover:underline" href={company.website.startsWith("http") ? company.website : `https://${company.website}`} target="_blank" rel="noreferrer"><Globe size={12} /> Website</a>}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#6b7280]">
-                  <span>GSTIN: <b className="text-[#374151]">{company.gstin || "Not added"}</b></span>
-                  <span>Client since: <b className="text-[#374151]">{formatDate(company.createdAt || company.clientSince)}</b></span>
-                  <span>Primary: <b className="text-[#374151]">{primaryContact?.name || company.primaryContact || "Not set"}</b></span>
-                  <span>Lead source: <b className="text-[#374151]">{company.leadSource || "Not added"}</b></span>
-                  <span>Owner: <b className="text-[#374151]">{company.owner || company.companyOwner || "Unassigned"}</b></span>
                 </div>
               </div>
             </div>
@@ -875,6 +868,14 @@ export default function CompanyDetail() {
               <Button variant="secondary" onClick={() => navigate("/admin/companies")}><Edit2 size={14} /> Edit in List</Button>
               <Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>
             </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#f1f1f5] bg-[#fafafa] p-4 sm:grid-cols-3 lg:grid-cols-5">
+            <InfoLine label="GSTIN" value={company.gstin} />
+            <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
+            <InfoLine label="Primary Contact" value={primaryContact?.name || company.primaryContact} />
+            <InfoLine label="Lead Source" value={company.leadSource} />
+            <InfoLine label="Owner" value={company.owner || company.companyOwner} />
           </div>
         </div>
 
@@ -1059,7 +1060,7 @@ function ActivityTimeline({ items, full = false }) {
   );
 }
 
-function CompanySidebar({ company, primaryContact, collected, outstanding, activeTasks, overdueTasks, linked, onProject, onContact, onInvoice, onProposal, onDocuments }) {
+function CompanySidebar({ company, primaryContact, outstanding, activeTasks, overdueTasks, linked, onProject, onContact, onInvoice, onProposal, onDocuments }) {
   const totalSignals = linked.projects.length + linked.contacts.length + linked.invoices.length + activeTasks;
   const riskPenalty = overdueTasks * 12 + (outstanding > 0 ? 8 : 0);
   const score = Math.max(0, Math.min(100, 68 + Math.min(totalSignals * 3, 24) - riskPenalty));
@@ -1072,14 +1073,6 @@ function CompanySidebar({ company, primaryContact, collected, outstanding, activ
             <p className="text-sm text-[#6b7280]">{score >= 80 ? "Healthy relationship" : score >= 55 ? "Needs attention" : "High priority"}</p>
           </div>
           <div className="grid h-16 w-16 place-items-center rounded-full border-8 border-[#fff1ec] text-sm font-bold text-[#884c2d]">{score}</div>
-        </div>
-      </Section>
-      <Section title="Quick Stats">
-        <div className="grid grid-cols-2 gap-3">
-          <DetailMini label="Revenue" value={formatINR(collected)} />
-          <DetailMini label="Outstanding" value={formatINR(outstanding)} />
-          <DetailMini label="Projects" value={linked.projects.length} />
-          <DetailMini label="Tasks" value={activeTasks} />
         </div>
       </Section>
       <Section title="Primary Contact">
