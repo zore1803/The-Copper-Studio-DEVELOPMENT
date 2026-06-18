@@ -466,6 +466,28 @@ export default function AdminLayout() {
             </div>
           ))}
         </nav>
+
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center gap-2 py-3" : "p-3"}`}>
+          {!collapsed && (
+            <div className="mb-2 flex items-center gap-2.5 px-1">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-[#111827]">{name}</p>
+                <p className="truncate text-[11px] text-[#6b7280]">{auth.user?.role || "Admin"}</p>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => { auth.logout(); navigate("/login", { replace: true }); }}
+            title="Log out"
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+          >
+            <LogOut size={14} />
+            {!collapsed && "Log out"}
+          </button>
+        </div>
       </aside>
 
       {/* Main */}
