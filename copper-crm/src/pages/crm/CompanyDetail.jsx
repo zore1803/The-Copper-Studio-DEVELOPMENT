@@ -14,15 +14,14 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
+import { buildProjectPayload } from "../../lib/projectDefaults";
 import SidePanel from "../../components/SidePanel";
+import ProjectFormPanel from "../../components/ProjectFormPanel";
 
 const TABS = ["Overview", "Projects", "Contacts", "Invoices", "Documents", "Tasks", "Activity", "Meetings"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const TASK_VIEWS = ["List", "Board", "Calendar", "Gantt"];
 const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
-const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
-const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
-const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -58,97 +57,6 @@ function KpiChip({ label, value, icon: Icon }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function ProjectPanel({ company, contacts = [], invoices = [], onClose, onSave }) {
-  const [projectCode] = useState(() => `PRJ-${Date.now().toString(36).toUpperCase()}`);
-  const [form, setForm] = useState({
-    name: "",
-    projectManager: "",
-    primaryContactId: "",
-    packageName: "",
-    customPackageName: "",
-    startDate: "",
-    expectedEndDate: "",
-    priority: "Medium",
-    status: "Requirement Gathering",
-    budget: "",
-    discount: "",
-    linkedInvoiceId: "",
-    paymentStatus: "Pending",
-    internalNotes: "",
-    assignedTeam: "",
-    tags: "",
-  });
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-  const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
-
-  function handleSave() {
-    const contact = contacts.find((c) => String(c.id || c._id) === form.primaryContactId);
-    onSave({
-      ...form,
-      projectCode,
-      packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
-      primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
-      finalAmount,
-      tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-      assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
-    });
-  }
-
-  return (
-    <SidePanel
-      title="New Project"
-      subtitle={`Link this project to ${company.name}.`}
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}><Save size={14} /> Create Project</Button>
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        <FormSection title="Basic Information">
-          <Input span label="Project name *" value={form.name} onChange={set("name")} />
-          <Input label="Project ID" value={projectCode} disabled />
-          <Input label="Company" value={company.name} disabled />
-          <Select label="Primary contact" value={form.primaryContactId} onChange={set("primaryContactId")}
-            options={contacts.map((c) => ({ value: String(c.id || c._id), label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Input span label="Project manager" value={form.projectManager} onChange={set("projectManager")} />
-          <Select label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
-          {form.packageName === "Custom" && (
-            <Input label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} />
-          )}
-        </FormSection>
-
-        <FormSection title="Timeline">
-          <Input type="date" label="Project start date" value={form.startDate} onChange={set("startDate")} />
-          <Input type="date" label="Expected completion date" value={form.expectedEndDate} onChange={set("expectedEndDate")} />
-          <Select label="Priority" value={form.priority} onChange={set("priority")} options={PRIORITY_OPTIONS} />
-        </FormSection>
-
-        <FormSection title="Delivery Pipeline">
-          <Select span label="Delivery stage" value={form.status} onChange={set("status")} options={PROJECT_STATUS} />
-        </FormSection>
-
-        <FormSection title="Commercials">
-          <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} />
-          <Input type="number" label="Discount applied" value={form.discount} onChange={set("discount")} />
-          <Input label="Final amount" value={formatINR(finalAmount)} disabled />
-          <Select label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
-            options={invoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} />
-          <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
-        </FormSection>
-
-        <FormSection title="Internal">
-          <Input span label="Assigned team (comma separated)" value={form.assignedTeam} onChange={set("assignedTeam")} />
-          <Input span label="Tags (comma separated)" value={form.tags} onChange={set("tags")} />
-          <Textarea span label="Internal notes" value={form.internalNotes} onChange={set("internalNotes")} />
-        </FormSection>
-      </div>
-    </SidePanel>
   );
 }
 
@@ -626,77 +534,6 @@ function buildActivity(linked, company) {
     .sort((a, b) => b.sortDate - a.sortDate);
 }
 
-function addDays(value, days) {
-  const base = value ? new Date(value) : new Date();
-  if (Number.isNaN(base.getTime())) return "";
-  base.setDate(base.getDate() + days);
-  return base.toISOString().slice(0, 10);
-}
-
-function createDefaultTimeline(startDate) {
-  const stages = [
-    ["Requirement Gathering", 0, 4],
-    ["Design", 5, 12],
-    ["Development", 13, 28],
-    ["Testing", 29, 35],
-    ["Review", 36, 40],
-    ["Deployment", 41, 45],
-  ];
-  return stages.map(([name, startOffset, dueOffset], index) => ({
-    id: `milestone-${Date.now()}-${index}`,
-    name,
-    startDate: addDays(startDate, startOffset),
-    dueDate: addDays(startDate, dueOffset),
-    status: index === 0 ? "On Track" : "Upcoming",
-    owner: "",
-    completion: 0,
-    clientVisible: true,
-  }));
-}
-
-function createStarterTasks(project, company, timeline) {
-  return timeline.map((milestone, index) => ({
-    id: `task-${Date.now()}-${index}`,
-    taskId: `TASK-${String(index + 1).padStart(3, "0")}`,
-    title: `${milestone.name} checkpoint`,
-    taskName: `${milestone.name} checkpoint`,
-    companyId: company.id || company._id,
-    company: company.name,
-    projectId: project.id,
-    projectName: project.name,
-    project: project.id,
-    assignedTo: Array.isArray(project.assignedTeam) ? project.assignedTeam[0] || "" : "",
-    priority: project.priority || "Medium",
-    status: index === 0 ? "To Do" : "Backlog",
-    startDate: milestone.startDate,
-    dueDate: milestone.dueDate,
-    estimatedHours: "",
-    actualHours: "",
-    tags: [milestone.name, ...(project.tags || [])],
-    clientVisible: false,
-    createdAt: new Date().toISOString(),
-  }));
-}
-
-function createProjectFolders(project, company) {
-  return ["Proposals", "Contracts", "Invoices", "Design Files", "Development Files", "Deliverables", "Internal Documents", "Client Shared Documents"].map((name, index) => ({
-    id: `folder-${Date.now()}-${index}`,
-    folderId: `folder-${Date.now()}-${index}`,
-    fileName: name,
-    name,
-    type: "folder",
-    fileType: "Folder",
-    companyId: company.id || company._id,
-    company: company.name,
-    projectId: project.id,
-    projectName: project.name,
-    visibility: name.includes("Client") ? "Client Visible" : name.includes("Internal") ? "Private" : "Project Team",
-    category: name,
-    tags: [project.packageName, project.priority].filter(Boolean),
-    createdAt: new Date().toISOString(),
-  }));
-}
-
 export default function CompanyDetail() {
   const { companyId } = useParams();
   const navigate = useNavigate();
@@ -810,49 +647,13 @@ export default function CompanyDetail() {
     return statusOk && packageOk && managerOk && timelineOk;
   });
 
-  async function handleCreateProject(form) {
+  async function handleCreateProject(targetCompany, form) {
     if (!form.name.trim()) {
       showToast({ type: "error", title: "Project name required", message: "Add a name before creating the project." });
       return;
     }
-    const projectId = `project-${Date.now()}`;
-    const timeline = createDefaultTimeline(form.startDate);
-    const folderRecords = createProjectFolders({ ...form, id: projectId }, company);
-    const projectPayload = {
-      ...form,
-      id: projectId,
-      projectId: form.projectCode || projectId,
-      companyId: company.id || company._id,
-      companyName: company.name,
-      client: company.name,
-      budget: Number(form.budget) || 0,
-      packageValue: Number(form.budget) || 0,
-      discountApplied: Number(form.discount) || 0,
-      finalAmount: Number(form.finalAmount) || Math.max(Number(form.budget || 0) - Number(form.discount || 0), 0),
-      linkedInvoiceId: form.linkedInvoiceId,
-      budgetUsed: 0,
-      progress: Number(form.progress) || 0,
-      stages: timeline.map((item) => ({ name: item.name, status: item.status === "On Track" ? "in_progress" : "not_started" })),
-      timeline,
-      tasksBoard: ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"],
-      documents: folderRecords,
-      customFolders: folderRecords,
-      activity: [
-        { icon: "check", text: "Project workspace created", time: "Just now" },
-        { icon: "check", text: "Timeline initialized", time: "Just now" },
-        { icon: "check", text: "Tasks board initialized", time: "Just now" },
-        { icon: "upload", text: "Document folders initialized", time: "Just now" },
-      ],
-      history: [
-        { event: "Project Created", createdAt: new Date().toISOString() },
-        { event: "Timeline Generated", createdAt: new Date().toISOString() },
-        { event: "Tasks Created", createdAt: new Date().toISOString() },
-        { event: "Document Folders Created", createdAt: new Date().toISOString() },
-      ],
-      createdAt: new Date().toISOString(),
-    };
-    const starterTasks = createStarterTasks(projectPayload, company, timeline);
-    const created = await saveProject(projectPayload);
+    const { payload, folderRecords, starterTasks } = buildProjectPayload(form, targetCompany);
+    const created = await saveProject(payload);
     await Promise.all(starterTasks.map((task) => saveTask(task)));
     await Promise.all(folderRecords.map((folder) => saveDocument(folder)));
     setCreatingProject(false);
@@ -1129,7 +930,7 @@ export default function CompanyDetail() {
         {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
       </div>
 
-      {creatingProject && <ProjectPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
+      {creatingProject && <ProjectFormPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
       {selectedInvoice && <InvoicePanel invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} onDownload={downloadInvoicePdf} onMarkPaid={handleMarkInvoicePaid} />}

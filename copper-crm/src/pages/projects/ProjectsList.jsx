@@ -4,8 +4,9 @@ import { FolderKanban, Plus, Search } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { today, daysBetween, parseFullDate } from "../../lib/dates";
+import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectCard from "../../components/ProjectCard";
-import SidePanel from "../../components/SidePanel";
+import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
 
 const MONTH_COL_WIDTH = 140;
@@ -126,83 +127,6 @@ function DeadlineTimeline({ items }) {
   );
 }
 
-function NewProjectPanel({ companies, onClose, onSave }) {
-  const [form, setForm] = useState({
-    name: "",
-    companyId: companies.length > 0 ? (companies[0].id || companies[0]._id) : "",
-    packageName: "",
-    priority: "Medium",
-    status: "Requirement Gathering",
-    startDate: "",
-    expectedEndDate: "",
-    budget: "",
-  });
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  return (
-    <SidePanel
-      title="New Project"
-      subtitle="Create a project linked to an existing company."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)} disabled={!form.companyId || !form.name}><Plus size={14} /> Create Project</Button>
-        </div>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Project name *</span>
-          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" placeholder="Enter project name" />
-        </label>
-        <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Company *</span>
-          {companies.length === 0 ? (
-            <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
-              No companies available - create a company first
-            </div>
-          ) : (
-            <select 
-              value={form.companyId} 
-              onChange={(e) => set("companyId")(e.target.value)} 
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 cursor-pointer"
-            >
-              <option value="">-- Select a company --</option>
-              {companies.map((c) => (
-                <option key={c.id || c._id} value={c.id || c._id}>
-                  {c.name || c.companyName}
-                </option>
-              ))}
-            </select>
-          )}
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Package</span>
-          <input value={form.packageName} onChange={(e) => set("packageName")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Priority</span>
-          <select value={form.priority} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-            {["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Start date</span>
-          <input type="date" value={form.startDate} onChange={(e) => set("startDate")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Expected completion</span>
-          <input type="date" value={form.expectedEndDate} onChange={(e) => set("expectedEndDate")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-        <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Budget</span>
-          <input type="number" value={form.budget} onChange={(e) => set("budget")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-      </div>
-    </SidePanel>
-  );
-}
 
 export default function ProjectsList() {
   const navigate = useNavigate();
@@ -211,6 +135,10 @@ export default function ProjectsList() {
   const [creating, setCreating] = useState(false);
   const { records: projects, loading, save } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
+  const { records: contacts } = useCrmRecords("contacts");
+  const { records: invoices } = useCrmRecords("invoices");
+  const { save: saveTask } = useCrmRecords("tasks");
+  const { save: saveDocument } = useCrmRecords("documents");
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -220,29 +148,13 @@ export default function ProjectsList() {
     );
   }, [projects, search]);
 
-  async function handleCreate(form) {
-    if (!form.name.trim()) {
-      showToast({ type: "error", title: "Project name required", message: "Add a name before creating the project." });
-      return;
-    }
-    const company = companies.find((c) => String(c.id || c._id) === String(form.companyId));
-    if (!company) {
-      showToast({ type: "error", title: "Company required", message: "Select a company to link this project to." });
-      return;
-    }
-    const id = `project-${Date.now()}`;
-    const created = await save({
-      ...form,
-      id,
-      companyId: company.id || company._id,
-      companyName: company.name,
-      client: company.name,
-      budget: Number(form.budget) || 0,
-      progress: 0,
-      createdAt: new Date().toISOString(),
-    });
+  async function handleCreate(company, form) {
+    const { payload, folderRecords, starterTasks } = buildProjectPayload(form, company);
+    const created = await save(payload);
+    await Promise.all(starterTasks.map((task) => saveTask(task)));
+    await Promise.all(folderRecords.map((folder) => saveDocument(folder)));
     setCreating(false);
-    showToast({ title: "Project created", message: `${created.name} is now linked to ${company.name}.` });
+    showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
     navigate(`/admin/companies/${company.id || company._id}/projects/${created.id || created._id}`);
   }
 
@@ -286,7 +198,15 @@ export default function ProjectsList() {
         </div>
       )}
 
-      {creating && <NewProjectPanel companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {creating && (
+        <ProjectFormPanel
+          companies={companies}
+          contacts={contacts}
+          invoices={invoices}
+          onClose={() => setCreating(false)}
+          onSave={handleCreate}
+        />
+      )}
     </div>
   );
 }
