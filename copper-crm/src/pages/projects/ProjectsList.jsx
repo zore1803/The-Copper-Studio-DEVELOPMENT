@@ -129,7 +129,7 @@ function DeadlineTimeline({ items }) {
 function NewProjectPanel({ companies, onClose, onSave }) {
   const [form, setForm] = useState({
     name: "",
-    companyId: companies[0]?.id || companies[0]?._id || "",
+    companyId: companies.length > 0 ? (companies[0].id || companies[0]._id) : "",
     packageName: "",
     priority: "Medium",
     status: "Requirement Gathering",
@@ -147,21 +147,35 @@ function NewProjectPanel({ companies, onClose, onSave }) {
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Plus size={14} /> Create Project</Button>
+          <Button onClick={() => onSave(form)} disabled={!form.companyId || !form.name}><Plus size={14} /> Create Project</Button>
         </div>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Project name *</span>
-          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" placeholder="Enter project name" />
         </label>
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Company *</span>
-          <select value={form.companyId} onChange={(e) => set("companyId")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-            {companies.length === 0 && <option value="">No companies yet</option>}
-            {companies.map((c) => <option key={c.id || c._id} value={c.id || c._id}>{c.name}</option>)}
-          </select>
+          {companies.length === 0 ? (
+            <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
+              No companies available - create a company first
+            </div>
+          ) : (
+            <select 
+              value={form.companyId} 
+              onChange={(e) => set("companyId")(e.target.value)} 
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 cursor-pointer"
+            >
+              <option value="">-- Select a company --</option>
+              {companies.map((c) => (
+                <option key={c.id || c._id} value={c.id || c._id}>
+                  {c.name || c.companyName}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Package</span>
