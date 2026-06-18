@@ -11,7 +11,7 @@ const contactSchema = new mongoose.Schema(
     department: { type: String, default: "" },
     notes: { type: String, default: "" }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Contact", contactSchema);

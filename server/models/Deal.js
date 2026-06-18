@@ -13,7 +13,7 @@ const dealSchema = new mongoose.Schema(
     source: { type: String, default: "" },
     notes: { type: String, default: "" }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Deal", dealSchema);

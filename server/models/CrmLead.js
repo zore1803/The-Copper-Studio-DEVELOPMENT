@@ -14,7 +14,7 @@ const crmLeadSchema = new mongoose.Schema(
     lastActivity: { type: String, default: "Created now" },
     notes: { type: String, default: "" }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("CrmLead", crmLeadSchema);

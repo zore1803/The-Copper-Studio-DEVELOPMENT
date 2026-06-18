@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FolderPlus, FilePlus2, FileText, FileType, Image, Frame,
@@ -7,7 +7,6 @@ import {
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
-import { storeGet, saveProject } from "../../lib/store";
 import ProjectHeader from "./ProjectHeader";
 
 const SYSTEM_FOLDERS = [
@@ -55,15 +54,7 @@ export default function ProjectFiles() {
   const [newFolderName, setNewFolderName] = useState("");
   const [docMenu, setDocMenu] = useState(null);
   const { records: companies } = useCrmRecords("companies");
-  const [allProjects, setAllProjects] = useState(() => storeGet("projects"));
-
-  useEffect(() => {
-    function onUpdate(e) {
-      if (e.detail?.type === "projects") setAllProjects(storeGet("projects"));
-    }
-    window.addEventListener("cs-store", onUpdate);
-    return () => window.removeEventListener("cs-store", onUpdate);
-  }, []);
+  const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
 
   const company = useMemo(
     () => companies.find((c) => String(c.id) === companyId || String(c._id) === companyId),
@@ -88,6 +79,14 @@ export default function ProjectFiles() {
 
   const visibleDocuments = activeFolder ? documents.filter(doc => doc.category === activeFolder) : documents;
 
+  if ((!company || !project) && projectsLoading) {
+    return (
+      <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
+        <p className="text-sm font-semibold text-[#6c6355]">Loading project files…</p>
+      </div>
+    );
+  }
+
   if (!company || !project) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
@@ -102,7 +101,7 @@ export default function ProjectFiles() {
     showToast({ title: "Link copied", message: "Project files link copied to clipboard." });
   }
 
-  function handleFileUpload(e) {
+  async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     const category = uploadFolder || activeFolder || "Deliverables";
@@ -116,19 +115,19 @@ export default function ProjectFiles() {
       _id: `doc-${Date.now()}`,
     };
     const updated = { ...project, documents: [newDoc, ...(project.documents || [])] };
-    saveProject(updated);
+    await saveProject(updated);
     e.target.value = "";
     showToast({ title: "File uploaded", message: `${file.name} added to ${category}.` });
   }
 
-  function handleDeleteDoc(doc) {
+  async function handleDeleteDoc(doc) {
     const updated = { ...project, documents: (project.documents || []).filter(d => d._id !== doc._id && d.name !== doc.name) };
-    saveProject(updated);
+    await saveProject(updated);
     setDocMenu(null);
     showToast({ title: "File removed", message: `${doc.name} deleted.` });
   }
 
-  function handleAddFolder(e) {
+  async function handleAddFolder(e) {
     e.preventDefault();
     const name = newFolderName.trim();
     if (!name || customFolders.includes(name) || SYSTEM_FOLDERS.some(f => f.key === name)) {
@@ -136,7 +135,7 @@ export default function ProjectFiles() {
       return;
     }
     const updated = { ...project, customFolders: [...customFolders, name] };
-    saveProject(updated);
+    await saveProject(updated);
     setNewFolderName("");
     setNewFolderMode(false);
     showToast({ title: "Folder created", message: `"${name}" folder added to this project.` });

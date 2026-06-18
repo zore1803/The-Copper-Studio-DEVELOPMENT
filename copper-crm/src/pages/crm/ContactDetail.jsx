@@ -51,11 +51,19 @@ function EditContactPanel({ contact, onClose, onSave }) {
 export default function ContactDetail() {
   const { contactId } = useParams();
   const navigate = useNavigate();
-  const { records: contacts, save, remove } = useCrmRecords("contacts");
+  const { records: contacts, loading, save, remove } = useCrmRecords("contacts");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
   const [activeTab, setActiveTab] = useState("overview");
   const [editing, setEditing] = useState(false);
+
+  if (!contact && loading) {
+    return (
+      <div className="m-6 rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <p className="text-sm font-semibold text-gray-500">Loading contact…</p>
+      </div>
+    );
+  }
 
   if (!contact) {
     return (

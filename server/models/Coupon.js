@@ -22,7 +22,7 @@ const couponSchema = new mongoose.Schema(
     redeemedAt: { type: Date },
     revokedAt: { type: Date }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Coupon", couponSchema);

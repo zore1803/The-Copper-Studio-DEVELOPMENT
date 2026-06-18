@@ -25,7 +25,7 @@ const companySchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     activity: [activitySchema]
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Company", companySchema);

@@ -13,7 +13,7 @@ const taskSchema = new mongoose.Schema(
     subtasks: { type: Number, default: 0 },
     comments: { type: Number, default: 0 }
   },
-  { timestamps: true }
+  { timestamps: true, strict: false }
 );
 
 export default mongoose.model("Task", taskSchema);

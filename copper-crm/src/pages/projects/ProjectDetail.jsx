@@ -217,7 +217,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
-  const { records: allProjects, save: saveProject } = useCrmRecords("projects");
+  const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
   const [managing, setManaging] = useState(false);
   const [addingNote, setAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -237,6 +237,14 @@ export default function ProjectDetail() {
     ),
     [companies, companyId, project]
   );
+
+  if (!project && projectsLoading) {
+    return (
+      <div className="rounded-2xl border border-[#E1E4EA] bg-[#FFFFFF] p-10 text-center">
+        <p className="text-sm font-semibold text-[#525866]">Loading project…</p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (

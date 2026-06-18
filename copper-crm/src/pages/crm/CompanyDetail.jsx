@@ -278,6 +278,65 @@ function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink 
   );
 }
 
+const DOCUMENT_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
+
+function DocumentUploadPanel({ company, onClose, onSave }) {
+  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", notes: "" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title="Upload Document"
+      subtitle={`Attach a file to ${company.name}.`}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save Document</Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <Input span label="File name *" value={form.name} onChange={set("name")} />
+        <Select label="Category" value={form.category} onChange={set("category")} options={DOCUMENT_CATEGORIES} />
+        <Select label="File type" value={form.fileType} onChange={set("fileType")} options={["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"]} />
+        <Input span label="File URL" value={form.fileUrl} onChange={set("fileUrl")} hint="Link to the hosted file (Drive, S3, etc.)." />
+        <Textarea span label="Notes" value={form.notes} onChange={set("notes")} />
+      </div>
+    </SidePanel>
+  );
+}
+
+function TaskPanel({ company, projects, onClose, onSave }) {
+  const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "Backlog", assignedTo: "", dueDate: "", description: "" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title="New Task"
+      subtitle={`Add a task linked to ${company.name}.`}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Create Task</Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <Input span label="Task title *" value={form.title} onChange={set("title")} />
+        <Select label="Project" value={form.projectId} onChange={set("projectId")}
+          options={projects.map((p) => ({ value: String(p.id || p._id), label: p.name }))} />
+        <Select label="Priority" value={form.priority} onChange={set("priority")} options={["Low", "Medium", "High", "Critical"]} />
+        <Select label="Status" value={form.status} onChange={set("status")} options={["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"]} />
+        <Input label="Assigned to" value={form.assignedTo} onChange={set("assignedTo")} />
+        <Input type="date" label="Due date" value={form.dueDate} onChange={set("dueDate")} />
+        <Textarea span label="Description" value={form.description} onChange={set("description")} />
+      </div>
+    </SidePanel>
+  );
+}
+
 function InvoicePanel({ invoice, onClose, onDownload, onMarkPaid }) {
   if (!invoice) return null;
   return (
@@ -652,13 +711,15 @@ export default function CompanyDetail() {
   const [linkingClient, setLinkingClient] = useState(false);
   const [clientUsers, setClientUsers] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [creatingTask, setCreatingTask] = useState(false);
   const [projectView, setProjectView] = useState("Table");
   const [taskView, setTaskView] = useState("List");
   const [projectStatusFilter, setProjectStatusFilter] = useState("All");
   const [projectPackageFilter, setProjectPackageFilter] = useState("All");
   const [projectManagerFilter, setProjectManagerFilter] = useState("All");
   const [projectTimelineFilter, setProjectTimelineFilter] = useState("All");
-  const { records: companies, save: saveCompany } = useCrmRecords("companies");
+  const { records: companies, loading: companiesLoading, save: saveCompany } = useCrmRecords("companies");
   const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
@@ -698,6 +759,14 @@ export default function CompanyDetail() {
   function openLinkClient() {
     setLoadingClients(true);
     setLinkingClient(true);
+  }
+
+  if (!company && companiesLoading) {
+    return (
+      <div className="m-6 rounded-xl border border-[#e5e7eb] bg-white p-12 text-center">
+        <p className="text-sm font-semibold text-[#6b7280]">Loading company…</p>
+      </div>
+    );
   }
 
   if (!company) {
@@ -842,6 +911,35 @@ export default function CompanyDetail() {
     await saveCompany({ ...company, userId: null });
     showToast({ title: "Client account unlinked", message: `${company.name} is no longer connected to a client login.` });
     setLinkingClient(false);
+  }
+
+  async function handleUploadDocument(form) {
+    if (!form.name.trim()) {
+      showToast({ type: "error", title: "File name required", message: "Add a name before uploading." });
+      return;
+    }
+    await saveDocument({
+      ...form,
+      companyId: company.id || company._id,
+      company: company.name,
+    });
+    setUploadingDocument(false);
+    showToast({ title: "Document uploaded", message: `${form.name} was added to ${company.name}.` });
+  }
+
+  async function handleCreateTask(form) {
+    if (!form.title.trim()) {
+      showToast({ type: "error", title: "Task title required", message: "Add a title before creating the task." });
+      return;
+    }
+    await saveTask({
+      ...form,
+      id: `task-${Date.now()}`,
+      companyId: company.id || company._id,
+      company: company.name,
+    });
+    setCreatingTask(false);
+    showToast({ title: "Task created", message: `${form.title} was added to ${company.name}.` });
   }
 
   async function handleMarkInvoicePaid(invoice) {
@@ -1023,9 +1121,9 @@ export default function CompanyDetail() {
             {linked.invoices.length ? <InvoicesTable invoices={linked.invoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} /> : <EmptyState icon={FileText} title="No invoices linked." />}
           </Section>
         )}
-        {activeTab === "Documents" && <DocumentsTab documents={linked.documents} projects={linked.projects} />}
+        {activeTab === "Documents" && <DocumentsTab documents={linked.documents} projects={linked.projects} onUpload={() => setUploadingDocument(true)} />}
         {activeTab === "Tasks" && (
-          <TasksWorkspace tasks={linked.tasks} projects={linked.projects} view={taskView} onView={setTaskView} />
+          <TasksWorkspace tasks={linked.tasks} projects={linked.projects} view={taskView} onView={setTaskView} onCreate={() => setCreatingTask(true)} />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
         {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
@@ -1044,6 +1142,12 @@ export default function CompanyDetail() {
           onLink={handleLinkClient}
           onUnlink={handleUnlinkClient}
         />
+      )}
+      {uploadingDocument && (
+        <DocumentUploadPanel company={company} onClose={() => setUploadingDocument(false)} onSave={handleUploadDocument} />
+      )}
+      {creatingTask && (
+        <TaskPanel company={company} projects={linked.projects} onClose={() => setCreatingTask(false)} onSave={handleCreateTask} />
       )}
     </div>
   );
@@ -1478,12 +1582,12 @@ function TaskGantt({ tasks, projects }) {
   );
 }
 
-function DocumentsTab({ documents, projects }) {
+function DocumentsTab({ documents, projects, onUpload }) {
   const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
   const projectDocs = projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })));
   const allDocs = [...documents, ...projectDocs];
   return (
-    <Section title="Documents" action={<Button variant="secondary" onClick={() => window.dispatchEvent(new CustomEvent("cs-open-upload"))}><Plus size={14} /> Upload Document</Button>}>
+    <Section title="Documents" action={<Button variant="secondary" onClick={onUpload}><Plus size={14} /> Upload Document</Button>}>
       <div className="grid gap-4 md:grid-cols-3">
         {categories.map((category) => {
           const docs = allDocs.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(category.toLowerCase().split(" ")[0]));
@@ -1512,11 +1616,21 @@ function DocumentsTab({ documents, projects }) {
   );
 }
 
-function TasksWorkspace({ tasks, projects, view, onView }) {
-  if (!tasks.length) return <EmptyState icon={StickyNote} title="No tasks linked." />;
+function TasksWorkspace({ tasks, projects, view, onView, onCreate }) {
+  if (!tasks.length) {
+    return <EmptyState icon={StickyNote} title="No tasks linked." action={<Button onClick={onCreate}><Plus size={14} /> New Task</Button>} />;
+  }
   const statuses = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
   return (
-    <Section title="Tasks" action={<WorkspaceToggle options={TASK_VIEWS} value={view} onChange={onView} />}>
+    <Section
+      title="Tasks"
+      action={
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={onCreate}><Plus size={14} /> Task</Button>
+          <WorkspaceToggle options={TASK_VIEWS} value={view} onChange={onView} />
+        </div>
+      }
+    >
       {view === "List" && <TasksTable tasks={tasks} projects={projects} />}
       {view === "Board" && (
         <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
