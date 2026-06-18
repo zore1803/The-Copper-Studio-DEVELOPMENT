@@ -5,6 +5,7 @@ import {
   CalendarDays, ChevronDown, IndianRupee, TrendingUp, UserPlus,
   Clock3, Activity, Download, Users, Package, CheckCircle2,
 } from "lucide-react";
+import { useCrmRecords } from "../hooks/useCrmRecords";
 import { storeGet } from "../lib/store";
 
 function parseCurrency(v) {
@@ -15,6 +16,22 @@ function formatINR(v) {
 }
 function formatCompact(v) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", notation: "compact", maximumFractionDigits: 1 }).format(v || 0);
+}
+function invoiceStatus(invoice) {
+  const status = invoice.status || invoice.paymentStatus || "Pending";
+  if (/paid|success/i.test(status)) return "Paid";
+  if (/fail|cancel/i.test(status)) return "Failed";
+  if (/overdue/i.test(status)) return "Overdue";
+  return "Pending";
+}
+function invoiceAmount(invoice) {
+  return parseCurrency(invoice.total ?? invoice.amount ?? invoice.finalAmount ?? invoice.value);
+}
+function formatDate(value) {
+  if (!value) return "Not set";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function KpiCard({ label, value, change, up, icon: Icon, iconBg }) {
@@ -246,18 +263,20 @@ function CrmTab({ companies, contacts }) {
   );
 }
 
-function InvoicesTab({ orders }) {
+function InvoicesTab({ invoices }) {
   const summary = {
-    total: orders.reduce((sum, o) => sum + parseCurrency(o.amount), 0),
-    paid: orders.filter(o => o.status === "Paid").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
-    pending: orders.filter(o => o.status === "Pending").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
-    failed: orders.filter(o => o.status === "Failed").reduce((sum, o) => sum + parseCurrency(o.amount), 0),
+    total: invoices.reduce((sum, invoice) => sum + invoiceAmount(invoice), 0),
+    paid: invoices.filter((invoice) => invoiceStatus(invoice) === "Paid").reduce((sum, invoice) => sum + invoiceAmount(invoice), 0),
+    pending: invoices.filter((invoice) => invoiceStatus(invoice) === "Pending").reduce((sum, invoice) => sum + invoiceAmount(invoice), 0),
+    failed: invoices.filter((invoice) => ["Failed", "Overdue"].includes(invoiceStatus(invoice))).reduce((sum, invoice) => sum + invoiceAmount(invoice), 0),
   };
   const statusColor = {
     Paid: "bg-emerald-50 text-emerald-700",
     Pending: "bg-amber-50 text-amber-700",
     Failed: "bg-red-50 text-red-600",
+    Overdue: "bg-red-50 text-red-600",
   };
+  const recentInvoices = invoices.slice(0, 12);
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -280,33 +299,40 @@ function InvoicesTab({ orders }) {
       </div>
       <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="px-5 py-4 border-b border-[#f3f4f6]">
-          <h3 className="text-sm font-bold text-[#111827]">All Orders</h3>
+          <h3 className="text-sm font-bold text-[#111827]">Recent Invoices</h3>
         </div>
-        <table className="min-w-full">
-          <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
-            <tr>
-              {["Order ID", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
-                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order, i) => (
-              <tr key={i} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
-                <td className="px-5 py-3 text-xs font-mono text-[#6b7280]">{order.id}</td>
-                <td className="px-5 py-3 text-sm font-semibold text-[#111827]">{order.customer}</td>
-                <td className="px-5 py-3 text-sm text-[#374151]">{order.package}</td>
-                <td className="px-5 py-3 text-sm font-bold text-[#111827]">{order.amount}</td>
-                <td className="px-5 py-3">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${statusColor[order.status] || "bg-gray-100 text-gray-600"}`}>
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-sm text-[#374151]">{order.date}</td>
+        {recentInvoices.length ? (
+          <table className="min-w-full">
+            <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+              <tr>
+                {["Invoice", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
+                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentInvoices.map((invoice) => {
+                const status = invoiceStatus(invoice);
+                return (
+                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
+                    <td className="px-5 py-3 text-xs font-mono text-[#6b7280]">{invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id}</td>
+                    <td className="px-5 py-3 text-sm font-semibold text-[#111827]">{invoice.company || invoice.client || invoice.customerEmail || "Not linked"}</td>
+                    <td className="px-5 py-3 text-sm text-[#374151]">{invoice.package || invoice.project || "Not added"}</td>
+                    <td className="px-5 py-3 text-sm font-bold text-[#111827]">{formatINR(invoiceAmount(invoice))}</td>
+                    <td className="px-5 py-3">
+                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${statusColor[status] || "bg-gray-100 text-gray-600"}`}>
+                        {status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date || invoice.paidAt || invoice.createdAt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <p className="p-5 text-sm text-[#9ca3af]">No invoices generated yet.</p>
+        )}
       </div>
     </div>
   );
@@ -321,6 +347,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState(() => storeGet("projects"));
   const [companies, setCompanies] = useState(() => storeGet("companies"));
   const [contacts, setContacts] = useState(() => storeGet("contacts"));
+  const { records: invoices } = useCrmRecords("invoices");
 
   useEffect(() => {
     function onUpdate(e) {
@@ -397,9 +424,9 @@ export default function Dashboard() {
           <>
             <div>
               <h2 className="text-lg font-bold text-[#111827]">Revenue & Orders</h2>
-              <p className="text-sm text-[#6b7280]">All orders, payment status, and collected revenue</p>
+              <p className="text-sm text-[#6b7280]">Generated invoices, payment status, and collected revenue</p>
             </div>
-            <InvoicesTab orders={orders} />
+            <InvoicesTab invoices={invoices} />
           </>
         ) : (
           <>
@@ -479,4 +506,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
