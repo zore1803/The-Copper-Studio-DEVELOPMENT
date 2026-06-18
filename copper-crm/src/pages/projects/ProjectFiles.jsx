@@ -9,14 +9,6 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import ProjectHeader from "./ProjectHeader";
 
-const SYSTEM_FOLDERS = [
-  { key: "Proposals", className: "bg-[#ffdbcc] text-[#884c2d]" },
-  { key: "Contracts", className: "bg-[#eee1cf] text-[#665d50]" },
-  { key: "Invoices", className: "bg-[#a2f0f2] text-[#026769]" },
-  { key: "Deliverables", className: "bg-[#ffb693] text-[#6f381a]" },
-  { key: "Internal", className: "bg-[#ede0db] text-[#6c6355]" },
-];
-
 const TYPE_META = {
   pdf: { icon: FileText, className: "bg-red-50 text-red-600" },
   figma: { icon: Frame, className: "bg-purple-50 text-purple-600" },
@@ -33,12 +25,6 @@ function getFileType(filename) {
   return "doc";
 }
 
-function formatSize(bytes) {
-  if (!bytes) return "—";
-  const mb = bytes / (1024 * 1024);
-  return mb >= 1000 ? `${(mb / 1000).toFixed(1)} GB` : `${mb.toFixed(1)} MB`;
-}
-
 function formatSizeMB(mb) {
   return mb >= 1000 ? `${(mb / 1000).toFixed(1)} GB` : `${(mb || 0).toFixed(1)} MB`;
 }
@@ -49,7 +35,7 @@ export default function ProjectFiles() {
   const { showToast } = useToast();
   const fileInputRef = useRef(null);
   const [activeFolder, setActiveFolder] = useState(null);
-  const [uploadFolder, setUploadFolder] = useState("Deliverables");
+  const [uploadFolder, setUploadFolder] = useState("");
   const [newFolderMode, setNewFolderMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [docMenu, setDocMenu] = useState(null);
@@ -66,11 +52,12 @@ export default function ProjectFiles() {
   );
 
   const documents = useMemo(() => project?.documents || [], [project]);
-  const customFolders = useMemo(() => project?.customFolders || [], [project]);
-  const allFolderDefs = useMemo(() => [
-    ...SYSTEM_FOLDERS,
-    ...customFolders.map(name => ({ key: name, className: "bg-violet-100 text-violet-700", custom: true })),
-  ], [customFolders]);
+  const customFolders = useMemo(() => (project?.customFolders || []).filter((name) => typeof name === "string"), [project]);
+  const allFolderDefs = useMemo(() => {
+    const docCategories = [...new Set(documents.map((doc) => doc.category).filter(Boolean))];
+    const names = [...new Set([...customFolders, ...docCategories])];
+    return names.map((name) => ({ key: name, className: "bg-violet-100 text-violet-700", custom: true }));
+  }, [customFolders, documents]);
 
   const folders = useMemo(() => allFolderDefs.map(def => {
     const docs = documents.filter(doc => doc.category === def.key);
@@ -78,6 +65,8 @@ export default function ProjectFiles() {
   }), [documents, allFolderDefs]);
 
   const visibleDocuments = activeFolder ? documents.filter(doc => doc.category === activeFolder) : documents;
+
+  const effectiveUploadFolder = uploadFolder || allFolderDefs[0]?.key || "";
 
   if ((!company || !project) && projectsLoading) {
     return (
@@ -104,7 +93,12 @@ export default function ProjectFiles() {
   async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const category = uploadFolder || activeFolder || "Deliverables";
+    const category = activeFolder || effectiveUploadFolder;
+    if (!category) {
+      e.target.value = "";
+      showToast({ type: "error", title: "Create a folder first", message: "Add a folder before uploading a file." });
+      return;
+    }
     const newDoc = {
       name: file.name,
       category,
@@ -130,7 +124,7 @@ export default function ProjectFiles() {
   async function handleAddFolder(e) {
     e.preventDefault();
     const name = newFolderName.trim();
-    if (!name || customFolders.includes(name) || SYSTEM_FOLDERS.some(f => f.key === name)) {
+    if (!name || allFolderDefs.some(f => f.key === name)) {
       showToast({ type: "error", title: "Invalid", message: "Folder name is empty or already exists." });
       return;
     }
@@ -155,16 +149,21 @@ export default function ProjectFiles() {
       <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <FilePlus2 size={15} className="text-[#884c2d] shrink-0" />
         <span className="text-xs font-semibold text-[#374151]">Upload to:</span>
-        <select
-          value={uploadFolder}
-          onChange={e => setUploadFolder(e.target.value)}
-          className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#884c2d]"
-        >
-          {allFolderDefs.map(f => <option key={f.key}>{f.key}</option>)}
-        </select>
+        {allFolderDefs.length ? (
+          <select
+            value={effectiveUploadFolder}
+            onChange={e => setUploadFolder(e.target.value)}
+            className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#884c2d]"
+          >
+            {allFolderDefs.map(f => <option key={f.key}>{f.key}</option>)}
+          </select>
+        ) : (
+          <span className="text-xs text-[#9ca3af]">Create a folder first</span>
+        )}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] transition-colors"
+          disabled={!allFolderDefs.length}
+          className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         >
           <FilePlus2 size={13} /> Upload File
         </button>
@@ -200,24 +199,33 @@ export default function ProjectFiles() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {folders.map(folder => (
-            <button
-              key={folder.key}
-              type="button"
-              onClick={() => setActiveFolder(activeFolder === folder.key ? null : folder.key)}
-              className={`group cursor-pointer rounded-xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
-                activeFolder === folder.key ? "border-[#884c2d] bg-white shadow-md" : "border-[#d8c2b9] bg-[#fff1ec] hover:bg-white"
-              }`}
-            >
-              <div className={`mb-4 grid h-12 w-12 place-items-center rounded-lg ${folder.className}`}>
-                <FolderIcon size={24} />
-              </div>
-              <h4 className="text-sm font-bold text-[#211a17] truncate">{folder.key}</h4>
-              <p className="mt-1 text-[11px] text-[#6c6355]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+        {folders.length ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {folders.map(folder => (
+              <button
+                key={folder.key}
+                type="button"
+                onClick={() => setActiveFolder(activeFolder === folder.key ? null : folder.key)}
+                className={`group cursor-pointer rounded-xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  activeFolder === folder.key ? "border-[#884c2d] bg-white shadow-md" : "border-[#d8c2b9] bg-[#fff1ec] hover:bg-white"
+                }`}
+              >
+                <div className={`mb-4 grid h-12 w-12 place-items-center rounded-lg ${folder.className}`}>
+                  <FolderIcon size={24} />
+                </div>
+                <h4 className="text-sm font-bold text-[#211a17] truncate">{folder.key}</h4>
+                <p className="mt-1 text-[11px] text-[#6c6355]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-[#fff8f6] p-8 text-center">
+            <p className="text-sm text-[#6c6355]">No folders yet for this project.</p>
+            <button onClick={() => setNewFolderMode(true)} className="mt-2 text-xs font-bold text-[#884c2d] hover:underline">
+              Create the first folder →
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </section>
 
       <section>
@@ -231,7 +239,7 @@ export default function ProjectFiles() {
                 Clear filter
               </button>
             )}
-            <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+            <Button variant="secondary" size="sm" disabled={!allFolderDefs.length} onClick={() => fileInputRef.current?.click()}>
               <FilePlus2 size={14} /> Upload File
             </Button>
           </div>

@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDownRight, ArrowUpRight, BarChart2, BriefcaseBusiness,
-  CalendarDays, ChevronDown, IndianRupee, TrendingUp, UserPlus,
-  Clock3, Activity, Download, Users, Package, CheckCircle2,
+  IndianRupee, TrendingUp,
+  Clock3, CheckCircle2,
 } from "lucide-react";
 import { useCrmRecords } from "../hooks/useCrmRecords";
 import { storeGet } from "../lib/store";
@@ -34,28 +34,43 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function KpiCard({ label, value, change, up, icon: Icon, iconBg }) {
+const TONE_STYLES = {
+  brown: { tint: "bg-[#fff1ec]", text: "text-[#884c2d]", bar: "bg-[#884c2d]" },
+  slate: { tint: "bg-[#eef2ff]", text: "text-[#4338ca]", bar: "bg-[#4338ca]" },
+  emerald: { tint: "bg-emerald-50", text: "text-emerald-600", bar: "bg-emerald-500" },
+  amber: { tint: "bg-amber-50", text: "text-amber-600", bar: "bg-amber-500" },
+};
+
+function KpiCard({ label, value, change, up, icon: Icon, tone = "brown" }) {
+  const styles = TONE_STYLES[tone] || TONE_STYLES.brown;
   return (
-    <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 flex items-start justify-between gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-2">{label}</p>
-        <p className="text-xl font-bold text-[#111827]">{value}</p>
-        {change != null && (
-          <p className={`flex items-center gap-1 mt-1 text-xs font-medium ${up ? "text-emerald-600" : "text-red-500"}`}>
-            {up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-            {change}% Last week
-          </p>
-        )}
+    <div className="group relative overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{label}</p>
+          <p className="mt-2 text-2xl font-bold text-[#111827]">{value}</p>
+        </div>
+        <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${styles.tint}`}>
+          <Icon size={19} className={styles.text} />
+        </div>
       </div>
-      <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${iconBg}`}>
-        <Icon size={17} className="text-white" />
-      </div>
+      {change != null && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${up ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+            {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+            {change}%
+          </span>
+          <span className="text-[11px] text-[#9ca3af]">vs last week</span>
+        </div>
+      )}
+      <div className={`absolute inset-x-0 bottom-0 h-1 scale-x-0 ${styles.bar} transition-transform duration-300 group-hover:scale-x-100`} />
     </div>
   );
 }
 
 function SalesRevenueChart({ data }) {
   const maxVal = Math.max(...data.map((d) => d.revenue), 1);
+  const totalVal = data.reduce((sum, d) => sum + d.revenue, 0);
   const pts = data.map((d, i) => {
     const x = (i / Math.max(data.length - 1, 1)) * 100;
     const y = 100 - (d.revenue / maxVal) * 80;
@@ -65,8 +80,12 @@ function SalesRevenueChart({ data }) {
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="px-6 py-4 border-b border-[#f3f4f6]">
-        <h3 className="text-sm font-bold text-[#111827]">Sales Revenue</h3>
+      <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-bold text-[#111827]">Sales Revenue</h3>
+          <p className="text-xs text-[#9ca3af] mt-0.5">Trailing {data.length} month{data.length === 1 ? "" : "s"}</p>
+        </div>
+        <span className="rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{formatCompact(totalVal)}</span>
       </div>
       <div className="px-6 py-4 flex gap-4">
         <div className="flex flex-col justify-between text-[10px] text-[#9ca3af] py-1" style={{ minWidth: 44 }}>
@@ -148,15 +167,18 @@ function InvoicesCard({ orders }) {
 function EarningsCard({ orders }) {
   const quarters = ["Q1", "Q2", "Q3", "Q4"];
   const [quarter, setQuarter] = useState("Q2");
+  const fallbackDate = useMemo(() => new Date(), []);
   const qIndex = quarters.indexOf(quarter);
   const monthRows = useMemo(() => orders.reduce((acc, order) => {
-    const date = new Date(order.date || order.createdAt || order.paidAt || Date.now());
-    const monthIndex = Number.isNaN(date.getTime()) ? new Date().getMonth() : date.getMonth();
-    const month = Number.isNaN(date.getTime()) ? "Current" : date.toLocaleDateString("en-IN", { month: "short" });
+    const rawDate = order.date || order.createdAt || order.paidAt;
+    const parsedDate = rawDate ? new Date(rawDate) : fallbackDate;
+    const date = Number.isNaN(parsedDate.getTime()) ? fallbackDate : parsedDate;
+    const monthIndex = date.getMonth();
+    const month = date.toLocaleDateString("en-IN", { month: "short" });
     acc[monthIndex] = acc[monthIndex] || { month, revenue: 0 };
     acc[monthIndex].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
     return acc;
-  }, {}), [orders]);
+  }, {}), [orders, fallbackDate]);
   const revenue = Object.entries(monthRows)
     .filter(([monthIndex]) => Math.floor(Number(monthIndex) / 3) === qIndex)
     .map(([, row]) => row);
@@ -347,6 +369,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState(() => storeGet("projects"));
   const [companies, setCompanies] = useState(() => storeGet("companies"));
   const [contacts, setContacts] = useState(() => storeGet("contacts"));
+  const now = useMemo(() => new Date(), []);
   const { records: invoices } = useCrmRecords("invoices");
 
   useEffect(() => {
@@ -365,12 +388,13 @@ export default function Dashboard() {
     const paidOrders = orders.filter(o => o.status === "Paid");
     const totalRevenue = paidOrders.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
     const activeProjects = projects.filter(p => p.clientStatus !== "completed" && p.progress < 100);
-    const today = new Date();
     const timeline = activeProjects.map(p => {
-      const due = new Date(p.dueDate || p.expectedEndDate || Date.now() + 86400000 * 30);
-      return { ...p, daysLeft: Math.ceil((due - today) / 86400000) };
+      const fallbackDue = new Date(now.getTime() + 86400000 * 30);
+      const rawDue = p.dueDate || p.expectedEndDate;
+      const parsedDue = rawDue ? new Date(rawDue) : fallbackDue;
+      const due = Number.isNaN(parsedDue.getTime()) ? fallbackDue : parsedDue;
+      return { ...p, daysLeft: Math.ceil((due - now) / 86400000) };
     });
-    const onTimeCount = timeline.filter(p => p.daysLeft > 3 || (p.progress || 0) >= 80).length;
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
@@ -379,19 +403,21 @@ export default function Dashboard() {
       totalOrders: orders.length,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
-  }, [orders, projects]);
+  }, [orders, projects, now]);
 
   const chartData = useMemo(() => {
     const months = orders.reduce((acc, order) => {
-      const date = new Date(order.date || order.createdAt || order.paidAt || Date.now());
-      const key = Number.isNaN(date.getTime()) ? "Current" : date.toLocaleDateString("en-IN", { month: "short" });
+      const rawDate = order.date || order.createdAt || order.paidAt;
+      const parsedDate = rawDate ? new Date(rawDate) : now;
+      const date = Number.isNaN(parsedDate.getTime()) ? now : parsedDate;
+      const key = date.toLocaleDateString("en-IN", { month: "short" });
       acc[key] = acc[key] || { month: key, revenue: 0 };
       acc[key].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
       return acc;
     }, {});
     const rows = Object.values(months);
     return rows.length ? rows.slice(-12) : [{ month: "No data", revenue: 0 }];
-  }, [orders]);
+  }, [orders, now]);
 
   return (
     <div className="flex flex-col min-h-full">

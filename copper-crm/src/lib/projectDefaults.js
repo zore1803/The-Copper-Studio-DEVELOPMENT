@@ -50,29 +50,9 @@ export function createStarterTasks(project, company, timeline) {
   }));
 }
 
-export function createProjectFolders(project, company) {
-  return ["Proposals", "Contracts", "Invoices", "Design Files", "Development Files", "Deliverables", "Internal Documents", "Client Shared Documents"].map((name, index) => ({
-    id: `folder-${Date.now()}-${index}`,
-    folderId: `folder-${Date.now()}-${index}`,
-    fileName: name,
-    name,
-    type: "folder",
-    fileType: "Folder",
-    companyId: company._id || company.id,
-    company: company.name,
-    projectId: project.id,
-    projectName: project.name,
-    visibility: name.includes("Client") ? "Client Visible" : name.includes("Internal") ? "Private" : "Project Team",
-    category: name,
-    tags: [project.packageName, project.priority].filter(Boolean),
-    createdAt: new Date().toISOString(),
-  }));
-}
-
 export function buildProjectPayload(form, company) {
   const projectId = `project-${Date.now()}`;
   const timeline = createDefaultTimeline(form.startDate);
-  const folderRecords = createProjectFolders({ ...form, id: projectId }, company);
   const payload = {
     ...form,
     id: projectId,
@@ -90,22 +70,20 @@ export function buildProjectPayload(form, company) {
     stages: timeline.map((item) => ({ name: item.name, status: item.status === "On Track" ? "in_progress" : "not_started" })),
     timeline,
     tasksBoard: ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"],
-    documents: folderRecords,
-    customFolders: folderRecords,
+    documents: [],
+    customFolders: [],
     activity: [
       { icon: "check", text: "Project workspace created", time: "Just now" },
       { icon: "check", text: "Timeline initialized", time: "Just now" },
       { icon: "check", text: "Tasks board initialized", time: "Just now" },
-      { icon: "upload", text: "Document folders initialized", time: "Just now" },
     ],
     history: [
       { event: "Project Created", createdAt: new Date().toISOString() },
       { event: "Timeline Generated", createdAt: new Date().toISOString() },
       { event: "Tasks Created", createdAt: new Date().toISOString() },
-      { event: "Document Folders Created", createdAt: new Date().toISOString() },
     ],
     createdAt: new Date().toISOString(),
   };
   const starterTasks = createStarterTasks(payload, company, timeline);
-  return { payload, folderRecords, starterTasks };
+  return { payload, starterTasks };
 }
