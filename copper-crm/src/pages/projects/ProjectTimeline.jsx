@@ -380,7 +380,7 @@ export default function ProjectTimeline() {
         title: "",
         projectId: project.id || project._id,
         projectName: project.name,
-        companyId: company.id || company._id,
+        companyId: company._id || company.id,
         priority: "Medium",
         assignedTo: "",
         startDate: "",
@@ -398,7 +398,7 @@ export default function ProjectTimeline() {
   async function handleSaveTask(form, status) {
     try {
       const isNew = !form._id;
-      await saveTask({ ...form, status, projectId: project.id || project._id, projectName: project.name, companyId: company.id || company._id });
+      await saveTask({ ...form, status, projectId: project.id || project._id, projectName: project.name, companyId: company._id || company.id });
       setTaskEditor(null);
       showToast({ title: isNew ? "Task created" : "Task updated", message: `${form.title || "Task"} saved in ${status}.` });
     } catch (error) {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -188,9 +189,37 @@ function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink 
 
 const DOCUMENT_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
 
+function fileExt(filename) {
+  return (filename || "").split(".").pop().toLowerCase();
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function DocumentUploadPanel({ company, onClose, onSave }) {
-  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", notes: "" });
+  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
+  const [fileReady, setFileReady] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  async function handleBrowse(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await readFileAsDataUrl(file);
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || file.name,
+      fileType: fileExt(file.name) || prev.fileType,
+      fileUrl: dataUrl,
+      fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+    }));
+    setFileReady(true);
+  }
 
   return (
     <SidePanel
@@ -200,15 +229,27 @@ function DocumentUploadPanel({ company, onClose, onSave }) {
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Document</Button>
+          <Button onClick={() => onSave(form)} disabled={!form.name.trim()}><Save size={14} /> Save Document</Button>
         </div>
       }
     >
       <div className="space-y-4">
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">File *</span>
+          <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
+            <input id="doc-browse" type="file" className="hidden" onChange={handleBrowse} />
+            <label htmlFor="doc-browse" className="cursor-pointer rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+              Browse…
+            </label>
+            <span className="truncate text-xs text-[#6b7280]">
+              {fileReady ? `${form.name} (${form.fileSize})` : "No file selected"}
+            </span>
+          </div>
+        </label>
         <Input span label="File name *" value={form.name} onChange={set("name")} />
         <Select label="Category" value={form.category} onChange={set("category")} options={DOCUMENT_CATEGORIES} />
         <Select label="File type" value={form.fileType} onChange={set("fileType")} options={["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"]} />
-        <Input span label="File URL" value={form.fileUrl} onChange={set("fileUrl")} hint="Link to the hosted file (Drive, S3, etc.)." />
+        <Input span label="...or paste a file URL" value={fileReady ? "" : form.fileUrl} onChange={set("fileUrl")} disabled={fileReady} hint="Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above." />
         <Textarea span label="Notes" value={form.notes} onChange={set("notes")} />
       </div>
     </SidePanel>
@@ -549,6 +590,7 @@ export default function CompanyDetail() {
   const [clientUsers, setClientUsers] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [viewingFolder, setViewingFolder] = useState(null);
   const [creatingTask, setCreatingTask] = useState(false);
   const [projectView, setProjectView] = useState("Table");
   const [taskView, setTaskView] = useState("List");
@@ -654,8 +696,9 @@ export default function CompanyDetail() {
     }
     const { payload, folderRecords, starterTasks } = buildProjectPayload(form, targetCompany);
     const created = await saveProject(payload);
-    await Promise.all(starterTasks.map((task) => saveTask(task)));
-    await Promise.all(folderRecords.map((folder) => saveDocument(folder)));
+    const realProjectId = created._id || created.id;
+    await Promise.all(starterTasks.map((task) => saveTask({ ...task, projectId: realProjectId })));
+    await Promise.all(folderRecords.map((folder) => saveDocument({ ...folder, projectId: realProjectId })));
     setCreatingProject(false);
     showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
   }
@@ -721,7 +764,7 @@ export default function CompanyDetail() {
     }
     await saveDocument({
       ...form,
-      companyId: company.id || company._id,
+      companyId: company._id || company.id,
       company: company.name,
     });
     setUploadingDocument(false);
@@ -736,7 +779,7 @@ export default function CompanyDetail() {
     await saveTask({
       ...form,
       id: `task-${Date.now()}`,
-      companyId: company.id || company._id,
+      companyId: company._id || company.id,
       company: company.name,
     });
     setCreatingTask(false);
@@ -922,9 +965,23 @@ export default function CompanyDetail() {
             {linked.invoices.length ? <InvoicesTable invoices={linked.invoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} /> : <EmptyState icon={FileText} title="No invoices linked." />}
           </Section>
         )}
-        {activeTab === "Documents" && <DocumentsTab documents={linked.documents} projects={linked.projects} onUpload={() => setUploadingDocument(true)} />}
+        {activeTab === "Documents" && (
+          <DocumentsTab
+            documents={linked.documents}
+            projects={linked.projects}
+            onUpload={() => setUploadingDocument(true)}
+            onOpenFolder={(category, docs) => setViewingFolder({ category, docs })}
+          />
+        )}
         {activeTab === "Tasks" && (
-          <TasksWorkspace tasks={linked.tasks} projects={linked.projects} view={taskView} onView={setTaskView} onCreate={() => setCreatingTask(true)} />
+          <TasksWorkspace
+            tasks={linked.tasks}
+            projects={linked.projects}
+            view={taskView}
+            onView={setTaskView}
+            onCreate={() => setCreatingTask(true)}
+            onMoveTask={(task, status) => saveTask({ ...task, status })}
+          />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
         {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
@@ -949,6 +1006,9 @@ export default function CompanyDetail() {
       )}
       {creatingTask && (
         <TaskPanel company={company} projects={linked.projects} onClose={() => setCreatingTask(false)} onSave={handleCreateTask} />
+      )}
+      {viewingFolder && (
+        <FolderViewerPanel category={viewingFolder.category} documents={viewingFolder.docs} onClose={() => setViewingFolder(null)} />
       )}
     </div>
   );
@@ -1383,7 +1443,7 @@ function TaskGantt({ tasks, projects }) {
   );
 }
 
-function DocumentsTab({ documents, projects, onUpload }) {
+function DocumentsTab({ documents, projects, onUpload, onOpenFolder }) {
   const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
   const projectDocs = projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })));
   const allDocs = [...documents, ...projectDocs];
@@ -1393,7 +1453,12 @@ function DocumentsTab({ documents, projects, onUpload }) {
         {categories.map((category) => {
           const docs = allDocs.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(category.toLowerCase().split(" ")[0]));
           return (
-            <div key={category} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4">
+            <button
+              key={category}
+              type="button"
+              onClick={() => onOpenFolder(category, docs)}
+              className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+            >
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><FolderOpen size={17} /></div>
                 <div>
@@ -1409,7 +1474,7 @@ function DocumentsTab({ documents, projects, onUpload }) {
                 ))}
                 {!docs.length && <p className="text-xs text-[#9ca3af]">No files yet.</p>}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -1417,11 +1482,120 @@ function DocumentsTab({ documents, projects, onUpload }) {
   );
 }
 
-function TasksWorkspace({ tasks, projects, view, onView, onCreate }) {
+function FolderViewerPanel({ category, documents, onClose }) {
+  return (
+    <SidePanel title={category} subtitle={`${documents.length} file${documents.length === 1 ? "" : "s"} in this folder.`} onClose={onClose}>
+      {documents.length ? (
+        <div className="space-y-2">
+          {documents.map((doc) => {
+            const name = doc.fileName || doc.name || "Untitled document";
+            const canOpen = Boolean(doc.fileUrl);
+            return (
+              <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-[#111827]">{name}</p>
+                  <p className="text-xs text-[#6b7280]">{(doc.fileType || "file").toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} {doc.projectName ? `· ${doc.projectName}` : ""}</p>
+                </div>
+                {canOpen ? (
+                  <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+                    View
+                  </a>
+                ) : (
+                  <span className="shrink-0 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState icon={FolderOpen} title="No files in this folder yet." />
+      )}
+    </SidePanel>
+  );
+}
+
+const TASK_BOARD_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const TASK_PRIORITY_STYLE = {
+  High: "bg-red-50 text-red-600 border-red-100",
+  Medium: "bg-amber-50 text-amber-700 border-amber-100",
+  Low: "bg-gray-50 text-gray-500 border-gray-200",
+};
+
+function TaskKanbanBoard({ tasks, onMoveTask }) {
+  async function handleDragEnd(result) {
+    const { source, destination, draggableId } = result;
+    if (!destination || destination.droppableId === source.droppableId) return;
+    const task = tasks.find((t) => String(t.id || t._id) === draggableId);
+    if (task) await onMoveTask(task, destination.droppableId);
+  }
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
+        {TASK_BOARD_STATUSES.map((status) => {
+          const columnTasks = tasks.filter((task) => (task.status || "Backlog") === status);
+          return (
+            <div key={status} className="flex flex-col rounded-xl border border-[#e5e7eb] bg-[#f9fafb]">
+              <p className="px-3 pt-3 pb-2 text-xs font-bold uppercase tracking-wide text-[#6b7280]">
+                {status} <span className="ml-1 text-[#9ca3af]">{columnTasks.length}</span>
+              </p>
+              <Droppable droppableId={status}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`flex-1 space-y-2 p-2.5 transition-colors duration-200 ${snapshot.isDraggingOver ? "bg-[#fff1ec]" : ""}`}
+                    style={{ minHeight: 90 }}
+                  >
+                    {columnTasks.map((task, index) => (
+                      <Draggable key={task.id || task._id} draggableId={String(task.id || task._id)} index={index}>
+                        {(prov, snap) => (
+                          <div
+                            ref={prov.innerRef}
+                            {...prov.draggableProps}
+                            {...prov.dragHandleProps}
+                            className={`cursor-grab rounded-lg border bg-white p-3 shadow-sm transition-[box-shadow,border-color] duration-200 active:cursor-grabbing ${
+                              snap.isDragging ? "border-[#884c2d]/40 shadow-lg" : "border-[#e5e7eb] hover:border-[#884c2d]/30 hover:shadow-md"
+                            }`}
+                            style={{
+                              ...prov.draggableProps.style,
+                              transition: snap.isDropAnimating ? "transform 180ms cubic-bezier(.2,1,.2,1)" : prov.draggableProps.style?.transition,
+                            }}
+                          >
+                            <div className={snap.isDragging ? "kanban-card-lift" : ""}>
+                              <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
+                              <div className="mt-2 flex items-center justify-between gap-2">
+                                <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${TASK_PRIORITY_STYLE[task.priority] || TASK_PRIORITY_STYLE.Medium}`}>
+                                  {task.priority || "Medium"}
+                                </span>
+                                <span className="text-[11px] text-[#9ca3af]">{task.assignedTo || "Unassigned"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    {!columnTasks.length && (
+                      <div className="grid h-16 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#9ca3af]">
+                        Drop here
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          );
+        })}
+      </div>
+    </DragDropContext>
+  );
+}
+
+function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask }) {
   if (!tasks.length) {
     return <EmptyState icon={StickyNote} title="No tasks linked." action={<Button onClick={onCreate}><Plus size={14} /> New Task</Button>} />;
   }
-  const statuses = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
   return (
     <Section
       title="Tasks"
@@ -1433,23 +1607,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate }) {
       }
     >
       {view === "List" && <TasksTable tasks={tasks} projects={projects} />}
-      {view === "Board" && (
-        <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          {statuses.map((status) => (
-            <div key={status} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-3">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#6b7280]">{status}</p>
-              <div className="space-y-2">
-                {tasks.filter((task) => (task.status || "Backlog") === status).map((task) => (
-                  <div key={task.id || task._id} className="rounded-lg border border-[#e5e7eb] bg-white p-3">
-                    <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
-                    <p className="text-xs text-[#6b7280]">{task.priority || "Medium"} / {task.assignedTo || "Unassigned"}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {view === "Board" && <TaskKanbanBoard tasks={tasks} onMoveTask={onMoveTask} />}
       {view === "Calendar" && <CalendarTaskView tasks={tasks} />}
       {view === "Gantt" && <TaskGantt tasks={tasks} projects={projects} />}
     </Section>

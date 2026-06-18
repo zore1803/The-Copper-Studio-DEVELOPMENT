@@ -93,7 +93,12 @@ export function storeSave(type, record) {
   const id = record._id || record.id;
   const newId = id || `${type}-${Date.now()}`;
   const saved = { ...record, _id: newId, id: record.id || newId };
-  const idx = records.findIndex(r => (r._id || r.id) === id);
+  // Match on _id and id independently (not the combined fallback value) so that
+  // an optimistic local save (only `id` set) still gets replaced in place once
+  // the server responds with a real `_id`, instead of creating a duplicate.
+  const idx = records.findIndex(r =>
+    (record._id && r._id === record._id) || (record.id && r.id === record.id)
+  );
   const next = idx >= 0
     ? records.map((r, i) => (i === idx ? saved : r))
     : [saved, ...records];
