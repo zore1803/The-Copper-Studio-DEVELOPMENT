@@ -18,6 +18,7 @@ export function useCrmRecords(type, fallback = []) {
       .then((data) => {
         if (!alive) return;
         const records = Array.isArray(data) ? data : (data.records || []);
+        console.log(`[useCrmRecords] Fetched ${type}:`, records.length, "records", records);
         // Always sync the cache to the server's response, even when empty,
         // so stale demo/offline records don't linger after the database changes.
         storeSet(type, records);
@@ -26,9 +27,11 @@ export function useCrmRecords(type, fallback = []) {
       })
       .catch((err) => {
         if (!alive) return;
+        console.error(`[useCrmRecords] Error fetching ${type}:`, err);
         setError(err.message || "Failed to fetch records");
         // Fallback to localStorage only if API fails
         const cached = storeGet(type);
+        console.log(`[useCrmRecords] Falling back to localStorage for ${type}:`, cached.length, "cached records");
         setRecords(cached.length ? cached : fallback);
       })
       .finally(() => alive && setLoading(false));
