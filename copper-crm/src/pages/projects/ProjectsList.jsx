@@ -114,7 +114,7 @@ function DeadlineTimeline({ items }) {
           ))}
         </div>
 
-        <div className="flex-1 overflow-x-auto">
+        <div className="min-w-0 flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="flex h-11 border-b border-[#f1f1f5] bg-white">
               {months.map((month, index) => (

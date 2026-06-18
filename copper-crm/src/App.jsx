@@ -36,7 +36,6 @@ import {
 import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
 import CommunicationCenter from "./pages/admin/CommunicationCenter";
 import DocumentCenter from "./pages/admin/DocumentCenter";
-import ClientProjectsPage from "./pages/admin/ClientProjectsPage";
 import PublicPackages from "./pages/public/PublicPackages";
 
 export default function App() {
@@ -82,7 +81,6 @@ export default function App() {
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />
               <Route path="database" element={<DatabaseTablesPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="client-projects" element={<ClientProjectsPage />} />
             </Route>
           </Route>
 
