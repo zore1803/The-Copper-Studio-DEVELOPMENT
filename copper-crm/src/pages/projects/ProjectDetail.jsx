@@ -21,6 +21,9 @@ const PHASES = [
 ];
 
 const STAGE_NAMES = ["Requirement Gathering", "Design", "Development", "Testing", "Review", "Delivery"];
+const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
+const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
 
 const CLIENT_STATUSES = [
   { value: "not_started", label: "Not Started" },
@@ -47,6 +50,51 @@ function getPhaseIndex(project) {
 
 function formatINR(value) {
   return `₹${Number(value || 0).toLocaleString("en-IN")}`;
+}
+
+function parseMoney(value) {
+  return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
+}
+
+function PanelField({ label, value, onChange, type = "text", disabled = false, span = false }) {
+  return (
+    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <input
+        type={type}
+        value={value || ""}
+        disabled={disabled}
+        onChange={(event) => onChange?.(event.target.value)}
+        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
+      />
+    </label>
+  );
+}
+
+function PanelSelect({ label, value, onChange, options = [], span = false }) {
+  const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
+  return (
+    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <select
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+      >
+        <option value="">Select...</option>
+        {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function PanelSection({ title, children }) {
+  return (
+    <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+    </div>
+  );
 }
 
 function MetaRow({ icon: Icon, label, value }) {
@@ -91,13 +139,25 @@ function InviteCollaborators({ client }) {
   );
 }
 
-function ManageProjectPanel({ project, onClose, onSave }) {
+function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
   const stages = STAGE_NAMES.map(name => {
     const existing = (project.stages || []).find(s => s.name === name);
     return existing || { name, status: "not_started" };
   });
 
   const [form, setForm] = useState({
+    name: project.name || "",
+    packageName: project.packageName || project.packagePurchased || project.package || "",
+    customPackageName: "",
+    startDate: project.startDate || "",
+    expectedEndDate: project.expectedEndDate || project.dueDate || "",
+    priority: project.priority || "Medium",
+    status: project.status || "Requirement Gathering",
+    budget: project.budget ?? project.packageValue ?? "",
+    budgetUsed: project.budgetUsed ?? "",
+    discount: project.discount ?? project.discountApplied ?? "",
+    linkedInvoiceId: project.linkedInvoiceId || "",
+    paymentStatus: project.paymentStatus || "Pending",
     progress: project.progress || 0,
     clientStatus: project.clientStatus || "in_progress",
     currentPhase: project.currentPhase || project.status || "In Progress",
@@ -125,6 +185,7 @@ function ManageProjectPanel({ project, onClose, onSave }) {
     not_started: "bg-gray-100 text-gray-500 border-gray-200",
   };
   const stageLabel = { completed: "Completed", in_progress: "In Progress", not_started: "Not Started" };
+  const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
 
   return (
     <SidePanel
@@ -139,6 +200,31 @@ function ManageProjectPanel({ project, onClose, onSave }) {
       }
     >
       <div className="space-y-5">
+        <PanelSection title="Basic Details">
+          <PanelField span label="Project name" value={form.name} onChange={set("name")} />
+          <PanelSelect label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
+          {form.packageName === "Custom" && (
+            <PanelField label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} />
+          )}
+          <PanelSelect label="Priority" value={form.priority} onChange={set("priority")} options={PRIORITY_OPTIONS} />
+          <PanelSelect label="Delivery status" value={form.status} onChange={set("status")} options={PHASES.map((phase) => phase.key).concat(["Pending", "Confirmed", "On Hold", "Cancelled"])} />
+        </PanelSection>
+
+        <PanelSection title="Timeline">
+          <PanelField type="date" label="Project start date" value={form.startDate} onChange={set("startDate")} />
+          <PanelField type="date" label="Expected completion" value={form.expectedEndDate} onChange={set("expectedEndDate")} />
+        </PanelSection>
+
+        <PanelSection title="Commercials">
+          <PanelField type="number" label="Package value / price" value={form.budget} onChange={set("budget")} />
+          <PanelField type="number" label="Discount applied" value={form.discount} onChange={set("discount")} />
+          <PanelField type="number" label="Budget used" value={form.budgetUsed} onChange={set("budgetUsed")} />
+          <PanelField label="Final amount" value={formatINR(finalAmount)} disabled />
+          <PanelSelect label="Linked invoice" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
+            options={invoices.map((invoice) => ({ value: String(invoice.id || invoice._id), label: invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id }))} />
+          <PanelSelect label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
+        </PanelSection>
+
         <div>
           <label className="block text-xs font-semibold text-[#374151] mb-2">
             Overall Progress — {form.progress}%
@@ -218,6 +304,7 @@ export default function ProjectDetail() {
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
+  const { records: invoices } = useCrmRecords("invoices");
   const [managing, setManaging] = useState(false);
   const [addingNote, setAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -265,8 +352,25 @@ export default function ProjectDetail() {
   }
 
   async function handleSaveProject(updates) {
+    const packageName = updates.packageName === "Custom" ? (updates.customPackageName || "Custom") : updates.packageName;
     const updatedProject = {
       ...project,
+      name: updates.name,
+      packageName,
+      packagePurchased: packageName,
+      startDate: updates.startDate,
+      expectedEndDate: updates.expectedEndDate,
+      dueDate: updates.expectedEndDate,
+      priority: updates.priority,
+      status: updates.status,
+      budget: parseMoney(updates.budget),
+      packageValue: parseMoney(updates.budget),
+      budgetUsed: parseMoney(updates.budgetUsed),
+      discount: parseMoney(updates.discount),
+      discountApplied: parseMoney(updates.discount),
+      finalAmount: Math.max(parseMoney(updates.budget) - parseMoney(updates.discount), 0),
+      linkedInvoiceId: updates.linkedInvoiceId,
+      paymentStatus: updates.paymentStatus,
       progress: Number(updates.progress),
       clientStatus: updates.clientStatus,
       currentPhase: updates.currentPhase,
@@ -275,7 +379,7 @@ export default function ProjectDetail() {
     };
     await saveProject(updatedProject);
     setManaging(false);
-    showToast({ title: "Project updated", message: "Progress and notes are now visible to the client." });
+    showToast({ title: "Project updated", message: "Details, commercials, and client updates were saved." });
   }
 
   async function handleAddNote(e) {
@@ -435,6 +539,8 @@ export default function ProjectDetail() {
               <MetaRow icon={Calendar} label="Start Date" value={project.startDate} />
               <MetaRow icon={Calendar} label="Expected Completion" value={project.dueDate || project.expectedEndDate} />
               <MetaRow icon={ListChecks} label="Package Purchased" value={project.packagePurchased || project.packageName} />
+              <MetaRow icon={ListChecks} label="Final Amount" value={formatINR(project.finalAmount || project.budget)} />
+              <MetaRow icon={ListChecks} label="Payment Status" value={project.paymentStatus || "Pending"} />
               <div className="border-t border-[#E1E4EA] pt-5">
                 <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#525866]">
                   <span>Budget Usage</span>
@@ -485,6 +591,7 @@ export default function ProjectDetail() {
       {managing && (
         <ManageProjectPanel
           project={project}
+          invoices={invoices}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
         />
