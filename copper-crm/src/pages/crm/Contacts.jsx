@@ -181,12 +181,20 @@ function ContactPanel({ contact, companies, onClose, onSave }) {
         <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Associated Company</span>
-          <select value={form.companyId || ""} onChange={(e) => set("companyId")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
-            <option value="">Not linked</option>
-            {companies.map((company) => (
-              <option key={company.id || company._id} value={company.id || company._id}>{company.companyName || company.name}</option>
-            ))}
-          </select>
+          {companies.length === 0 ? (
+            <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
+              Loading companies... or create a company first
+            </div>
+          ) : (
+            <select value={form.companyId || ""} onChange={(e) => set("companyId")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 cursor-pointer">
+              <option value="">-- Select a company --</option>
+              {companies.map((company) => (
+                <option key={company.id || company._id} value={company.id || company._id}>
+                  {company.companyName || company.name}
+                </option>
+              ))}
+            </select>
+          )}
         </label>
       </div>
     </SidePanel>
