@@ -1,8 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  Activity, Archive, BarChart2, CalendarClock, Copy, Mail, MessageCircle,
-  Plus, Save, Search, Send, Settings2, X
-} from "lucide-react";
+import { Archive, Copy, Mail, MessageCircle, Plus, Save, Search, Settings2, X } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -56,6 +53,7 @@ function EmptyState({ title, text, action }) {
 function TemplateModal({ type, categories, template, onClose, onSave }) {
   const [form, setForm] = useState(template);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
   return (
     <SidePanel
       title={template._id || template.id ? "Edit Template" : `New ${type} Template`}
@@ -71,50 +69,28 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
       <div className="space-y-4">
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Template name</span>
-          <input
-            value={form.name || ""}
-            onChange={(e) => set("name")(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-          />
+          <input value={form.name || ""} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Category</span>
-          <select
-            value={form.category || ""}
-            onChange={(e) => set("category")(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]"
-          >
-            <option value="">Select…</option>
+          <select value={form.category || ""} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+            <option value="">Select...</option>
             {categories.map((category) => <option key={category}>{category}</option>)}
           </select>
         </label>
         {type === "email" && (
           <label className="block">
             <span className="text-xs font-semibold text-[#374151]">Subject</span>
-            <input
-              value={form.subject || ""}
-              onChange={(e) => set("subject")(e.target.value)}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-            />
+            <input value={form.subject || ""} onChange={(e) => set("subject")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
           </label>
         )}
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Message body</span>
-          <textarea
-            value={form.body || ""}
-            onChange={(e) => set("body")(e.target.value)}
-            rows={6}
-            placeholder="Hello {{client_name}}, ..."
-            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-          />
+          <textarea value={form.body || ""} onChange={(e) => set("body")(e.target.value)} rows={6} placeholder="Hello {{client_name}}, ..." className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Status</span>
-          <select
-            value={form.status || "Draft"}
-            onChange={(e) => set("status")(e.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]"
-          >
+          <select value={form.status || "Draft"} onChange={(e) => set("status")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
             {["Draft", "Active", "Archived"].map((status) => <option key={status}>{status}</option>)}
           </select>
         </label>
@@ -147,17 +123,14 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
   const filtered = records.filter((record) =>
     `${record.name || ""} ${record.category || ""} ${record.subject || ""}`.toLowerCase().includes(query.toLowerCase())
   );
+
   return (
     <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
       <aside className="rounded-xl border border-[#e5e7eb] bg-white p-4">
         <p className="text-sm font-bold text-[#111827]">Categories</p>
         <div className="mt-3 space-y-1">
           {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setQuery(category)}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-[#374151] hover:bg-[#fafafa]"
-            >
+            <button key={category} onClick={() => setQuery(category)} className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-[#374151] hover:bg-[#fafafa]">
               <span>{category}</span>
               <span className="text-xs text-[#9ca3af]">{records.filter((r) => r.category === category).length}</span>
             </button>
@@ -180,7 +153,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-sm font-bold text-[#111827]">{template.name || "Untitled template"}</p>
-                    <p className="mt-1 text-xs text-[#6b7280]">{template.category || "No category"} · {template.status || "Draft"}</p>
+                    <p className="mt-1 text-xs text-[#6b7280]">{template.category || "No category"} - {template.status || "Draft"}</p>
                     {template.subject && <p className="mt-2 text-sm text-[#374151]">{template.subject}</p>}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -192,11 +165,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
             ))}
           </div>
         ) : (
-          <EmptyState
-            title={`No ${type} templates yet.`}
-            text="Create templates with variables so proposal, coupon, payment, invoice, and project updates can be automated."
-            action={<Button onClick={onCreate}><Plus size={14} /> Create Template</Button>}
-          />
+          <EmptyState title={`No ${type} templates yet.`} text="Create templates with variables so proposal, coupon, payment, invoice, and project updates can be automated." action={<Button onClick={onCreate}><Plus size={14} /> Create Template</Button>} />
         )}
       </section>
 
@@ -217,141 +186,24 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
   );
 }
 
-function ScheduleModal({ onClose, onSave }) {
-  const [form, setForm] = useState({ subject: "", channel: "email", content: "", status: "Scheduled" });
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-  return (
-    <SidePanel
-      title="New Schedule"
-      subtitle="Automate a reminder or update message."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Schedule</Button>
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Title</span>
-          <input value={form.subject} onChange={(e) => set("subject")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Channel</span>
-          <select value={form.channel} onChange={(e) => set("channel")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-            <option value="email">Email</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Message</span>
-          <textarea value={form.content} onChange={(e) => set("content")(e.target.value)} rows={4} className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-      </div>
-    </SidePanel>
-  );
-}
-
-function CampaignModal({ onClose, onSave }) {
-  const [form, setForm] = useState({ subject: "", channel: "email", content: "", status: "Draft" });
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-  return (
-    <SidePanel
-      title="New Campaign"
-      subtitle="Plan a growth campaign across email or WhatsApp."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Campaign</Button>
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Campaign name</span>
-          <input value={form.subject} onChange={(e) => set("subject")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Channel</span>
-          <select value={form.channel} onChange={(e) => set("channel")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-            <option value="email">Email</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Message</span>
-          <textarea value={form.content} onChange={(e) => set("content")(e.target.value)} rows={4} className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
-        </label>
-      </div>
-    </SidePanel>
-  );
-}
-
-function LogsView({ logs }) {
-  const [query, setQuery] = useState("");
-  const filtered = logs.filter((log) =>
-    `${log.subject || ""} ${log.company || ""} ${log.type || ""} ${log.channel || ""}`.toLowerCase().includes(query.toLowerCase())
-  );
-  return (
-    <section className="rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
-        <div>
-          <p className="text-sm font-bold text-[#111827]">Communication Timeline</p>
-          <p className="text-xs text-[#6b7280]">Central audit trail for emails, WhatsApp, replies, opens, clicks, and calls.</p>
-        </div>
-        <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-          <Search size={14} className="text-[#9ca3af]" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter logs" className="w-52 bg-transparent text-sm outline-none" />
-        </div>
-      </div>
-      {filtered.length ? (
-        <div className="divide-y divide-[#f3f4f6]">
-          {filtered.map((log) => (
-            <div key={log._id || log.id} className="grid gap-4 px-4 py-4 md:grid-cols-[140px_minmax(0,1fr)_140px]">
-              <span className="text-xs font-semibold text-[#9ca3af]">{log.sentAt || log.createdAt || "No date"}</span>
-              <div>
-                <p className="text-sm font-bold text-[#111827]">{log.subject || log.type || "Communication event"}</p>
-                <p className="mt-1 text-sm text-[#6b7280]">{log.content || `${log.channel || "Channel"} · ${log.status || "Status pending"}`}</p>
-              </div>
-              <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{log.channel || "Log"}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyState title="No communication logs yet." text="Sent emails, WhatsApp events, client replies, opens, clicks, and calls will appear here." />
-      )}
-    </section>
-  );
-}
-
 export default function CommunicationCenter({ mode = "email" }) {
   const { records: emailTemplates, save: saveEmailTemplate } = useCrmRecords("emailTemplates");
   const { records: whatsappTemplates, save: saveWhatsappTemplate } = useCrmRecords("whatsappTemplates");
-  const { records: logs, save: saveLog } = useCrmRecords("communicationLogs");
-  const { records: scheduled, save: saveScheduled } = useCrmRecords("scheduledMessages");
-  const { records: campaigns, save: saveCampaign } = useCrmRecords("campaigns");
   const { showToast } = useToast();
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [variablesOpen, setVariablesOpen] = useState(false);
-  const [schedulingOpen, setSchedulingOpen] = useState(false);
-  const [campaignOpen, setCampaignOpen] = useState(false);
 
   const stats = useMemo(() => ({
-    emailsSent: logs.filter((l) => l.channel === "email").length,
-    whatsappSent: logs.filter((l) => l.channel === "whatsapp").length,
-    replies: logs.filter((l) => l.type === "Client Reply").length,
-    conversions: logs.filter((l) => l.type === "Conversion").length,
-  }), [logs]);
+    emailTemplates: emailTemplates.length,
+    activeEmail: emailTemplates.filter((template) => template.status === "Active").length,
+    whatsappTemplates: whatsappTemplates.length,
+    activeWhatsapp: whatsappTemplates.filter((template) => template.status === "Active").length,
+  }), [emailTemplates, whatsappTemplates]);
 
   const page = {
     email: { title: "Email Templates", subtitle: "Reusable email templates for proposals, payments, invoices, project updates, and support.", icon: Mail },
     whatsapp: { title: "WhatsApp Templates", subtitle: "Quick customer communication with Meta-ready template states and variables.", icon: MessageCircle },
-    logs: { title: "Communication Logs", subtitle: "Complete communication audit trail across company, contact, lead, deal, and project.", icon: Activity },
-    scheduled: { title: "Scheduled Messages", subtitle: "Automated proposal reminders, payment reminders, and project update schedules.", icon: CalendarClock },
-    campaigns: { title: "Campaigns", subtitle: "Future growth campaigns for offers, service launches, and coupon campaigns.", icon: BarChart2 },
-  }[mode];
+  }[mode] || { title: "Email Templates", subtitle: "Reusable client communication templates.", icon: Mail };
 
   const PageIcon = page.icon;
   const saveTemplate = mode === "whatsapp" ? saveWhatsappTemplate : saveEmailTemplate;
@@ -375,30 +227,6 @@ export default function CommunicationCenter({ mode = "email" }) {
     showToast({ title: nextStatus === "Archived" ? "Template archived" : "Template restored", message: `${template.name || "Template"} is now ${nextStatus}.` });
   }
 
-  async function handleSendTest() {
-    await saveLog({
-      id: `log-${Date.now()}`,
-      channel: mode === "whatsapp" ? "whatsapp" : "email",
-      type: "Test Send",
-      subject: `Test ${page.title}`,
-      content: "Sample test message sent to verify template rendering.",
-      sentAt: new Date().toISOString(),
-    });
-    showToast({ title: "Test message sent", message: "Logged to Communication Logs." });
-  }
-
-  async function handleSaveSchedule(form) {
-    await saveScheduled({ ...form, id: `schedule-${Date.now()}`, createdAt: new Date().toISOString() });
-    setSchedulingOpen(false);
-    showToast({ title: "Schedule created", message: `${form.subject || "Schedule"} saved.` });
-  }
-
-  async function handleSaveCampaign(form) {
-    await saveCampaign({ ...form, id: `campaign-${Date.now()}`, createdAt: new Date().toISOString() });
-    setCampaignOpen(false);
-    showToast({ title: "Campaign created", message: `${form.subject || "Campaign"} saved.` });
-  }
-
   return (
     <div className="min-h-full bg-[#f5f6fa] p-6">
       <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -414,33 +242,17 @@ export default function CommunicationCenter({ mode = "email" }) {
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setVariablesOpen(true)}><Settings2 size={14} /> Variables</Button>
-          <Button onClick={handleSendTest}><Send size={14} /> Send Test</Button>
-        </div>
+        <Button variant="secondary" onClick={() => setVariablesOpen(true)}><Settings2 size={14} /> Variables</Button>
       </div>
 
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-        <KpiCard label="Emails Sent" value={stats.emailsSent} icon={Mail} />
-        <KpiCard label="Email Open Rate" value="0%" icon={BarChart2} />
-        <KpiCard label="WhatsApp Sent" value={stats.whatsappSent} icon={MessageCircle} />
-        <KpiCard label="WhatsApp Read Rate" value="0%" icon={BarChart2} />
-        <KpiCard label="Replies" value={stats.replies} icon={Activity} />
-        <KpiCard label="Conversions" value={stats.conversions} icon={Send} />
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Email Templates" value={stats.emailTemplates} icon={Mail} />
+        <KpiCard label="Active Email" value={stats.activeEmail} icon={Mail} />
+        <KpiCard label="WhatsApp Templates" value={stats.whatsappTemplates} icon={MessageCircle} />
+        <KpiCard label="Active WhatsApp" value={stats.activeWhatsapp} icon={MessageCircle} />
       </div>
 
-      {mode === "email" && (
-        <TemplateList
-          type="email"
-          records={emailTemplates}
-          categories={EMAIL_CATEGORIES}
-          onCreate={() => setEditingTemplate({ name: "", category: "", subject: "", body: "", status: "Draft" })}
-          onEdit={setEditingTemplate}
-          onCopy={handleCopyTemplate}
-          onArchive={handleArchiveTemplate}
-        />
-      )}
-      {mode === "whatsapp" && (
+      {mode === "whatsapp" ? (
         <TemplateList
           type="WhatsApp"
           records={whatsappTemplates}
@@ -450,17 +262,16 @@ export default function CommunicationCenter({ mode = "email" }) {
           onCopy={handleCopyTemplate}
           onArchive={handleArchiveTemplate}
         />
-      )}
-      {mode === "logs" && <LogsView logs={logs} />}
-      {mode === "scheduled" && (
-        scheduled.length
-          ? <LogsView logs={scheduled} />
-          : <EmptyState title="No scheduled messages yet." text="Create workflows like proposal reminder after 3 days, payment reminder after 5 days, or weekly project updates." action={<Button onClick={() => setSchedulingOpen(true)}><Plus size={14} /> New Schedule</Button>} />
-      )}
-      {mode === "campaigns" && (
-        campaigns.length
-          ? <LogsView logs={campaigns} />
-          : <EmptyState title="No campaigns yet." text="Campaigns will track emails sent, open rate, click rate, replies, and conversions for future growth offers." action={<Button onClick={() => setCampaignOpen(true)}><Plus size={14} /> New Campaign</Button>} />
+      ) : (
+        <TemplateList
+          type="email"
+          records={emailTemplates}
+          categories={EMAIL_CATEGORIES}
+          onCreate={() => setEditingTemplate({ name: "", category: "", subject: "", body: "", status: "Draft" })}
+          onEdit={setEditingTemplate}
+          onCopy={handleCopyTemplate}
+          onArchive={handleArchiveTemplate}
+        />
       )}
 
       {editingTemplate && (
@@ -473,8 +284,6 @@ export default function CommunicationCenter({ mode = "email" }) {
         />
       )}
       {variablesOpen && <VariablesModal onClose={() => setVariablesOpen(false)} />}
-      {schedulingOpen && <ScheduleModal onClose={() => setSchedulingOpen(false)} onSave={handleSaveSchedule} />}
-      {campaignOpen && <CampaignModal onClose={() => setCampaignOpen(false)} onSave={handleSaveCampaign} />}
     </div>
   );
 }

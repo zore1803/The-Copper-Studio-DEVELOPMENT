@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  Bell, BarChart2, Building2, CalendarClock, ChevronDown,
+  Bell, BarChart2, Building2, ChevronDown,
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSearch, FileSignature,
   FileText, FolderKanban, FolderOpen, LayoutDashboard, Layers, ClipboardList,
-  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Send, Settings, Share2,
+  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Settings, Share2,
   ShoppingCart, Tag, UserRound, Wallet, BookOpen, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
@@ -28,9 +28,6 @@ const NAV_SECTIONS = [
         children: [
           { icon: Mail, to: "/admin/communication/email-templates", label: "Email Templates" },
           { icon: MessageCircle, to: "/admin/communication/whatsapp-templates", label: "WhatsApp Templates" },
-          { icon: Send, to: "/admin/communication/logs", label: "Communication Logs" },
-          { icon: CalendarClock, to: "/admin/communication/scheduled", label: "Scheduled Messages" },
-          { icon: BarChart2, to: "/admin/communication/campaigns", label: "Campaigns" },
         ],
       },
     ],
@@ -108,9 +105,6 @@ const pageNames = {
   "/admin/services/communications": "Communication",
   "/admin/communication/email-templates": "Email Templates",
   "/admin/communication/whatsapp-templates": "WhatsApp Templates",
-  "/admin/communication/logs": "Communication Logs",
-  "/admin/communication/scheduled": "Scheduled Messages",
-  "/admin/communication/campaigns": "Campaigns",
   "/admin/documents/company-folders": "Company Folders",
   "/admin/documents/project-folders": "Project Folders",
   "/admin/documents/internal": "Internal Documents",
@@ -140,9 +134,6 @@ const searchablePages = [
   { label: "Client Shared Documents", to: "/admin/documents/client-shared", keywords: "client shared documents files" },
   { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
   { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
-  { label: "Communication Logs", to: "/admin/communication/logs", keywords: "communication logs email whatsapp history" },
-  { label: "Scheduled Messages", to: "/admin/communication/scheduled", keywords: "scheduled messages reminders automation communication" },
-  { label: "Campaigns", to: "/admin/communication/campaigns", keywords: "campaigns email marketing offers communication" },
   { label: "Reports", to: "/admin/reports", keywords: "reports export insights" },
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
 ];

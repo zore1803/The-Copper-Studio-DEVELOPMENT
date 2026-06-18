@@ -83,9 +83,6 @@ export default function App() {
               <Route path="documents/client-shared" element={<DocumentCenter mode="client" />} />
               <Route path="communication/email-templates" element={<CommunicationCenter mode="email" />} />
               <Route path="communication/whatsapp-templates" element={<CommunicationCenter mode="whatsapp" />} />
-              <Route path="communication/logs" element={<CommunicationCenter mode="logs" />} />
-              <Route path="communication/scheduled" element={<CommunicationCenter mode="scheduled" />} />
-              <Route path="communication/campaigns" element={<CommunicationCenter mode="campaigns" />} />
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />
               <Route path="database" element={<DatabaseTablesPage />} />
               <Route path="settings" element={<SettingsPage />} />
