@@ -1410,18 +1410,41 @@ function TaskGantt({ tasks, projects }) {
     const end = new Date(task.dueDate || task.deadline || task.expectedEndDate || Date.now());
     const safeStart = Number.isNaN(start.getTime()) ? new Date() : start;
     const safeEnd = Number.isNaN(end.getTime()) ? safeStart : end;
-    return { ...task, safeStart, safeEnd };
+    return { ...task, safeStart, safeEnd: safeEnd < safeStart ? safeStart : safeEnd };
   });
   const min = Math.min(...rows.map((row) => row.safeStart.getTime()));
   const max = Math.max(...rows.map((row) => row.safeEnd.getTime()), min + 86400000);
   const range = Math.max(max - min, 86400000);
 
+  const months = [];
+  const cursor = new Date(min);
+  cursor.setDate(1);
+  const maxDate = new Date(max);
+  while (cursor <= maxDate) {
+    months.push({
+      label: cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
+      left: ((cursor.getTime() - min) / range) * 100,
+    });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+
   return (
     <Section title="Project Tasks Gantt Chart">
       <div className="space-y-3">
+        <div className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <div />
+          <div className="relative h-6 border-b border-[#e5e7eb]">
+            {months.map((month) => (
+              <span key={month.label + month.left} className="absolute top-0 -translate-x-1/2 text-[10px] font-bold uppercase text-[#9ca3af]" style={{ left: `${month.left}%` }}>
+                {month.label}
+              </span>
+            ))}
+          </div>
+        </div>
         {rows.map((task) => {
           const left = ((task.safeStart.getTime() - min) / range) * 100;
           const width = Math.max(((task.safeEnd.getTime() - task.safeStart.getTime()) / range) * 100, 8);
+          const dateRange = `${task.safeStart.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} – ${task.safeEnd.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`;
           return (
             <div key={task.id || task._id} className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-center">
               <div>
@@ -1430,10 +1453,12 @@ function TaskGantt({ tasks, projects }) {
               </div>
               <div className="relative h-9 rounded-lg bg-[#f3f4f6]">
                 <div
-                  className="absolute top-1.5 h-6 rounded-lg bg-[#884c2d]"
+                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#884c2d] px-1.5 text-[10px] font-bold text-white"
                   style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
-                  title={`${task.safeStart.toLocaleDateString("en-IN")} - ${task.safeEnd.toLocaleDateString("en-IN")}`}
-                />
+                  title={dateRange}
+                >
+                  <span className="truncate">{dateRange}</span>
+                </div>
               </div>
             </div>
           );
@@ -1646,16 +1671,111 @@ function TasksTable({ tasks, projects }) {
   );
 }
 
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function taskDueDate(task) {
+  const raw = task.dueDate || task.deadline;
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
 function CalendarTaskView({ tasks }) {
+  const todayDate = useMemo(() => new Date(), []);
+  const [cursor, setCursor] = useState(() => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1));
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const tasksWithDates = useMemo(
+    () => tasks.map((task) => ({ task, due: taskDueDate(task) })).filter((t) => t.due),
+    [tasks]
+  );
+
+  const cells = useMemo(() => {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const list = [];
+    for (let i = 0; i < firstWeekday; i++) list.push(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      list.push({
+        date,
+        tasks: tasksWithDates.filter(({ due }) => sameDay(due, date)).map((t) => t.task),
+      });
+    }
+    return list;
+  }, [cursor, tasksWithDates]);
+
+  const monthLabel = cursor.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  const selectedTasks = selectedDay ? cells.find((c) => c && sameDay(c.date, selectedDay))?.tasks || [] : [];
+
   return (
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-      {tasks.map((task) => (
-        <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{task.dueDate || task.deadline || "No date"}</p>
-          <p className="mt-2 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
-          <p className="text-sm text-[#6b7280]">{task.status || "Backlog"}</p>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+        <p className="text-sm font-bold text-[#111827]">{monthLabel}</p>
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-[#e5e7eb]">
+        <div className="grid grid-cols-7 bg-[#f9fafb]">
+          {WEEKDAY_LABELS.map((label) => (
+            <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</div>
+          ))}
         </div>
-      ))}
+        <div className="grid grid-cols-7">
+          {cells.map((cell, index) => {
+            if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-[#fafafa]" />;
+            const isToday = sameDay(cell.date, todayDate);
+            return (
+              <button
+                key={cell.date.toISOString()}
+                onClick={() => setSelectedDay(cell.date)}
+                className={`aspect-square border border-[#f3f4f6] p-1.5 text-left transition-colors hover:bg-[#fff1ec] ${isToday ? "bg-[#fff8f6]" : "bg-white"}`}
+              >
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>
+                  {cell.date.getDate()}
+                </span>
+                {cell.tasks.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-0.5">
+                    {cell.tasks.slice(0, 3).map((task) => (
+                      <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#884c2d]" />
+                    ))}
+                    {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#884c2d]">+{cell.tasks.length - 3}</span>}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {selectedDay && (
+        <SidePanel
+          title={selectedDay.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+          subtitle={`${selectedTasks.length} task${selectedTasks.length === 1 ? "" : "s"} due this day.`}
+          onClose={() => setSelectedDay(null)}
+        >
+          {selectedTasks.length ? (
+            <div className="space-y-2">
+              {selectedTasks.map((task) => (
+                <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
+                  <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <StatusBadge status={task.status || "Backlog"} />
+                    <span className="text-xs text-[#6b7280]">{task.priority || "Medium"} priority · {task.assignedTo || "Unassigned"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState icon={Calendar} title="No tasks due on this day." />
+          )}
+        </SidePanel>
+      )}
     </div>
   );
 }
