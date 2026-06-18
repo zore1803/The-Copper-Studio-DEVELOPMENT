@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  CalendarRange, Columns3, GripVertical, MessageSquare,
+  CalendarRange, CheckCircle2, Columns3, GripVertical, MessageSquare,
   Plus, Save, Trash2,
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
@@ -23,6 +23,15 @@ const STATUS_DOT = {
   Review: "bg-indigo-500",
   Completed: "bg-emerald-500",
   Blocked: "bg-red-500",
+};
+
+const STATUS_BAR = {
+  Backlog: "from-gray-300 to-gray-400 text-gray-800",
+  "To Do": "from-sky-400 to-sky-600 text-white",
+  "In Progress": "from-amber-400 to-orange-500 text-white",
+  Review: "from-indigo-400 to-violet-600 text-white",
+  Completed: "from-emerald-400 to-emerald-600 text-white",
+  Blocked: "from-red-400 to-red-600 text-white",
 };
 
 const priorityConfig = {
@@ -202,14 +211,15 @@ function GanttView({ tasks, onOpenEdit }) {
   const [zoom, setZoom] = useState("Week");
   const [collapsed, setCollapsed] = useState({});
 
-  const { groups, minDate, maxDate, weeks } = useMemo(() => {
+  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
     const referenceYear = new Date().getFullYear();
     const mapped = tasks.map((task) => {
       const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseShortDate(task.deadline, referenceYear) : new Date(TODAY.getTime() + 7 * DAY_MS);
       const start = task.startDate ? parseFullDate(task.startDate) : new Date(end.getTime() - 3 * DAY_MS);
-      return { ...task, start, end, status: TASK_STATUSES.includes(task.status) ? task.status : "Backlog" };
+      const safeEnd = end < start ? start : end;
+      return { ...task, start, end: safeEnd, status: TASK_STATUSES.includes(task.status) ? task.status : "Backlog" };
     });
-    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [] };
+    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0 } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
     const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
@@ -225,7 +235,17 @@ function GanttView({ tasks, onOpenEdit }) {
       const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
       return { label: formatRange(weekStart, weekEnd) };
     });
-    return { groups: groupList, minDate: min, maxDate: max, weeks: weekCols };
+    return {
+      groups: groupList,
+      minDate: min,
+      maxDate: max,
+      weeks: weekCols,
+      summary: {
+        total: mapped.length,
+        completed: mapped.filter((task) => task.status === "Completed").length,
+        blocked: mapped.filter((task) => task.status === "Blocked").length,
+      },
+    };
   }, [tasks]);
 
   if (!groups.length) {
@@ -247,10 +267,30 @@ function GanttView({ tasks, onOpenEdit }) {
     setCollapsed((current) => ({ ...current, [status]: !current[status] }));
   }
 
+  const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
+
   return (
-    <div className="rounded-xl border border-[#E1E4EA] bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f1f1f5] px-5 py-3">
-        <div className="flex items-center gap-1 rounded-lg bg-[#F1F1F5] p-1">
+    <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#f1f1f5] bg-[#fbfaf9] px-5 py-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1ec] text-[#884c2d]">
+              <CalendarRange size={17} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-[#111827]">Task Gantt Timeline</h4>
+              <p className="text-xs text-[#6b7280]">{formatRange(minDate, maxDate)} · {summary.total} scheduled tasks</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+            <CheckCircle2 size={13} /> {completionPct}% complete
+          </span>
+          {summary.blocked > 0 && (
+            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">{summary.blocked} blocked</span>
+          )}
+          <div className="flex items-center gap-1 rounded-lg bg-[#F1F1F5] p-1">
           {Object.keys(ZOOM_LEVELS).map((level) => (
             <button
               key={level}
@@ -261,14 +301,12 @@ function GanttView({ tasks, onOpenEdit }) {
               {level}
             </button>
           ))}
+          </div>
         </div>
-        <p className="text-xs font-semibold text-[#6b7280]">
-          {groups.reduce((sum, g) => sum + g.tasks.length, 0)} tasks across {groups.length} stages
-        </p>
       </div>
 
-      <div className="flex">
-        <div className="w-56 shrink-0 border-r border-[#f1f1f5]">
+      <div className="flex max-h-[620px] overflow-hidden">
+        <div className="sticky left-0 z-20 w-64 shrink-0 border-r border-[#f1f1f5] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
           <div className="flex h-11 items-center border-b border-[#f1f1f5] bg-[#fafafa] px-4">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Stage / Task</span>
           </div>
@@ -280,8 +318,11 @@ function GanttView({ tasks, onOpenEdit }) {
                 <span className="ml-auto text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
               </button>
               {!collapsed[group.status] && group.tasks.map((task) => (
-                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.status, task)} className="flex h-10 w-full items-center px-6 text-left hover:bg-[#fafafa]">
-                  <span className="truncate text-xs text-[#374151]">{task.title || task.taskName}</span>
+                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.status, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-semibold text-[#374151]">{task.title || task.taskName}</span>
+                    <span className="block truncate text-[10px] text-[#9ca3af]">{formatRange(task.start, task.end)}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -290,17 +331,18 @@ function GanttView({ tasks, onOpenEdit }) {
 
         <div className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="flex h-11 border-b border-[#f1f1f5] bg-white">
+            <div className="sticky top-0 z-10 flex h-11 border-b border-[#f1f1f5] bg-white">
               {weeks.map((week, index) => (
-                <div key={index} style={{ width: `${colWidth}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af]">
+                <div key={index} style={{ width: `${colWidth}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
                   {week.label}
                 </div>
               ))}
             </div>
-            <div className="relative">
+            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${colWidth}px 100%` }}>
               {showTodayLine && (
                 <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${toPct(TODAY)}%` }}>
                   <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-400" />
+                  <span className="absolute left-2 top-2 rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm">Today</span>
                 </div>
               )}
               {groups.map((group) => (
@@ -311,16 +353,15 @@ function GanttView({ tasks, onOpenEdit }) {
                     const width = Math.max(4, toPct(task.end) - left);
                     const isDone = group.status === "Completed";
                     return (
-                      <div key={task.id || task._id} className="relative h-10 border-b border-[#f1f1f5]">
+                      <div key={task.id || task._id} className="relative h-12 border-b border-[#f1f1f5] odd:bg-white/65 even:bg-[#fcfcfd]/65">
                         <button
                           type="button"
                           onClick={() => onOpenEdit(group.status, task)}
                           style={{ left: `${left}%`, width: `${width}%` }}
-                          className={`absolute top-1.5 flex h-7 min-w-[90px] items-center gap-2 rounded-lg border px-2.5 text-left shadow-sm transition-all hover:brightness-105 ${
-                            isDone ? "border-emerald-200 bg-emerald-100 text-emerald-800" : "border-[#C57E5B]/40 bg-[#fff1ec] text-[#884c2d]"
-                          }`}
+                          className={`absolute top-2 flex h-8 min-w-[110px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm ring-1 ring-white/50 transition-all hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[group.status] || STATUS_BAR.Backlog}`}
                         >
                           <span className="truncate text-[11px] font-bold">{task.title || task.taskName}</span>
+                          {isDone && <CheckCircle2 size={12} className="ml-auto shrink-0" />}
                         </button>
                       </div>
                     );
