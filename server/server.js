@@ -15,6 +15,7 @@ import authRoutes from "./routes/auth.js";
 import crmRoutes from "./routes/crm.js";
 import clientRoutes from "./routes/client.js";
 import adminRoutes from "./routes/admin.js";
+import calendlyRoutes from "./routes/calendly.js";
 import { packages } from "./data/packages.js";
 import { sendPortalInviteEmail } from "./services/email.js";
 
@@ -33,11 +34,12 @@ const razorpay =
     : null;
 
 app.use(cors({ origin: true }));
-app.use(express.json());
+app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
 app.use("/api/auth", authRoutes);
 app.use("/api/crm", crmRoutes);
 app.use("/api/client", clientRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/calendly", calendlyRoutes);
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");

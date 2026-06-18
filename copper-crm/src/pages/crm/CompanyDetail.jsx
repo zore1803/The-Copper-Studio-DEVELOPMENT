@@ -609,15 +609,21 @@ export default function CompanyDetail() {
   const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const linked = useMemo(() => {
     const name = company?.name || "";
-    const linkedProjects = projects.filter((p) => String(p.companyId) === companyId || p.client === name || p.company === name || p.companyName === name);
+    // Companies can be referenced by their real Mongo _id or their human-readable custom id —
+    // match against both since either may have been stored on a linked record.
+    const isCompanyMatch = (value) => {
+      const str = String(value || "");
+      return Boolean(str) && (str === String(company?._id) || str === String(company?.id) || str === companyId);
+    };
+    const linkedProjects = projects.filter((p) => isCompanyMatch(p.companyId) || p.client === name || p.company === name || p.companyName === name);
     const linkedProjectIds = new Set(linkedProjects.map((project) => String(project.id || project._id)));
     return {
       projects: linkedProjects,
-      contacts: contacts.filter((c) => String(c.companyId) === companyId || c.company === name || c.companyName === name),
-      invoices: invoices.filter((i) => String(i.companyId) === companyId || i.company === name || i.client === name || i.companyName === name),
-      tasks: tasks.filter((t) => String(t.companyId) === companyId || t.company === name || t.companyName === name || linkedProjectIds.has(String(t.projectId)) || linkedProjectIds.has(String(t.project))),
-      meetings: meetings.filter((m) => String(m.companyId) === companyId || m.company === name),
-      documents: documents.filter((d) => String(d.companyId) === companyId || d.company === name || d.companyName === name || linkedProjectIds.has(String(d.projectId))),
+      contacts: contacts.filter((c) => isCompanyMatch(c.companyId) || c.company === name || c.companyName === name),
+      invoices: invoices.filter((i) => isCompanyMatch(i.companyId) || i.company === name || i.client === name || i.companyName === name),
+      tasks: tasks.filter((t) => isCompanyMatch(t.companyId) || t.company === name || t.companyName === name || linkedProjectIds.has(String(t.projectId)) || linkedProjectIds.has(String(t.project))),
+      meetings: meetings.filter((m) => isCompanyMatch(m.companyId) || m.company === name),
+      documents: documents.filter((d) => isCompanyMatch(d.companyId) || d.company === name || d.companyName === name || linkedProjectIds.has(String(d.projectId))),
     };
   }, [company, companyId, contacts, documents, invoices, meetings, projects, tasks]);
   const filteredContacts = useMemo(() => linked.contacts.filter((contact) => {

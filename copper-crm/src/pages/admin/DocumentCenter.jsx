@@ -126,7 +126,7 @@ export default function DocumentCenter({ mode = "company" }) {
         id: company.id || company._id,
         icon: Building2,
         title: company.companyName || company.name || "Unnamed company",
-        meta: `${projects.filter((p) => String(p.companyId) === String(company.id || company._id)).length} projects`,
+        meta: `${projects.filter((p) => String(p.companyId) === String(company._id) || String(p.companyId) === String(company.id)).length} projects`,
       })),
       empty: "Create companies first. Each company becomes a document workspace.",
     },

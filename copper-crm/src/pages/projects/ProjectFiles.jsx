@@ -61,8 +61,8 @@ export default function ProjectFiles() {
     [companies, companyId]
   );
   const project = useMemo(
-    () => allProjects.find((p) => String(p.id || p._id) === projectId && String(p.companyId) === companyId),
-    [allProjects, companyId, projectId]
+    () => allProjects.find((p) => String(p.id || p._id) === projectId),
+    [allProjects, projectId]
   );
 
   const documents = useMemo(() => project?.documents || [], [project]);

@@ -3,11 +3,7 @@ import mongoose from "mongoose";
 const meetingSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
-    type: {
-      type: String,
-      enum: ["discovery_session", "design_review", "technical_sync", "strategy_review", "delivery_review", "support_call"],
-      default: "discovery_session"
-    },
+    type: { type: String, default: "discovery_session" },
     status: {
       type: String,
       enum: ["requested", "confirmed", "completed", "cancelled"],
@@ -23,6 +19,7 @@ const meetingSchema = new mongoose.Schema(
     meetingLink: { type: String, default: "" },
     agenda: { type: String, default: "" },
     notes: { type: String, default: "" },
+    calendlyEventUri: { type: String, default: "", index: true },
     participants: [
       {
         name: { type: String },
