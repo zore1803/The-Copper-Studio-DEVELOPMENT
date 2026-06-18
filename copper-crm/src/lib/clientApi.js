@@ -65,6 +65,11 @@ export const clientApi = {
     () => storeGet("meetings")
   ),
 
+  getCalendlyEventTypes: (token) => withFallback(
+    () => apiGet("/api/calendly/event-types", token),
+    () => []
+  ),
+
   requestMeeting: (body, token) => withFallback(
     () => apiPost("/api/client/meetings", body, token),
     () => storeSave("meetings", {

@@ -404,20 +404,32 @@ function meetingTypelabel(type) {
 }
 
 export function ClientMeetingsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [meetings, setMeetings] = useState([]);
+  const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [bookingEvent, setBookingEvent] = useState(null);
   const [form, setForm] = useState({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    clientApi.getMeetings(token).then(m => {
-      setMeetings(m);
-      setSelected(m.find(x => x.status === "confirmed") || m[0] || null);
-    }).catch(() => {}).finally(() => setLoading(false));
+    let alive = true;
+    Promise.all([
+      clientApi.getMeetings(token),
+      clientApi.getCalendlyEventTypes(token),
+    ])
+      .then(([m, events]) => {
+        if (!alive) return;
+        setMeetings(m);
+        setEventTypes(events);
+        setSelected(m.find(x => x.status === "confirmed") || m[0] || null);
+      })
+      .catch(() => {})
+      .finally(() => alive && setLoading(false));
+    return () => { alive = false; };
   }, [token]);
 
   async function handleRequest(e) {
@@ -456,6 +468,55 @@ export function ClientMeetingsPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
+            {eventTypes.length > 0 && (
+              <Card className="p-6">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
+                  <div>
+                    <h3 className="text-lg font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Book a Meeting</h3>
+                    <p className="text-sm mt-1" style={{ color: CS.secondary }}>Choose an available Calendly slot. Confirmed bookings will appear here automatically.</p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {eventTypes.map((eventType) => (
+                    <button
+                      key={eventType.schedulingUrl || eventType.slug}
+                      type="button"
+                      onClick={() => setBookingEvent(eventType)}
+                      className="text-left rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                      style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{eventType.name}</p>
+                          <p className="text-xs mt-1" style={{ color: CS.secondary }}>{eventType.durationMinutes || 30} minutes</p>
+                        </div>
+                        <span className="material-symbols-outlined text-[18px]" style={{ color: eventType.color || CS.primary }}>calendar_add_on</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {bookingEvent && (
+              <Card>
+                <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: CS.outlineVariant }}>
+                  <div>
+                    <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{bookingEvent.name}</h3>
+                    <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time and complete the Calendly booking form.</p>
+                  </div>
+                  <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors" style={{ color: CS.secondary }} title="Close booking">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+                </div>
+                <iframe
+                  title={`Book ${bookingEvent.name}`}
+                  src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
+                  className="h-[720px] w-full"
+                />
+              </Card>
+            )}
+
             {/* Past meetings table */}
             {meetings.length > 0 && (
               <Card>

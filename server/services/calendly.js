@@ -1,7 +1,7 @@
 const API_BASE = "https://api.calendly.com";
 
 function token() {
-  const value = process.env.CALENDLY_ACCESS_TOKEN;
+  const value = process.env.CALENDLY_ACCESS_TOKEN || process.env.Calendly_Access_Token;
   if (!value) throw new Error("CALENDLY_ACCESS_TOKEN is not configured.");
   return value;
 }
