@@ -8,6 +8,9 @@ import Task from "../models/Task.js";
 import Project from "../models/Project.js";
 import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
+import Payment from "../models/Payment.js";
+import Invoice from "../models/Invoice.js";
+import { syncPaidOrderFinance } from "../services/finance.js";
 
 const router = express.Router();
 const models = {
@@ -19,7 +22,9 @@ const models = {
   tasks: Task,
   projects: Project,
   documents: Document,
-  meetings: Meeting
+  meetings: Meeting,
+  payments: Payment,
+  invoices: Invoice
 };
 
 const companyLinkedTypes = new Set(["projects", "documents", "meetings"]);
@@ -88,6 +93,7 @@ router.get("/:type", validateType, async (req, res, next) => {
   try {
     const Model = models[req.params.type];
     if (req.params.type === "coupons") await expireOldCoupons();
+    if (["payments", "invoices"].includes(req.params.type)) await syncPaidOrderFinance();
     const records = await Model.find({}).sort({ updatedAt: -1 });
     res.json(records.map(asPublicRecord));
   } catch (error) {

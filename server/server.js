@@ -18,6 +18,7 @@ import adminRoutes from "./routes/admin.js";
 import calendlyRoutes from "./routes/calendly.js";
 import { packages } from "./data/packages.js";
 import { sendPortalInviteEmail } from "./services/email.js";
+import { syncFinanceForOrder } from "./services/finance.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -298,6 +299,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     await createPortalInvite(order);
+    await syncFinanceForOrder(order);
 
     res.status(201).json(order);
   } catch (error) {
@@ -344,6 +346,7 @@ app.post("/api/orders", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     await createPortalInvite(order);
+    await syncFinanceForOrder(order);
 
     res.status(201).json(order);
   } catch (error) {
