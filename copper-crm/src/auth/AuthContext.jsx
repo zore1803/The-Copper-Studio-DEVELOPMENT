@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { apiGet, apiPost } from "../lib/api";
 import { AuthContext, STORAGE_KEY } from "./authStore";
 
@@ -43,7 +43,7 @@ function makeDemoSession(role) {
 }
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(() => readStoredAuth());
 
   const saveSession = (nextSession) => {
     setSession(nextSession);
