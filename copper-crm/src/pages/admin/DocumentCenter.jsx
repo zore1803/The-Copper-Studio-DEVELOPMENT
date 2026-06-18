@@ -5,6 +5,16 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import SidePanel from "../../components/SidePanel";
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 const VISIBILITY = {
   private: { label: "Private", icon: Lock, className: "bg-gray-100 text-gray-600" },
@@ -40,14 +50,14 @@ function EmptyState({ title, text }) {
   );
 }
 
-function FolderCard({ icon: Icon, title, meta, onClick }) {
+function FolderCard({ icon: Icon, title, meta, onClick, active }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition hover:border-[#c6aa9b] hover:shadow-sm"
+      className={`rounded-xl border bg-white p-4 text-left transition hover:border-[#c6aa9b] hover:shadow-sm ${active ? "border-[#884c2d] ring-2 ring-[#884c2d]/15" : "border-[#e5e7eb]"}`}
     >
-      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+      <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-lg ${active ? "bg-[#884c2d] text-white" : "bg-[#fff1ec] text-[#884c2d]"}`}>
         <Icon size={20} />
       </div>
       <p className="truncate text-sm font-bold text-[#111827]">{title}</p>
@@ -62,10 +72,9 @@ function DocumentRow({ doc, selected, onSelect }) {
   const visibility = VISIBILITY[doc.visibility] || VISIBILITY.private;
   const VisibilityIcon = visibility.icon;
   return (
-    <button
-      type="button"
+    <div
       onClick={() => onSelect(doc)}
-      className={`grid w-full grid-cols-[minmax(0,1.5fr)_120px_130px_120px] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-left text-sm hover:bg-[#fafafa] ${selected ? "bg-[#fff8f6]" : "bg-white"}`}
+      className={`grid w-full grid-cols-[minmax(0,1.5fr)_120px_130px_100px_80px] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-left text-sm hover:bg-[#fafafa] cursor-pointer ${selected ? "bg-[#fff8f6]" : "bg-white"}`}
     >
       <span className="flex min-w-0 items-center gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
@@ -81,7 +90,69 @@ function DocumentRow({ doc, selected, onSelect }) {
         <VisibilityIcon size={11} /> {visibility.label}
       </span>
       <span className="text-[#6b7280]">{doc.version || "v1"}</span>
-    </button>
+      <span onClick={(e) => e.stopPropagation()}>
+        {doc.fileUrl ? (
+          <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#884c2d] hover:underline">View</a>
+        ) : (
+          <span className="text-xs text-[#9ca3af]">No file</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+function fileExt(filename) {
+  return (filename || "").split(".").pop().toLowerCase();
+}
+
+function UploadPanel({ folderLabel, onClose, onSave }) {
+  const [form, setForm] = useState({ name: "", fileUrl: "", fileType: "pdf", fileSize: "" });
+  const [fileReady, setFileReady] = useState(false);
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  async function handleBrowse(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const dataUrl = await readFileAsDataUrl(file);
+    setForm((prev) => ({
+      ...prev,
+      name: prev.name || file.name,
+      fileType: fileExt(file.name) || prev.fileType,
+      fileUrl: dataUrl,
+      fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+    }));
+    setFileReady(true);
+  }
+
+  return (
+    <SidePanel
+      title="Upload Document"
+      subtitle={folderLabel ? `Uploading to ${folderLabel}.` : "Select a company or project folder, or upload unfiled."}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)} disabled={!form.name.trim()}><Upload size={14} /> Save Document</Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">File *</span>
+          <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
+            <input id="center-doc-browse" type="file" className="hidden" onChange={handleBrowse} />
+            <label htmlFor="center-doc-browse" className="cursor-pointer rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+              Browse…
+            </label>
+            <span className="truncate text-xs text-[#6b7280]">{fileReady ? `${form.name} (${form.fileSize})` : "No file selected"}</span>
+          </div>
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">File name *</span>
+          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+        </label>
+      </div>
+    </SidePanel>
   );
 }
 
@@ -89,9 +160,11 @@ export default function DocumentCenter({ mode = "company" }) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState("grid");
   const [selected, setSelected] = useState(null);
+  const [selectedFolderId, setSelectedFolderId] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
-  const { records: documents } = useCrmRecords("documents");
+  const { records: documents, save: saveDocument } = useCrmRecords("documents");
 
   const projectDocs = useMemo(() => projects.flatMap((project) =>
     (project.documents || []).map((doc) => ({
@@ -112,18 +185,19 @@ export default function DocumentCenter({ mode = "company" }) {
       const haystack = `${doc.fileName || doc.name || ""} ${doc.folderPath || ""} ${doc.tags?.join(" ") || ""}`.toLowerCase();
       const matchesQuery = !normalized || haystack.includes(normalized);
       if (!matchesQuery) return false;
-      if (mode === "internal") return doc.visibility === "internal" || doc.category === "Internal";
-      if (mode === "client") return doc.visibility === "client" || doc.category !== "Internal";
+      if (!selectedFolderId) return true;
+      if (mode === "company") return String(doc.companyId) === String(selectedFolderId);
+      if (mode === "project") return String(doc.projectId) === String(selectedFolderId);
       return true;
     });
-  }, [allDocuments, mode, query]);
+  }, [allDocuments, mode, query, selectedFolderId]);
 
   const page = {
     company: {
       title: "Company Folders",
       subtitle: "A folder-first view of all company documents, proposals, contracts, invoices, projects, and shared files.",
       folders: companies.map((company) => ({
-        id: company.id || company._id,
+        id: company._id || company.id,
         icon: Building2,
         title: company.companyName || company.name || "Unnamed company",
         meta: `${projects.filter((p) => String(p.companyId) === String(company._id) || String(p.companyId) === String(company.id)).length} projects`,
@@ -134,36 +208,28 @@ export default function DocumentCenter({ mode = "company" }) {
       title: "Project Folders",
       subtitle: "Project files, deliverables, versions, shared documents, and activity in one place.",
       folders: projects.map((project) => ({
-        id: project.id || project._id,
+        id: project._id || project.id,
         icon: FolderOpen,
         title: project.name || project.projectName || "Untitled project",
         meta: `${(project.documents || []).length} documents`,
       })),
       empty: "Create projects first. Each project gets proposals, contracts, invoices, design files, deliverables, and client files.",
     },
-    internal: {
-      title: "Internal Documents",
-      subtitle: "Admin-only SOPs, templates, branding, HR, operations, and legal documents.",
-      folders: [
-        { id: "sops", icon: Lock, title: "SOPs", meta: "Internal Team" },
-        { id: "templates", icon: FileText, title: "Templates", meta: "Proposal, invoice, contract" },
-        { id: "branding", icon: Folder, title: "Branding", meta: "Guidelines and assets" },
-        { id: "legal", icon: Lock, title: "Legal", meta: "Admin only" },
-      ],
-      empty: "Upload internal documents with Internal Team visibility.",
-    },
-    client: {
-      title: "Client Shared Documents",
-      subtitle: "Documents visible in the Client Portal: proposals, contracts, invoices, reports, deliverables, and manuals.",
-      folders: [
-        { id: "proposals", icon: Share2, title: "Proposals", meta: "Client visible" },
-        { id: "contracts", icon: Share2, title: "Contracts", meta: "Client visible" },
-        { id: "invoices", icon: Share2, title: "Invoices", meta: "Client visible" },
-        { id: "deliverables", icon: Share2, title: "Deliverables", meta: "Client visible" },
-      ],
-      empty: "Mark documents as Client Visible to publish them to the portal.",
-    },
   }[mode];
+
+  const selectedFolderLabel = selectedFolderId ? page.folders.find((f) => String(f.id) === String(selectedFolderId))?.title : null;
+
+  function toggleFolder(id) {
+    setSelectedFolderId((current) => (String(current) === String(id) ? null : id));
+  }
+
+  async function handleUpload(form) {
+    const payload = { ...form, name: form.name };
+    if (mode === "company" && selectedFolderId) payload.companyId = selectedFolderId;
+    if (mode === "project" && selectedFolderId) payload.projectId = selectedFolderId;
+    await saveDocument(payload);
+    setUploading(false);
+  }
 
   return (
     <div className="flex min-h-full bg-[#f5f6fa]">
@@ -181,28 +247,36 @@ export default function DocumentCenter({ mode = "company" }) {
             </div>
             <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
             <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
-            <Button><Upload size={14} /> Upload</Button>
+            <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
           </div>
         </div>
 
         {view === "grid" && (
           <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {page.folders.map((folder) => <FolderCard key={folder.id} {...folder} />)}
+            {page.folders.map((folder) => (
+              <FolderCard key={folder.id} {...folder} active={String(selectedFolderId) === String(folder.id)} onClick={() => toggleFolder(folder.id)} />
+            ))}
           </div>
         )}
 
         <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
             <div>
-              <p className="text-sm font-bold text-[#111827]">Files</p>
+              <p className="text-sm font-bold text-[#111827]">
+                Files{selectedFolderLabel ? ` — ${selectedFolderLabel}` : ""}
+              </p>
               <p className="text-xs text-[#6b7280]">{visibleDocs.length} documents visible in this view</p>
             </div>
-            <p className="text-xs font-semibold text-[#6b7280]">Private / Internal / Project Team / Client Visible</p>
+            {selectedFolderId ? (
+              <button onClick={() => setSelectedFolderId(null)} className="text-xs font-bold text-[#884c2d] hover:underline">Clear folder filter</button>
+            ) : (
+              <p className="text-xs font-semibold text-[#6b7280]">Private / Internal / Project Team / Client Visible</p>
+            )}
           </div>
           {visibleDocs.length ? (
             <div>
-              <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
-                <span>Name</span><span>Type</span><span>Visibility</span><span>Version</span>
+              <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_100px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+                <span>Name</span><span>Type</span><span>Visibility</span><span>Version</span><span>File</span>
               </div>
               {visibleDocs.map((doc, index) => (
                 <DocumentRow key={doc._id || `${doc.fileName}-${index}`} doc={doc} selected={selected === doc} onSelect={setSelected} />
@@ -222,11 +296,20 @@ export default function DocumentCenter({ mode = "company" }) {
             <Detail label="Version" value={selected.version || "v1"} />
             <Detail label="Shared Status" value={(VISIBILITY[selected.visibility]?.label) || "Private"} />
             <Detail label="Created" value={selected.createdAt || selected.date} />
+            {selected.fileUrl && (
+              <a href={selected.fileUrl} target="_blank" rel="noreferrer" className="block w-full rounded-lg bg-[#884c2d] px-3 py-2 text-center text-xs font-bold text-white hover:bg-[#6f381a]">
+                Open File
+              </a>
+            )}
           </div>
         ) : (
           <p className="mt-4 text-sm text-[#6b7280]">Select a file to inspect owner, version, created date, size, and sharing status.</p>
         )}
       </aside>
+
+      {uploading && (
+        <UploadPanel folderLabel={selectedFolderLabel} onClose={() => setUploading(false)} onSave={handleUpload} />
+      )}
     </div>
   );
 }
