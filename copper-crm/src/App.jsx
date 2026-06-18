@@ -38,6 +38,7 @@ import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage 
 import CommunicationCenter from "./pages/admin/CommunicationCenter";
 import DocumentCenter from "./pages/admin/DocumentCenter";
 import ClientProjectsPage from "./pages/admin/ClientProjectsPage";
+import PublicPackages from "./pages/public/PublicPackages";
 
 export default function App() {
   return (
@@ -49,6 +50,8 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/set-password" element={<SetPasswordPage />} />
           <Route path="/client-secure-onboarding/access-setup" element={<SetPasswordPage />} />
+          <Route path="/packages" element={<PublicPackages />} />
+          <Route path="/pricing" element={<PublicPackages />} />
 
           {/* Admin */}
           <Route element={<ProtectedRoute role="superadmin" />}>

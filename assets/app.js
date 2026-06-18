@@ -41,9 +41,14 @@ const defaultOrder = {
 function loadOrder() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    const queryPackage = new URLSearchParams(window.location.search).get("package");
+    const selectedPackageId = packages.some((pkg) => pkg.id === queryPackage)
+      ? queryPackage
+      : saved.selectedPackageId;
     return {
       ...defaultOrder,
       ...saved,
+      selectedPackageId: selectedPackageId || defaultOrder.selectedPackageId,
       verified: { ...defaultOrder.verified, ...(saved.verified || {}) },
       otpSent: { ...defaultOrder.otpSent, ...(saved.otpSent || {}) },
       coupon: saved.coupon || null
