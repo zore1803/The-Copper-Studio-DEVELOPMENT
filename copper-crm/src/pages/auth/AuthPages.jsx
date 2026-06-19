@@ -5,6 +5,7 @@ import {
   Mail, ShieldCheck, UserRound
 } from "lucide-react";
 import { useAuth } from "../../auth/useAuth";
+import { isEmail } from "../../lib/validators";
 
 const roleOptions = [
   { value: "user", label: "User", description: "Client portal access" },
@@ -143,6 +144,14 @@ export function LoginPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    if (!isEmail(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
     setLoading(true);
     try {
       const session = await auth.login({ email, password, role });
@@ -158,7 +167,7 @@ export function LoginPage() {
   async function handleDemoLogin(demoRole) {
     setLoading(true);
     try {
-      const session = await auth.login({ email: "demo@thecopperstudio.com", password: "demo", role: demoRole });
+      await auth.login({ email: "demo@thecopperstudio.com", password: "demo", role: demoRole });
       const fallback = demoRole === "superadmin" ? "/admin" : "/client";
       navigate(location.state?.from?.pathname || fallback, { replace: true });
     } finally {
@@ -220,6 +229,10 @@ export function ForgotPasswordPage() {
     event.preventDefault();
     setError("");
     setMessage("");
+    if (!isEmail(email)) {
+      setError("Enter a valid email address.");
+      return;
+    }
     setLoading(true);
     try {
       const data = await auth.forgotPassword({ email, role });
@@ -235,6 +248,14 @@ export function ForgotPasswordPage() {
   async function resetPassword(event) {
     event.preventDefault();
     setError("");
+    if (!/^\d{6}$/.test(otp.trim())) {
+      setError("Enter the 6-digit OTP from your email.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     setLoading(true);
     try {
       const session = await auth.resetPassword({ email, role, otp, password });
@@ -280,6 +301,14 @@ export function SetPasswordPage() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    if (!token) {
+      setError("Access setup token is missing from the link.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;

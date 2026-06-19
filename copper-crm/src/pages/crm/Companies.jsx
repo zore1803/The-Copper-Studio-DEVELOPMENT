@@ -9,11 +9,12 @@ import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import { isGstin } from "../../lib/validators";
 
 const PAGE_SIZE = 10;
 const DEFAULT_FOLDERS = ["Key Accounts", "New Prospects", "Renewals Due", "High Value"];
 
-function Field({ label, value, onChange, placeholder = "", type = "text" }) {
+function Field({ label, value, onChange, placeholder = "", type = "text", error = "" }) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
@@ -22,8 +23,12 @@ function Field({ label, value, onChange, placeholder = "", type = "text" }) {
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 transition-all"
+        aria-invalid={Boolean(error)}
+        className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+        }`}
       />
+      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
     </label>
   );
 }
@@ -496,7 +501,22 @@ export default function Companies() {
 
 function CompanyModal({ company, onClose, onSave }) {
   const [form, setForm] = useState(company);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const [errors, setErrors] = useState({});
+  const set = (key) => (value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
+  };
+
+  function handleSubmit() {
+    const next = {};
+    if (!String(form.name || "").trim()) next.name = "Company name is required.";
+    if (form.gstin && !isGstin(form.gstin)) next.gstin = "Enter a valid 15-character GSTIN.";
+    if (form.website && !/^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(String(form.website).trim())) next.website = "Enter a valid website URL.";
+    setErrors(next);
+    if (Object.keys(next).length) return;
+    onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin });
+  }
+
   return (
     <SidePanel
       title={company._id || company.id ? "Edit Company" : "Add Company"}
@@ -505,18 +525,18 @@ function CompanyModal({ company, onClose, onSave }) {
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Company</Button>
+          <Button onClick={handleSubmit}><Save size={14} /> Save Company</Button>
         </div>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Company name" value={form.name} onChange={set("name")} />
-        <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" />
+        <Field label="Company name" value={form.name} onChange={set("name")} error={errors.name} />
+        <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
         <Field label="Industry" value={form.industry} onChange={set("industry")} />
         <Field label="Primary contact" value={form.contact} onChange={set("contact")} />
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />
         <Field label="Status" value={form.status} onChange={set("status")} />
-        <Field label="Website" value={form.website} onChange={set("website")} />
+        <Field label="Website" value={form.website} onChange={set("website")} error={errors.website} />
         <Field label="Address" value={form.address} onChange={set("address")} />
         <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
         <label className="block sm:col-span-2">

@@ -5,6 +5,7 @@ import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import SidePanel from "../../components/SidePanel";
 import { useToast } from "../../components/useToast";
+import { isEmail, isPhone } from "../../lib/validators";
 
 const PAGE_SIZE = 12;
 
@@ -21,7 +22,7 @@ function EmptyState({ onCreate }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder = "" }) {
+function Field({ label, value, onChange, type = "text", placeholder = "", error = "" }) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
@@ -30,8 +31,12 @@ function Field({ label, value, onChange, type = "text", placeholder = "" }) {
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        aria-invalid={Boolean(error)}
+        className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+        }`}
       />
+      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
     </label>
   );
 }
@@ -157,7 +162,24 @@ export default function Contacts() {
 
 function ContactPanel({ contact, companies, onClose, onSave }) {
   const [form, setForm] = useState(contact);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const [errors, setErrors] = useState({});
+  const set = (key) => (value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
+  };
+
+  function handleSubmit() {
+    const next = {};
+    const hasName = `${form.firstName || ""}${form.lastName || ""}${form.name || ""}`.trim();
+    if (!hasName) next.firstName = "Enter at least a first or last name.";
+    if (form.email && !isEmail(form.email)) next.email = "Enter a valid email.";
+    if (form.phone && !isPhone(form.phone)) next.phone = "Enter a valid 10-digit mobile.";
+    if (form.whatsapp && !isPhone(form.whatsapp)) next.whatsapp = "Enter a valid 10-digit number.";
+    setErrors(next);
+    if (Object.keys(next).length) return;
+    onSave(form);
+  }
+
   return (
     <SidePanel
       title={contact._id || contact.id ? "Edit Contact" : "New Contact"}
@@ -166,17 +188,17 @@ function ContactPanel({ contact, companies, onClose, onSave }) {
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Contact</Button>
+          <Button onClick={handleSubmit}><Save size={14} /> Save Contact</Button>
         </div>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Salutation" value={form.salutation} onChange={set("salutation")} placeholder="Mr / Ms / Dr" />
-        <Field label="First Name" value={form.firstName} onChange={set("firstName")} />
+        <Field label="First Name" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
         <Field label="Last Name" value={form.lastName} onChange={set("lastName")} />
-        <Field label="Email" type="email" value={form.email} onChange={set("email")} />
-        <Field label="Phone" value={form.phone} onChange={set("phone")} />
-        <Field label="WhatsApp" value={form.whatsapp} onChange={set("whatsapp")} />
+        <Field label="Email" type="email" value={form.email} onChange={set("email")} error={errors.email} />
+        <Field label="Phone" value={form.phone} onChange={set("phone")} error={errors.phone} />
+        <Field label="WhatsApp" value={form.whatsapp} onChange={set("whatsapp")} error={errors.whatsapp} />
         <Field label="Position" value={form.designation} onChange={set("designation")} />
         <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} />
         <label className="block sm:col-span-2">
