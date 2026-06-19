@@ -278,6 +278,11 @@ function renderCheckoutPage() {
           body: JSON.stringify({ email: emailField.value.trim(), channel: type })
         });
 
+        if (!result.sent && !result.devCode) {
+          alert("We couldn't send the OTP email right now. Please try again in a moment or contact support.");
+          return;
+        }
+
         order.otpSent = { ...defaultOrder.otpSent, ...(order.otpSent || {}) };
         order.otpSent[type] = true;
         order.verified[type] = false;
