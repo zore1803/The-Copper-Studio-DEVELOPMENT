@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowDownRight, ArrowUpRight, BarChart2, BriefcaseBusiness,
@@ -9,7 +9,6 @@ import {
   Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { useCrmRecords } from "../hooks/useCrmRecords";
-import { storeGet } from "../lib/store";
 
 function parseCurrency(v) {
   return Number(String(v).replace(/[^\d.-]/g, "")) || 0;
@@ -390,24 +389,12 @@ const TABS = ["Overview", "CRM", "Invoices"];
 export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Overview");
-  const [orders, setOrders] = useState(() => storeGet("orders"));
-  const [projects, setProjects] = useState(() => storeGet("projects"));
-  const [companies, setCompanies] = useState(() => storeGet("companies"));
-  const [contacts, setContacts] = useState(() => storeGet("contacts"));
   const now = useMemo(() => new Date(), []);
+  const { records: orders } = useCrmRecords("orders");
+  const { records: projects } = useCrmRecords("projects");
+  const { records: companies } = useCrmRecords("companies");
+  const { records: contacts } = useCrmRecords("contacts");
   const { records: invoices } = useCrmRecords("invoices");
-
-  useEffect(() => {
-    function onUpdate(e) {
-      const t = e.detail?.type;
-      if (t === "orders") setOrders(storeGet("orders"));
-      if (t === "projects") setProjects(storeGet("projects"));
-      if (t === "companies") setCompanies(storeGet("companies"));
-      if (t === "contacts") setContacts(storeGet("contacts"));
-    }
-    window.addEventListener("cs-store", onUpdate);
-    return () => window.removeEventListener("cs-store", onUpdate);
-  }, []);
 
   const metrics = useMemo(() => {
     const paidOrders = orders.filter(o => o.status === "Paid");
