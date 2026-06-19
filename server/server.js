@@ -16,9 +16,12 @@ import crmRoutes from "./routes/crm.js";
 import clientRoutes from "./routes/client.js";
 import adminRoutes from "./routes/admin.js";
 import calendlyRoutes from "./routes/calendly.js";
+import invoiceRoutes from "./routes/invoices.js";
 import { packages } from "./data/packages.js";
-import { sendPortalInviteEmail } from "./services/email.js";
+import { sendPortalInviteEmail, sendInvoiceEmail } from "./services/email.js";
 import { syncFinanceForOrder } from "./services/finance.js";
+import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
+import { htmlToPdfBuffer } from "./services/pdf.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -41,9 +44,42 @@ app.use("/api/crm", crmRoutes);
 app.use("/api/client", clientRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/calendly", calendlyRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 function sha256(value) {
   return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+// Build + email the tax invoice for a paid order. Failures are logged but never
+// block the order/payment response (the invoice is always retrievable via the API).
+async function emailInvoiceForOrder(order, invoice) {
+  try {
+    if (!order || order.payment?.status !== "paid") return;
+    const customer = order.customer || {};
+    if (!customer.customerEmail) return;
+
+    const model = buildInvoiceModel({ order, invoice });
+    const html = renderInvoiceHtml(model);
+
+    let pdfBuffer = null;
+    try {
+      pdfBuffer = await htmlToPdfBuffer(html);
+    } catch (pdfError) {
+      console.warn("Invoice PDF generation failed, emailing HTML invoice only:", pdfError.message);
+    }
+
+    await sendInvoiceEmail({
+      to: customer.customerEmail,
+      name: customer.customerName,
+      invoiceNumber: model.invoiceNumber,
+      packageName: model.items?.[0]?.name,
+      total: model.totals?.total,
+      html: pdfBuffer ? undefined : html, // attach PDF when available, else inline HTML invoice
+      pdfBuffer
+    });
+  } catch (error) {
+    console.error("Failed to email invoice:", error.message);
+  }
 }
 
 async function createPortalInvite(order) {
@@ -299,7 +335,8 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     await createPortalInvite(order);
-    await syncFinanceForOrder(order);
+    const finance = await syncFinanceForOrder(order);
+    await emailInvoiceForOrder(order, finance?.invoice);
 
     res.status(201).json(order);
   } catch (error) {
@@ -346,7 +383,8 @@ app.post("/api/orders", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     await createPortalInvite(order);
-    await syncFinanceForOrder(order);
+    const finance = await syncFinanceForOrder(order);
+    if (order.payment.status === "paid") await emailInvoiceForOrder(order, finance?.invoice);
 
     res.status(201).json(order);
   } catch (error) {

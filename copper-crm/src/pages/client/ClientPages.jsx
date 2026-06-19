@@ -953,6 +953,24 @@ export function ClientBillingPage() {
                         </ul>
                       </div>
                     )}
+                    {selectedOrder.payment?.status === "paid" && (
+                      <div className="pt-4 border-t" style={{ borderColor: CS.outlineVariant }}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            window.open(
+                              `${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices/by-order/${selectedOrder._id}/pdf`,
+                              "_blank",
+                              "noopener"
+                            )
+                          }
+                          className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          style={{ background: CS.primary, fontFamily: "Inter, sans-serif" }}>
+                          <span className="material-symbols-outlined text-[18px]">download</span>
+                          Download Invoice (PDF)
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               ) : (

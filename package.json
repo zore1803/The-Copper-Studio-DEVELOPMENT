@@ -16,6 +16,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.9.5",
     "nodemailer": "^9.0.0",
+    "puppeteer": "^23.11.1",
     "razorpay": "^2.9.6"
   }
 }

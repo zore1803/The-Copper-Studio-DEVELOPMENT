@@ -437,6 +437,17 @@ function renderSuccessPage() {
   const pkg = selectedPackage();
   document.getElementById("successMessage").textContent =
     `Payment for ${pkg.name} is confirmed. Invoice ${order.invoiceId} is generated, and a mail has been sent to ${order.customer.customerEmail} for the next process. Please open that email to set up your portal password and continue onboarding.`;
+
+  const downloadBtn = document.getElementById("downloadInvoice");
+  if (downloadBtn) {
+    if (order.mongoOrderId) {
+      downloadBtn.addEventListener("click", () => {
+        window.open(`${API_BASE}/invoices/by-order/${order.mongoOrderId}/pdf`, "_blank", "noopener");
+      });
+    } else {
+      downloadBtn.disabled = true;
+    }
+  }
 }
 
 const agencyProjects = [

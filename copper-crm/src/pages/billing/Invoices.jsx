@@ -102,40 +102,16 @@ export default function Invoices() {
     showToast({ title: "Invoice generated", message: `${created.invoiceNumber || invoiceNumber} saved.` });
   }
 
-  async function downloadInvoice(invoice) {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const invoiceNo = invoice.invoiceNumber || invoice.id || invoice._id;
-    doc.setFillColor(136, 76, 45);
-    doc.rect(0, 0, 595, 118, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("The Copper Studio", 48, 52);
-    doc.setFontSize(12);
-    doc.text(`Invoice ${invoiceNo}`, 48, 78);
-    doc.setTextColor(17, 24, 39);
-    doc.setFontSize(16);
-    doc.text(invoice.company || invoice.client || "Company", 48, 158);
-    doc.setFontSize(10);
-    const rows = [
-      ["Invoice Number", invoiceNo],
-      ["Company", invoice.company || invoice.client || "-"],
-      ["Project", invoice.project || "-"],
-      ["Amount", money(parseMoney(invoice.total || invoice.amount))],
-      ["GST / Tax", money(parseMoney(invoice.tax || invoice.gst))],
-      ["Status", invoice.status || "Draft"],
-      ["Issue Date", invoice.issueDate || invoice.date || "-"],
-      ["Due Date", invoice.dueDate || "-"],
-    ];
-    rows.forEach(([label, value], index) => {
-      const y = 205 + index * 28;
-      doc.setFont("helvetica", "bold");
-      doc.text(label, 48, y);
-      doc.setFont("helvetica", "normal");
-      doc.text(String(value || "-"), 180, y);
-    });
-    doc.save(`${String(invoiceNo || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`);
+  function downloadInvoice(invoice) {
+    // Opens the server-rendered GST tax invoice (single source of truth shared
+    // with the customer + email PDF). Prefer the linked order, which carries the
+    // package line-item detail; fall back to the invoice id / number.
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    const orderId = invoice.sourceOrderId || invoice.orderId;
+    const path = orderId
+      ? `/api/invoices/by-order/${orderId}/pdf`
+      : `/api/invoices/${invoice._id || invoice.id || invoice.invoiceNumber}/pdf`;
+    window.open(`${base}${path}`, "_blank", "noopener");
   }
 
   return (

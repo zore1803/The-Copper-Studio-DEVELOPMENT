@@ -44,6 +44,30 @@ export async function sendPortalInviteEmail({ to, name, setPasswordUrl, packageN
   });
 }
 
+export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, total, html, pdfBuffer }) {
+  const amount = typeof total === "number"
+    ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(total)
+    : total;
+
+  return sendMail({
+    to,
+    subject: `Your tax invoice ${invoiceNumber} — The Copper Studio`,
+    html:
+      html ||
+      `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">Thank you${name ? `, ${name}` : ""}</h2>
+        <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} has been received in full.</p>
+        <p>Tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} is attached to this email as a PDF.</p>
+        <p style="font-size:13px;color:#6b7280">This is a computer-generated invoice. No further amount is due against it.</p>
+      </div>
+    `,
+    attachments: pdfBuffer
+      ? [{ filename: `${String(invoiceNumber || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`, content: pdfBuffer, contentType: "application/pdf" }]
+      : undefined
+  });
+}
+
 export async function sendForgotPasswordOtpEmail({ to, name, otp }) {
   return sendMail({
     to,
