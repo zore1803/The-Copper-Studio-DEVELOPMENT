@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Invoice from "../models/Invoice.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "../services/invoiceTemplate.js";
-import { htmlToPdfBuffer, PdfUnavailableError } from "../services/pdf.js";
+import { htmlToPdfBuffer } from "../services/pdf.js";
 
 const router = express.Router();
 
@@ -50,13 +50,11 @@ async function respond(res, data, format) {
     res.setHeader("Content-Disposition", `inline; filename="${safeFileName(model.invoiceNumber)}"`);
     res.send(pdf);
   } catch (error) {
-    if (error instanceof PdfUnavailableError) {
-      // Graceful fallback: serve the printable HTML so the user can still get the invoice.
-      console.warn("PDF generation unavailable, serving HTML invoice:", error.message);
-      res.type("html").send(html);
-      return;
-    }
-    throw error;
+    // Graceful fallback for any PDF rendering failure (missing Chromium, OOM
+    // mid-render on low-memory hosts, etc.) so the client always gets a
+    // viewable/printable invoice instead of a bare 500.
+    console.warn("PDF generation failed, serving HTML invoice instead:", error.message);
+    res.type("html").send(html);
   }
 }
 
