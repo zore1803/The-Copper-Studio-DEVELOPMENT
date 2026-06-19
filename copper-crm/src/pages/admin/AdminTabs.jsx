@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   BarChart3, CalendarDays, Clock3, Copy, FileDown, FileText,
-  PackageCheck, PieChart, Plus, ReceiptText, Send,
+  Minus, PackageCheck, PieChart, Plus, ReceiptText, Send,
   Tag, TrendingUp, Users, WalletCards, Table2
 } from "lucide-react";
 import {
@@ -362,6 +362,27 @@ function validateProposal(p) {
   return errors;
 }
 
+function buildProposalSections(proposal) {
+  return [
+    {
+      title: "About The Copper Studio",
+      body: "A focused implementation workspace for designing, deploying, and supporting professional client-facing digital systems with a clear onboarding and delivery process."
+    },
+    {
+      title: "Scope and Deliverables",
+      body: `${proposal.service || "This engagement"} includes planning, design coordination, implementation, review cycles, and handover documentation aligned to the selected package.`
+    },
+    {
+      title: "Pricing and Commercials",
+      body: `Estimated project value is Rs ${Number(proposal.value || 0).toLocaleString("en-IN")}. Taxes, final package inclusions, and payment milestones can be confirmed during checkout or invoice generation.`
+    },
+    {
+      title: "Process and Timeline",
+      body: `The expected completion timeline is ${proposal.timeline || "to be confirmed"}. Work moves through discovery, setup, build, review, launch, and support.`
+    }
+  ];
+}
+
 export function ProposalGeneratorPage() {
   const { showToast } = useToast();
   const [proposal, setProposal] = useState({
@@ -374,15 +395,28 @@ export function ProposalGeneratorPage() {
   });
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [zoom, setZoom] = useState(100);
+  const [proposalNo] = useState(() => `DCS-${Date.now().toString().slice(-6)}`);
+  const [proposalDate] = useState(() => new Date());
 
   const setField = (key) => (value) => {
     setProposal((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
 
+  const proposalValue = Number(proposal.value || 0);
+  const sections = useMemo(() => buildProposalSections(proposal), [proposal]);
+  const proposalDetails = useMemo(() => ([
+    ["Company", proposal.company || "-"],
+    ["GSTIN", proposal.gstin || "-"],
+    ["Service", proposal.service || "-"],
+    ["Project value", `Rs ${proposalValue.toLocaleString("en-IN")}`],
+    ["Estimated timeline", proposal.timeline || "-"]
+  ]), [proposal, proposalValue]);
+
   const proposalText = useMemo(() => (
-    `PDF Contents\n\nPage 1 - Intro / Cover Page\nClient: ${proposal.client}\nCompany: ${proposal.company}\nGSTIN: ${proposal.gstin}\n\nPage 2 - About The Copper Studio\nPage 3 - Pricing of various packages\nPage 4 - Detailed comparison\nPage 5 - Process / timeline details\nTimeline: ${proposal.timeline}\nService: ${proposal.service}\nValue: Rs ${Number(proposal.value || 0).toLocaleString("en-IN")}\n\nPage 6 - Contact us / outro page`
-  ), [proposal]);
+    `PDF Contents\n\nPage 1 - Intro / Cover Page\nClient: ${proposal.client}\nCompany: ${proposal.company}\nGSTIN: ${proposal.gstin}\n\nPage 2 - About The Copper Studio\nPage 3 - Pricing of various packages\nPage 4 - Detailed comparison\nPage 5 - Process / timeline details\nTimeline: ${proposal.timeline}\nService: ${proposal.service}\nValue: Rs ${proposalValue.toLocaleString("en-IN")}\n\nPage 6 - Contact us / outro page`
+  ), [proposal, proposalValue]);
 
   async function copyText(text, title) {
     await navigator.clipboard.writeText(text);
@@ -399,6 +433,10 @@ export function ProposalGeneratorPage() {
     copyText(proposalText, "Proposal copied");
   }
 
+  function adjustZoom(step) {
+    setZoom((prev) => Math.min(150, Math.max(50, prev + step)));
+  }
+
   async function createProposalPdf() {
     const nextErrors = validateProposal(proposal);
     setErrors(nextErrors);
@@ -413,8 +451,6 @@ export function ProposalGeneratorPage() {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 48;
-    const value = Number(proposal.value || 0);
-    const proposalNo = `DCS-${Date.now().toString().slice(-6)}`;
     let y = 190;
 
     doc.setFillColor(37, 99, 235);
@@ -431,24 +467,16 @@ export function ProposalGeneratorPage() {
     doc.text(proposal.service || "Project Proposal", margin, 122);
     doc.setFontSize(10);
     doc.text(`Proposal ${proposalNo}`, pageWidth - 168, 58);
-    doc.text(formatDateTime(new Date()), pageWidth - 168, 78);
+    doc.text(formatDateTime(proposalDate), pageWidth - 168, 78);
 
     doc.setTextColor(17, 24, 39);
     doc.setFontSize(18);
     doc.text(`Prepared for ${proposal.client}`, margin, y);
     y += 30;
 
-    const details = [
-      ["Company", proposal.company],
-      ["GSTIN", proposal.gstin],
-      ["Service", proposal.service],
-      ["Project value", `Rs ${value.toLocaleString("en-IN")}`],
-      ["Estimated timeline", proposal.timeline]
-    ];
-
     doc.setDrawColor(229, 231, 235);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 118, 10, 10);
-    details.forEach(([label, detail], index) => {
+    proposalDetails.forEach(([label, detail], index) => {
       const rowY = y + 24 + index * 19;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
@@ -460,25 +488,6 @@ export function ProposalGeneratorPage() {
       doc.text(String(detail || "-"), margin + 150, rowY);
     });
     y += 158;
-
-    const sections = [
-      {
-        title: "About The Copper Studio",
-        body: "A focused implementation workspace for designing, deploying, and supporting professional client-facing digital systems with a clear onboarding and delivery process."
-      },
-      {
-        title: "Scope and Deliverables",
-        body: `${proposal.service} includes planning, design coordination, implementation, review cycles, and handover documentation aligned to the selected package.`
-      },
-      {
-        title: "Pricing and Commercials",
-        body: `Estimated project value is Rs ${value.toLocaleString("en-IN")}. Taxes, final package inclusions, and payment milestones can be confirmed during checkout or invoice generation.`
-      },
-      {
-        title: "Process and Timeline",
-        body: `The expected completion timeline is ${proposal.timeline}. Work moves through discovery, setup, build, review, launch, and support.`
-      }
-    ];
 
     sections.forEach((section) => {
       doc.setFillColor(248, 250, 252);
@@ -540,12 +549,79 @@ export function ProposalGeneratorPage() {
         </Card>
 
         <Card>
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-bold text-gray-950">Live preview</h3>
-            <p className="text-xs text-gray-400">Updates as you type.</p>
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-950">Live preview</h3>
+              <p className="text-xs text-gray-400">Updates as you type. Matches the exported PDF.</p>
+            </div>
+            <div className="flex items-center gap-1 rounded-lg border border-gray-200 p-1">
+              <button
+                type="button"
+                onClick={() => adjustZoom(-10)}
+                className="grid h-6 w-6 place-items-center rounded-md text-gray-500 hover:bg-gray-100"
+                aria-label="Zoom out"
+              >
+                <Minus size={13} />
+              </button>
+              <span className="w-10 text-center text-[11px] font-semibold text-gray-600">{zoom}%</span>
+              <button
+                type="button"
+                onClick={() => adjustZoom(10)}
+                className="grid h-6 w-6 place-items-center rounded-md text-gray-500 hover:bg-gray-100"
+                aria-label="Zoom in"
+              >
+                <Plus size={13} />
+              </button>
+            </div>
           </div>
-          <div className="p-5">
-            <pre className="min-h-[22rem] whitespace-pre-wrap rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs leading-6 text-gray-700">{proposalText}</pre>
+          <div className="max-h-[640px] overflow-auto bg-gray-100 p-6">
+            <div
+              className="mx-auto origin-top bg-white shadow-lg"
+              style={{ width: 480, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
+            >
+              <div className="bg-[#2563eb] px-7 py-6 text-white">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-lg font-bold">The Copper Studio</p>
+                    <p className="mt-1 text-[11px] text-blue-100">The Copper Studio Proposal</p>
+                  </div>
+                  <div className="text-right text-[10px] text-blue-100">
+                    <p>Proposal {proposalNo}</p>
+                    <p className="mt-1">{formatDateTime(proposalDate)}</p>
+                  </div>
+                </div>
+                <p className="mt-5 text-xl font-bold leading-tight">{proposal.service || "Project Proposal"}</p>
+              </div>
+
+              <div className="px-7 py-6">
+                <p className="text-base font-bold text-gray-900">Prepared for {proposal.client || "—"}</p>
+
+                <div className="mt-4 rounded-xl border border-gray-200 p-4">
+                  <dl className="space-y-2">
+                    {proposalDetails.map(([label, detail]) => (
+                      <div key={label} className="flex items-baseline justify-between gap-3 text-[11px]">
+                        <dt className="font-bold uppercase tracking-wide text-gray-500">{label}</dt>
+                        <dd className="truncate text-right font-medium text-gray-900">{detail}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {sections.map((section) => (
+                    <div key={section.title} className="rounded-lg bg-gray-50 p-4">
+                      <p className="text-[12px] font-bold text-gray-900">{section.title}</p>
+                      <p className="mt-1.5 text-[11px] leading-5 text-gray-600">{section.body}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-5 border-t-2 border-[#2563eb] pt-3">
+                  <p className="text-[11px] font-bold text-[#2563eb]">The Copper Studio</p>
+                  <p className="mt-0.5 text-[10px] text-gray-500">Contact us for package confirmation, onboarding, and next steps.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       </div>
