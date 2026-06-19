@@ -5,7 +5,7 @@ import {
   Tag, TrendingUp, Users, WalletCards, Table2
 } from "lucide-react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell,
   Pie, PieChart as RePieChart, ResponsiveContainer, Tooltip, XAxis, YAxis
 } from "recharts";
 import { Button } from "../../components/ui";
@@ -107,6 +107,28 @@ function formatMoney(value) {
   return `Rs ${Math.round(value || 0).toLocaleString("en-IN")}`;
 }
 
+function formatMoneyCompact(value) {
+  const amount = Math.round(value || 0);
+  if (Math.abs(amount) >= 100000) return `Rs ${(amount / 100000).toFixed(1)}L`;
+  if (Math.abs(amount) >= 1000) return `Rs ${(amount / 1000).toFixed(1)}k`;
+  return `Rs ${amount}`;
+}
+
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg shadow-gray-200/60">
+      {label && <p className="mb-1 font-bold text-gray-500">{label}</p>}
+      {payload.map((entry) => (
+        <p key={entry.dataKey} className="flex items-center gap-2 font-semibold text-gray-800">
+          <span className="inline-block h-2 w-2 rounded-full" style={{ background: entry.color || entry.payload?.color }} />
+          {entry.name}: {typeof entry.value === "number" ? formatMoney(entry.value) : entry.value}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export function AnalyticsPage() {
   const [timeFilter, setTimeFilter] = useState("Last 30 days");
   const { records: orders } = useCrmRecords("orders");
@@ -178,20 +200,36 @@ export function AnalyticsPage() {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
         <Card>
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-bold text-gray-950">Revenue and orders graph</h3>
-            <p className="text-xs text-gray-400">{timeFilter}</p>
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-950">Revenue and orders graph</h3>
+              <p className="text-xs text-gray-400">{timeFilter}</p>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] font-bold text-gray-500">
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#2563EB]" /> Revenue</span>
+              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10b981]" /> Trend</span>
+            </div>
           </div>
           <div className="h-80 p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={revenueGraph.slice(-45)}>
+              <AreaChart data={revenueGraph.slice(-45)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="#2563EB" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.22} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} stroke="#eef2f7" />
-                <XAxis dataKey="day" hide />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                <Tooltip />
-                <Line dataKey="revenue" stroke="#2563EB" strokeWidth={2} dot={false} />
-                <Line dataKey="trend" stroke="#10b981" strokeWidth={2} dot={false} />
-              </LineChart>
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} minTickGap={24} />
+                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={64} />
+                <Tooltip content={<ChartTooltip />} />
+                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#2563EB" strokeWidth={2.5} fill="url(#revenueFill)" activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="trend" name="Trend" stroke="#10b981" strokeWidth={2} fill="url(#trendFill)" activeDot={{ r: 4 }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
@@ -203,10 +241,21 @@ export function AnalyticsPage() {
           <div className="h-64 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <RePieChart>
-                <Pie data={statusData.length ? statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]} dataKey="value" innerRadius={54} outerRadius={86} paddingAngle={4}>
+                <Pie
+                  data={statusData.length ? statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={54}
+                  outerRadius={86}
+                  paddingAngle={4}
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                  label={statusData.length ? ({ name, percent }) => `${name} ${Math.round(percent * 100)}%` : false}
+                  labelLine={false}
+                >
                   {(statusData.length ? statusData : [{ name: "No data", color: "#e5e7eb" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<ChartTooltip />} />
               </RePieChart>
             </ResponsiveContainer>
           </div>
@@ -227,12 +276,18 @@ export function AnalyticsPage() {
               <h3 className="text-sm font-bold text-gray-950">Top products by revenue</h3>
               <div className="mt-4 h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={packageRevenue.length ? packageRevenue : [{ name: "No orders", revenue: 0 }]}>
+                  <BarChart data={packageRevenue.length ? packageRevenue : [{ name: "No orders", revenue: 0 }]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#2563EB" stopOpacity={1} />
+                        <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.85} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid vertical={false} stroke="#eef2f7" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                    <Tooltip />
-                    <Bar dataKey="revenue" fill="#2563EB" radius={[8, 8, 0, 0]} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={56} />
+                    <Tooltip content={<ChartTooltip />} cursor={{ fill: "#2563EB", opacity: 0.06 }} />
+                    <Bar dataKey="revenue" name="Revenue" fill="url(#barFill)" radius={[8, 8, 0, 0]} maxBarSize={48} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

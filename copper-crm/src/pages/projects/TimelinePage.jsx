@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, Calendar, CheckCircle2, Circle, Clock3, FolderKanban, Search } from "lucide-react";
+import { Calendar, CheckCircle2, Circle, Clock3, FolderKanban, Search } from "lucide-react";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 
 const STAGE_STYLE = {
@@ -32,6 +32,11 @@ function validDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+/** Resolve a project's milestone list using only real, stored dates, in priority order:
+ *  1. the auto-generated `timeline` array (has real startDate/dueDate per milestone)
+ *  2. `stages`, each with its own real startDate/dueDate
+ *  Milestones without a real start and end date are dropped rather than guessed.
+ */
 function resolveMilestones(project) {
   if (project.timeline?.length) {
     return project.timeline
@@ -71,7 +76,7 @@ function ProjectGanttChart({ project }) {
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E1E4EA] bg-[#FAFAFA] py-16 text-center">
         <Calendar size={28} className="mb-3 text-[#9ca3af]" />
         <p className="text-sm font-semibold text-[#525866]">No timeline data for this project yet.</p>
-        <p className="mt-1 text-xs text-[#9ca3af]">Add real start and due dates to timeline milestones to see the Gantt chart.</p>
+        <p className="mt-1 text-xs text-[#9ca3af]">Add real start and due dates to timeline milestones or stages to see the Gantt chart.</p>
       </div>
     );
   }
@@ -90,37 +95,19 @@ function ProjectGanttChart({ project }) {
   const totalSpan = Math.max(rangeEnd - rangeStart, 86400000);
   const toPct = (date) => Math.min(100, Math.max(0, ((date.getTime() - rangeStart) / totalSpan) * 100));
   const todayPct = todayDate.getTime() >= rangeStart && todayDate.getTime() <= rangeEnd ? toPct(todayDate) : null;
-  const completedCount = milestones.filter((m) => m.status === "completed").length;
-  const completionPct = Math.round((completedCount / Math.max(milestones.length, 1)) * 100);
-  const activeMilestone = milestones.find((m) => m.status === "in_progress") || milestones.find((m) => m.status !== "completed");
-
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#f1f1f5] bg-[#fbfaf9] px-5 py-4">
-        <div className="flex items-start gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#fff1ec] text-[#884c2d]">
-            <BarChart3 size={20} />
-          </div>
-          <div>
+    <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
+      <div className="flex items-center justify-between border-b border-[#f1f1f5] bg-[#FAFAFA] px-5 py-3.5">
+        <div>
           <h3 className="text-sm font-bold text-[#0E121B]">{project.name} — Timeline</h3>
           <p className="mt-0.5 text-xs text-[#525866]">
             {fmt(min)} → {fmt(max)} · {milestones.length} stage{milestones.length === 1 ? "" : "s"}
           </p>
-            {activeMilestone && (
-              <p className="mt-1 text-xs font-semibold text-[#884c2d]">Current focus: {activeMilestone.name}</p>
-            )}
-          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold text-[#525866]">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-            <CheckCircle2 size={13} /> {completionPct}% complete
-          </span>
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#525866] ring-1 ring-[#E1E4EA]">
-            {completedCount}/{milestones.length} stages done
-          </span>
+        <div className="flex items-center gap-3 text-[11px] font-semibold text-[#525866]">
           {Object.entries({ not_started: "Not Started", in_progress: "In Progress", completed: "Completed" }).map(([key, label]) => (
             <span key={key} className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${STAGE_STYLE[key].dot}`} /> {label}
+              <span className={`h-2 w-2 rounded-full ${STAGE_STYLE[key].bar}`} /> {label}
             </span>
           ))}
         </div>
@@ -129,23 +116,23 @@ function ProjectGanttChart({ project }) {
       <div className="overflow-x-auto p-5">
         <div style={{ minWidth: `${Math.max(months.length * 110, 600)}px` }}>
           {/* Month scale header */}
-          <div className="relative mb-2 ml-[210px] grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+          <div className="relative mb-2 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
             {months.map((m) => (
-              <div key={m.label} className="border-l border-[#f1f1f5] pl-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af] first:border-l-0">
+              <div key={m.label} className="border-l border-[#f1f1f5] pl-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
                 {m.label}
               </div>
             ))}
           </div>
 
           {/* Gantt rows */}
-          <div className="relative rounded-xl border border-[#f1f1f5] bg-[#FAFAFA] p-3">
+          <div className="relative space-y-3 rounded-lg border border-[#f1f1f5] bg-[#FAFAFA] p-3">
             {/* month gridlines */}
-            <div className="pointer-events-none absolute inset-y-3 left-[222px] right-3 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+            <div className="pointer-events-none absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
               {months.map((m) => <div key={m.label} className="border-l border-[#ECECEC] first:border-l-0" />)}
             </div>
             {/* today marker */}
             {todayPct !== null && (
-              <div className="pointer-events-none absolute top-3 bottom-3 z-10 w-px bg-red-400" style={{ left: `calc(222px + (100% - 234px) * ${todayPct / 100})` }}>
+              <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${todayPct}%` }}>
                 <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded bg-red-400 px-1.5 py-0.5 text-[9px] font-bold text-white">Today</span>
               </div>
             )}
@@ -157,17 +144,14 @@ function ProjectGanttChart({ project }) {
               const width = Math.max(toPct(m.end) - left, 4);
               const dateLabel = `${fmt(m.start)} – ${fmt(m.end)}`;
               return (
-                <div key={m.name} className="relative grid min-h-14 grid-cols-[190px_1fr] items-center gap-5 rounded-lg px-2 py-2 odd:bg-white/70">
-                  <div className="flex min-w-0 items-center gap-2 pr-2">
+                <div key={m.name} className="relative grid grid-cols-[180px_1fr] items-center gap-3">
+                  <div className="flex items-center gap-2 pr-2">
                     <Icon size={14} className={style.chip.includes("emerald") ? "text-emerald-600" : style.chip.includes("884c2d") ? "text-[#884c2d]" : "text-gray-400"} />
-                    <div className="min-w-0">
-                      <span className="block truncate text-xs font-bold text-[#0E121B]">{m.name}</span>
-                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${style.chip}`}>{m.status.replace("_", " ")}</span>
-                    </div>
+                    <span className="truncate text-xs font-bold text-[#0E121B]">{m.name}</span>
                   </div>
-                  <div className="relative h-10">
+                  <div className="relative h-9">
                     <div
-                      className={`absolute top-1 flex h-8 min-w-[120px] items-center rounded-xl bg-gradient-to-r px-2.5 text-[10px] font-bold text-white shadow-sm ring-1 ring-white/50 ${style.bar}`}
+                      className={`absolute top-1 flex h-7 items-center rounded-lg px-2.5 text-[10px] font-bold text-white shadow-sm ${style.bar}`}
                       style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
                       title={dateLabel}
                     >

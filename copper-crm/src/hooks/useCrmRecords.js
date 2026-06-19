@@ -6,7 +6,7 @@ const EMPTY_FALLBACK = [];
 // The backend free tier spins down when idle and can take 50s+ to wake on the
 // first request, which can time out client-side. Retry a couple of times with
 // backoff before giving up, instead of immediately showing a stale/empty cache.
-const RETRY_DELAYS_MS = [3000, 6000];
+const RETRY_DELAYS_MS = [3000, 6000, 12000, 20000];
 
 function isLocalId(id, type) {
   return !id || String(id).startsWith(type + "-") || String(id).startsWith("demo");

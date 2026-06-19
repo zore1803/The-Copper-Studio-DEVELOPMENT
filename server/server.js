@@ -35,7 +35,7 @@ const razorpay =
     : null;
 
 app.use(cors({ origin: true }));
-app.use(express.json({ verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
+app.use(express.json({ limit: "12mb", verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
 app.use("/api/auth", authRoutes);
 app.use("/api/crm", crmRoutes);
 app.use("/api/client", clientRoutes);

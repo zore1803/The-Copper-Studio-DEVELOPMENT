@@ -29,6 +29,17 @@ function formatSizeMB(mb) {
   return mb >= 1000 ? `${(mb / 1000).toFixed(1)} GB` : `${(mb || 0).toFixed(1)} MB`;
 }
 
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ProjectFiles() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
@@ -99,6 +110,12 @@ export default function ProjectFiles() {
       showToast({ type: "error", title: "Create a folder first", message: "Add a folder before uploading a file." });
       return;
     }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      e.target.value = "";
+      showToast({ type: "error", title: "File too large", message: "Files must be 8 MB or smaller." });
+      return;
+    }
+    const fileUrl = await readFileAsDataUrl(file);
     const newDoc = {
       name: file.name,
       category,
@@ -106,6 +123,7 @@ export default function ProjectFiles() {
       sizeMB: parseFloat((file.size / (1024 * 1024)).toFixed(2)),
       date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
       uploadedBy: "Admin",
+      fileUrl,
       _id: `doc-${Date.now()}`,
     };
     const updated = { ...project, documents: [newDoc, ...(project.documents || [])] };
@@ -293,6 +311,19 @@ export default function ProjectFiles() {
                         </button>
                         {docMenu === menuKey && (
                           <div className="absolute right-6 top-full z-20 mt-1 w-36 rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg text-left">
+                            {doc.fileUrl ? (
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                                onClick={() => setDocMenu(null)}
+                              >
+                                Open file
+                              </a>
+                            ) : (
+                              <span className="block px-3 py-2 text-sm text-[#9ca3af]">No file stored</span>
+                            )}
                             <button
                               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                               onClick={() => {

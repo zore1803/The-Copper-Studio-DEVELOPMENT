@@ -47,14 +47,14 @@ function EmptyState({ icon: Icon, title, text, action }) {
 
 function KpiChip({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white px-5 py-4">
-      <div className="flex items-center gap-3">
+    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
+      <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#111827]">{value}</p>
+          <p className="mt-0.5 text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
         </div>
       </div>
     </div>
@@ -202,7 +202,10 @@ function readFileAsDataUrl(file) {
   });
 }
 
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
 function DocumentUploadPanel({ company, onClose, onSave }) {
+  const { showToast } = useToast();
   const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -210,6 +213,11 @@ function DocumentUploadPanel({ company, onClose, onSave }) {
   async function handleBrowse(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      showToast({ type: "error", title: "File too large", message: "Files must be 8 MB or smaller. Paste a hosted file URL instead for larger files." });
+      event.target.value = "";
+      return;
+    }
     const dataUrl = await readFileAsDataUrl(file);
     setForm((prev) => ({
       ...prev,
@@ -879,7 +887,7 @@ export default function CompanyDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 px-6 pb-4 lg:grid-cols-4 xl:grid-cols-8">
+        <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-4">
           <KpiChip label="Company Value" value={formatINR(companyValue)} icon={Target} />
           <KpiChip label="Collected" value={formatINR(collected)} icon={FileText} />
           <KpiChip label="Outstanding" value={formatINR(outstanding)} icon={FileText} />

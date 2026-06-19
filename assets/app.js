@@ -26,7 +26,12 @@ const packages = [
 ];
 
 const STORAGE_KEY = "tcs-order";
-const API_BASE = "http://localhost:5000/api";
+// The Express server serves these static pages and /api from the same origin in
+// production. The "npm run static" workflow serves this page on a separate port
+// (4173) for local testing, so fall back to the known backend port on localhost.
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+  : `${window.location.origin}/api`;
 
 const defaultOrder = {
   selectedPackageId: "growth",

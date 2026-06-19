@@ -5,6 +5,9 @@ import {
   IndianRupee, TrendingUp,
   Clock3, CheckCircle2,
 } from "lucide-react";
+import {
+  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
 import { useCrmRecords } from "../hooks/useCrmRecords";
 import { storeGet } from "../lib/store";
 
@@ -32,6 +35,30 @@ function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+function pctChange(curr, prev) {
+  if (prev > 0) return Math.round(((curr - prev) / prev) * 100);
+  return curr > 0 ? 100 : 0;
+}
+function recordDate(record, now) {
+  const raw = record.date || record.createdAt || record.paidAt;
+  const parsed = raw ? new Date(raw) : now;
+  return Number.isNaN(parsed.getTime()) ? now : parsed;
+}
+
+function DashboardTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-xs shadow-lg shadow-gray-200/60">
+      {label && <p className="mb-1 font-bold text-[#6b7280]">{label}</p>}
+      {payload.map((entry) => (
+        <p key={entry.dataKey} className="flex items-center gap-2 font-semibold text-[#111827]">
+          <span className="inline-block h-2 w-2 rounded-full" style={{ background: entry.color }} />
+          {entry.name}: {formatINR(entry.value)}
+        </p>
+      ))}
+    </div>
+  );
 }
 
 const TONE_STYLES = {
@@ -69,14 +96,7 @@ function KpiCard({ label, value, change, up, icon: Icon, tone = "brown" }) {
 }
 
 function SalesRevenueChart({ data }) {
-  const maxVal = Math.max(...data.map((d) => d.revenue), 1);
   const totalVal = data.reduce((sum, d) => sum + d.revenue, 0);
-  const pts = data.map((d, i) => {
-    const x = (i / Math.max(data.length - 1, 1)) * 100;
-    const y = 100 - (d.revenue / maxVal) * 80;
-    return `${x},${y}`;
-  }).join(" ");
-  const area = `${pts} 100,100 0,100`;
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
@@ -87,39 +107,28 @@ function SalesRevenueChart({ data }) {
         </div>
         <span className="rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{formatCompact(totalVal)}</span>
       </div>
-      <div className="px-6 py-4 flex gap-4">
-        <div className="flex flex-col justify-between text-[10px] text-[#9ca3af] py-1" style={{ minWidth: 44 }}>
-          {[1, 0.8, 0.6, 0.4, 0.2, 0].map((ratio) => (
-            <span key={ratio}>{formatCompact(maxVal * ratio)}</span>
-          ))}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="h-56 relative">
-            <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="areaGrad" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#884c2d" stopOpacity="0.18" />
-                  <stop offset="100%" stopColor="#884c2d" stopOpacity="0.01" />
-                </linearGradient>
-              </defs>
-              {[20, 40, 60, 80].map((y) => (
-                <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="#f3f4f6" strokeWidth="0.4" />
-              ))}
-              <polygon points={area} fill="url(#areaGrad)" />
-              <polyline points={pts} fill="none" stroke="#884c2d" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div className="flex justify-between pt-2">
-            {data.map((d) => (
-              <span key={d.month} className="text-[10px] text-[#9ca3af]">{d.month}</span>
-            ))}
-          </div>
-        </div>
+      <div className="h-72 px-2 py-4">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="salesRevenueFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#884c2d" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} stroke="#f3f4f6" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={64} />
+            <Tooltip content={<DashboardTooltip />} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={2.5} fill="url(#salesRevenueFill)" activeDot={{ r: 4 }} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
 }
 function InvoicesCard({ orders }) {
+  const now = useMemo(() => new Date(), []);
   const paid = orders.filter(o => o.status === "Paid");
   const totalRevenue = paid.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
   const pctCleared = Math.round((paid.length / Math.max(orders.length, 1)) * 100);
@@ -129,6 +138,18 @@ function InvoicesCard({ orders }) {
   }, {});
   const topPackages = Object.entries(byPkg).slice(0, 2);
   const maxPkg = Math.max(...Object.values(byPkg), 1);
+
+  const trend = useMemo(() => {
+    const months = {};
+    for (const order of orders) {
+      const date = recordDate(order, now);
+      const sortKey = date.getFullYear() * 12 + date.getMonth();
+      const monthLabel = date.toLocaleDateString("en-IN", { month: "short" });
+      if (!months[sortKey]) months[sortKey] = { month: monthLabel, revenue: 0, sortKey };
+      months[sortKey].revenue += parseCurrency(order.amount);
+    }
+    return Object.values(months).sort((a, b) => a.sortKey - b.sortKey).slice(-7);
+  }, [orders, now]);
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
@@ -148,16 +169,20 @@ function InvoicesCard({ orders }) {
           </div>
         ))}
       </div>
-      <div className="mt-4 h-[80px] relative">
-        <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-          <polyline
-            points="0,38 15,35 25,30 35,28 45,22 55,18 65,14 75,10 85,8 100,4"
-            fill="none" stroke="#884c2d" strokeWidth="1.5" strokeLinejoin="round"
-          />
-        </svg>
-        <div className="flex justify-between text-[10px] text-[#9ca3af] mt-1">
-          {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"].map((m) => <span key={m}>{m}</span>)}
-        </div>
+      <div className="mt-4 h-[90px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="invoicesTrendFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.22} />
+                <stop offset="100%" stopColor="#884c2d" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+            <Tooltip content={<DashboardTooltip />} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={1.75} fill="url(#invoicesTrendFill)" activeDot={{ r: 3 }} />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
       <p className="text-xs text-[#6b7280] mt-2">Revenue Trend</p>
     </div>
@@ -395,12 +420,29 @@ export default function Dashboard() {
       const due = Number.isNaN(parsedDue.getTime()) ? fallbackDue : parsedDue;
       return { ...p, daysLeft: Math.ceil((due - now) / 86400000) };
     });
+
+    const weekMs = 7 * 86400000;
+    const thisWeekStart = now.getTime() - weekMs;
+    const lastWeekStart = now.getTime() - weekMs * 2;
+    const isPaid = (o) => o.status === "Paid";
+    const inRange = (record, start, end) => {
+      const time = recordDate(record, now).getTime();
+      return time >= start && time < end;
+    };
+    const thisWeekOrders = orders.filter((o) => inRange(o, thisWeekStart, now.getTime()));
+    const lastWeekOrders = orders.filter((o) => inRange(o, lastWeekStart, thisWeekStart));
+    const revenueOf = (list) => list.filter(isPaid).reduce((sum, o) => sum + parseCurrency(o.amount), 0);
+    const revenueChange = pctChange(revenueOf(thisWeekOrders), revenueOf(lastWeekOrders));
+    const ordersChange = pctChange(thisWeekOrders.length, lastWeekOrders.length);
+
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
       activeProjects: activeProjects.length,
       paidOrders: paidOrders.length,
       totalOrders: orders.length,
+      revenueChange,
+      ordersChange,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
   }, [orders, projects, now]);
@@ -461,10 +503,10 @@ export default function Dashboard() {
               <p className="text-sm text-[#6b7280]">Visual summary of key metrics and project health</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={12} up icon={IndianRupee} iconBg="bg-[#884c2d]" />
-              <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={12} up icon={BarChart2} iconBg="bg-[#6b7280]" />
-              <KpiCard label="Active Projects" value={metrics.activeProjects} change={8} up icon={TrendingUp} iconBg="bg-[#884c2d]/80" />
-              <KpiCard label="Total Orders" value={metrics.totalOrders} change={5} up icon={BriefcaseBusiness} iconBg="bg-[#6b7280]/80" />
+              <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={Math.abs(metrics.revenueChange)} up={metrics.revenueChange >= 0} icon={IndianRupee} tone="brown" />
+              <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={Math.abs(metrics.revenueChange)} up={metrics.revenueChange >= 0} icon={BarChart2} tone="slate" />
+              <KpiCard label="Active Projects" value={metrics.activeProjects} icon={TrendingUp} tone="emerald" />
+              <KpiCard label="Total Orders" value={metrics.totalOrders} change={Math.abs(metrics.ordersChange)} up={metrics.ordersChange >= 0} icon={BriefcaseBusiness} tone="amber" />
             </div>
             <SalesRevenueChart data={chartData} />
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
