@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
+import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 
 /* ─── Shared primitives ─── */
 
@@ -19,6 +20,20 @@ const CS = {
   secondary: "var(--cs-secondary)",
   error: "var(--cs-error)",
 };
+
+/* Gantt status palette — shared with the admin task Gantt for visual parity. */
+const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const GANTT_STATUS_COLOR = {
+  Backlog: "#9ca3af",
+  "To Do": "#0ea5e9",
+  "In Progress": "#f59e0b",
+  Review: "#6366f1",
+  Completed: "#10b981",
+  Blocked: "#ef4444",
+};
+const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
+// Computed once at module load (matches the admin Gantt) to keep render pure.
+const GANTT_TODAY = today();
 
 function PageShell({ title, subtitle, children, action }) {
   return (
@@ -141,44 +156,186 @@ function Spinner() {
 /* ─── PROJECT TIMELINE ─── */
 
 function ClientTaskGantt({ tasks }) {
-  const rows = tasks.map((task) => {
-    const start = new Date(task.startDate || task.createdAt || Date.now());
-    const end = new Date(task.dueDate || task.deadline || task.expectedEndDate || Date.now());
-    const safeStart = Number.isNaN(start.getTime()) ? new Date() : start;
-    const safeEnd = Number.isNaN(end.getTime()) || end < start ? safeStart : end;
-    return { ...task, safeStart, safeEnd };
-  });
-  if (!rows.length) return null;
-  const min = Math.min(...rows.map((row) => row.safeStart.getTime()));
-  const max = Math.max(...rows.map((row) => row.safeEnd.getTime()), min + 86400000);
-  const range = Math.max(max - min, 86400000);
+  const [zoom, setZoom] = useState("Week");
+
+  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+    const mapped = tasks.map((task) => {
+      const start = task.startDate ? parseFullDate(task.startDate) : null;
+      const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
+      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+      const safeEnd = end < start ? start : end;
+      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
+      return { ...task, start, end: safeEnd, status };
+    }).filter(Boolean);
+
+    const unscheduled = tasks.length - mapped.length;
+    if (!mapped.length) {
+      return { groups: [], minDate: GANTT_TODAY, maxDate: GANTT_TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    }
+
+    const allDates = mapped.flatMap((t) => [t.start, t.end]);
+    const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
+    const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
+    const groupList = GANTT_TASK_STATUSES
+      .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
+      .filter((g) => g.tasks.length > 0);
+
+    const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
+    const weekCount = Math.max(1, Math.ceil(totalDays / 7));
+    const weekCols = Array.from({ length: weekCount }, (_, index) => {
+      const weekStart = new Date(min.getTime() + index * 7 * DAY_MS);
+      const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
+      return { label: formatRange(weekStart, weekEnd) };
+    });
+
+    return {
+      groups: groupList,
+      minDate: min,
+      maxDate: max,
+      weeks: weekCols,
+      summary: {
+        total: mapped.length,
+        completed: mapped.filter((t) => t.status === "Completed").length,
+        blocked: mapped.filter((t) => t.status === "Blocked").length,
+        unscheduled,
+      },
+    };
+  }, [tasks]);
+
+  if (!groups.length) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
+        <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
+          <span className="material-symbols-outlined text-[32px]" style={{ color: CS.outlineVariant }}>calendar_month</span>
+          <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>No scheduled tasks yet.</p>
+          <p className="mt-1 text-xs" style={{ color: CS.secondary }}>Tasks appear here once The Copper Studio sets their start and due dates.</p>
+        </div>
+      </Card>
+    );
+  }
+
+  const colWidth = GANTT_ZOOM[zoom];
+  const totalRangeMs = Math.max(1, maxDate - minDate);
+  const timelineWidth = weeks.length * colWidth;
+  const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
+  const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
+  const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
-      <div className="space-y-3">
-        {rows.map((task) => {
-          const left = ((task.safeStart.getTime() - min) / range) * 100;
-          const width = Math.max(((task.safeEnd.getTime() - task.safeStart.getTime()) / range) * 100, 8);
-          const dateRange = `${task.safeStart.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} – ${task.safeEnd.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`;
-          return (
-            <div key={task.id || task._id} className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)] lg:items-center">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold" style={{ color: CS.onSurface }}>{task.title || task.taskName || "Untitled task"}</p>
-                <p className="text-xs" style={{ color: CS.secondary }}>{task.status || "Backlog"}</p>
+    <Card className="overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }}>
+        <div className="flex items-center gap-3">
+          <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: CS.primaryFixed, color: CS.primary }}>
+            <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
+            <p className="text-xs" style={{ color: CS.secondary }}>{formatRange(minDate, maxDate)} · {summary.total} scheduled task{summary.total === 1 ? "" : "s"}</p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#e8f5e9", color: "#388e3c" }}>
+            <span className="material-symbols-outlined text-[14px]">check_circle</span> {completionPct}% complete
+          </span>
+          {summary.blocked > 0 && (
+            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
+          )}
+          <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: CS.surfaceContainer }}>
+            {Object.keys(GANTT_ZOOM).map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => setZoom(level)}
+                className="rounded-md px-2.5 py-1 text-xs font-bold transition-colors"
+                style={zoom === level ? { background: "#fff", color: CS.primary, boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : { color: CS.secondary }}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b px-5 py-2.5" style={{ borderColor: CS.outlineVariant }}>
+        {groups.map((g) => (
+          <span key={g.status} className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: CS.secondary }}>
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: GANTT_STATUS_COLOR[g.status] }} /> {g.status}
+          </span>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="flex max-h-[560px] overflow-auto">
+        {/* Sticky left: stage / task names */}
+        <div className="sticky left-0 z-20 w-56 shrink-0 border-r" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
+          <div className="flex h-11 items-center px-4 text-[10px] font-bold uppercase tracking-wider" style={{ color: CS.secondary, background: CS.surfaceLow }}>
+            Stage / Task
+          </div>
+          {groups.map((group) => (
+            <div key={group.status} className="border-b" style={{ borderColor: CS.outlineVariant }}>
+              <div className="flex h-9 items-center gap-2 px-3" style={{ background: CS.surfaceLow }}>
+                <span className="h-2 w-2 rounded-full" style={{ background: GANTT_STATUS_COLOR[group.status] }} />
+                <span className="text-xs font-bold" style={{ color: CS.onSurface }}>{group.status}</span>
+                <span className="ml-auto text-[10px] font-bold" style={{ color: CS.secondary }}>{group.tasks.length}</span>
               </div>
-              <div className="relative h-8 rounded-lg" style={{ background: CS.surfaceLow }}>
-                <div
-                  className="absolute top-1 flex h-6 items-center justify-center rounded-lg px-1.5 text-[10px] font-bold text-white"
-                  style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, background: CS.primary }}
-                  title={dateRange}
-                >
-                  <span className="truncate">{dateRange}</span>
+              {group.tasks.map((task) => (
+                <div key={task.id || task._id} className="flex h-12 flex-col justify-center px-5">
+                  <span className="truncate text-xs font-semibold" style={{ color: CS.onSurface }}>{task.title || task.taskName || "Untitled task"}</span>
+                  <span className="truncate text-[10px]" style={{ color: CS.secondary }}>
+                    {formatRange(task.start, task.end)}
+                    {task.assignedTo || task.assignee ? ` · ${task.assignedTo || task.assignee}` : ""}
+                  </span>
                 </div>
-              </div>
+              ))}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* Right: dated bars */}
+        <div className="flex-1">
+          <div style={{ minWidth: `${timelineWidth}px` }}>
+            <div className="sticky top-0 z-10 flex h-11" style={{ background: CS.surfaceLowest }}>
+              {weeks.map((week, index) => (
+                <div key={index} style={{ width: `${colWidth}px`, borderColor: CS.outlineVariant }} className="flex shrink-0 items-center justify-center border-b border-l text-[10px] font-bold uppercase" >
+                  <span style={{ color: CS.secondary }}>{week.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="relative">
+              {showToday && (
+                <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px" style={{ left: `${toPct(GANTT_TODAY)}%`, background: CS.error }}>
+                  <span className="absolute left-1 top-1 rounded px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: CS.error }}>Today</span>
+                </div>
+              )}
+              {groups.map((group) => (
+                <div key={group.status}>
+                  <div className="h-9 border-b" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }} />
+                  {group.tasks.map((task) => {
+                    const left = toPct(task.start);
+                    const width = Math.max(toPct(task.end) - left, 3);
+                    const days = Math.max(1, Math.round((task.end - task.start) / DAY_MS) + 1);
+                    const color = GANTT_STATUS_COLOR[group.status];
+                    return (
+                      <div key={task.id || task._id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
+                        <div
+                          className="absolute top-2.5 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg px-2 text-[10px] font-bold text-white shadow-sm"
+                          style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 70, background: color }}
+                          title={`${task.title || task.taskName}\n${group.status}${task.assignedTo || task.assignee ? ` · ${task.assignedTo || task.assignee}` : ""}\n${formatRange(task.start, task.end)} (${days}d)`}
+                        >
+                          <span className="truncate">{task.title || task.taskName}</span>
+                          <span className="ml-auto shrink-0 rounded bg-white/25 px-1">{days}d</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </Card>
   );
@@ -1203,7 +1360,7 @@ export function ClientPurchasesPage() {
 
 export function ClientSupportPage() {
   const { token } = useAuth();
-  const [meetings, setMeetings] = useState([]);
+  const [, setMeetings] = useState([]);
   useEffect(() => {
     clientApi.getMeetings(token).catch(() => setMeetings([]));
   }, [token]);

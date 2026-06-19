@@ -10,6 +10,9 @@ import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import { isEmail, isGstin } from "../../lib/validators";
+
+const URL_RE = /^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i;
 
 function Card({ children, className = "" }) {
   return <section className={`rounded-xl border border-gray-200 bg-white shadow-sm shadow-gray-100/60 ${className}`}>{children}</section>;
@@ -466,7 +469,7 @@ export function TasksPage() {
   );
 }
 
-function SettingsField({ label, value, onChange, type = "text", placeholder }) {
+function SettingsField({ label, value, onChange, type = "text", placeholder, error = "" }) {
   return (
     <label className="block">
       <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">{label}</span>
@@ -475,8 +478,12 @@ function SettingsField({ label, value, onChange, type = "text", placeholder }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+        aria-invalid={Boolean(error)}
+        className={`mt-2 w-full rounded-2xl border bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:ring-4 ${
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#884c2d] focus:ring-[#f3dfd7]"
+        }`}
       />
+      {error && <span className="mt-1.5 block text-[11px] font-semibold text-red-500">{error}</span>}
     </label>
   );
 }
@@ -573,12 +580,48 @@ export function SettingsPage() {
     portalInviteSent: true,
     overdueInvoices: true,
   });
+  const [errors, setErrors] = useState({});
 
-  function saveSection(label) {
-    showToast({
-      title: `${label} updated`,
-      message: "Your settings have been saved successfully.",
-    });
+  function validateSection(key) {
+    const e = {};
+    if (key === "profile") {
+      if (profile.email && !isEmail(profile.email)) e.email = "Enter a valid email address.";
+      if (profile.publicUrl && !URL_RE.test(profile.publicUrl.trim())) e.publicUrl = "Enter a valid URL.";
+    }
+    if (key === "password") {
+      const touched = password.currentPassword || password.newPassword || password.confirmPassword;
+      if (touched) {
+        if (!password.currentPassword) e.currentPassword = "Enter your current password.";
+        if (password.newPassword.length < 8) e.newPassword = "Use at least 8 characters.";
+        if (password.newPassword !== password.confirmPassword) e.confirmPassword = "Passwords do not match.";
+      }
+    }
+    if (key === "company") {
+      if (company.gstin && !isGstin(company.gstin)) e.gstin = "Enter a valid 15-character GSTIN.";
+      if (company.billingEmail && !isEmail(company.billingEmail)) e.billingEmail = "Enter a valid email.";
+      if (company.website && !URL_RE.test(company.website.trim())) e.website = "Enter a valid website URL.";
+    }
+    if (key === "email") {
+      if (email.senderEmail && !isEmail(email.senderEmail)) e.senderEmail = "Enter a valid email.";
+      const port = Number(email.smtpPort);
+      if (email.smtpPort && (!Number.isInteger(port) || port < 1 || port > 65535)) e.smtpPort = "Port must be a number 1–65535.";
+    }
+    return e;
+  }
+
+  function saveSection(key, label) {
+    const nextErrors = validateSection(key);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showToast({ type: "error", title: "Check the form", message: "Please fix the highlighted fields." });
+      return;
+    }
+    showToast({ title: `${label} updated`, message: "Your settings have been saved successfully." });
+  }
+
+  function selectSection(key) {
+    setActiveSection(key);
+    setErrors({});
   }
 
   return (
@@ -597,7 +640,7 @@ export function SettingsPage() {
             <Globe2 size={15} />
             Live workspace
           </Button>
-          <Button size="lg" onClick={() => saveSection("Workspace")}>
+          <Button size="lg" onClick={() => saveSection(activeSection, sections.find((s) => s.key === activeSection)?.title || "Settings")}>
             <Save size={15} />
             Save Changes
           </Button>
@@ -610,7 +653,7 @@ export function SettingsPage() {
             <button
               key={section.key}
               type="button"
-              onClick={() => setActiveSection(section.key)}
+              onClick={() => selectSection(section.key)}
               className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-colors ${
                 activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fff8f6]"
               }`}
@@ -640,15 +683,15 @@ export function SettingsPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <SettingsField label="Full Name" value={profile.fullName} onChange={(value) => setProfile((prev) => ({ ...prev, fullName: value }))} />
-                <SettingsField label="Email Address" value={profile.email} onChange={(value) => setProfile((prev) => ({ ...prev, email: value }))} />
+                <SettingsField label="Email Address" type="email" value={profile.email} error={errors.email} onChange={(value) => setProfile((prev) => ({ ...prev, email: value }))} />
                 <SettingsField label="Job Title" value={profile.title} onChange={(value) => setProfile((prev) => ({ ...prev, title: value }))} />
                 <SettingsSelect label="Timezone" value={profile.timezone} onChange={(value) => setProfile((prev) => ({ ...prev, timezone: value }))} options={["Asia/Kolkata", "Europe/London", "America/New_York"]} />
                 <div className="sm:col-span-2">
-                  <SettingsField label="CRM Public URL" value={profile.publicUrl} onChange={(value) => setProfile((prev) => ({ ...prev, publicUrl: value }))} />
+                  <SettingsField label="CRM Public URL" value={profile.publicUrl} error={errors.publicUrl} onChange={(value) => setProfile((prev) => ({ ...prev, publicUrl: value }))} />
                 </div>
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Profile")}><Save size={14} /> Save Profile</Button>
+                <Button onClick={() => saveSection("profile", "Profile")}><Save size={14} /> Save Profile</Button>
               </div>
             </div>
           )}
@@ -660,14 +703,14 @@ export function SettingsPage() {
                 <p className="mt-1 text-sm text-[#6c6355]">Control reset behavior, onboarding link life, and OTP validity.</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <SettingsField label="Current Password" type="password" value={password.currentPassword} onChange={(value) => setPassword((prev) => ({ ...prev, currentPassword: value }))} />
-                <SettingsField label="New Password" type="password" value={password.newPassword} onChange={(value) => setPassword((prev) => ({ ...prev, newPassword: value }))} />
-                <SettingsField label="Confirm Password" type="password" value={password.confirmPassword} onChange={(value) => setPassword((prev) => ({ ...prev, confirmPassword: value }))} />
+                <SettingsField label="Current Password" type="password" value={password.currentPassword} error={errors.currentPassword} onChange={(value) => setPassword((prev) => ({ ...prev, currentPassword: value }))} />
+                <SettingsField label="New Password" type="password" value={password.newPassword} error={errors.newPassword} onChange={(value) => setPassword((prev) => ({ ...prev, newPassword: value }))} />
+                <SettingsField label="Confirm Password" type="password" value={password.confirmPassword} error={errors.confirmPassword} onChange={(value) => setPassword((prev) => ({ ...prev, confirmPassword: value }))} />
                 <SettingsSelect label="Invite Link Expiry" value={password.inviteExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, inviteExpiry: value }))} options={["24 hours", "48 hours", "72 hours"]} />
                 <SettingsSelect label="OTP Expiry" value={password.otpExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, otpExpiry: value }))} options={["5 minutes", "10 minutes", "15 minutes"]} />
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Password settings")}><Save size={14} /> Update Security</Button>
+                <Button onClick={() => saveSection("password", "Password settings")}><Save size={14} /> Update Security</Button>
               </div>
             </div>
           )}
@@ -681,9 +724,9 @@ export function SettingsPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <SettingsField label="Studio Name" value={company.studioName} onChange={(value) => setCompany((prev) => ({ ...prev, studioName: value }))} />
                 <SettingsField label="Legal Name" value={company.legalName} onChange={(value) => setCompany((prev) => ({ ...prev, legalName: value }))} />
-                <SettingsField label="GSTIN" value={company.gstin} onChange={(value) => setCompany((prev) => ({ ...prev, gstin: value }))} />
-                <SettingsField label="Billing Email" value={company.billingEmail} onChange={(value) => setCompany((prev) => ({ ...prev, billingEmail: value }))} />
-                <SettingsField label="Website" value={company.website} onChange={(value) => setCompany((prev) => ({ ...prev, website: value }))} />
+                <SettingsField label="GSTIN" value={company.gstin} error={errors.gstin} onChange={(value) => setCompany((prev) => ({ ...prev, gstin: value }))} />
+                <SettingsField label="Billing Email" type="email" value={company.billingEmail} error={errors.billingEmail} onChange={(value) => setCompany((prev) => ({ ...prev, billingEmail: value }))} />
+                <SettingsField label="Website" value={company.website} error={errors.website} onChange={(value) => setCompany((prev) => ({ ...prev, website: value }))} />
                 <div className="sm:col-span-2">
                   <SettingsField label="Billing Address" value={company.billingAddress} onChange={(value) => setCompany((prev) => ({ ...prev, billingAddress: value }))} />
                 </div>
@@ -699,7 +742,7 @@ export function SettingsPage() {
                 <Button variant="secondary">Upload</Button>
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Company information")}><Save size={14} /> Save Company</Button>
+                <Button onClick={() => saveSection("company", "Company information")}><Save size={14} /> Save Company</Button>
               </div>
             </div>
           )}
@@ -731,7 +774,7 @@ export function SettingsPage() {
                 />
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Billing settings")}><Save size={14} /> Save Billing</Button>
+                <Button onClick={() => saveSection("billing", "Billing settings")}><Save size={14} /> Save Billing</Button>
               </div>
             </div>
           )}
@@ -744,9 +787,9 @@ export function SettingsPage() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <SettingsField label="Sender Name" value={email.senderName} onChange={(value) => setEmail((prev) => ({ ...prev, senderName: value }))} />
-                <SettingsField label="Sender Email" value={email.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} />
+                <SettingsField label="Sender Email" type="email" value={email.senderEmail} error={errors.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} />
                 <SettingsField label="SMTP Host" value={email.smtpHost} onChange={(value) => setEmail((prev) => ({ ...prev, smtpHost: value }))} />
-                <SettingsField label="SMTP Port" value={email.smtpPort} onChange={(value) => setEmail((prev) => ({ ...prev, smtpPort: value }))} />
+                <SettingsField label="SMTP Port" value={email.smtpPort} error={errors.smtpPort} onChange={(value) => setEmail((prev) => ({ ...prev, smtpPort: value }))} />
                 <div className="sm:col-span-2">
                   <SettingsField label="Secure Onboarding Path" value={email.onboardingPath} onChange={(value) => setEmail((prev) => ({ ...prev, onboardingPath: value }))} />
                 </div>
@@ -758,7 +801,7 @@ export function SettingsPage() {
                 </p>
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Email settings")}><Save size={14} /> Save Email</Button>
+                <Button onClick={() => saveSection("email", "Email settings")}><Save size={14} /> Save Email</Button>
               </div>
             </div>
           )}
@@ -796,7 +839,7 @@ export function SettingsPage() {
                 />
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => saveSection("Notification settings")}><Save size={14} /> Save Notifications</Button>
+                <Button onClick={() => saveSection("notifications", "Notification settings")}><Save size={14} /> Save Notifications</Button>
               </div>
             </div>
           )}
