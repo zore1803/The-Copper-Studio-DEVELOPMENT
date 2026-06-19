@@ -19,6 +19,7 @@ import calendlyRoutes from "./routes/calendly.js";
 import invoiceRoutes from "./routes/invoices.js";
 import { packages } from "./data/packages.js";
 import { sendPortalInviteEmail, sendInvoiceEmail } from "./services/email.js";
+import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
 import { syncFinanceForOrder } from "./services/finance.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
 import { htmlToPdfBuffer } from "./services/pdf.js";
@@ -198,6 +199,40 @@ app.get("/api/packages", (_req, res) => {
   res.json(packages);
 });
 
+const OTP_CHANNELS = new Set(["phone", "email"]);
+
+app.post("/api/otp/send", async (req, res, next) => {
+  try {
+    const { email, channel } = req.body;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "A valid email address is required." });
+    }
+    if (!OTP_CHANNELS.has(channel)) {
+      return res.status(400).json({ message: "Invalid OTP channel." });
+    }
+
+    const result = await sendOtp({ email, channel });
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/otp/verify", (req, res, next) => {
+  try {
+    const { email, channel, code } = req.body;
+    if (!email || !OTP_CHANNELS.has(channel) || !code) {
+      return res.status(400).json({ message: "Email, channel, and code are required." });
+    }
+
+    const result = verifyOtp({ email, channel, code: String(code) });
+    if (!result.ok) return res.status(400).json({ message: result.message });
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/coupons/validate", async (req, res, next) => {
   try {
     const { code, selectedPackageId } = req.body;
@@ -307,8 +342,8 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       return res.status(400).json({ message: "Customer name, phone, and email are required." });
     }
 
-    if (!verified?.phone || !verified?.email) {
-      return res.status(400).json({ message: "Mobile and email must be verified before order creation." });
+    if (!isVerified({ email: customer.customerEmail, channel: "phone" }) || !isVerified({ email: customer.customerEmail, channel: "email" })) {
+      return res.status(400).json({ message: "Mobile and email must be OTP-verified before order creation." });
     }
 
     const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
@@ -317,8 +352,8 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       package: { ...selectedPackage, total },
       customer,
       verification: {
-        phoneVerified: Boolean(verified.phone),
-        emailVerified: Boolean(verified.email)
+        phoneVerified: true,
+        emailVerified: true
       },
       payment: {
         status: "paid",
@@ -357,8 +392,8 @@ app.post("/api/orders", async (req, res, next) => {
       return res.status(400).json({ message: "Customer name, phone, and email are required." });
     }
 
-    if (!verified?.phone || !verified?.email) {
-      return res.status(400).json({ message: "Mobile and email must be verified before order creation." });
+    if (!isVerified({ email: customer.customerEmail, channel: "phone" }) || !isVerified({ email: customer.customerEmail, channel: "email" })) {
+      return res.status(400).json({ message: "Mobile and email must be OTP-verified before order creation." });
     }
 
     const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
@@ -367,8 +402,8 @@ app.post("/api/orders", async (req, res, next) => {
       package: { ...selectedPackage, total },
       customer,
       verification: {
-        phoneVerified: Boolean(verified.phone),
-        emailVerified: Boolean(verified.email)
+        phoneVerified: true,
+        emailVerified: true
       },
       payment: {
         status: paymentStatus === "paid" ? "paid" : "pending",
@@ -395,29 +430,59 @@ app.post("/api/orders", async (req, res, next) => {
 app.post("/api/leads", async (req, res, next) => {
   try {
     const {
+      firstName,
+      lastName,
       customerName,
+      linkedinUrl,
       customerPhone,
       customerCountryCode,
       customerEmail,
+      projectName,
       customerCompany,
-      selectedPackageId,
-      verified
+      companyWebsite,
+      companyGstin,
+      billingAddressLine1,
+      billingAddressLine2,
+      city,
+      state,
+      pincode,
+      selectedPackageId
     } = req.body;
 
-    if (!customerName || !customerPhone || !customerEmail) {
-      return res.status(400).json({ message: "Name, phone, and email are required." });
+    if (!firstName || !lastName || !customerPhone || !customerEmail || !projectName) {
+      return res.status(400).json({ message: "First name, last name, phone, email, and project name are required." });
+    }
+    if (!billingAddressLine1 || !city || !state || !pincode) {
+      return res.status(400).json({ message: "Billing address, city, state, and pincode are required." });
+    }
+    if (companyGstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z][Z][0-9A-Z]$/i.test(companyGstin)) {
+      return res.status(400).json({ message: "Company GSTIN is not a valid format." });
+    }
+    if (!isVerified({ email: customerEmail, channel: "phone" }) || !isVerified({ email: customerEmail, channel: "email" })) {
+      return res.status(400).json({ message: "Mobile and email must be OTP-verified before continuing." });
     }
 
     const lead = await Lead.create({
-      customerName,
+      firstName,
+      lastName,
+      customerName: customerName || `${firstName} ${lastName}`.trim(),
+      linkedinUrl: linkedinUrl || "",
       customerPhone,
       customerCountryCode: customerCountryCode || "+91",
       customerEmail,
+      projectName,
       customerCompany: customerCompany || "",
+      companyWebsite: companyWebsite || "",
+      companyGstin: companyGstin || "",
+      billingAddressLine1,
+      billingAddressLine2: billingAddressLine2 || "",
+      city,
+      state,
+      pincode,
       selectedPackageId: selectedPackageId || "",
       verification: {
-        phoneVerified: Boolean(verified?.phone),
-        emailVerified: Boolean(verified?.email)
+        phoneVerified: true,
+        emailVerified: true
       }
     });
 

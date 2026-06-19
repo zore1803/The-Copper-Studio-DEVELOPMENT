@@ -132,7 +132,7 @@ function requirePackage() {
 
 function requireCustomer() {
   requirePackage();
-  if (!order.customer.customerName || !order.verified.phone || !order.verified.email) {
+  if (!order.customer.firstName || !order.verified.phone || !order.verified.email) {
     window.location.href = "checkout.html";
   }
 }
@@ -187,12 +187,11 @@ function updateVerificationUI() {
 
     if (!status || !card || !button || !sendButton || !input) return;
 
-    status.textContent = verified ? "Verified" : sent ? "OTP sent. Use 123456 for demo." : "OTP not sent";
+    status.textContent = verified ? "Verified" : sent ? "OTP sent. Check your email." : "OTP not sent";
     button.textContent = verified ? "Verified" : "Verify";
     button.disabled = !sent || verified;
     sendButton.disabled = verified;
     input.disabled = !sent || verified;
-    if (verified) input.value = "123456";
     card.classList.toggle("is-sent", sent && !verified);
     card.classList.toggle("is-verified", verified);
   });
@@ -262,29 +261,66 @@ function renderCheckoutPage() {
   });
 
   document.querySelectorAll("[data-send-otp]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const type = button.dataset.sendOtp;
       const field = document.getElementById(type === "phone" ? "customerPhone" : "customerEmail");
       if (!field.reportValidity()) return;
 
-      order.otpSent = { ...defaultOrder.otpSent, ...(order.otpSent || {}) };
-      order.otpSent[type] = true;
-      saveOrder(order);
-      updateVerificationUI();
+      const emailField = document.getElementById("customerEmail");
+      if (!emailField.reportValidity()) return;
+
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "Sending...";
+      try {
+        const result = await apiRequest("/otp/send", {
+          method: "POST",
+          body: JSON.stringify({ email: emailField.value.trim(), channel: type })
+        });
+
+        order.otpSent = { ...defaultOrder.otpSent, ...(order.otpSent || {}) };
+        order.otpSent[type] = true;
+        order.verified[type] = false;
+        saveOrder(order);
+        updateVerificationUI();
+        if (result.devCode) {
+          console.info(`[dev only] OTP for ${type}:`, result.devCode);
+        }
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
     });
   });
 
   document.querySelectorAll("[data-verify]").forEach((button) => {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const type = button.dataset.verify;
       const input = document.querySelector(`[data-otp-input="${type}"]`);
-      if (!input.value.trim()) {
-        alert("Please enter the OTP. Use 123456 for this prototype.");
+      const code = input.value.trim();
+      if (!code) {
+        alert("Please enter the OTP sent to your email.");
         return;
       }
-      order.verified[type] = true;
-      saveOrder(order);
-      updateVerificationUI();
+
+      const emailField = document.getElementById("customerEmail");
+      button.disabled = true;
+      try {
+        await apiRequest("/otp/verify", {
+          method: "POST",
+          body: JSON.stringify({ email: emailField.value.trim(), channel: type, code })
+        });
+        order.verified[type] = true;
+        saveOrder(order);
+        updateVerificationUI();
+      } catch (error) {
+        input.value = "";
+        alert(error.message);
+      } finally {
+        button.disabled = false;
+      }
     });
   });
 
@@ -298,7 +334,11 @@ function renderCheckoutPage() {
       return;
     }
 
-    order.customer = Object.fromEntries(new FormData(form).entries());
+    const formValues = Object.fromEntries(new FormData(form).entries());
+    order.customer = {
+      ...formValues,
+      customerName: `${formValues.firstName} ${formValues.lastName}`.trim()
+    };
     saveOrder(order);
 
     try {
@@ -306,8 +346,7 @@ function renderCheckoutPage() {
         method: "POST",
         body: JSON.stringify({
           ...order.customer,
-          selectedPackageId: order.selectedPackageId,
-          verified: order.verified
+          selectedPackageId: order.selectedPackageId
         })
       });
     } catch (error) {

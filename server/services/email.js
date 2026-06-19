@@ -68,6 +68,21 @@ export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, t
   });
 }
 
+export async function sendOtpEmail({ to, code, label }) {
+  return sendMail({
+    to,
+    subject: `Your ${label || "verification"} code — The Copper Studio`,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">Verify your ${label || "details"}</h2>
+        <p>Use this code to complete checkout on The Copper Studio:</p>
+        <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${code}</p>
+        <p style="font-size:13px;color:#6b7280">This code expires in 10 minutes. Ignore this email if you did not request it.</p>
+      </div>
+    `
+  });
+}
+
 export async function sendForgotPasswordOtpEmail({ to, name, otp }) {
   return sendMail({
     to,

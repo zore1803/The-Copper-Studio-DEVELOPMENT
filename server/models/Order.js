@@ -2,10 +2,22 @@ import mongoose from "mongoose";
 
 const customerSchema = new mongoose.Schema(
   {
+    firstName: { type: String, trim: true, default: "" },
+    lastName: { type: String, trim: true, default: "" },
     customerName: { type: String, required: true, trim: true },
+    linkedinUrl: { type: String, trim: true, default: "" },
     customerPhone: { type: String, required: true, trim: true },
+    customerCountryCode: { type: String, default: "+91" },
     customerEmail: { type: String, required: true, trim: true, lowercase: true },
-    customerCompany: { type: String, trim: true, default: "" }
+    projectName: { type: String, trim: true, default: "" },
+    customerCompany: { type: String, trim: true, default: "" },
+    companyWebsite: { type: String, trim: true, default: "" },
+    companyGstin: { type: String, trim: true, default: "" },
+    billingAddressLine1: { type: String, trim: true, default: "" },
+    billingAddressLine2: { type: String, trim: true, default: "" },
+    city: { type: String, trim: true, default: "" },
+    state: { type: String, trim: true, default: "" },
+    pincode: { type: String, trim: true, default: "" }
   },
   { _id: false }
 );

@@ -343,6 +343,33 @@ h3 {
   gap: 16px;
 }
 
+.form-section-title {
+  margin: 0 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.customer-form .form-section-title:not(:first-child) {
+  margin-top: 0;
+}
+
+.form-divider {
+  border: none;
+  height: 1px;
+  margin: 24px 0;
+  background: var(--line);
+}
+
+label em {
+  font-style: normal;
+  font-weight: 400;
+  text-transform: lowercase;
+  color: var(--muted, #9ca3af);
+}
+
 label {
   display: grid;
   gap: 8px;

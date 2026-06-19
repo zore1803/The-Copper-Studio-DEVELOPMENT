@@ -26,14 +26,19 @@
 
       <section class="two-column">
         <form class="panel customer-form" id="customerForm">
+          <h2 class="form-section-title">Personal Details</h2>
           <div class="field-grid">
             <label>
-              <span>Name</span>
-              <input id="customerName" name="customerName" type="text" placeholder="Rohit Sharma" required>
+              <span>First Name</span>
+              <input id="firstName" name="firstName" type="text" placeholder="Rohit" required>
             </label>
             <label>
-              <span>Company / Studio</span>
-              <input id="customerCompany" name="customerCompany" type="text" placeholder="DataCircles Studio">
+              <span>Last Name</span>
+              <input id="lastName" name="lastName" type="text" placeholder="Sharma" required>
+            </label>
+            <label class="field-span-2">
+              <span>LinkedIn Profile URL <em>optional</em></span>
+              <input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="https://linkedin.com/in/username">
             </label>
             <div class="verify-field field-span-2" data-verify-card="phone">
               <label for="customerPhone"><span>Mobile Number</span></label>
@@ -73,6 +78,48 @@
                 <small id="emailVerifyStatus">OTP not sent</small>
               </div>
             </div>
+          </div>
+
+          <hr class="form-divider">
+
+          <h2 class="form-section-title">Project &amp; Billing Details</h2>
+          <div class="field-grid">
+            <label class="field-span-2">
+              <span>Project / Brand Name</span>
+              <input id="projectName" name="projectName" type="text" placeholder="The internship portal" required>
+            </label>
+            <label>
+              <span>Company / Studio Name <em>optional</em></span>
+              <input id="customerCompany" name="customerCompany" type="text" placeholder="DataCircles Studio">
+            </label>
+            <label>
+              <span>Company Website <em>optional</em></span>
+              <input id="companyWebsite" name="companyWebsite" type="url" placeholder="https://www.example.com">
+            </label>
+            <label class="field-span-2">
+              <span>Company GSTIN <em>optional</em></span>
+              <input id="companyGstin" name="companyGstin" type="text" placeholder="27ABCDE1234F1Z5" maxlength="15">
+            </label>
+            <label class="field-span-2">
+              <span>Billing Address Line 1</span>
+              <input id="billingAddressLine1" name="billingAddressLine1" type="text" placeholder="1004, building name, colony" required>
+            </label>
+            <label class="field-span-2">
+              <span>Billing Address Line 2 <em>optional</em></span>
+              <input id="billingAddressLine2" name="billingAddressLine2" type="text" placeholder="Area, landmark">
+            </label>
+            <label>
+              <span>City</span>
+              <input id="city" name="city" type="text" placeholder="Mumbai" required>
+            </label>
+            <label>
+              <span>State</span>
+              <input id="state" name="state" type="text" placeholder="Maharashtra" required>
+            </label>
+            <label>
+              <span>Pincode / ZIP</span>
+              <input id="pincode" name="pincode" type="text" placeholder="400001" inputmode="numeric" maxlength="10" required>
+            </label>
           </div>
 
           <div class="form-actions">
