@@ -333,14 +333,12 @@ export default function AdminLayout() {
       const companyRecords = storeGet("companies");
       const contacts = storeGet("contacts");
       const projects = storeGet("projects");
-      const orders = storeGet("orders");
       const invoices = storeGet("invoices");
       const documents = storeGet("documents");
       setRecordIndex([
         ...companyRecords.map((c) => ({ type: "Company", label: c.companyName || c.name, sublabel: c.industry, to: `/admin/companies/${c.id || c._id}` })),
         ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
         ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
-        ...orders.map((o) => ({ type: "Order", label: o.orderId || o.id || o._id, sublabel: o.company || o.customer, to: "/admin/orders" })),
         ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
         ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
       ].filter((item) => item.label));

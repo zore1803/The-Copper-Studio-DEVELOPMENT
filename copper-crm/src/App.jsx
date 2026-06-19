@@ -16,7 +16,7 @@ import ProjectTimeline from "./pages/projects/ProjectTimeline";
 import TimelinePage from "./pages/projects/TimelinePage";
 import ProjectFiles from "./pages/projects/ProjectFiles";
 import KanbanBoard from "./pages/projects/KanbanBoard";
-import Orders from "./pages/billing/Orders";
+import Payments from "./pages/billing/Payments";
 import Invoices from "./pages/billing/Invoices";
 import Coupons from "./pages/billing/Coupons";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -68,7 +68,7 @@ export default function App() {
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />
-              <Route path="payments" element={<Orders mode="payments" />} />
+              <Route path="payments" element={<Payments />} />
               <Route path="invoices" element={<Invoices />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="services" element={<Navigate to="/admin/services/proposal-generator" replace />} />

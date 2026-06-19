@@ -137,13 +137,13 @@ function SalesRevenueChart({ data }) {
     </div>
   );
 }
-function InvoicesCard({ orders }) {
+function InvoicesCard({ records }) {
   const now = useMemo(() => new Date(), []);
-  const paid = orders.filter(o => o.status === "Paid");
-  const totalRevenue = paid.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
-  const pctCleared = Math.round((paid.length / Math.max(orders.length, 1)) * 100);
-  const byPkg = orders.reduce((acc, o) => {
-    acc[o.package] = (acc[o.package] || 0) + parseCurrency(o.amount);
+  const paid = records.filter(r => r.status === "Paid");
+  const totalRevenue = paid.reduce((sum, r) => sum + parseCurrency(r.amount), 0);
+  const pctCleared = Math.round((paid.length / Math.max(records.length, 1)) * 100);
+  const byPkg = records.reduce((acc, r) => {
+    acc[r.package] = (acc[r.package] || 0) + parseCurrency(r.amount);
     return acc;
   }, {});
   const topPackages = Object.entries(byPkg).slice(0, 2);
@@ -151,21 +151,21 @@ function InvoicesCard({ orders }) {
 
   const trend = useMemo(() => {
     const months = {};
-    for (const order of orders) {
-      const date = recordDate(order, now);
+    for (const record of records) {
+      const date = recordDate(record, now);
       const sortKey = date.getFullYear() * 12 + date.getMonth();
       const monthLabel = date.toLocaleDateString("en-IN", { month: "short" });
       if (!months[sortKey]) months[sortKey] = { month: monthLabel, revenue: 0, sortKey };
-      months[sortKey].revenue += parseCurrency(order.amount);
+      months[sortKey].revenue += parseCurrency(record.amount);
     }
     return Object.values(months).sort((a, b) => a.sortKey - b.sortKey).slice(-7);
-  }, [orders, now]);
+  }, [records, now]);
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <p className="text-xs text-[#6b7280] font-medium mb-1">Total Revenue from Orders</p>
+      <p className="text-xs text-[#6b7280] font-medium mb-1">Total Revenue from Projects</p>
       <p className="text-xl font-bold text-[#111827]">{formatINR(totalRevenue)}</p>
-      <p className="text-xs text-[#6b7280] mt-0.5">{pctCleared}% orders paid</p>
+      <p className="text-xs text-[#6b7280] mt-0.5">{pctCleared}% projects paid</p>
       <div className="mt-4 space-y-2">
         {topPackages.map(([pkg, amt]) => (
           <div key={pkg}>
@@ -199,21 +199,21 @@ function InvoicesCard({ orders }) {
   );
 }
 
-function EarningsCard({ orders }) {
+function EarningsCard({ records }) {
   const quarters = ["Q1", "Q2", "Q3", "Q4"];
   const [quarter, setQuarter] = useState("Q2");
   const fallbackDate = useMemo(() => new Date(), []);
   const qIndex = quarters.indexOf(quarter);
-  const monthRows = useMemo(() => orders.reduce((acc, order) => {
-    const rawDate = order.date || order.createdAt || order.paidAt;
+  const monthRows = useMemo(() => records.reduce((acc, record) => {
+    const rawDate = record.date || record.createdAt || record.paidAt;
     const parsedDate = rawDate ? new Date(rawDate) : fallbackDate;
     const date = Number.isNaN(parsedDate.getTime()) ? fallbackDate : parsedDate;
     const monthIndex = date.getMonth();
     const month = date.toLocaleDateString("en-IN", { month: "short" });
     acc[monthIndex] = acc[monthIndex] || { month, revenue: 0 };
-    acc[monthIndex].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
+    acc[monthIndex].revenue += parseCurrency(record.amount ?? record.total ?? record.value);
     return acc;
-  }, {}), [orders, fallbackDate]);
+  }, {}), [records, fallbackDate]);
   const revenue = Object.entries(monthRows)
     .filter(([monthIndex]) => Math.floor(Number(monthIndex) / 3) === qIndex)
     .map(([, row]) => row);
@@ -401,15 +401,14 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("Overview");
   const now = useMemo(() => new Date(), []);
-  const { records: orders } = useCrmRecords("orders");
   const { records: projects } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
   const { records: invoices } = useCrmRecords("invoices");
 
   const revenueRecords = useMemo(
-    () => [...orders, ...projects.filter(isProjectPaid).map(projectAsRevenueRecord)],
-    [orders, projects]
+    () => projects.filter(isProjectPaid).map(projectAsRevenueRecord),
+    [projects]
   );
 
   const metrics = useMemo(() => {
@@ -432,25 +431,25 @@ export default function Dashboard() {
       const time = recordDate(record, now).getTime();
       return time >= start && time < end;
     };
-    const thisWeekOrders = orders.filter((o) => inRange(o, thisWeekStart, now.getTime()));
-    const lastWeekOrders = orders.filter((o) => inRange(o, lastWeekStart, thisWeekStart));
+    const thisWeekProjects = projects.filter((p) => inRange(p, thisWeekStart, now.getTime()));
+    const lastWeekProjects = projects.filter((p) => inRange(p, lastWeekStart, thisWeekStart));
     const thisWeekRevenue = revenueRecords.filter((r) => inRange(r, thisWeekStart, now.getTime()));
     const lastWeekRevenue = revenueRecords.filter((r) => inRange(r, lastWeekStart, thisWeekStart));
     const revenueOf = (list) => list.filter(isPaid).reduce((sum, r) => sum + parseCurrency(r.amount), 0);
     const revenueChange = pctChange(revenueOf(thisWeekRevenue), revenueOf(lastWeekRevenue));
-    const ordersChange = pctChange(thisWeekOrders.length, lastWeekOrders.length);
+    const projectsChange = pctChange(thisWeekProjects.length, lastWeekProjects.length);
 
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
       activeProjects: activeProjects.length,
-      paidOrders: paidRecords.length,
-      totalOrders: orders.length,
+      paidProjects: paidRecords.length,
+      totalProjects: projects.length,
       revenueChange,
-      ordersChange,
+      projectsChange,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
-  }, [orders, projects, revenueRecords, now]);
+  }, [projects, revenueRecords, now]);
 
   const chartData = useMemo(() => {
     const months = revenueRecords.reduce((acc, record) => {
@@ -496,7 +495,7 @@ export default function Dashboard() {
         ) : tab === "Invoices" ? (
           <>
             <div>
-              <h2 className="text-lg font-bold text-[#111827]">Revenue & Orders</h2>
+              <h2 className="text-lg font-bold text-[#111827]">Revenue & Invoices</h2>
               <p className="text-sm text-[#6b7280]">Generated invoices, payment status, and collected revenue</p>
             </div>
             <InvoicesTab invoices={invoices} />
@@ -511,12 +510,12 @@ export default function Dashboard() {
               <KpiCard label="Total Income" value={formatCompact(metrics.totalRevenue)} change={Math.abs(metrics.revenueChange)} up={metrics.revenueChange >= 0} icon={IndianRupee} tone="brown" />
               <KpiCard label="Revenue Generated" value={formatCompact(metrics.totalRevenueGenerated)} change={Math.abs(metrics.revenueChange)} up={metrics.revenueChange >= 0} icon={BarChart2} tone="slate" />
               <KpiCard label="Active Projects" value={metrics.activeProjects} icon={TrendingUp} tone="emerald" />
-              <KpiCard label="Total Orders" value={metrics.totalOrders} change={Math.abs(metrics.ordersChange)} up={metrics.ordersChange >= 0} icon={BriefcaseBusiness} tone="amber" />
+              <KpiCard label="Total Projects" value={metrics.totalProjects} change={Math.abs(metrics.projectsChange)} up={metrics.projectsChange >= 0} icon={BriefcaseBusiness} tone="amber" />
             </div>
             <SalesRevenueChart data={chartData} />
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-              <InvoicesCard orders={revenueRecords} />
-              <EarningsCard orders={revenueRecords} />
+              <InvoicesCard records={revenueRecords} />
+              <EarningsCard records={revenueRecords} />
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
               <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
