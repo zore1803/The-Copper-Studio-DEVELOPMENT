@@ -44,6 +44,17 @@ function recordDate(record, now) {
   const parsed = raw ? new Date(raw) : now;
   return Number.isNaN(parsed.getTime()) ? now : parsed;
 }
+function isProjectPaid(project) {
+  return String(project.paymentStatus || "").toLowerCase() === "paid";
+}
+function projectAsRevenueRecord(project) {
+  return {
+    amount: project.finalAmount ?? project.budget,
+    date: project.paidAt || project.startDate || project.createdAt,
+    status: "Paid",
+    package: project.packageName || project.package,
+  };
+}
 
 function DashboardTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -396,9 +407,14 @@ export default function Dashboard() {
   const { records: contacts } = useCrmRecords("contacts");
   const { records: invoices } = useCrmRecords("invoices");
 
+  const revenueRecords = useMemo(
+    () => [...orders, ...projects.filter(isProjectPaid).map(projectAsRevenueRecord)],
+    [orders, projects]
+  );
+
   const metrics = useMemo(() => {
-    const paidOrders = orders.filter(o => o.status === "Paid");
-    const totalRevenue = paidOrders.reduce((sum, o) => sum + parseCurrency(o.amount), 0);
+    const paidRecords = revenueRecords.filter(r => r.status === "Paid");
+    const totalRevenue = paidRecords.reduce((sum, r) => sum + parseCurrency(r.amount), 0);
     const activeProjects = projects.filter(p => p.clientStatus !== "completed" && p.progress < 100);
     const timeline = activeProjects.map(p => {
       const fallbackDue = new Date(now.getTime() + 86400000 * 30);
@@ -411,42 +427,44 @@ export default function Dashboard() {
     const weekMs = 7 * 86400000;
     const thisWeekStart = now.getTime() - weekMs;
     const lastWeekStart = now.getTime() - weekMs * 2;
-    const isPaid = (o) => o.status === "Paid";
+    const isPaid = (r) => r.status === "Paid";
     const inRange = (record, start, end) => {
       const time = recordDate(record, now).getTime();
       return time >= start && time < end;
     };
     const thisWeekOrders = orders.filter((o) => inRange(o, thisWeekStart, now.getTime()));
     const lastWeekOrders = orders.filter((o) => inRange(o, lastWeekStart, thisWeekStart));
-    const revenueOf = (list) => list.filter(isPaid).reduce((sum, o) => sum + parseCurrency(o.amount), 0);
-    const revenueChange = pctChange(revenueOf(thisWeekOrders), revenueOf(lastWeekOrders));
+    const thisWeekRevenue = revenueRecords.filter((r) => inRange(r, thisWeekStart, now.getTime()));
+    const lastWeekRevenue = revenueRecords.filter((r) => inRange(r, lastWeekStart, thisWeekStart));
+    const revenueOf = (list) => list.filter(isPaid).reduce((sum, r) => sum + parseCurrency(r.amount), 0);
+    const revenueChange = pctChange(revenueOf(thisWeekRevenue), revenueOf(lastWeekRevenue));
     const ordersChange = pctChange(thisWeekOrders.length, lastWeekOrders.length);
 
     return {
       totalRevenue,
       totalRevenueGenerated: Math.round(totalRevenue * 0.62),
       activeProjects: activeProjects.length,
-      paidOrders: paidOrders.length,
+      paidOrders: paidRecords.length,
       totalOrders: orders.length,
       revenueChange,
       ordersChange,
       priorityProjects: [...timeline].sort((a, b) => a.daysLeft - b.daysLeft).slice(0, 4),
     };
-  }, [orders, projects, now]);
+  }, [orders, projects, revenueRecords, now]);
 
   const chartData = useMemo(() => {
-    const months = orders.reduce((acc, order) => {
-      const rawDate = order.date || order.createdAt || order.paidAt;
+    const months = revenueRecords.reduce((acc, record) => {
+      const rawDate = record.date || record.createdAt || record.paidAt;
       const parsedDate = rawDate ? new Date(rawDate) : now;
       const date = Number.isNaN(parsedDate.getTime()) ? now : parsedDate;
       const key = date.toLocaleDateString("en-IN", { month: "short" });
       acc[key] = acc[key] || { month: key, revenue: 0 };
-      acc[key].revenue += parseCurrency(order.amount ?? order.total ?? order.value);
+      acc[key].revenue += parseCurrency(record.amount ?? record.total ?? record.value);
       return acc;
     }, {});
     const rows = Object.values(months);
     return rows.length ? rows.slice(-12) : [{ month: "No data", revenue: 0 }];
-  }, [orders, now]);
+  }, [revenueRecords, now]);
 
   return (
     <div className="flex flex-col min-h-full">
@@ -497,8 +515,8 @@ export default function Dashboard() {
             </div>
             <SalesRevenueChart data={chartData} />
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-              <InvoicesCard orders={orders} />
-              <EarningsCard orders={orders} />
+              <InvoicesCard orders={revenueRecords} />
+              <EarningsCard orders={revenueRecords} />
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
               <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
