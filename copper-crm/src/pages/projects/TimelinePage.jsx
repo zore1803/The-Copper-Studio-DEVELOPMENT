@@ -1,29 +1,27 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, CheckCircle2, Circle, Clock3, FolderKanban, Search } from "lucide-react";
+import { Calendar, CheckCircle2, Circle, Clock3, FolderKanban, Flag, ListTodo, Search, User } from "lucide-react";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 
 const STAGE_STYLE = {
-  completed: { bar: "from-emerald-400 to-emerald-600", dot: "bg-emerald-500", chip: "bg-emerald-50 text-emerald-700", icon: CheckCircle2 },
-  in_progress: { bar: "from-[#C57E5B] to-[#884c2d]", dot: "bg-[#884c2d]", chip: "bg-[#fff1ec] text-[#884c2d]", icon: Clock3 },
-  not_started: { bar: "from-gray-300 to-gray-400", dot: "bg-[#d1d5db]", chip: "bg-gray-100 text-gray-500", icon: Circle },
+  completed:   { bar: "bg-emerald-500", soft: "bg-emerald-50 text-emerald-700", text: "text-emerald-600", icon: CheckCircle2, label: "Completed" },
+  in_progress: { bar: "bg-[#884c2d]",   soft: "bg-[#fff1ec] text-[#884c2d]",   text: "text-[#884c2d]", icon: Clock3,      label: "In Progress" },
+  blocked:     { bar: "bg-red-500",     soft: "bg-red-50 text-red-700",        text: "text-red-600",   icon: Flag,        label: "Blocked" },
+  not_started: { bar: "bg-[#c2b3a9]",   soft: "bg-[#f1e7e1] text-[#6c6355]",   text: "text-[#9b8c83]", icon: Circle,      label: "Not Started" },
 };
 
-function statusPillClass(status) {
-  const map = {
-    not_started: "bg-gray-100 text-gray-600",
-    in_progress: "bg-[#fff1ec] text-[#884c2d]",
-    on_hold: "bg-amber-50 text-amber-700",
-    completed: "bg-emerald-50 text-emerald-700",
-    cancelled: "bg-red-50 text-red-700",
-  };
-  return map[status] || "bg-gray-100 text-gray-600";
-}
+const ROW_H = 46;
+const MONTH_W = 120;
+const DAY_MS = 86400000;
 
 function fmt(date) {
-  const d = new Date(date);
+  const d = date instanceof Date ? date : new Date(date);
   if (Number.isNaN(d.getTime())) return null;
   return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function fmtShort(date) {
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
 function validDate(value) {
@@ -32,135 +30,176 @@ function validDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-/** Resolve a project's milestone list using only real, stored dates, in priority order:
- *  1. the auto-generated `timeline` array (has real startDate/dueDate per milestone)
- *  2. `stages`, each with its own real startDate/dueDate
- *  Milestones without a real start and end date are dropped rather than guessed.
- */
-function resolveMilestones(project) {
-  if (project.timeline?.length) {
-    return project.timeline
-      .map((m) => {
-        const start = validDate(m.startDate);
-        const end = validDate(m.dueDate || m.endDate);
-        const live = project.stages?.find((s) => s.name === m.name);
-        return {
-          name: m.name,
-          start,
-          end,
-          status: live?.status || (m.status === "On Track" ? "in_progress" : m.status === "Completed" ? "completed" : "not_started"),
-        };
-      })
-      .filter((m) => m.start && m.end)
-      .map((m, i, arr) => ({ ...m, index: i, total: arr.length }));
-  }
-  if (project.stages?.length) {
-    return project.stages
-      .map((s) => ({
-        name: s.name,
-        start: validDate(s.startDate),
-        end: validDate(s.dueDate || s.endDate),
-        status: s.status,
-      }))
-      .filter((m) => m.start && m.end)
-      .map((m, i, arr) => ({ ...m, index: i, total: arr.length }));
-  }
-  return [];
+function statusPillClass(status) {
+  const map = {
+    not_started: "bg-[#f1e7e1] text-[#6c6355]",
+    in_progress: "bg-[#fff1ec] text-[#884c2d]",
+    on_hold: "bg-amber-50 text-amber-700",
+    completed: "bg-emerald-50 text-emerald-700",
+    cancelled: "bg-red-50 text-red-700",
+  };
+  return map[status] || "bg-[#f1e7e1] text-[#6c6355]";
 }
 
-function ProjectGanttChart({ project }) {
-  const milestones = useMemo(() => resolveMilestones(project), [project]);
+function stageBucket(status) {
+  const s = String(status || "").toLowerCase();
+  if (s === "completed" || s === "done") return "completed";
+  if (s === "blocked") return "blocked";
+  if (["in_progress", "in progress", "review", "on track"].includes(s)) return "in_progress";
+  return "not_started";
+}
 
-  if (!milestones.length) {
+/** Milestone (stage) rows resolved from real stored dates. */
+function resolveMilestones(project) {
+  const source = project.timeline?.length ? project.timeline : project.stages?.length ? project.stages : [];
+  return source
+    .map((m) => {
+      const live = project.stages?.find((s) => s.name === m.name);
+      return {
+        kind: "Stage",
+        name: m.name,
+        start: validDate(m.startDate),
+        end: validDate(m.dueDate || m.endDate),
+        status: stageBucket(live?.status || m.status),
+        assignee: m.owner || "",
+        priority: "",
+      };
+    })
+    .filter((m) => m.start && m.end);
+}
+
+/** Task rows for this project, positioned by their own start/due dates. */
+function resolveTasks(project, tasks) {
+  const pid = String(project.id || project._id);
+  return tasks
+    .filter((t) => [t.projectId, t.project, t.projectName].map(String).includes(pid) || String(t.projectName) === String(project.name))
+    .map((t) => ({
+      kind: "Task",
+      name: t.title || t.taskName || "Untitled task",
+      start: validDate(t.startDate),
+      end: validDate(t.dueDate || t.deadline || t.expectedEndDate),
+      status: stageBucket(t.status),
+      assignee: t.assignedTo || t.assignee || "",
+      priority: t.priority || "",
+    }))
+    .filter((t) => t.start && t.end);
+}
+
+function ProjectGanttChart({ project, tasks }) {
+  const rows = useMemo(() => {
+    const merged = [...resolveMilestones(project), ...resolveTasks(project, tasks)];
+    return merged.sort((a, b) => a.start - b.start || a.end - b.end);
+  }, [project, tasks]);
+
+  if (!rows.length) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#E1E4EA] bg-[#FAFAFA] py-16 text-center">
-        <Calendar size={28} className="mb-3 text-[#9ca3af]" />
-        <p className="text-sm font-semibold text-[#525866]">No timeline data for this project yet.</p>
-        <p className="mt-1 text-xs text-[#9ca3af]">Add real start and due dates to timeline milestones or stages to see the Gantt chart.</p>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#ead9d0] bg-[#fbf3ee] py-16 text-center">
+        <Calendar size={28} className="mb-3 text-[#b49f96]" />
+        <p className="text-sm font-semibold text-[#6c6355]">No dated timeline items for this project yet.</p>
+        <p className="mt-1 text-xs text-[#9b8c83]">Add start and due dates to milestones or tasks to see them on the timeline.</p>
       </div>
     );
   }
 
   const todayDate = new Date();
-  const min = new Date(Math.min(...milestones.map((m) => m.start.getTime())));
-  const max = new Date(Math.max(...milestones.map((m) => m.end.getTime())));
-  const cursor = new Date(min.getFullYear(), min.getMonth(), 1);
+  const min = new Date(Math.min(...rows.map((r) => r.start.getTime())));
+  const max = new Date(Math.max(...rows.map((r) => r.end.getTime())));
   const months = [];
+  const cursor = new Date(min.getFullYear(), min.getMonth(), 1);
   while (cursor <= max) {
-    months.push({ label: cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }), date: new Date(cursor) });
+    months.push({ label: cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }) });
     cursor.setMonth(cursor.getMonth() + 1);
   }
-  const rangeStart = months[0]?.date.getTime() ?? min.getTime();
-  const rangeEnd = new Date(cursor).getTime();
-  const totalSpan = Math.max(rangeEnd - rangeStart, 86400000);
+  const rangeStart = new Date(min.getFullYear(), min.getMonth(), 1).getTime();
+  const rangeEnd = cursor.getTime();
+  const totalSpan = Math.max(rangeEnd - rangeStart, DAY_MS);
   const toPct = (date) => Math.min(100, Math.max(0, ((date.getTime() - rangeStart) / totalSpan) * 100));
   const todayPct = todayDate.getTime() >= rangeStart && todayDate.getTime() <= rangeEnd ? toPct(todayDate) : null;
+  const gridWidth = Math.max(months.length * MONTH_W, 560);
+
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
-      <div className="flex items-center justify-between border-b border-[#f1f1f5] bg-[#FAFAFA] px-5 py-3.5">
+    <div className="overflow-hidden rounded-xl border border-[#ead9d0] bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3.5">
         <div>
-          <h3 className="text-sm font-bold text-[#0E121B]">{project.name} — Timeline</h3>
-          <p className="mt-0.5 text-xs text-[#525866]">
-            {fmt(min)} → {fmt(max)} · {milestones.length} stage{milestones.length === 1 ? "" : "s"}
-          </p>
+          <h3 className="font-display text-sm font-bold text-[#2b211c]">{project.name} — Timeline</h3>
+          <p className="mt-0.5 text-xs text-[#6c6355]">{fmt(min)} → {fmt(max)} · {rows.length} item{rows.length === 1 ? "" : "s"}</p>
         </div>
-        <div className="flex items-center gap-3 text-[11px] font-semibold text-[#525866]">
-          {Object.entries({ not_started: "Not Started", in_progress: "In Progress", completed: "Completed" }).map(([key, label]) => (
+        <div className="flex items-center gap-3 text-[11px] font-semibold text-[#6c6355]">
+          {["not_started", "in_progress", "completed", "blocked"].map((key) => (
             <span key={key} className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${STAGE_STYLE[key].bar}`} /> {label}
+              <span className={`h-2 w-2 rounded-full ${STAGE_STYLE[key].bar}`} /> {STAGE_STYLE[key].label}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="overflow-x-auto p-5">
-        <div style={{ minWidth: `${Math.max(months.length * 110, 600)}px` }}>
-          {/* Month scale header */}
-          <div className="relative mb-2 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
-            {months.map((m) => (
-              <div key={m.label} className="border-l border-[#f1f1f5] pl-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
-                {m.label}
-              </div>
-            ))}
-          </div>
-
-          {/* Gantt rows */}
-          <div className="relative space-y-3 rounded-lg border border-[#f1f1f5] bg-[#FAFAFA] p-3">
-            {/* month gridlines */}
-            <div className="pointer-events-none absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
-              {months.map((m) => <div key={m.label} className="border-l border-[#ECECEC] first:border-l-0" />)}
-            </div>
-            {/* today marker */}
-            {todayPct !== null && (
-              <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${todayPct}%` }}>
-                <span className="absolute -top-5 -translate-x-1/2 whitespace-nowrap rounded bg-red-400 px-1.5 py-0.5 text-[9px] font-bold text-white">Today</span>
-              </div>
-            )}
-
-            {milestones.map((m) => {
-              const style = STAGE_STYLE[m.status] || STAGE_STYLE.not_started;
-              const Icon = style.icon;
-              const left = toPct(m.start);
-              const width = Math.max(toPct(m.end) - left, 4);
-              const dateLabel = `${fmt(m.start)} – ${fmt(m.end)}`;
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: `${gridWidth + 240}px` }} className="flex">
+          {/* Left: item names + meta */}
+          <div className="w-60 shrink-0 border-r border-[#f3e9e4]">
+            <div className="flex h-9 items-center bg-[#fbf3ee] px-4 text-[10px] font-bold uppercase tracking-wider text-[#9b8c83]">Item</div>
+            {rows.map((r, i) => {
+              const style = STAGE_STYLE[r.status];
+              const Icon = r.kind === "Task" ? ListTodo : style.icon;
+              const days = Math.max(1, Math.round((r.end - r.start) / DAY_MS) + 1);
               return (
-                <div key={m.name} className="relative grid grid-cols-[180px_1fr] items-center gap-3">
-                  <div className="flex items-center gap-2 pr-2">
-                    <Icon size={14} className={style.chip.includes("emerald") ? "text-emerald-600" : style.chip.includes("884c2d") ? "text-[#884c2d]" : "text-gray-400"} />
-                    <span className="truncate text-xs font-bold text-[#0E121B]">{m.name}</span>
+                <div key={`${r.kind}-${r.name}-${i}`} style={{ height: ROW_H }} className="flex flex-col justify-center border-t border-[#f3e9e4] px-4">
+                  <div className="flex items-center gap-1.5">
+                    <Icon size={13} className={style.text} />
+                    <span className="truncate text-xs font-bold text-[#2b211c]" title={r.name}>{r.name}</span>
                   </div>
-                  <div className="relative h-9">
-                    <div
-                      className={`absolute top-1 flex h-7 items-center rounded-lg px-2.5 text-[10px] font-bold text-white shadow-sm ${style.bar}`}
-                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
-                      title={dateLabel}
-                    >
-                      <span className="truncate">{dateLabel}</span>
-                    </div>
+                  <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[#9b8c83]">
+                    <span className="rounded bg-[#f1e7e1] px-1 py-px font-semibold text-[#6c6355]">{r.kind}</span>
+                    <span>{days}d</span>
+                    {r.assignee && <span className="flex items-center gap-0.5 truncate"><User size={9} />{r.assignee}</span>}
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* Right: dated bars */}
+          <div className="relative min-w-0 flex-1" style={{ minWidth: `${gridWidth}px` }}>
+            <div className="flex h-9 bg-white">
+              {months.map((m, idx) => (
+                <div key={idx} style={{ width: `${100 / months.length}%` }} className="flex items-center border-l border-[#f3e9e4] pl-2 text-[10px] font-bold uppercase tracking-wide text-[#9b8c83] first:border-l-0">
+                  {m.label}
+                </div>
+              ))}
+            </div>
+
+            <div className="relative">
+              {/* month gridlines */}
+              <div className="pointer-events-none absolute inset-0 flex">
+                {months.map((m, idx) => <div key={idx} style={{ width: `${100 / months.length}%` }} className="border-l border-[#f6efea] first:border-l-0" />)}
+              </div>
+              {/* today marker */}
+              {todayPct !== null && (
+                <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${todayPct}%` }}>
+                  <span className="absolute -top-0 left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-red-400 px-1.5 py-0.5 text-[9px] font-bold text-white">Today</span>
+                </div>
+              )}
+
+              {rows.map((r, i) => {
+                const style = STAGE_STYLE[r.status];
+                const left = toPct(r.start);
+                const width = Math.max(toPct(r.end) - left, 2);
+                const days = Math.max(1, Math.round((r.end - r.start) / DAY_MS) + 1);
+                const range = `${fmtShort(r.start)} – ${fmtShort(r.end)}`;
+                return (
+                  <div key={`${r.kind}-${r.name}-${i}`} style={{ height: ROW_H }} className="relative border-t border-[#f3e9e4]">
+                    <div
+                      className={`absolute top-1/2 flex h-7 -translate-y-1/2 items-center gap-1.5 rounded-md px-2 text-[10px] font-bold text-white shadow-sm ${style.bar}`}
+                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 64 }}
+                      title={`${r.name}\n${style.label}${r.priority ? ` · ${r.priority} priority` : ""}${r.assignee ? ` · ${r.assignee}` : ""}\n${fmt(r.start)} – ${fmt(r.end)} (${days}d)`}
+                    >
+                      <span className="truncate">{range}</span>
+                      <span className="ml-auto shrink-0 rounded bg-white/25 px-1">{days}d</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -172,6 +211,7 @@ export default function TimelinePage() {
   const navigate = useNavigate();
   const { records: projects, loading } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
+  const { records: tasks } = useCrmRecords("tasks");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
@@ -190,48 +230,48 @@ export default function TimelinePage() {
   const selected = projects.find((p) => String(p.id || p._id) === selectedId) || filtered[0] || null;
 
   return (
-    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-5">
+    <div className="min-h-full space-y-5 bg-[#faf6f3] p-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-[#0E121B]">Project Timelines</h2>
-        <p className="mt-1 text-sm text-[#525866]">Pick a project to see its accurate, date-based Gantt timeline.</p>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-[#2b211c]">Project Timelines</h2>
+        <p className="mt-1 text-sm text-[#6c6355]">Stages and tasks plotted on a date-accurate Gantt — bars move and resize to the dates you set.</p>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20 text-sm text-[#525866]">Loading projects…</div>
+        <div className="flex justify-center py-20 text-sm text-[#6c6355]">Loading projects…</div>
       ) : !projects.length ? (
-        <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-[#ead9d0] bg-white p-10 text-center">
           <FolderKanban size={28} className="mx-auto mb-3 text-[#884c2d]" />
-          <p className="text-sm font-semibold text-[#0E121B]">No projects yet.</p>
-          <p className="mt-1 text-sm text-[#525866]">Create a project from a company workspace to see its timeline here.</p>
+          <p className="text-sm font-semibold text-[#2b211c]">No projects yet.</p>
+          <p className="mt-1 text-sm text-[#6c6355]">Create a project from a company workspace to see its timeline here.</p>
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-5">
           <div className="col-span-12 lg:col-span-4 xl:col-span-3">
-            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
-              <div className="border-b border-[#f1f1f5] bg-[#FAFAFA] p-3">
-                <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3">
-                  <Search size={14} className="text-[#9ca3af] shrink-0" />
-                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search projects…" className="w-full bg-transparent text-sm outline-none" />
+            <div className="overflow-hidden rounded-xl border border-[#ead9d0] bg-white">
+              <div className="border-b border-[#f3e9e4] bg-[#fbf3ee] p-3">
+                <div className="flex h-9 items-center gap-2 rounded-lg border border-[#ead9d0] bg-white px-3">
+                  <Search size={14} className="shrink-0 text-[#9b8c83]" />
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search projects…" className="w-full bg-transparent text-sm text-[#2b211c] outline-none" />
                 </div>
               </div>
-              <div className="max-h-[60vh] divide-y divide-[#f3f4f6] overflow-y-auto">
+              <div className="max-h-[60vh] divide-y divide-[#f3e9e4] overflow-y-auto">
                 {filtered.map((p) => {
                   const isSelected = selected && String(selected.id || selected._id) === String(p.id || p._id);
                   return (
                     <button
                       key={p.id || p._id}
                       onClick={() => setSelectedId(String(p.id || p._id))}
-                      className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors ${isSelected ? "bg-[#fff1ec]" : "hover:bg-[#fafafa]"}`}
+                      className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors ${isSelected ? "bg-[#fff1ec]" : "hover:bg-[#fbf3ee]"}`}
                     >
-                      <span className="truncate text-sm font-bold text-[#0E121B]">{p.name}</span>
-                      <span className="truncate text-xs text-[#525866]">{companyName(p)}</span>
+                      <span className="truncate text-sm font-bold text-[#2b211c]">{p.name}</span>
+                      <span className="truncate text-xs text-[#6c6355]">{companyName(p)}</span>
                       <span className={`mt-1 inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusPillClass(p.clientStatus || p.status)}`}>
                         {(p.clientStatus || p.status || "not_started").replace(/_/g, " ")}
                       </span>
                     </button>
                   );
                 })}
-                {!filtered.length && <p className="px-4 py-6 text-center text-sm text-[#9ca3af]">No projects match your search.</p>}
+                {!filtered.length && <p className="px-4 py-6 text-center text-sm text-[#9b8c83]">No projects match your search.</p>}
               </div>
             </div>
           </div>
@@ -239,7 +279,7 @@ export default function TimelinePage() {
           <div className="col-span-12 lg:col-span-8 xl:col-span-9">
             {selected ? (
               <div className="space-y-3">
-                <ProjectGanttChart project={selected} />
+                <ProjectGanttChart project={selected} tasks={tasks} />
                 <button
                   onClick={() => navigate(`/admin/companies/${selected.companyId}/projects/${selected.id || selected._id}`)}
                   className="text-xs font-bold text-[#884c2d] hover:underline"
@@ -248,7 +288,7 @@ export default function TimelinePage() {
                 </button>
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-[#E1E4EA] bg-white p-16 text-center text-sm text-[#525866]">
+              <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-[#ead9d0] bg-white p-16 text-center text-sm text-[#6c6355]">
                 Select a project to view its timeline.
               </div>
             )}

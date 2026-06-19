@@ -23,20 +23,20 @@ function monthLabel(date) {
 
 function KpiChip({ label, value, icon: Icon, tone = "default" }) {
   const toneStyles = {
-    default: "bg-[#F1F1F5] text-[#884c2d]",
+    default: "bg-[#fff1ec] text-[#884c2d]",
     success: "bg-emerald-50 text-emerald-700",
     warning: "bg-amber-50 text-amber-700",
     danger: "bg-red-50 text-red-700",
   };
   return (
-    <div className="rounded-xl border border-[#E1E4EA] bg-white px-5 py-4">
+    <div className="rounded-xl border border-[#ead9d0] bg-white px-5 py-4">
       <div className="flex items-center gap-3">
         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-[#525866]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#0E121B]">{value}</p>
+          <p className="truncate text-xs font-medium text-[#6c6355]">{label}</p>
+          <p className="mt-0.5 truncate text-base font-bold text-[#2b211c]">{value}</p>
         </div>
       </div>
     </div>
@@ -45,11 +45,11 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
 
 function Section({ title, subtitle, action, children }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#f1f1f5] bg-[#FAFAFA] px-5 py-3.5">
+    <section className="overflow-hidden rounded-xl border border-[#ead9d0] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3.5">
         <div>
-          <h3 className="text-sm font-bold text-[#0E121B]">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-xs text-[#525866]">{subtitle}</p>}
+          <h3 className="text-sm font-bold text-[#2b211c]">{title}</h3>
+          {subtitle && <p className="mt-0.5 text-xs text-[#6c6355]">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -90,25 +90,25 @@ function DeadlineTimeline({ items }) {
   const todayVisible = rows.length && TODAY >= rows[0].start && TODAY <= new Date(minDate.getTime() + totalMs);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-sm">
-      <div className="flex border-b border-[#f1f1f5] px-5 py-3">
-        <h3 className="text-sm font-semibold text-[#0E121B]">Deadline Timeline</h3>
-        <p className="ml-auto text-xs font-semibold text-[#525866]">{rows.filter((r) => r.overdue).length} overdue</p>
+    <div className="overflow-hidden rounded-xl border border-[#ead9d0] bg-white shadow-sm">
+      <div className="flex border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3">
+        <h3 className="text-sm font-semibold text-[#2b211c]">Deadline Timeline</h3>
+        <p className="ml-auto text-xs font-semibold text-[#6c6355]">{rows.filter((r) => r.overdue).length} overdue</p>
       </div>
       <div className="flex">
-        <div className="w-56 shrink-0 border-r border-[#f1f1f5]">
-          <div className="flex h-11 items-center border-b border-[#f1f1f5] bg-[#fafafa] px-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Project</span>
+        <div className="w-56 shrink-0 border-r border-[#f3e9e4]">
+          <div className="flex h-11 items-center border-b border-[#f3e9e4] bg-[#fbf3ee] px-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9b8c83]">Project</span>
           </div>
           {rows.map(({ project }) => (
             <Link
               key={project.id || project._id}
               to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
-              className="flex h-12 items-center border-b border-[#f1f1f5] px-4 hover:bg-[#fafafa]"
+              className="flex h-12 items-center border-b border-[#f3e9e4] px-4 hover:bg-[#fbf3ee]"
             >
               <div className="min-w-0">
-                <p className="truncate text-xs font-bold text-[#0E121B]">{project.name}</p>
-                <p className="truncate text-[11px] text-[#525866]">{project.client}</p>
+                <p className="truncate text-xs font-bold text-[#2b211c]">{project.name}</p>
+                <p className="truncate text-[11px] text-[#6c6355]">{project.client}</p>
               </div>
             </Link>
           ))}
@@ -116,12 +116,12 @@ function DeadlineTimeline({ items }) {
 
         <div className="min-w-0 flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="flex h-11 border-b border-[#f1f1f5] bg-white">
+            <div className="flex h-11 border-b border-[#f3e9e4] bg-white">
               {months.map((month, index) => (
                 <div
                   key={index}
                   style={{ width: `${MONTH_COL_WIDTH}px` }}
-                  className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af]"
+                  className="flex shrink-0 items-center justify-center border-r border-[#f3e9e4] text-[10px] font-bold uppercase text-[#9b8c83]"
                 >
                   {month.label}
                 </div>
@@ -142,7 +142,7 @@ function DeadlineTimeline({ items }) {
                   <Link
                     key={project.id || project._id}
                     to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
-                    className="relative block h-12 border-b border-[#f1f1f5]"
+                    className="relative block h-12 border-b border-[#f3e9e4]"
                   >
                     <span
                       style={{ left: `${left}%`, width: `${width}%` }}
@@ -176,13 +176,23 @@ export default function ProjectsList() {
   const { records: invoices } = useCrmRecords("invoices");
   const { save: saveTask } = useCrmRecords("tasks");
 
+  const [statusFilter, setStatusFilter] = useState("All");
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return projects;
-    return projects.filter((project) =>
-      `${project.name} ${project.client} ${project.status}`.toLowerCase().includes(query)
-    );
-  }, [projects, search]);
+    return projects.filter((project) => {
+      const phase = project.currentPhase || project.status || "";
+      const matchesQuery = !query || `${project.name} ${project.client} ${project.status}`.toLowerCase().includes(query);
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Completed"
+          ? String(phase).toLowerCase() === "completed"
+          : statusFilter === "In Progress"
+            ? String(phase).toLowerCase() !== "completed"
+            : phase === statusFilter);
+      return matchesQuery && matchesStatus;
+    });
+  }, [projects, search, statusFilter]);
 
   const kpis = useMemo(() => {
     const todayDate = today();
@@ -205,21 +215,23 @@ export default function ProjectsList() {
     navigate(`/admin/companies/${company.id || company._id}/projects/${created.id || created._id}`);
   }
 
+  const statusFilters = ["All", "In Progress", "Completed"];
+
   return (
-    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-6">
+    <div className="min-h-full bg-[#faf6f3] p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[#0E121B]">All Projects</h2>
-          <p className="mt-1 text-sm text-[#525866]">{filtered.length} of {projects.length} projects across every company</p>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-[#2b211c]">All Projects</h2>
+          <p className="mt-1 text-sm text-[#6c6355]">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#E1E4EA] bg-white px-3 sm:w-72">
-            <Search size={14} className="text-[#9ca3af]" />
+          <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#ead9d0] bg-white px-3 sm:w-72">
+            <Search size={14} className="text-[#9b8c83]" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search projects or clients"
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
+              className="w-full bg-transparent text-sm text-[#2b211c] outline-none placeholder:text-[#9b8c83]"
             />
           </div>
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
@@ -235,9 +247,27 @@ export default function ProjectsList() {
         </div>
       )}
 
-      {!loading && <DeadlineTimeline items={filtered} />}
+      {!loading && filtered.length > 0 && <DeadlineTimeline items={filtered} />}
 
-      <Section title="All Projects" subtitle={`${filtered.length} of ${projects.length} projects across every company`}>
+      <Section
+        title="All Projects"
+        subtitle={`${filtered.length} of ${projects.length} projects across every company`}
+        action={
+          <div className="flex gap-1.5">
+            {statusFilters.map((item) => (
+              <button
+                key={item}
+                onClick={() => setStatusFilter(item)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  statusFilter === item ? "bg-[#884c2d] text-white" : "bg-[#f1e7e1] text-[#6c6355] hover:bg-[#ead9d0]"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        }
+      >
         {filtered.length ? (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filtered.map((project) => (
@@ -245,12 +275,12 @@ export default function ProjectsList() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-[#FAFAFA] p-10 text-center">
+          <div className="rounded-xl border border-dashed border-[#ead9d0] bg-[#fbf3ee] p-10 text-center">
             <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
               <FolderKanban size={20} />
             </div>
-            <p className="text-sm font-semibold text-[#0E121B]">{search ? "No projects match your search." : "No projects yet."}</p>
-            <p className="mt-1 text-sm text-[#525866]">Create a project and link it to a company to get started.</p>
+            <p className="text-sm font-semibold text-[#2b211c]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+            <p className="mt-1 text-sm text-[#6c6355]">Create a project and link it to a company to get started.</p>
             <Button onClick={() => setCreating(true)} className="mt-4"><Plus size={14} /> New Project</Button>
           </div>
         )}
