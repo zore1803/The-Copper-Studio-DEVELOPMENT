@@ -11,6 +11,7 @@ import {
 import { Button } from "../../components/ui";
 import { useToast } from "../../components/useToast";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { isEmail, isPhone, isFutureDate, isGstin, required as isRequired, isPositiveNumber } from "../../lib/validators";
 
 function Card({ children, className = "" }) {
   return <section className={`rounded-xl border border-gray-200 bg-white shadow-sm shadow-gray-100/60 ${className}`}>{children}</section>;
@@ -32,17 +33,31 @@ function PageShell({ title, subtitle, action, children }) {
   );
 }
 
-function Field({ label, value, onChange, placeholder = "", type = "text" }) {
+function Field({ label, value, onChange, placeholder = "", type = "text", error = "", required = false, hint = "", inputMode, maxLength }) {
   return (
     <label className="block">
-      <span className="text-xs font-bold text-gray-600">{label}</span>
+      <span className="text-xs font-bold text-gray-600">
+        {label}{required && <span className="text-red-500"> *</span>}
+      </span>
       <input
         type={type}
         value={value}
+        inputMode={inputMode}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+        aria-invalid={Boolean(error)}
+        className={`mt-1.5 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-4 ${
+          error
+            ? "border-red-300 focus:border-red-400 focus:ring-red-50"
+            : "border-gray-200 focus:border-[#cda88f] focus:ring-[#fff1ec]"
+        }`}
       />
+      {error
+        ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
+        : hint
+          ? <span className="mt-1 block text-[11px] text-gray-400">{hint}</span>
+          : null}
     </label>
   );
 }
@@ -129,69 +144,100 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
+const ANALYTICS = {
+  copper: "#884c2d",
+  copperLight: "#c98a63",
+  green: "#10b981",
+  amber: "#f59e0b",
+  grid: "#f0e6e1",
+};
+
+function isPaidStatus(status) {
+  return ["paid", "completed", "success", "received"].includes(String(status || "").toLowerCase());
+}
+
+function isDoneStatus(status) {
+  return ["completed", "delivered"].includes(String(status || "").toLowerCase());
+}
+
 export function AnalyticsPage() {
   const [timeFilter, setTimeFilter] = useState("Last 30 days");
+  // Lazy state init keeps "now" stable across re-renders (and pure during render).
+  const [now] = useState(() => Date.now());
   const { records: orders } = useCrmRecords("orders");
   const { records: payments } = useCrmRecords("payments");
   const { records: projects } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
 
-  const paidOrders = orders.filter((order) => ["paid", "completed", "success"].includes(String(order.status || "").toLowerCase()));
-  const paidPayments = payments.filter((payment) => ["paid", "completed", "success", "received"].includes(String(payment.status || "").toLowerCase()));
-  const revenue = [...paidOrders, ...paidPayments].reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.total), 0);
-  const paymentRate = Math.round((paidOrders.length / Math.max(orders.length, 1)) * 100);
-  const avgProjectValue = Math.round(revenue / Math.max(projects.length, 1));
-  const completedProjects = projects.filter((project) => ["completed", "delivered"].includes(String(project.status || project.clientStatus || "").toLowerCase())).length;
-  const delayedProjects = projects.filter((project) => {
-    const due = new Date(project.dueDate || project.expectedCompletion || project.expectedEndDate || "");
-    return due.toString() !== "Invalid Date" && due < new Date() && !["completed", "delivered"].includes(String(project.status || project.clientStatus || "").toLowerCase());
-  }).length;
-  const statusData = [
-    { name: "On track", value: Math.max(projects.length - completedProjects - delayedProjects, 0), color: "#10b981" },
-    { name: "Delayed", value: delayedProjects, color: "#f59e0b" },
-    { name: "Completed", value: completedProjects, color: "#2563eb" },
-  ].filter((item) => item.value > 0);
-  const packageRevenue = Object.values(orders.reduce((acc, order) => {
-    const name = order.package || order.packageName || order.projectType || "Unassigned";
-    acc[name] = acc[name] || { name, revenue: 0, tier: 0 };
-    acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.total);
-    acc[name].tier += 1;
-    return acc;
-  }, {}));
-  const revenueGraph = Object.values([...orders, ...payments].reduce((acc, item) => {
-    const created = new Date(item.createdAt || item.date || item.paidAt || item.generatedAt || Date.now());
-    const day = created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-    acc[day] = acc[day] || { day, revenue: 0, trend: 0 };
-    acc[day].revenue += moneyValue(item.amount ?? item.value ?? item.total);
-    acc[day].trend = acc[day].revenue;
-    return acc;
-  }, {}));
+  const data = useMemo(() => {
+    const paidOrders = orders.filter((order) => isPaidStatus(order.status));
+    const paidPayments = payments.filter((payment) => isPaidStatus(payment.status));
+    const revenue = [...paidOrders, ...paidPayments].reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.total), 0);
+    const paymentRate = Math.round((paidOrders.length / Math.max(orders.length, 1)) * 100);
+    const avgProjectValue = Math.round(revenue / Math.max(projects.length, 1));
+    const completedProjects = projects.filter((project) => isDoneStatus(project.status || project.clientStatus)).length;
+    const delayedProjects = projects.filter((project) => {
+      const dueRaw = project.dueDate || project.expectedCompletion || project.expectedEndDate;
+      const due = dueRaw ? new Date(dueRaw).getTime() : NaN;
+      return Number.isFinite(due) && due < now && !isDoneStatus(project.status || project.clientStatus);
+    }).length;
+    const onTrack = Math.max(projects.length - completedProjects - delayedProjects, 0);
+
+    const statusData = [
+      { name: "On track", value: onTrack, color: ANALYTICS.green },
+      { name: "Delayed", value: delayedProjects, color: ANALYTICS.amber },
+      { name: "Completed", value: completedProjects, color: ANALYTICS.copper },
+    ].filter((item) => item.value > 0);
+    const statusTotal = statusData.reduce((sum, item) => sum + item.value, 0) || 1;
+
+    const packageRevenue = Object.values(orders.reduce((acc, order) => {
+      const name = order.package || order.packageName || order.projectType || "Unassigned";
+      acc[name] = acc[name] || { name, revenue: 0, count: 0 };
+      acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.total);
+      acc[name].count += 1;
+      return acc;
+    }, {})).sort((a, b) => b.revenue - a.revenue);
+
+    const revenueGraph = Object.values([...orders, ...payments].reduce((acc, item) => {
+      const stamp = item.createdAt || item.date || item.paidAt || item.generatedAt;
+      const created = stamp ? new Date(stamp) : new Date(now);
+      const key = created.toISOString().slice(0, 10);
+      const day = created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+      acc[key] = acc[key] || { key, day, revenue: 0 };
+      acc[key].revenue += moneyValue(item.amount ?? item.value ?? item.total);
+      return acc;
+    }, {})).sort((a, b) => a.key.localeCompare(b.key));
+
+    return { revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, statusData, statusTotal, packageRevenue, revenueGraph };
+  }, [orders, payments, projects, now]);
 
   const metrics = [
-    ["Total revenue", formatMoney(revenue), WalletCards],
+    ["Total revenue", formatMoney(data.revenue), WalletCards],
     ["Total projects", projects.length, PackageCheck],
-    ["Avg project value", formatMoney(avgProjectValue), TrendingUp],
+    ["Avg project value", formatMoney(data.avgProjectValue), TrendingUp],
     ["Companies", companies.length, Users],
-    ["Payment rate", `${paymentRate}%`, ReceiptText],
-    ["Completed projects", completedProjects, BarChart3],
-    ["On track", statusData.find((item) => item.name === "On track")?.value || 0, PieChart],
-    ["Delayed", delayedProjects, FileText],
+    ["Payment rate", `${data.paymentRate}%`, ReceiptText],
+    ["Completed", data.completedProjects, BarChart3],
+    ["On track", data.onTrack, PieChart],
+    ["Delayed", data.delayedProjects, FileText],
   ];
 
   return (
     <PageShell
       title="Analytics"
-      subtitle="Revenue, projects, payments, package tiers, product performance, and delivery health."
+      subtitle="Revenue, projects, payments, product performance, and delivery health."
       action={
-        <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 outline-none">
+        <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 outline-none focus:border-[#cda88f]">
           {["Last 7 days", "Last 30 days", "This quarter", "This year"].map((item) => <option key={item}>{item}</option>)}
         </select>
       }
     >
-      <div className="mb-5 grid gap-4 md:grid-cols-4">
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map(([label, value, Icon]) => (
           <Card key={label} className="p-4">
-            <Icon size={18} className="text-[#2563EB]" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+              <Icon size={17} />
+            </div>
             <p className="mt-3 text-2xl font-bold text-gray-950">{value}</p>
             <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{label}</p>
           </Card>
@@ -202,33 +248,25 @@ export function AnalyticsPage() {
         <Card>
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <div>
-              <h3 className="text-sm font-bold text-gray-950">Revenue and orders graph</h3>
+              <h3 className="text-sm font-bold text-gray-950">Revenue over time</h3>
               <p className="text-xs text-gray-400">{timeFilter}</p>
             </div>
-            <div className="flex items-center gap-3 text-[11px] font-bold text-gray-500">
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#2563EB]" /> Revenue</span>
-              <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#10b981]" /> Trend</span>
-            </div>
+            <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500"><span className="h-2 w-2 rounded-full bg-[#884c2d]" /> Revenue</span>
           </div>
           <div className="h-80 p-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueGraph.slice(-45)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <AreaChart data={data.revenueGraph.slice(-45)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.28} />
-                    <stop offset="100%" stopColor="#2563EB" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.22} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="0%" stopColor={ANALYTICS.copper} stopOpacity={0.3} />
+                    <stop offset="100%" stopColor={ANALYTICS.copper} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid vertical={false} stroke="#eef2f7" />
+                <CartesianGrid vertical={false} stroke={ANALYTICS.grid} />
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} minTickGap={24} />
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={64} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#2563EB" strokeWidth={2.5} fill="url(#revenueFill)" activeDot={{ r: 4 }} />
-                <Area type="monotone" dataKey="trend" name="Trend" stroke="#10b981" strokeWidth={2} fill="url(#trendFill)" activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="revenue" name="Revenue" stroke={ANALYTICS.copper} strokeWidth={2.5} fill="url(#revenueFill)" activeDot={{ r: 4 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -236,35 +274,35 @@ export function AnalyticsPage() {
 
         <Card>
           <div className="border-b border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-bold text-gray-950">Status breakdown</h3>
+            <h3 className="text-sm font-bold text-gray-950">Project status</h3>
           </div>
-          <div className="h-64 p-4">
+          <div className="h-56 p-4">
             <ResponsiveContainer width="100%" height="100%">
               <RePieChart>
                 <Pie
-                  data={statusData.length ? statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
+                  data={data.statusData.length ? data.statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
                   dataKey="value"
                   nameKey="name"
-                  innerRadius={54}
-                  outerRadius={86}
+                  innerRadius={52}
+                  outerRadius={84}
                   paddingAngle={4}
                   stroke="#ffffff"
                   strokeWidth={2}
-                  label={statusData.length ? ({ name, percent }) => `${name} ${Math.round(percent * 100)}%` : false}
+                  label={data.statusData.length ? ({ name, percent }) => `${name} ${Math.round(percent * 100)}%` : false}
                   labelLine={false}
                 >
-                  {(statusData.length ? statusData : [{ name: "No data", color: "#e5e7eb" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
+                  {(data.statusData.length ? data.statusData : [{ name: "No data", color: "#e5e7eb" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
                 </Pie>
                 <Tooltip content={<ChartTooltip />} />
               </RePieChart>
             </ResponsiveContainer>
           </div>
           <div className="grid grid-cols-3 gap-2 px-4 pb-4">
-            {(statusData.length ? statusData : [{ name: "No data", value: 0, color: "#e5e7eb" }]).map((item) => (
+            {(data.statusData.length ? data.statusData : [{ name: "No data", value: 0, color: "#e5e7eb" }]).map((item) => (
               <div key={item.name} className="rounded-xl bg-gray-50 p-3">
                 <span className="block h-2 w-2 rounded-full" style={{ background: item.color }} />
                 <p className="mt-2 text-xs font-bold text-gray-700">{item.name}</p>
-                <p className="text-sm font-bold text-gray-950">{item.value}%</p>
+                <p className="text-sm font-bold text-gray-950">{item.value}<span className="ml-1 text-[11px] font-semibold text-gray-400">({Math.round((item.value / data.statusTotal) * 100)}%)</span></p>
               </div>
             ))}
           </div>
@@ -276,30 +314,30 @@ export function AnalyticsPage() {
               <h3 className="text-sm font-bold text-gray-950">Top products by revenue</h3>
               <div className="mt-4 h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={packageRevenue.length ? packageRevenue : [{ name: "No orders", revenue: 0 }]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <BarChart data={data.packageRevenue.length ? data.packageRevenue : [{ name: "No orders", revenue: 0 }]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563EB" stopOpacity={1} />
-                        <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.85} />
+                        <stop offset="0%" stopColor={ANALYTICS.copper} stopOpacity={1} />
+                        <stop offset="100%" stopColor={ANALYTICS.copperLight} stopOpacity={0.9} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid vertical={false} stroke="#eef2f7" />
+                    <CartesianGrid vertical={false} stroke={ANALYTICS.grid} />
                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={56} />
-                    <Tooltip content={<ChartTooltip />} cursor={{ fill: "#2563EB", opacity: 0.06 }} />
+                    <Tooltip content={<ChartTooltip />} cursor={{ fill: ANALYTICS.copper, opacity: 0.06 }} />
                     <Bar dataKey="revenue" name="Revenue" fill="url(#barFill)" radius={[8, 8, 0, 0]} maxBarSize={48} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-950">Total tier under package</h3>
+              <h3 className="text-sm font-bold text-gray-950">Orders per package</h3>
               <div className="mt-4 space-y-3">
-                {(packageRevenue.length ? packageRevenue : [{ name: "No packages yet", revenue: 0, tier: 0 }]).map((item) => (
+                {(data.packageRevenue.length ? data.packageRevenue : [{ name: "No packages yet", revenue: 0, count: 0 }]).map((item) => (
                   <div key={item.name} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                      <p className="text-xs font-bold text-[#2563EB]">{item.tier} tiers</p>
+                      <p className="text-xs font-bold text-[#884c2d]">{item.count} {item.count === 1 ? "order" : "orders"}</p>
                     </div>
                     <p className="mt-1 text-xs text-gray-500">{formatMoney(item.revenue)} revenue</p>
                   </div>
@@ -313,6 +351,17 @@ export function AnalyticsPage() {
   );
 }
 
+function validateProposal(p) {
+  const errors = {};
+  if (!isRequired(p.client)) errors.client = "Client name is required.";
+  if (!isRequired(p.company)) errors.company = "Company is required.";
+  if (!isRequired(p.service)) errors.service = "Service is required.";
+  if (!isPositiveNumber(p.value)) errors.value = "Enter a valid project value.";
+  if (p.gstin && !isGstin(p.gstin)) errors.gstin = "Enter a valid 15-character GSTIN.";
+  if (!isRequired(p.timeline)) errors.timeline = "Timeline is required.";
+  return errors;
+}
+
 export function ProposalGeneratorPage() {
   const { showToast } = useToast();
   const [proposal, setProposal] = useState({
@@ -323,6 +372,13 @@ export function ProposalGeneratorPage() {
     value: "",
     timeline: "21 days",
   });
+  const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+
+  const setField = (key) => (value) => {
+    setProposal((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
+  };
 
   const proposalText = useMemo(() => (
     `PDF Contents\n\nPage 1 - Intro / Cover Page\nClient: ${proposal.client}\nCompany: ${proposal.company}\nGSTIN: ${proposal.gstin}\n\nPage 2 - About The Copper Studio\nPage 3 - Pricing of various packages\nPage 4 - Detailed comparison\nPage 5 - Process / timeline details\nTimeline: ${proposal.timeline}\nService: ${proposal.service}\nValue: Rs ${Number(proposal.value || 0).toLocaleString("en-IN")}\n\nPage 6 - Contact us / outro page`
@@ -333,7 +389,26 @@ export function ProposalGeneratorPage() {
     showToast({ title, message: "Copied to clipboard." });
   }
 
+  function sendProposal() {
+    const nextErrors = validateProposal(proposal);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showToast({ title: "Check the form", message: "Please fix the highlighted fields." });
+      return;
+    }
+    copyText(proposalText, "Proposal copied");
+  }
+
   async function createProposalPdf() {
+    const nextErrors = validateProposal(proposal);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showToast({ title: "Check the form", message: "Please fix the highlighted fields." });
+      return;
+    }
+    if (busy) return;
+    setBusy(true);
+    try {
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -431,51 +506,97 @@ export function ProposalGeneratorPage() {
 
     doc.save(`${safeFileName(proposal.company)}-${safeFileName(proposal.service)}.pdf`);
     showToast({ title: "Proposal PDF created", message: "Professional proposal downloaded successfully." });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <PageShell title="Proposal Generator" subtitle="Create a ready-to-send, branded proposal draft." action={<Button onClick={() => copyText(proposalText, "Proposal copied")}><Send size={14} /> Send Proposal</Button>}>
-      <Card className="max-w-3xl">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h3 className="text-sm font-bold text-gray-950">Proposal Generator</h3>
-          <p className="text-xs text-gray-400">Create a ready-to-send proposal draft.</p>
-        </div>
-        <div className="grid gap-4 p-5 sm:grid-cols-2">
-          <Field label="Client" value={proposal.client} onChange={(value) => setProposal((prev) => ({ ...prev, client: value }))} />
-          <Field label="Company" value={proposal.company} onChange={(value) => setProposal((prev) => ({ ...prev, company: value }))} />
-          <Field label="GSTIN" value={proposal.gstin} onChange={(value) => setProposal((prev) => ({ ...prev, gstin: value }))} />
-          <Field label="Service" value={proposal.service} onChange={(value) => setProposal((prev) => ({ ...prev, service: value }))} />
-          <Field label="Value" type="number" value={proposal.value} onChange={(value) => setProposal((prev) => ({ ...prev, value }))} />
-          <Field label="Timeline" value={proposal.timeline} onChange={(value) => setProposal((prev) => ({ ...prev, timeline: value }))} />
-        </div>
-        <div className="px-5 pb-5">
-          <pre className="min-h-44 whitespace-pre-wrap rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs leading-6 text-gray-700">{proposalText}</pre>
-          <div className="mt-3 flex justify-end gap-2">
-            <Button variant="secondary" onClick={() => copyText(proposalText, "Proposal copied")}><Copy size={14} /> Copy</Button>
-            <Button onClick={createProposalPdf}><FileDown size={14} /> Save PDF</Button>
+    <PageShell
+      title="Proposal Generator"
+      subtitle="Create a ready-to-send, branded proposal draft."
+      action={<Button onClick={sendProposal}><Send size={14} /> Send Proposal</Button>}
+    >
+      <div className="grid gap-5 xl:grid-cols-2">
+        <Card>
+          <div className="border-b border-gray-100 px-5 py-4">
+            <h3 className="text-sm font-bold text-gray-950">Proposal details</h3>
+            <p className="text-xs text-gray-400">Fields marked * are required.</p>
           </div>
-        </div>
-      </Card>
+          <div className="grid gap-4 p-5 sm:grid-cols-2">
+            <Field label="Client" required value={proposal.client} onChange={setField("client")} error={errors.client} />
+            <Field label="Company" required value={proposal.company} onChange={setField("company")} error={errors.company} />
+            <Field label="GSTIN" value={proposal.gstin} onChange={setField("gstin")} error={errors.gstin} hint="Optional, 15 characters." maxLength={15} />
+            <Field label="Service" required value={proposal.service} onChange={setField("service")} error={errors.service} placeholder="e.g. Website Design" />
+            <Field label="Value" required type="number" inputMode="decimal" value={proposal.value} onChange={setField("value")} error={errors.value} placeholder="50000" />
+            <Field label="Timeline" required value={proposal.timeline} onChange={setField("timeline")} error={errors.timeline} />
+          </div>
+          <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
+            <Button variant="secondary" onClick={() => copyText(proposalText, "Proposal copied")}><Copy size={14} /> Copy text</Button>
+            <Button onClick={createProposalPdf} disabled={busy}>
+              <FileDown size={14} /> {busy ? "Generating…" : "Save PDF"}
+            </Button>
+          </div>
+        </Card>
+
+        <Card>
+          <div className="border-b border-gray-100 px-5 py-4">
+            <h3 className="text-sm font-bold text-gray-950">Live preview</h3>
+            <p className="text-xs text-gray-400">Updates as you type.</p>
+          </div>
+          <div className="p-5">
+            <pre className="min-h-[22rem] whitespace-pre-wrap rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs leading-6 text-gray-700">{proposalText}</pre>
+          </div>
+        </Card>
+      </div>
     </PageShell>
   );
+}
+
+const COUPON_DEFAULTS = {
+  prefix: "COP-STU",
+  discount: "",
+  packageName: "",
+  validity: toDateTimeLocal(),
+  amountType: "percentage",
+  clientName: "",
+  companyName: "",
+  email: "",
+  phone: "",
+};
+
+function validateCoupon(coupon) {
+  const errors = {};
+  const prefix = String(coupon.prefix || "").trim();
+  if (!prefix) errors.prefix = "Prefix is required.";
+  else if (!/^[A-Za-z0-9-]{2,10}$/.test(prefix)) errors.prefix = "2–10 letters, numbers or hyphens.";
+
+  const amount = Number(coupon.discount);
+  if (String(coupon.discount).trim() === "" || Number.isNaN(amount)) errors.discount = "Enter a discount amount.";
+  else if (amount <= 0) errors.discount = "Must be greater than 0.";
+  else if (coupon.amountType === "percentage" && amount > 100) errors.discount = "Percentage can't exceed 100.";
+
+  if (!String(coupon.packageName || "").trim()) errors.packageName = "Package is required.";
+  if (!isFutureDate(coupon.validity)) errors.validity = "Validity must be a future date.";
+  if (coupon.email && !isEmail(coupon.email)) errors.email = "Enter a valid email.";
+  if (coupon.phone && !isPhone(coupon.phone)) errors.phone = "Enter a valid 10-digit mobile.";
+  return errors;
 }
 
 export function ServicesPage() {
   const { showToast } = useToast();
   const { records: savedCoupons, save: saveCoupon } = useCrmRecords("coupons");
-  const [coupon, setCoupon] = useState({
-    prefix: "COP-STU",
-    discount: "",
-    packageName: "",
-    validity: toDateTimeLocal(),
-    amountType: "percentage",
-    clientName: "",
-    companyName: "",
-    email: "",
-    phone: "",
-  });
+  const [coupon, setCoupon] = useState(COUPON_DEFAULTS);
+  const [errors, setErrors] = useState({});
+  const [creating, setCreating] = useState(false);
 
-  const couponCode = `${coupon.prefix || "COP"}-${coupon.discount || "VALUE"}-${(coupon.packageName || "PACKAGE").replace(/\s+/g, "").toUpperCase()}`.slice(0, 28);
+  const setField = (key) => (value) => {
+    setCoupon((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
+  };
+
+  const previewCode = `${(coupon.prefix || "COP").slice(0, 6).toUpperCase()}-XXX-XXXX`;
+  const discountLabel = coupon.amountType === "percentage" ? `${coupon.discount || 0}%` : `Rs ${coupon.discount || 0}`;
 
   async function copyText(text, title) {
     await navigator.clipboard.writeText(text);
@@ -491,74 +612,116 @@ export function ServicesPage() {
   }
 
   async function createCoupon() {
-    const code = `${coupon.prefix.slice(0, 6).toUpperCase()}-${nineDigitCode()}`;
-    const validUntil = coupon.validity ? new Date(coupon.validity).toISOString() : null;
-    await saveCoupon({
-      code,
-      generatedAt: new Date().toLocaleString("en-IN"),
-      validity: formatDateTime(validUntil),
-      validUntil,
-      amountType: coupon.amountType,
-      amount: coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`,
-      status: "Not used",
-      clientName: coupon.clientName,
-      companyName: coupon.companyName,
-      email: coupon.email,
-      phone: coupon.phone,
-      packageName: coupon.packageName,
-    });
-    showToast({ title: "Coupon created", message: `${code} stored successfully.` });
+    if (creating) return; // guard against double-submit
+    const nextErrors = validateCoupon(coupon);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showToast({ title: "Check the form", message: "Please fix the highlighted fields." });
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const code = `${coupon.prefix.slice(0, 6).toUpperCase()}-${nineDigitCode()}`;
+      const validUntil = coupon.validity ? new Date(coupon.validity).toISOString() : null;
+      const created = await saveCoupon({
+        code,
+        generatedAt: new Date().toLocaleString("en-IN"),
+        validity: formatDateTime(validUntil),
+        validUntil,
+        amountType: coupon.amountType,
+        amount: coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`,
+        status: "Not used",
+        clientName: coupon.clientName.trim(),
+        companyName: coupon.companyName.trim(),
+        email: coupon.email.trim(),
+        phone: coupon.phone.trim(),
+        packageName: coupon.packageName.trim(),
+      });
+      showToast({ title: "Coupon created", message: `${created?.code || code} stored successfully.` });
+      // Reset the entry fields but keep the prefix + a fresh validity default.
+      setCoupon((prev) => ({
+        ...COUPON_DEFAULTS,
+        prefix: prev.prefix,
+        amountType: prev.amountType,
+        validity: toDateTimeLocal(),
+      }));
+      setErrors({});
+    } catch (error) {
+      showToast({ title: "Could not create coupon", message: error.message || "Please try again." });
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
-    <PageShell title="Coupon Code Generator" subtitle="Generate package-specific coupon codes.">
-      <Card className="max-w-3xl">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h3 className="text-sm font-bold text-gray-950">Coupon Code Generator</h3>
-          <p className="text-xs text-gray-400">Create package-specific coupon codes.</p>
-        </div>
-          <div className="grid gap-4 p-5 sm:grid-cols-2">
-            <Field label="Prefix" value={coupon.prefix} onChange={(value) => setCoupon((prev) => ({ ...prev, prefix: value }))} />
-            <Field label="Amount" type="number" value={coupon.discount} onChange={(value) => setCoupon((prev) => ({ ...prev, discount: value }))} />
-            <Field label="Package" value={coupon.packageName} onChange={(value) => setCoupon((prev) => ({ ...prev, packageName: value }))} />
-            <label className="block">
-              <span className="text-xs font-bold text-gray-600">Amount type</span>
-              <select value={coupon.amountType} onChange={(event) => setCoupon((prev) => ({ ...prev, amountType: event.target.value }))} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50">
-                <option value="percentage">In %</option>
-                <option value="fixed">In Rs</option>
-              </select>
-            </label>
-            <DateTimeField label="Validity date + time" value={coupon.validity} onChange={(value) => setCoupon((prev) => ({ ...prev, validity: value }))} />
-            <Field label="Client name" value={coupon.clientName} onChange={(value) => setCoupon((prev) => ({ ...prev, clientName: value }))} />
-            <Field label="Company name" value={coupon.companyName} onChange={(value) => setCoupon((prev) => ({ ...prev, companyName: value }))} />
-            <Field label="Email ID" value={coupon.email} onChange={(value) => setCoupon((prev) => ({ ...prev, email: value }))} />
-            <Field label="Phone no." value={coupon.phone} onChange={(value) => setCoupon((prev) => ({ ...prev, phone: value }))} />
+    <PageShell title="Coupon Code Generator" subtitle="Generate package-specific, time-bound discount codes.">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.8fr)]">
+        <Card>
+          <div className="border-b border-gray-100 px-5 py-4">
+            <h3 className="text-sm font-bold text-gray-950">Coupon details</h3>
+            <p className="text-xs text-gray-400">Fields marked * are required.</p>
           </div>
-          <div className="px-5 pb-5">
-            <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50 p-5 text-center">
-              <Tag size={22} className="mx-auto text-[#2563EB]" />
-              <p className="mt-3 font-mono text-xl font-bold text-gray-950">{couponCode}</p>
-              <p className="mt-1 text-xs font-semibold text-gray-500">{coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`} off on {coupon.packageName}</p>
-              <p className="mt-1 text-[11px] font-semibold text-blue-700">Valid till {formatDateTime(coupon.validity)}</p>
+          <div className="grid gap-4 p-5 sm:grid-cols-2">
+            <Field label="Prefix" required value={coupon.prefix} onChange={setField("prefix")} error={errors.prefix} hint="Shown at the start of the code." maxLength={10} />
+            <div className="grid grid-cols-[1fr_auto] gap-2">
+              <Field label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
+              <label className="block">
+                <span className="text-xs font-bold text-gray-600">Type</span>
+                <select value={coupon.amountType} onChange={(event) => setField("amountType")(event.target.value)} className="mt-1.5 h-[38px] w-full rounded-xl border border-gray-200 px-2 text-sm outline-none focus:border-[#cda88f] focus:ring-4 focus:ring-[#fff1ec]">
+                  <option value="percentage">%</option>
+                  <option value="fixed">Rs</option>
+                </select>
+              </label>
             </div>
-            <div className="mt-4 max-h-64 space-y-2 overflow-y-auto">
-              {savedCoupons.slice(0, 6).map((item) => (
+            <Field label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
+            <div className="sm:col-span-1">
+              <DateTimeField label="Valid until" value={coupon.validity} onChange={setField("validity")} />
+              {errors.validity && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validity}</span>}
+            </div>
+            <Field label="Client name" value={coupon.clientName} onChange={setField("clientName")} placeholder="Optional" />
+            <Field label="Company name" value={coupon.companyName} onChange={setField("companyName")} placeholder="Optional" />
+            <Field label="Email ID" type="email" value={coupon.email} onChange={setField("email")} error={errors.email} placeholder="Optional" />
+            <Field label="Phone no." type="tel" inputMode="numeric" value={coupon.phone} onChange={setField("phone")} error={errors.phone} placeholder="Optional" maxLength={10} />
+          </div>
+          <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
+            <Button variant="secondary" onClick={() => copyText(previewCode, "Prefix copied")}><Copy size={14} /> Copy prefix</Button>
+            <Button onClick={createCoupon} disabled={creating}>
+              <Plus size={14} /> {creating ? "Creating…" : "Create Coupon"}
+            </Button>
+          </div>
+        </Card>
+
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-5 text-center">
+            <Tag size={22} className="mx-auto text-[#884c2d]" />
+            <p className="mt-3 font-mono text-xl font-bold text-gray-950">{previewCode}</p>
+            <p className="mt-1 text-xs font-semibold text-gray-500">{discountLabel} off on {coupon.packageName || "selected package"}</p>
+            <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {formatDateTime(coupon.validity)}</p>
+            <p className="mt-2 text-[10px] text-gray-400">A unique code is generated on create.</p>
+          </div>
+
+          <Card>
+            <div className="border-b border-gray-100 px-4 py-3">
+              <h3 className="text-sm font-bold text-gray-950">Recent coupons</h3>
+            </div>
+            <div className="max-h-72 space-y-2 overflow-y-auto p-3">
+              {savedCoupons.length ? savedCoupons.slice(0, 8).map((item) => (
                 <div key={item._id || item.code} className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-gray-700">{item.code}</span>
-                    <span className="text-xs font-bold text-gray-400">{item.status}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">{item.status}</span>
                   </div>
-                  <p className="mt-1 text-[11px] text-gray-500">{item.generatedAt} - Valid till {item.validity || formatDateTime(item.validUntil)}</p>
+                  <p className="mt-1 text-[11px] text-gray-500">{item.generatedAt} · Valid till {item.validity || formatDateTime(item.validUntil)}</p>
                   <p className="text-[11px] text-gray-500">{item.clientName || "No client"} / {item.companyName || "No company"}</p>
                 </div>
-              ))}
+              )) : (
+                <p className="px-2 py-6 text-center text-xs text-gray-400">No coupons created yet.</p>
+              )}
             </div>
-            <div className="mt-3 flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => copyText(couponCode, "Coupon copied")}><Copy size={14} /> Copy</Button>
-              <Button onClick={createCoupon}><Plus size={14} /> Create Coupon</Button>
-            </div>
-          </div>
-      </Card>
+          </Card>
+        </div>
+      </div>
     </PageShell>
   );
 }

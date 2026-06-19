@@ -11,8 +11,23 @@ import Meeting from "../models/Meeting.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 import { syncPaidOrderFinance } from "../services/finance.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = express.Router();
+
+// Throttle record creation to stop accidental double-submits and abuse.
+// Coupons get a tighter budget because each one is a distinct marketing asset.
+const couponCreateLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 10,
+  name: "coupon-create",
+  message: "Too many coupons created in a short time. Please wait a minute before creating more."
+});
+const writeLimiter = rateLimit({ windowMs: 60_000, max: 40, name: "crm-write" });
+
+function createLimiter(req, res, next) {
+  return (req.params.type === "coupons" ? couponCreateLimiter : writeLimiter)(req, res, next);
+}
 const models = {
   companies: Company,
   contacts: Contact,
@@ -101,7 +116,7 @@ router.get("/:type", validateType, async (req, res, next) => {
   }
 });
 
-router.post("/:type", validateType, async (req, res, next) => {
+router.post("/:type", createLimiter, validateType, async (req, res, next) => {
   try {
     const { type } = req.params;
     const Model = models[type];

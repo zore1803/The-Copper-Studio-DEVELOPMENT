@@ -68,7 +68,9 @@ export function useCrmRecords(type, fallback = EMPTY_FALLBACK) {
 
   const actions = useMemo(() => ({
     async save(record) {
-      const saved = storeSave(type, record);
+      // Optimistic local write so the UI updates instantly. For a brand-new
+      // record this gets a temporary local id (e.g. "coupons-169…").
+      const optimistic = storeSave(type, record);
       setRecords(storeGet(type));
 
       try {
@@ -80,6 +82,12 @@ export function useCrmRecords(type, fallback = EMPTY_FALLBACK) {
           return updated;
         } else if (!mongoId) {
           const created = await apiPost(`/api/crm/${type}`, record);
+          // The server record has a different (Mongo) id than the optimistic
+          // entry, so remove the temporary one first — otherwise the new record
+          // is appended as a second row (the "created twice" duplicate).
+          if (optimistic?._id && optimistic._id !== created._id && optimistic._id !== created.id) {
+            storeRemove(type, optimistic._id);
+          }
           storeSave(type, created);
           setRecords(storeGet(type));
           return created;
@@ -89,7 +97,7 @@ export function useCrmRecords(type, fallback = EMPTY_FALLBACK) {
         setError(err.message || `Failed to save ${type}.`);
       }
 
-      return saved;
+      return optimistic;
     },
 
     async remove(record) {
