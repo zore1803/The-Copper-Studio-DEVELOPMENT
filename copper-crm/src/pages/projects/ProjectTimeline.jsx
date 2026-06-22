@@ -211,7 +211,7 @@ function GanttView({ tasks, onOpenEdit }) {
   const [zoom, setZoom] = useState("Week");
   const [collapsed, setCollapsed] = useState({});
 
-  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+  const { groups, minDate, maxDate, totalDays, weeks, summary } = useMemo(() => {
     const referenceYear = new Date().getFullYear();
     const mapped = tasks.map((task) => {
       const start = task.startDate ? parseFullDate(task.startDate) : null;
@@ -221,7 +221,7 @@ function GanttView({ tasks, onOpenEdit }) {
       return { ...task, start, end: safeEnd, status: TASK_STATUSES.includes(task.status) ? task.status : "Backlog" };
     }).filter(Boolean);
     const unscheduled = tasks.length - mapped.length;
-    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, totalDays: 1, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
     const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
@@ -230,17 +230,22 @@ function GanttView({ tasks, onOpenEdit }) {
       .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
       .filter((g) => g.tasks.length > 0);
 
-    const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
-    const weekCount = Math.max(1, Math.ceil(totalDays / 7));
-    const weekCols = Array.from({ length: weekCount }, (_, index) => {
-      const weekStart = new Date(min.getTime() + index * 7 * DAY_MS);
-      const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
-      return { label: formatRange(weekStart, weekEnd) };
-    });
+    // Exact day count (not rounded up to a whole number of weeks) so the
+    // pixel-width grid below lines up precisely with the percentage-based
+    // task bars instead of stretching/compacting them against extra columns.
+    const days = Math.max(1, Math.round((max - min) / DAY_MS));
+    const weekCols = [];
+    for (let dayOffset = 0; dayOffset < days; dayOffset += 7) {
+      const weekStart = new Date(min.getTime() + dayOffset * DAY_MS);
+      const spanDays = Math.min(7, days - dayOffset);
+      const weekEnd = new Date(weekStart.getTime() + (spanDays - 1) * DAY_MS);
+      weekCols.push({ label: formatRange(weekStart, weekEnd), days: spanDays });
+    }
     return {
       groups: groupList,
       minDate: min,
       maxDate: max,
+      totalDays: days,
       weeks: weekCols,
       summary: {
         total: mapped.length,
@@ -260,9 +265,9 @@ function GanttView({ tasks, onOpenEdit }) {
     );
   }
 
-  const colWidth = ZOOM_LEVELS[zoom];
+  const pxPerDay = ZOOM_LEVELS[zoom] / 7;
   const totalRangeMs = Math.max(1, maxDate - minDate);
-  const timelineWidth = weeks.length * colWidth;
+  const timelineWidth = Math.round(totalDays * pxPerDay);
   const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
   const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
 
@@ -339,12 +344,12 @@ function GanttView({ tasks, onOpenEdit }) {
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="sticky top-0 z-10 flex h-11 border-b border-[#f1f1f5] bg-white">
               {weeks.map((week, index) => (
-                <div key={index} style={{ width: `${colWidth}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
+                <div key={index} style={{ width: `${Math.round(week.days * pxPerDay)}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
                   {week.label}
                 </div>
               ))}
             </div>
-            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${colWidth}px 100%` }}>
+            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${Math.round(pxPerDay * 7)}px 100%` }}>
               {showTodayLine && (
                 <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${toPct(TODAY)}%` }}>
                   <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-400" />
