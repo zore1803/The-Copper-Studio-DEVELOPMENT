@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
@@ -21,6 +21,17 @@ const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Activit
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const TASK_VIEWS = ["List", "Board", "Calendar", "Gantt"];
 const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
+
+function useClickOutside(ref, onOutside, active) {
+  useEffect(() => {
+    if (!active) return;
+    function onDocMouseDown(event) {
+      if (ref.current && !ref.current.contains(event.target)) onOutside();
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [active, onOutside, ref]);
+}
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -518,6 +529,8 @@ export default function CompanyDetail() {
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("Projects");
   const [creatingProject, setCreatingProject] = useState(false);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const addMenuRef = useRef(null);
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
@@ -542,6 +555,8 @@ export default function CompanyDetail() {
   const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents, save: saveDocument } = useCrmRecords("documents");
+
+  useClickOutside(addMenuRef, () => setAddMenuOpen(false), addMenuOpen);
 
   const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const linked = useMemo(() => {
@@ -815,7 +830,37 @@ export default function CompanyDetail() {
                 <LinkIcon size={14} /> {company.userId ? "Client Linked" : "Link Client Portal"}
               </Button>
               <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
-              <Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>
+              <div className="relative" ref={addMenuRef}>
+                <Button onClick={() => setAddMenuOpen((open) => !open)}><Plus size={14} /> Add New</Button>
+                {addMenuOpen && (
+                  <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
+                    <button
+                      onClick={() => { setCreatingProject(true); setAddMenuOpen(false); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <FolderKanban size={14} /> Add Project
+                    </button>
+                    <button
+                      onClick={() => { setEditingContact({}); setAddMenuOpen(false); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <Users size={14} /> Add Contact
+                    </button>
+                    <button
+                      onClick={() => { setCreatingTask(true); setAddMenuOpen(false); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <StickyNote size={14} /> Add Task
+                    </button>
+                    <button
+                      onClick={() => { setUploadingDocument(true); setAddMenuOpen(false); }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <FolderOpen size={14} /> Add Document
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
