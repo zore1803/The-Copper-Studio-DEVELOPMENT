@@ -5,6 +5,7 @@ const KEYS = {
   deals: "cs_deals",
   tasks: "cs_tasks",
   meetings: "cs_meetings",
+  notes: "cs_notes",
   projects: "cs_projects",
   documents: "cs_documents",
   emailTemplates: "cs_email_templates",

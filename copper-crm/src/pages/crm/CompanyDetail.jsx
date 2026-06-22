@@ -17,7 +17,7 @@ import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 
-const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Meetings", "Activity"];
+const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const TASK_VIEWS = ["List", "Board", "Calendar", "Gantt"];
 const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
@@ -547,6 +547,7 @@ export default function CompanyDetail() {
   const [loadingClients, setLoadingClients] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [viewingFolder, setViewingFolder] = useState(null);
+  const [editingNote, setEditingNote] = useState(null);
   const [creatingTask, setCreatingTask] = useState(false);
   const [projectView, setProjectView] = useState("Table");
   const [taskView, setTaskView] = useState("List");
@@ -561,6 +562,7 @@ export default function CompanyDetail() {
   const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents, save: saveDocument, remove: removeDocument } = useCrmRecords("documents");
+  const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
 
   useClickOutside(addMenuRef, () => setAddMenuOpen(false), addMenuOpen);
 
@@ -584,8 +586,9 @@ export default function CompanyDetail() {
       tasks: tasks.filter((t) => isCompanyMatch(t.companyId) || t.company === name || t.companyName === name || linkedProjectIds.has(String(t.projectId)) || linkedProjectIds.has(String(t.project))),
       meetings: meetings.filter((m) => isCompanyMatch(m.companyId) || m.company === name),
       documents: documents.filter((d) => isCompanyMatch(d.companyId) || d.company === name || d.companyName === name || linkedProjectIds.has(String(d.projectId))),
+      notes: notes.filter((n) => isCompanyMatch(n.companyId) || n.company === name),
     };
-  }, [company, companyId, contacts, documents, invoices, meetings, projects, tasks]);
+  }, [company, companyId, contacts, documents, invoices, meetings, notes, projects, tasks]);
   const allDocsForFolders = useMemo(
     () => [
       ...linked.documents,
@@ -660,6 +663,7 @@ export default function CompanyDetail() {
     Invoices: linked.invoices.length,
     Documents: linked.documents.length,
     Tasks: activeTasks,
+    Notes: linked.notes.length,
     Meetings: linked.meetings.length,
   };
   const projectPackages = ["All", ...Array.from(new Set(linked.projects.map((project) => project.packageName || project.package).filter(Boolean)))];
@@ -787,6 +791,26 @@ export default function CompanyDetail() {
     const groups = (company.documentGroups || []).filter((g) => g.name !== name);
     await saveCompany({ ...company, documentGroups: groups });
     showToast({ title: "Group deleted", message: `"${name}" group removed.` });
+  }
+
+  async function handleSaveNote(form) {
+    if (!form.title.trim() && !form.body.trim()) {
+      showToast({ type: "error", title: "Note is empty", message: "Add a title or some text before saving." });
+      return;
+    }
+    await saveNote({ ...form, companyId: company._id || company.id, company: company.name });
+    setEditingNote(null);
+    showToast({ title: "Note saved", message: `Saved to ${company.name}.` });
+  }
+
+  async function handleDeleteNote(note) {
+    await removeNote(note);
+    showToast({ title: "Note deleted", message: "The note was removed." });
+  }
+
+  async function handleSaveCalendlyLink(url) {
+    await saveCompany({ ...company, calendlyUrl: url });
+    showToast({ title: "Calendly link saved", message: url ? "Meetings can now be booked from this tab." : "Calendly link removed." });
   }
 
   async function handleCreateTask(form) {
@@ -1006,13 +1030,19 @@ export default function CompanyDetail() {
             onMoveTask={(task, status) => saveTask({ ...task, status })}
           />
         )}
-        {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
+        {activeTab === "Notes" && (
+          <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
+        )}
+        {activeTab === "Meetings" && (
+          <MeetingsTab meetings={linked.meetings} calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} />
+        )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
 
       {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
       {creatingProject && <ProjectFormPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
+      {editingNote && <NotePanel company={company} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
       {selectedInvoice && <InvoicePanel invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} onDownload={downloadInvoicePdf} onMarkPaid={handleMarkInvoicePaid} />}
       {linkingClient && (
@@ -1064,12 +1094,39 @@ function Section({ title, action, children }) {
   );
 }
 
+const ACTIVITY_PERIODS = ["All time", "Today", "This Week", "This Month", "Last 7 Days", "Last 30 Days"];
+
+function isWithinActivityPeriod(date, period) {
+  if (period === "All time") return true;
+  const now = new Date();
+  if (period === "Today") return sameDay(date, now);
+  if (period === "This Week") return date >= startOfWeek(now);
+  if (period === "This Month") return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  if (period === "Last 7 Days") return date >= new Date(now.getTime() - 7 * 86400000);
+  if (period === "Last 30 Days") return date >= new Date(now.getTime() - 30 * 86400000);
+  return true;
+}
+
 function ActivityTimeline({ items, full = false }) {
+  const [period, setPeriod] = useState("All time");
+  const filteredItems = useMemo(
+    () => (full ? items.filter((item) => isWithinActivityPeriod(item.sortDate || new Date(item.date || 0), period)) : items),
+    [items, period, full]
+  );
   return (
-    <Section title="Activity Timeline">
-      {items.length ? (
+    <Section
+      title="Activity Timeline"
+      action={
+        full ? (
+          <select value={period} onChange={(e) => setPeriod(e.target.value)} className="rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs">
+            {ACTIVITY_PERIODS.map((item) => <option key={item}>{item}</option>)}
+          </select>
+        ) : null
+      }
+    >
+      {filteredItems.length ? (
         <div className="space-y-4">
-          {items.map((item, index) => {
+          {filteredItems.map((item, index) => {
             const Icon = item.icon || MessageSquare;
             return (
               <div key={`${item.type}-${item.title}-${index}`} className="flex gap-3">
@@ -1085,7 +1142,7 @@ function ActivityTimeline({ items, full = false }) {
             );
           })}
         </div>
-      ) : <EmptyState icon={Clock3} title="No activity yet." />}
+      ) : <EmptyState icon={Clock3} title={full && period !== "All time" ? "No activity in this period." : "No activity yet."} />}
     </Section>
   );
 }
@@ -2033,6 +2090,104 @@ function CalendarTaskView({ tasks, onCreate }) {
           )}
         </SidePanel>
       )}
+    </div>
+  );
+}
+
+function NotesTab({ notes, onCreate, onEdit, onDelete }) {
+  return (
+    <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
+      {notes.length ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {notes.map((note) => (
+            <div key={note.id || note._id} className="rounded-xl border border-[#e5e7eb] bg-white p-4">
+              <div className="flex items-start justify-between gap-2">
+                <button type="button" onClick={() => onEdit(note)} className="min-w-0 flex-1 text-left">
+                  <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
+                  <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm text-[#6b7280]">{note.body || "No content."}</p>
+                </button>
+                <button type="button" onClick={() => onDelete(note)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{formatDateTime(note.updatedAt || note.createdAt)}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState icon={StickyNote} title="No notes yet." action={<Button onClick={onCreate}><Plus size={14} /> Add Note</Button>} />
+      )}
+    </Section>
+  );
+}
+
+function NotePanel({ company, note, onClose, onSave }) {
+  const [form, setForm] = useState(note || { title: "", body: "" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title={note?._id || note?.id ? "Edit Note" : "Add Note"}
+      subtitle={`Saved against ${company.name}.`}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save Note</Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <Input span label="Title" value={form.title} onChange={set("title")} placeholder="e.g. Pricing discussion" />
+        <Textarea span label="Note" value={form.body} onChange={set("body")} />
+      </div>
+    </SidePanel>
+  );
+}
+
+function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl }) {
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [urlInput, setUrlInput] = useState(calendlyUrl || "");
+
+  function submitUrl() {
+    onSaveCalendlyUrl(urlInput.trim());
+    setEditingUrl(false);
+  }
+
+  return (
+    <div className="space-y-5">
+      <Section
+        title="Book a Meeting"
+        action={calendlyUrl && !editingUrl ? <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button> : null}
+      >
+        {!calendlyUrl || editingUrl ? (
+          <div className="flex items-center gap-2">
+            <input
+              autoFocus
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitUrl()}
+              placeholder="https://calendly.com/your-name/30min"
+              className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            />
+            <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
+            {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-[#6b7280]">Pick a free slot below to finalize the meeting straight onto the calendar.</p>
+              <a href={calendlyUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+                Open in new tab
+              </a>
+            </div>
+            <iframe src={calendlyUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
+          </div>
+        )}
+      </Section>
+      <Section title="Linked Meetings">
+        {meetings.length ? <SimpleList items={meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />}
+      </Section>
     </div>
   );
 }

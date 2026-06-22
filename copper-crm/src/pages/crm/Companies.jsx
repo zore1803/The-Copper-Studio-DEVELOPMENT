@@ -183,12 +183,6 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
               Edit company
             </button>
             <button
-              onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("cs-open-document-center", { detail: { companyId: company.id || company._id } })); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-            >
-              Move to folder
-            </button>
-            <button
               onClick={() => { setMenuOpen(false); onDelete(company); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
             >

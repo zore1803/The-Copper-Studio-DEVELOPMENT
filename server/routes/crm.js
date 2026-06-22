@@ -8,6 +8,7 @@ import Task from "../models/Task.js";
 import Project from "../models/Project.js";
 import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
+import Note from "../models/Note.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 import { syncPaidOrderFinance } from "../services/finance.js";
@@ -38,11 +39,12 @@ const models = {
   projects: Project,
   documents: Document,
   meetings: Meeting,
+  notes: Note,
   payments: Payment,
   invoices: Invoice
 };
 
-const companyLinkedTypes = new Set(["projects", "documents", "meetings"]);
+const companyLinkedTypes = new Set(["projects", "documents", "meetings", "notes"]);
 
 const expirableCouponStatuses = ["Active", "Applied", "Not used"];
 
@@ -100,7 +102,8 @@ async function cascadeClientLink(companyId, userId) {
   await Promise.all([
     Project.updateMany(filter, update),
     Document.updateMany(filter, update),
-    Meeting.updateMany(filter, update)
+    Meeting.updateMany(filter, update),
+    Note.updateMany(filter, update)
   ]);
 }
 
