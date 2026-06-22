@@ -39,7 +39,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
           items={[
             { label: "Companies", to: "/admin/companies" },
             { label: company.name, to: `/admin/companies/${company.id || company._id}` },
-            { label: "Projects", to: `/admin/companies/${company.id || company._id}` },
+            { label: "Projects", to: "/admin/projects" },
             { label: project.name, to: null },
           ]}
         />
