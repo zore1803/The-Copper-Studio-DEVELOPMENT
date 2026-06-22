@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Eye, Filter, FolderOpen, FolderPlus,
@@ -75,6 +76,22 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
   );
 }
 
+// Closes an open menu/panel when the user clicks anywhere outside the given
+// ref(s). Pass an array of refs when a trigger button and its menu live in
+// separate DOM subtrees (e.g. a portaled menu).
+function useClickOutside(refs, onOutside, active) {
+  useEffect(() => {
+    if (!active) return;
+    function onDocMouseDown(event) {
+      const list = Array.isArray(refs) ? refs : [refs];
+      if (list.some((ref) => ref.current && ref.current.contains(event.target))) return;
+      onOutside();
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [active, onOutside, refs]);
+}
+
 function DocSignedBadge({ status }) {
   const map = {
     Accepted: "bg-emerald-50 text-emerald-700 border border-emerald-100",
@@ -90,6 +107,34 @@ function DocSignedBadge({ status }) {
 
 function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useClickOutside([btnRef, menuRef], () => setMenuOpen(false), menuOpen);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function reposition() {
+      const rect = btnRef.current?.getBoundingClientRect();
+      if (rect) setMenuPos({ top: rect.bottom + 4, left: rect.right - 176 });
+    }
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [menuOpen]);
+
+  function toggleMenu() {
+    if (!menuOpen) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.bottom + 4, left: rect.right - 176 });
+    }
+    setMenuOpen((v) => !v);
+  }
 
   return (
     <tr
@@ -131,42 +176,46 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
       </td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.leadSource || "—"}</td>
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+        <button
+          ref={btnRef}
+          onClick={toggleMenu}
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+        >
+          <MoreVertical size={14} />
+        </button>
+        {menuOpen && menuPos && createPortal(
+          <div
+            ref={menuRef}
+            style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
+            className="z-50 w-44 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1"
           >
-            <MoreVertical size={14} />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 z-20 mt-1 w-44 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1">
-              <button
-                onClick={() => { setMenuOpen(false); onOpen(company); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-              >
-                <Eye size={14} /> Open workspace
-              </button>
-              <button
-                onClick={() => { setMenuOpen(false); onEdit(company); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-              >
-                Edit company
-              </button>
-              <button
-                onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("cs-open-document-center", { detail: { companyId: company.id || company._id } })); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-              >
-                Move to folder
-              </button>
-              <button
-                onClick={() => { setMenuOpen(false); onDelete(company); }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+            <button
+              onClick={() => { setMenuOpen(false); onOpen(company); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+            >
+              <Eye size={14} /> Open workspace
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); onEdit(company); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+            >
+              Edit company
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent("cs-open-document-center", { detail: { companyId: company.id || company._id } })); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+            >
+              Move to folder
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); onDelete(company); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
+              Delete
+            </button>
+          </div>,
+          document.body
+        )}
       </td>
     </tr>
   );
@@ -414,6 +463,10 @@ export default function Companies() {
   const [assignOpen, setAssignOpen] = useState(false);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
   const { showToast } = useToast();
+  const actionsRef = useRef(null);
+  const sortRef = useRef(null);
+  useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
+  useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -585,7 +638,7 @@ export default function Companies() {
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
-          <div className="relative">
+          <div className="relative" ref={actionsRef}>
             <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
               <MoreVertical size={16} />
             </button>
@@ -601,7 +654,7 @@ export default function Companies() {
             )}
           </div>
           {/* Sort */}
-          <div className="relative">
+          <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
               className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
