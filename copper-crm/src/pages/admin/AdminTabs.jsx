@@ -160,6 +160,22 @@ function isDoneStatus(status) {
   return ["completed", "delivered"].includes(String(status || "").toLowerCase());
 }
 
+// Maps the time-range selector to a window length in days (null = all time).
+const RANGE_DAYS = {
+  "Last 7 days": 7,
+  "Last 30 days": 30,
+  "This quarter": 90,
+  "This year": 365,
+  "All time": null,
+};
+
+// Best-effort timestamp for a record from whichever date field it carries.
+function recordTimestamp(record) {
+  const raw = record.createdAt || record.date || record.paidAt || record.generatedAt;
+  const t = raw ? new Date(raw).getTime() : NaN;
+  return Number.isFinite(t) ? t : null;
+}
+
 export function AnalyticsPage() {
   const [timeFilter, setTimeFilter] = useState("Last 30 days");
   // Lazy state init keeps "now" stable across re-renders (and pure during render).
@@ -170,18 +186,30 @@ export function AnalyticsPage() {
   const { records: companies } = useCrmRecords("companies");
 
   const data = useMemo(() => {
-    const paidOrders = orders.filter((order) => isPaidStatus(order.status));
-    const paidPayments = payments.filter((payment) => isPaidStatus(payment.status));
+    const days = RANGE_DAYS[timeFilter];
+    const rangeStart = days == null ? null : now - days * 24 * 60 * 60 * 1000;
+    const inRange = (record) => {
+      if (rangeStart == null) return true;
+      const t = recordTimestamp(record);
+      return t != null && t >= rangeStart;
+    };
+
+    const rangedOrders = orders.filter(inRange);
+    const rangedPayments = payments.filter(inRange);
+    const rangedProjects = projects.filter(inRange);
+
+    const paidOrders = rangedOrders.filter((order) => isPaidStatus(order.status));
+    const paidPayments = rangedPayments.filter((payment) => isPaidStatus(payment.status));
     const revenue = [...paidOrders, ...paidPayments].reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.total), 0);
-    const paymentRate = Math.round((paidOrders.length / Math.max(orders.length, 1)) * 100);
-    const avgProjectValue = Math.round(revenue / Math.max(projects.length, 1));
-    const completedProjects = projects.filter((project) => isDoneStatus(project.status || project.clientStatus)).length;
-    const delayedProjects = projects.filter((project) => {
+    const paymentRate = Math.round((paidOrders.length / Math.max(rangedOrders.length, 1)) * 100);
+    const avgProjectValue = Math.round(revenue / Math.max(rangedProjects.length, 1));
+    const completedProjects = rangedProjects.filter((project) => isDoneStatus(project.status || project.clientStatus)).length;
+    const delayedProjects = rangedProjects.filter((project) => {
       const dueRaw = project.dueDate || project.expectedCompletion || project.expectedEndDate;
       const due = dueRaw ? new Date(dueRaw).getTime() : NaN;
       return Number.isFinite(due) && due < now && !isDoneStatus(project.status || project.clientStatus);
     }).length;
-    const onTrack = Math.max(projects.length - completedProjects - delayedProjects, 0);
+    const onTrack = Math.max(rangedProjects.length - completedProjects - delayedProjects, 0);
 
     const statusData = [
       { name: "On track", value: onTrack, color: ANALYTICS.green },
@@ -190,7 +218,7 @@ export function AnalyticsPage() {
     ].filter((item) => item.value > 0);
     const statusTotal = statusData.reduce((sum, item) => sum + item.value, 0) || 1;
 
-    const packageRevenue = Object.values(orders.reduce((acc, order) => {
+    const packageRevenue = Object.values(rangedOrders.reduce((acc, order) => {
       const name = order.package || order.packageName || order.projectType || "Unassigned";
       acc[name] = acc[name] || { name, revenue: 0, count: 0 };
       acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.total);
@@ -198,7 +226,7 @@ export function AnalyticsPage() {
       return acc;
     }, {})).sort((a, b) => b.revenue - a.revenue);
 
-    const revenueGraph = Object.values([...orders, ...payments].reduce((acc, item) => {
+    const revenueGraph = Object.values([...rangedOrders, ...rangedPayments].reduce((acc, item) => {
       const stamp = item.createdAt || item.date || item.paidAt || item.generatedAt;
       const created = stamp ? new Date(stamp) : new Date(now);
       const key = created.toISOString().slice(0, 10);
@@ -208,12 +236,12 @@ export function AnalyticsPage() {
       return acc;
     }, {})).sort((a, b) => a.key.localeCompare(b.key));
 
-    return { revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, statusData, statusTotal, packageRevenue, revenueGraph };
-  }, [orders, payments, projects, now]);
+    return { revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, statusData, statusTotal, packageRevenue, revenueGraph, projectCount: rangedProjects.length };
+  }, [orders, payments, projects, now, timeFilter]);
 
   const metrics = [
     ["Total revenue", formatMoney(data.revenue), WalletCards],
-    ["Total projects", projects.length, PackageCheck],
+    ["Total projects", data.projectCount, PackageCheck],
     ["Avg project value", formatMoney(data.avgProjectValue), TrendingUp],
     ["Companies", companies.length, Users],
     ["Payment rate", `${data.paymentRate}%`, ReceiptText],
@@ -228,7 +256,7 @@ export function AnalyticsPage() {
       subtitle="Revenue, projects, payments, product performance, and delivery health."
       action={
         <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 outline-none focus:border-[#cda88f]">
-          {["Last 7 days", "Last 30 days", "This quarter", "This year"].map((item) => <option key={item}>{item}</option>)}
+          {["Last 7 days", "Last 30 days", "This quarter", "This year", "All time"].map((item) => <option key={item}>{item}</option>)}
         </select>
       }
     >

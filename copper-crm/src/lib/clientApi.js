@@ -152,4 +152,14 @@ export const adminApi = {
     () => apiPut(`/api/admin/meetings/${id}`, body, token),
     () => storeSave("meetings", { ...body, _id: id })
   ),
+
+  createMeeting: (body, token) => withFallback(
+    () => apiPost("/api/admin/meetings", body, token),
+    () => storeSave("meetings", { ...body, _id: `mtg-${Date.now()}`, createdAt: new Date().toISOString() })
+  ),
+
+  deleteMeeting: (id, token) => withFallback(
+    () => apiDelete(`/api/admin/meetings/${id}`, token),
+    () => { storeRemove("meetings", id); return {}; }
+  ),
 };

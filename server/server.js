@@ -13,6 +13,7 @@ import Order from "./models/Order.js";
 import Lead from "./models/Lead.js";
 import User from "./models/User.js";
 import Coupon from "./models/Coupon.js";
+import Project from "./models/Project.js";
 import authRoutes from "./routes/auth.js";
 import crmRoutes from "./routes/crm.js";
 import clientRoutes from "./routes/client.js";
@@ -128,6 +129,28 @@ async function createPortalInvite(order) {
   await order.save();
 
   return { userId: user._id, setPasswordUrl };
+}
+
+// On a paid order, create the client's project using the name they chose at
+// checkout, so it appears immediately in their multi-project portal. Idempotent
+// per order so retries/backfills never create duplicates.
+async function ensureProjectForOrder(order, clientId) {
+  if (order.payment?.status !== "paid") return null;
+  const orderId = order._id;
+  const existing = await Project.findOne({ orderId }).catch(() => null);
+  if (existing) return existing;
+
+  const customer = order.customer || {};
+  return Project.create({
+    name: customer.projectName || `${order.package?.name || "New"} project`,
+    clientId: clientId || null,
+    orderId,
+    packageName: order.package?.name || "",
+    status: "not_started",
+    clientStatus: "in_progress",
+    progress: 0,
+    currentPhase: "Onboarding"
+  });
 }
 
 function computeCouponDiscount(coupon, packagePrice) {
@@ -371,7 +394,8 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       couponResult.coupon.redeemedAt = new Date();
       await couponResult.coupon.save();
     }
-    await createPortalInvite(order);
+    const invite = await createPortalInvite(order);
+    await ensureProjectForOrder(order, invite?.userId);
     const finance = await syncFinanceForOrder(order);
     await emailInvoiceForOrder(order, finance?.invoice);
 
@@ -419,7 +443,8 @@ app.post("/api/orders", async (req, res, next) => {
       couponResult.coupon.redeemedAt = new Date();
       await couponResult.coupon.save();
     }
-    await createPortalInvite(order);
+    const invite = await createPortalInvite(order);
+    await ensureProjectForOrder(order, invite?.userId);
     const finance = await syncFinanceForOrder(order);
     if (order.payment.status === "paid") await emailInvoiceForOrder(order, finance?.invoice);
 

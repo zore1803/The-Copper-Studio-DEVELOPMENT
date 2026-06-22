@@ -130,4 +130,22 @@ router.put("/meetings/:id", async (req, res, next) => {
   }
 });
 
+router.post("/meetings", async (req, res, next) => {
+  try {
+    const meeting = await Meeting.create(req.body);
+    res.status(201).json(meeting);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/meetings/:id", async (req, res, next) => {
+  try {
+    await Meeting.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
