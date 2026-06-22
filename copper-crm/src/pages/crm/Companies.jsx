@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Building2, ChevronLeft, ChevronRight, Download, Eye, Filter, FolderOpen, FolderPlus,
+  ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Eye, Filter, FolderOpen, FolderPlus,
   Folder as FolderIcon, Globe, Grid2x2, List, MoreVertical, Plus, Save, Search,
   SlidersHorizontal, X
 } from "lucide-react";
@@ -13,6 +13,25 @@ import { isGstin } from "../../lib/validators";
 
 const PAGE_SIZE = 10;
 const FOLDER_PAGE_SIZE = 8;
+
+const SORT_OPTIONS = [
+  { value: "name_asc", label: "Name (A–Z)" },
+  { value: "name_desc", label: "Name (Z–A)" },
+  { value: "created_desc", label: "Newest first" },
+  { value: "created_asc", label: "Oldest first" },
+  { value: "city_asc", label: "City (A–Z)" }
+];
+
+// Distinct, alphabetically-sorted values of a field across records, prefixed
+// with "All" for use as a dropdown filter.
+function uniqueSorted(records, key) {
+  return [
+    "All",
+    ...Array.from(new Set(records.map((r) => r[key]).filter(Boolean))).sort((a, b) =>
+      String(a).localeCompare(String(b))
+    )
+  ];
+}
 const DEFAULT_FOLDERS = ["Key Accounts", "New Prospects", "Renewals Due", "High Value"];
 const FOLDERS_STORAGE_KEY = "cs-hotlist-folders";
 
@@ -372,12 +391,18 @@ export default function Companies() {
   const location = useLocation();
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState(() => (location.state?.openCreate
-    ? { name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" }
+    ? { name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" }
     : null));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [industryFilter, setIndustryFilter] = useState("All");
+  const [cityFilter, setCityFilter] = useState("All");
+  const [stateFilter, setStateFilter] = useState("All");
+  const [pincodeFilter, setPincodeFilter] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("name_asc");
+  const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [view, setView] = useState("table");
   const [folders, setFolders] = useState(loadStoredFolders);
@@ -397,17 +422,39 @@ export default function Companies() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const industries = useMemo(() => ["All", ...Array.from(new Set(companies.map((company) => company.industry).filter(Boolean)))], [companies]);
+  const industries = useMemo(() => uniqueSorted(companies, "industry"), [companies]);
+  const cities = useMemo(() => uniqueSorted(companies, "city"), [companies]);
+  const states = useMemo(() => uniqueSorted(companies, "state"), [companies]);
+  const owners = useMemo(() => uniqueSorted(companies, "owner"), [companies]);
+
   const filtered = useMemo(() =>
     companies.filter((c) => {
-      const matchesSearch = `${c.name} ${c.industry} ${c.contact} ${c.status} ${c.gstin} ${c.leadSource}`.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = `${c.name} ${c.industry} ${c.contact} ${c.status} ${c.gstin} ${c.leadSource} ${c.city} ${c.state} ${c.pincode} ${c.owner}`.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "All" || c.status === statusFilter || (statusFilter === "Accepted" && c.status === "Active") || (statusFilter === "Pending" && c.status === "Prospect");
       const matchesIndustry = industryFilter === "All" || c.industry === industryFilter;
-      return matchesSearch && matchesStatus && matchesIndustry;
-    }), [companies, industryFilter, search, statusFilter]);
+      const matchesCity = cityFilter === "All" || c.city === cityFilter;
+      const matchesState = stateFilter === "All" || c.state === stateFilter;
+      const matchesPincode = !pincodeFilter.trim() || String(c.pincode || "").includes(pincodeFilter.trim());
+      const matchesOwner = ownerFilter === "All" || c.owner === ownerFilter;
+      return matchesSearch && matchesStatus && matchesIndustry && matchesCity && matchesState && matchesPincode && matchesOwner;
+    }), [companies, industryFilter, search, statusFilter, cityFilter, stateFilter, pincodeFilter, ownerFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    const byStr = (a, b, key) => String(a[key] || "").localeCompare(String(b[key] || ""), undefined, { sensitivity: "base" });
+    const byCreated = (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    switch (sortBy) {
+      case "name_desc": return arr.sort((a, b) => byStr(b, a, "name"));
+      case "created_desc": return arr.sort((a, b) => byCreated(b, a));
+      case "created_asc": return arr.sort(byCreated);
+      case "city_asc": return arr.sort((a, b) => byStr(a, b, "city"));
+      case "name_asc":
+      default: return arr.sort((a, b) => byStr(a, b, "name"));
+    }
+  }, [filtered, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Folders shown = the managed list plus any folder a company is already
   // assigned to, so membership is never orphaned if the list is edited.
@@ -494,6 +541,17 @@ export default function Companies() {
     navigate(`/admin/companies/${company.id || company._id}`);
   }
 
+  function resetFilters() {
+    setSearch("");
+    setStatusFilter("All");
+    setIndustryFilter("All");
+    setCityFilter("All");
+    setStateFilter("All");
+    setPincodeFilter("");
+    setOwnerFilter("All");
+    setPage(1);
+  }
+
   function exportCompanies() {
     const headers = ["Company Name", "Industry", "GSTIN", "Status", "Lead Source", "Website"];
     const rows = filtered.map((company) => [company.name, company.industry, company.gstin, company.status, company.leadSource, company.website]);
@@ -536,9 +594,33 @@ export default function Companies() {
                 <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <Download size={14} /> Export filtered CSV
                 </button>
-                <button onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <X size={14} /> Clear filters
                 </button>
+              </div>
+            )}
+          </div>
+          {/* Sort */}
+          <div className="relative">
+            <button
+              onClick={() => setSortOpen((value) => !value)}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <ArrowUpDown size={15} />
+              <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#884c2d]" : "text-[#374151]"}`}
+                  >
+                    {opt.label}
+                    {sortBy === opt.value && <Check size={14} />}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -559,7 +641,7 @@ export default function Companies() {
             </span>
           </button>
           <button
-            onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", website: "", leadSource: "", notes: "" })}
+            onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
             className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
           >
             <Plus size={16} />
@@ -582,8 +664,35 @@ export default function Companies() {
               {industries.map((industry) => <option key={industry}>{industry}</option>)}
             </select>
           </label>
-          <div className="flex items-end gap-2">
-            <Button variant="secondary" onClick={() => { setSearch(""); setStatusFilter("All"); setIndustryFilter("All"); setPage(1); }}><X size={14} /> Reset</Button>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">City</span>
+            <select value={cityFilter} onChange={(event) => { setCityFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              {cities.map((city) => <option key={city}>{city}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">State</span>
+            <select value={stateFilter} onChange={(event) => { setStateFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              {states.map((state) => <option key={state}>{state}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">Company owner</span>
+            <select value={ownerFilter} onChange={(event) => { setOwnerFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              {owners.map((owner) => <option key={owner}>{owner}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#6b7280]">Pincode</span>
+            <input
+              value={pincodeFilter}
+              onChange={(event) => { setPincodeFilter(event.target.value); setPage(1); }}
+              placeholder="e.g. 400001"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            />
+          </label>
+          <div className="flex items-end gap-2 sm:col-span-3">
+            <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
           </div>
         </div>
       )}
@@ -863,6 +972,10 @@ function CompanyModal({ company, onClose, onSave }) {
         <Field label="Status" value={form.status} onChange={set("status")} />
         <Field label="Website" value={form.website} onChange={set("website")} error={errors.website} />
         <Field label="Address" value={form.address} onChange={set("address")} />
+        <Field label="City" value={form.city} onChange={set("city")} />
+        <Field label="State" value={form.state} onChange={set("state")} />
+        <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
+        <Field label="Company owner" value={form.owner} onChange={set("owner")} placeholder="Account owner" />
         <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
