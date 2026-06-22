@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
-  Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, Globe,
-  Link as LinkIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
+  Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
+  LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -273,8 +273,8 @@ function DocumentUploadPanel({ company, onClose, onSave }) {
   );
 }
 
-function TaskPanel({ company, projects, onClose, onSave }) {
-  const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "Backlog", assignedTo: "", dueDate: "", description: "" });
+function TaskPanel({ company, projects, onClose, onSave, defaultDueDate = "" }) {
+  const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "Backlog", assignedTo: "", dueDate: defaultDueDate, description: "" });
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   return (
@@ -554,7 +554,7 @@ export default function CompanyDetail() {
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: meetings } = useCrmRecords("meetings");
-  const { records: documents, save: saveDocument } = useCrmRecords("documents");
+  const { records: documents, save: saveDocument, remove: removeDocument } = useCrmRecords("documents");
 
   useClickOutside(addMenuRef, () => setAddMenuOpen(false), addMenuOpen);
 
@@ -740,6 +740,25 @@ export default function CompanyDetail() {
     });
     setUploadingDocument(false);
     showToast({ title: "Document uploaded", message: `${form.name} was added to ${company.name}.` });
+  }
+
+  async function handleDeleteDocument(doc) {
+    await removeDocument(doc);
+    showToast({ title: "Document deleted", message: `${doc.fileName || doc.name || "Document"} removed from ${company.name}.` });
+  }
+
+  async function handleCreateDocumentFolder(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const folders = Array.from(new Set([...(company.documentFolders || []), trimmed]));
+    await saveCompany({ ...company, documentFolders: folders });
+    showToast({ title: "Group created", message: `"${trimmed}" folder added.` });
+  }
+
+  async function handleDeleteDocumentFolder(name) {
+    const folders = (company.documentFolders || []).filter((folder) => folder !== name);
+    await saveCompany({ ...company, documentFolders: folders });
+    showToast({ title: "Group deleted", message: `"${name}" folder removed.` });
   }
 
   async function handleCreateTask(form) {
@@ -940,8 +959,12 @@ export default function CompanyDetail() {
           <DocumentsTab
             documents={linked.documents}
             projects={linked.projects}
+            customFolders={company.documentFolders || []}
             onUpload={() => setUploadingDocument(true)}
             onOpenFolder={(category, docs) => setViewingFolder({ category, docs })}
+            onCreateFolder={handleCreateDocumentFolder}
+            onDeleteFolder={handleDeleteDocumentFolder}
+            onDelete={handleDeleteDocument}
           />
         )}
         {activeTab === "Tasks" && (
@@ -977,10 +1000,16 @@ export default function CompanyDetail() {
         <DocumentUploadPanel company={company} onClose={() => setUploadingDocument(false)} onSave={handleUploadDocument} />
       )}
       {creatingTask && (
-        <TaskPanel company={company} projects={linked.projects} onClose={() => setCreatingTask(false)} onSave={handleCreateTask} />
+        <TaskPanel
+          company={company}
+          projects={linked.projects}
+          defaultDueDate={typeof creatingTask === "string" ? creatingTask : ""}
+          onClose={() => setCreatingTask(false)}
+          onSave={handleCreateTask}
+        />
       )}
       {viewingFolder && (
-        <FolderViewerPanel category={viewingFolder.category} documents={viewingFolder.docs} onClose={() => setViewingFolder(null)} />
+        <FolderViewerPanel category={viewingFolder.category} documents={viewingFolder.docs} onClose={() => setViewingFolder(null)} onDelete={handleDeleteDocument} />
       )}
     </div>
   );
@@ -1374,46 +1403,151 @@ function TaskGantt({ tasks, projects }) {
   );
 }
 
-function DocumentsTab({ documents, projects, onUpload, onOpenFolder }) {
-  const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
+function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFolder, onCreateFolder, onDeleteFolder, onDelete }) {
+  const [view, setView] = useState("Grid");
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [folderName, setFolderName] = useState("");
+  const categories = Array.from(new Set(["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", ...customFolders]));
   const projectDocs = projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })));
   const allDocs = [...documents, ...projectDocs];
+
+  function submitFolder() {
+    if (!folderName.trim()) return;
+    onCreateFolder(folderName);
+    setFolderName("");
+    setCreatingFolder(false);
+  }
+
   return (
-    <Section title="Documents" action={<Button variant="secondary" onClick={onUpload}><Plus size={14} /> Upload Document</Button>}>
-      <div className="grid gap-4 md:grid-cols-3">
-        {categories.map((category) => {
-          const docs = allDocs.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(category.toLowerCase().split(" ")[0]));
-          return (
+    <Section
+      title="Documents"
+      action={
+        <div className="flex items-center gap-2">
+          <div className="flex items-center rounded-lg border border-[#e5e7eb] bg-white p-0.5">
             <button
-              key={category}
               type="button"
-              onClick={() => onOpenFolder(category, docs)}
-              className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+              onClick={() => setView("Grid")}
+              className={`rounded-md p-1.5 ${view === "Grid" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+              title="Grid view"
             >
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><FolderOpen size={17} /></div>
-                <div>
-                  <p className="font-bold text-[#111827]">{category}</p>
-                  <p className="text-xs text-[#6b7280]">{docs.length} files</p>
+              <LayoutGrid size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setView("List")}
+              className={`rounded-md p-1.5 ${view === "List" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+              title="List view"
+            >
+              <ListIcon size={15} />
+            </button>
+          </div>
+          <Button variant="secondary" onClick={() => setCreatingFolder((open) => !open)}><FolderPlus size={14} /> New Group</Button>
+          <Button variant="secondary" onClick={onUpload}><Plus size={14} /> Upload Document</Button>
+        </div>
+      }
+    >
+      {creatingFolder && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
+          <input
+            autoFocus
+            value={folderName}
+            onChange={(e) => setFolderName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submitFolder()}
+            placeholder="Group name, e.g. Tax Filings"
+            className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          />
+          <Button size="sm" onClick={submitFolder}>Create</Button>
+          <Button size="sm" variant="secondary" onClick={() => { setCreatingFolder(false); setFolderName(""); }}>Cancel</Button>
+        </div>
+      )}
+
+      {view === "Grid" ? (
+        <div className="grid gap-4 md:grid-cols-3">
+          {categories.map((category) => {
+            const docs = allDocs.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(category.toLowerCase().split(" ")[0]));
+            const isCustom = customFolders.includes(category);
+            return (
+              <div
+                key={category}
+                role="button"
+                tabIndex={0}
+                onClick={() => onOpenFolder(category, docs)}
+                onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category, docs)}
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+              >
+                {isCustom && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onDeleteFolder(category); }}
+                    className="absolute right-2 top-2 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                    title="Delete group"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><FolderOpen size={17} /></div>
+                  <div>
+                    <p className="font-bold text-[#111827]">{category}</p>
+                    <p className="text-xs text-[#6b7280]">{docs.length} files</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {docs.slice(0, 3).map((doc) => (
+                    <div key={doc.id || doc._id || doc.fileName || doc.name} className="rounded-lg bg-white px-3 py-2 text-xs text-[#374151]">
+                      {doc.fileName || doc.name || "Untitled document"}
+                    </div>
+                  ))}
+                  {!docs.length && <p className="text-xs text-[#9ca3af]">No files yet.</p>}
                 </div>
               </div>
-              <div className="mt-4 space-y-2">
-                {docs.slice(0, 3).map((doc) => (
-                  <div key={doc.id || doc._id || doc.fileName || doc.name} className="rounded-lg bg-white px-3 py-2 text-xs text-[#374151]">
-                    {doc.fileName || doc.name || "Untitled document"}
-                  </div>
-                ))}
-                {!docs.length && <p className="text-xs text-[#9ca3af]">No files yet.</p>}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : (
+        <DocumentList documents={allDocs} onDelete={onDelete} />
+      )}
     </Section>
   );
 }
 
-function FolderViewerPanel({ category, documents, onClose }) {
+function DocumentList({ documents, onDelete }) {
+  if (!documents.length) return <EmptyState icon={FolderOpen} title="No documents yet." />;
+  return (
+    <div className="space-y-2">
+      {documents.map((doc) => {
+        const name = doc.fileName || doc.name || "Untitled document";
+        const canOpen = Boolean(doc.fileUrl);
+        return (
+          <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[#111827]">{name}</p>
+              <p className="text-xs text-[#6b7280]">
+                {(doc.fileType || "file").toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} {doc.category || doc.folder ? `· ${doc.category || doc.folder}` : ""} {doc.projectName ? `· ${doc.projectName}` : ""}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {canOpen ? (
+                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+                  View
+                </a>
+              ) : (
+                <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
+              )}
+              {onDelete && (doc._id || doc.id) ? (
+                <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                  <Trash2 size={14} />
+                </button>
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FolderViewerPanel({ category, documents, onClose, onDelete }) {
   return (
     <SidePanel title={category} subtitle={`${documents.length} file${documents.length === 1 ? "" : "s"} in this folder.`} onClose={onClose}>
       {documents.length ? (
@@ -1421,19 +1555,27 @@ function FolderViewerPanel({ category, documents, onClose }) {
           {documents.map((doc) => {
             const name = doc.fileName || doc.name || "Untitled document";
             const canOpen = Boolean(doc.fileUrl);
+            const canDelete = Boolean(doc._id || doc.id);
             return (
               <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#111827]">{name}</p>
                   <p className="text-xs text-[#6b7280]">{(doc.fileType || "file").toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} {doc.projectName ? `· ${doc.projectName}` : ""}</p>
                 </div>
-                {canOpen ? (
-                  <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
-                    View
-                  </a>
-                ) : (
-                  <span className="shrink-0 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
-                )}
+                <div className="flex shrink-0 items-center gap-2">
+                  {canOpen ? (
+                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+                      View
+                    </a>
+                  ) : (
+                    <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
+                  )}
+                  {canDelete && onDelete ? (
+                    <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                      <Trash2 size={14} />
+                    </button>
+                  ) : null}
+                </div>
               </div>
             );
           })}
@@ -1539,7 +1681,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask })
     >
       {view === "List" && <TasksTable tasks={tasks} projects={projects} />}
       {view === "Board" && <TaskKanbanBoard tasks={tasks} onMoveTask={onMoveTask} />}
-      {view === "Calendar" && <CalendarTaskView tasks={tasks} />}
+      {view === "Calendar" && <CalendarTaskView tasks={tasks} onCreate={onCreate} />}
       {view === "Gantt" && <TaskGantt tasks={tasks} projects={projects} />}
     </Section>
   );
@@ -1590,9 +1732,26 @@ function sameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-function CalendarTaskView({ tasks }) {
+const CALENDAR_VIEWS = ["Month", "Week", "Day"];
+
+function startOfWeek(date) {
+  const start = new Date(date);
+  start.setDate(start.getDate() - start.getDay());
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function toDateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function CalendarTaskView({ tasks, onCreate }) {
   const todayDate = useMemo(() => new Date(), []);
-  const [cursor, setCursor] = useState(() => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1));
+  const [calendarView, setCalendarView] = useState("Month");
+  const [cursor, setCursor] = useState(() => new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate()));
   const [selectedDay, setSelectedDay] = useState(null);
 
   const tasksWithDates = useMemo(
@@ -1600,7 +1759,11 @@ function CalendarTaskView({ tasks }) {
     [tasks]
   );
 
-  const cells = useMemo(() => {
+  function tasksOnDay(date) {
+    return tasksWithDates.filter(({ due }) => sameDay(due, date)).map((t) => t.task);
+  }
+
+  const monthCells = useMemo(() => {
     const year = cursor.getFullYear();
     const month = cursor.getMonth();
     const firstWeekday = new Date(year, month, 1).getDay();
@@ -1609,61 +1772,138 @@ function CalendarTaskView({ tasks }) {
     for (let i = 0; i < firstWeekday; i++) list.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      list.push({
-        date,
-        tasks: tasksWithDates.filter(({ due }) => sameDay(due, date)).map((t) => t.task),
-      });
+      list.push({ date, tasks: tasksOnDay(date) });
     }
     return list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor, tasksWithDates]);
 
-  const monthLabel = cursor.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  const selectedTasks = selectedDay ? cells.find((c) => c && sameDay(c.date, selectedDay))?.tasks || [] : [];
+  const weekDays = useMemo(() => {
+    const start = startOfWeek(cursor);
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return { date, tasks: tasksOnDay(date) };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cursor, tasksWithDates]);
+
+  const dayTasks = tasksOnDay(cursor);
+
+  function navigate(delta) {
+    if (calendarView === "Month") setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1));
+    else if (calendarView === "Week") setCursor(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + delta * 7));
+    else setCursor(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate() + delta));
+  }
+
+  const headerLabel = calendarView === "Month"
+    ? cursor.toLocaleDateString("en-IN", { month: "long", year: "numeric" })
+    : calendarView === "Week"
+      ? `${startOfWeek(cursor).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} – ${weekDays[6].date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`
+      : cursor.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+  const selectedTasks = selectedDay ? tasksOnDay(selectedDay) : [];
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
-        <p className="text-sm font-bold text-[#111827]">{monthLabel}</p>
-        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
-      </div>
-      <div className="overflow-hidden rounded-xl border border-[#e5e7eb]">
-        <div className="grid grid-cols-7 bg-[#f9fafb]">
-          {WEEKDAY_LABELS.map((label) => (
-            <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</div>
-          ))}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+          <p className="text-sm font-bold text-[#111827]">{headerLabel}</p>
+          <button onClick={() => navigate(1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
         </div>
-        <div className="grid grid-cols-7">
-          {cells.map((cell, index) => {
-            if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-[#fafafa]" />;
-            const isToday = sameDay(cell.date, todayDate);
+        <WorkspaceToggle options={CALENDAR_VIEWS} value={calendarView} onChange={setCalendarView} />
+      </div>
+
+      {calendarView === "Month" && (
+        <div className="overflow-hidden rounded-xl border border-[#e5e7eb]">
+          <div className="grid grid-cols-7 bg-[#f9fafb]">
+            {WEEKDAY_LABELS.map((label) => (
+              <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7">
+            {monthCells.map((cell, index) => {
+              if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-[#fafafa]" />;
+              const isToday = sameDay(cell.date, todayDate);
+              return (
+                <button
+                  key={cell.date.toISOString()}
+                  onClick={() => setSelectedDay(cell.date)}
+                  className={`aspect-square border border-[#f3f4f6] p-1.5 text-left transition-colors hover:bg-[#fff1ec] ${isToday ? "bg-[#fff8f6]" : "bg-white"}`}
+                >
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>
+                    {cell.date.getDate()}
+                  </span>
+                  {cell.tasks.length > 0 && (
+                    <div className="mt-1 flex flex-wrap gap-0.5">
+                      {cell.tasks.slice(0, 3).map((task) => (
+                        <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#884c2d]" />
+                      ))}
+                      {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#884c2d]">+{cell.tasks.length - 3}</span>}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {calendarView === "Week" && (
+        <div className="grid grid-cols-7 gap-2">
+          {weekDays.map(({ date, tasks: dayTasksList }) => {
+            const isToday = sameDay(date, todayDate);
             return (
               <button
-                key={cell.date.toISOString()}
-                onClick={() => setSelectedDay(cell.date)}
-                className={`aspect-square border border-[#f3f4f6] p-1.5 text-left transition-colors hover:bg-[#fff1ec] ${isToday ? "bg-[#fff8f6]" : "bg-white"}`}
+                key={date.toISOString()}
+                onClick={() => setSelectedDay(date)}
+                className={`min-h-[120px] rounded-xl border p-2 text-left transition-colors hover:border-[#884c2d]/40 ${isToday ? "border-[#884c2d]/40 bg-[#fff8f6]" : "border-[#e5e7eb] bg-white"}`}
               >
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>
-                  {cell.date.getDate()}
-                </span>
-                {cell.tasks.length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-0.5">
-                    {cell.tasks.slice(0, 3).map((task) => (
-                      <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#884c2d]" />
-                    ))}
-                    {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#884c2d]">+{cell.tasks.length - 3}</span>}
-                  </div>
-                )}
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{WEEKDAY_LABELS[date.getDay()]}</p>
+                <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>{date.getDate()}</span>
+                <div className="mt-2 space-y-1">
+                  {dayTasksList.slice(0, 3).map((task) => (
+                    <p key={task.id || task._id} className="truncate rounded bg-[#fff1ec] px-1.5 py-1 text-[10px] font-semibold text-[#884c2d]">{task.title || task.taskName || "Task"}</p>
+                  ))}
+                  {dayTasksList.length > 3 && <p className="text-[10px] font-bold text-[#884c2d]">+{dayTasksList.length - 3} more</p>}
+                </div>
               </button>
             );
           })}
         </div>
-      </div>
+      )}
+
+      {calendarView === "Day" && (
+        <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-[#111827]">{dayTasks.length} task{dayTasks.length === 1 ? "" : "s"} due</p>
+            <Button size="sm" onClick={() => onCreate(toDateInputValue(cursor))}><Plus size={14} /> New Task</Button>
+          </div>
+          <div className="mt-3 space-y-2">
+            {dayTasks.length ? dayTasks.map((task) => (
+              <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-3">
+                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <StatusBadge status={task.status || "Backlog"} />
+                  <span className="text-xs text-[#6b7280]">{task.priority || "Medium"} priority · {task.assignedTo || "Unassigned"}</span>
+                </div>
+              </div>
+            )) : <EmptyState icon={Calendar} title="No tasks due on this day." />}
+          </div>
+        </div>
+      )}
+
       {selectedDay && (
         <SidePanel
           title={selectedDay.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
           subtitle={`${selectedTasks.length} task${selectedTasks.length === 1 ? "" : "s"} due this day.`}
           onClose={() => setSelectedDay(null)}
+          footer={
+            <div className="flex justify-end">
+              <Button onClick={() => { onCreate(toDateInputValue(selectedDay)); setSelectedDay(null); }}><Plus size={14} /> New Task</Button>
+            </div>
+          }
         >
           {selectedTasks.length ? (
             <div className="space-y-2">

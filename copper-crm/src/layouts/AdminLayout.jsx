@@ -298,21 +298,53 @@ export default function AdminLayout() {
   const auth = useAuth();
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
+  const { records: tasks } = useCrmRecords("tasks");
+  const { records: invoices } = useCrmRecords("invoices");
   const [collapsed, setCollapsed] = useState(false);
   const [pinnedCompanyId, setPinnedCompanyId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [recordIndex, setRecordIndex] = useState([]);
   const searchRef = useRef(null);
   const quickAddRef = useRef(null);
+  const notifRef = useRef(null);
 
   useEffect(() => {
-    function onOutside(e) { if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false); }
+    function onOutside(e) {
+      if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
   }, []);
+
+  const notifications = useMemo(() => {
+    const today = new Date();
+    const overdueTasks = tasks.filter((t) => {
+      const due = t.dueDate || t.deadline;
+      if (!due) return false;
+      const d = new Date(due);
+      return !Number.isNaN(d.getTime()) && d < today && !["completed", "done"].includes(String(t.status || "").toLowerCase());
+    });
+    const outstandingInvoices = invoices.filter((i) => String(i.status || "").toLowerCase() !== "paid");
+    return [
+      ...overdueTasks.slice(0, 5).map((t) => ({
+        id: `task-${t.id || t._id}`,
+        text: `Task overdue: ${t.title || t.taskName || "Untitled task"}`,
+        time: t.dueDate || t.deadline,
+        to: "/admin/tasks",
+      })),
+      ...outstandingInvoices.slice(0, 5).map((i) => ({
+        id: `invoice-${i.id || i._id}`,
+        text: `Invoice ${i.invoiceNumber || i.id || i._id} is unpaid`,
+        time: i.dueDate ? `Due ${i.dueDate}` : "Pending",
+        to: "/admin/invoices",
+      })),
+    ];
+  }, [tasks, invoices]);
 
   const QUICK_ADD = [
     { icon: Building2, label: "New Company", to: "/admin/companies" },
@@ -538,10 +570,40 @@ export default function AdminLayout() {
             </div>
 
             {/* Bell */}
-            <button className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors">
-              <Bell size={16} />
-              <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />
-            </button>
+            <div ref={notifRef} className="relative">
+              <button
+                onClick={() => setNotifOpen((v) => !v)}
+                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
+              >
+                <Bell size={16} />
+                {notifications.length > 0 && <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
+                  <div className="px-4 py-3 border-b border-[#e5e7eb]">
+                    <p className="font-semibold text-sm text-[#111827]">Notifications</p>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto p-3 space-y-1.5">
+                    {notifications.length ? (
+                      notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => { setNotifOpen(false); navigate(n.to); }}
+                          className="flex w-full gap-3 p-2.5 rounded-lg bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors text-left"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-[#111827]">{n.text}</p>
+                            <p className="text-xs mt-0.5 text-[#6b7280]">{n.time}</p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="px-2 py-3 text-xs text-[#6b7280]">You're all caught up.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* + New */}
             <div ref={quickAddRef} className="relative">
