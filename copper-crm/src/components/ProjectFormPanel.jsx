@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
-import { generateProjectCode } from "../lib/projectDefaults";
+import { generateProjectCode, generateDefaultProjectName } from "../lib/projectDefaults";
 
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
@@ -106,7 +106,9 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     tags: "",
   });
   const [errors, setErrors] = useState({});
+  const nameTouched = useRef(false);
   const set = (key) => (value) => {
+    if (key === "name") nameTouched.current = true;
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
@@ -120,6 +122,10 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     () => (resolvedCompany ? generateProjectCode(resolvedCompany, companies) : ""),
     [resolvedCompany, companies]
   );
+  useEffect(() => {
+    if (!resolvedCompany || nameTouched.current) return;
+    setForm((prev) => (prev.name ? prev : { ...prev, name: generateDefaultProjectName(resolvedCompany, companies) }));
+  }, [resolvedCompany, companies]);
   const scopedContacts = useMemo(
     () => (company ? contacts : contacts.filter((c) => String(c.companyId) === companyId)),
     [company, contacts, companyId]
@@ -172,7 +178,8 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     >
       <div className="space-y-6">
         <FormSection title="Basic Information">
-          <Input span label="Project name *" value={form.name} onChange={set("name")} error={errors.name} />
+          <Input span label="Project name *" value={form.name} onChange={set("name")} error={errors.name}
+            hint={!errors.name ? "Auto-filled from company name, project #, and month/year — edit freely." : undefined} />
           <Input label="Project ID" value={projectCode} disabled hint={resolvedCompany ? "Auto-generated from company" : "Select a company to generate"} />
           {company ? (
             <Input label="Company" value={company.name} disabled />
