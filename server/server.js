@@ -14,6 +14,7 @@ import Lead from "./models/Lead.js";
 import User from "./models/User.js";
 import Coupon from "./models/Coupon.js";
 import Project from "./models/Project.js";
+import Company from "./models/Company.js";
 import authRoutes from "./routes/auth.js";
 import crmRoutes from "./routes/crm.js";
 import clientRoutes from "./routes/client.js";
@@ -131,6 +132,29 @@ async function createPortalInvite(order) {
   return { userId: user._id, setPasswordUrl };
 }
 
+// First 4 DISTINCT letters of the company name (repeats skipped), e.g.
+// "DATACENTRIC" -> "DATC". Padded with X if fewer than 4 distinct letters.
+function companyCodeFromName(name) {
+  const letters = String(name || "").toUpperCase().replace(/[^A-Z]/g, "");
+  const seen = new Set();
+  let code = "";
+  for (const ch of letters) {
+    if (seen.has(ch)) continue;
+    seen.add(ch);
+    code += ch;
+    if (code.length === 4) break;
+  }
+  return code.padEnd(4, "X");
+}
+
+// Structured project code: CS-<4 letters>-<company #>-<MMYY>, e.g. CS-DATC-02-0626.
+function buildProjectCode(companyName, companyNumber, date = new Date()) {
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yy = String(date.getFullYear()).slice(-2);
+  const num = String(companyNumber || 1).padStart(2, "0");
+  return `CS-${companyCodeFromName(companyName)}-${num}-${mm}${yy}`;
+}
+
 // On a paid order, create the client's project using the name they chose at
 // checkout, so it appears immediately in their multi-project portal. Idempotent
 // per order so retries/backfills never create duplicates.
@@ -141,8 +165,21 @@ async function ensureProjectForOrder(order, clientId) {
   if (existing) return existing;
 
   const customer = order.customer || {};
+  const companyName = customer.customerCompany || "";
+
+  // Company number = its 1-based creation-order rank among all companies (or the
+  // next number if this company isn't a saved record yet).
+  let companyNumber = 1;
+  if (companyName) {
+    const companies = await Company.find({}).catch(() => []);
+    const ordered = [...companies].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    const index = ordered.findIndex((c) => String(c.name || "").trim().toLowerCase() === companyName.trim().toLowerCase());
+    companyNumber = (index >= 0 ? index : ordered.length) + 1;
+  }
+
   return Project.create({
     name: customer.projectName || `${order.package?.name || "New"} project`,
+    projectId: companyName ? buildProjectCode(companyName, companyNumber, new Date()) : "",
     clientId: clientId || null,
     orderId,
     packageName: order.package?.name || "",

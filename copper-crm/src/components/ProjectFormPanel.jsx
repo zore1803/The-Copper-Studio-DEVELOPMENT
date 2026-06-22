@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
+import { generateProjectCode } from "../lib/projectDefaults";
 
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
@@ -85,7 +86,6 @@ function Select({ label, value, onChange, options = [], span = false, error }) {
 
 /** Rich project creation form, shared between the company workspace and the global Projects page. */
 export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], onClose, onSave }) {
-  const [projectCode] = useState(() => `PRJ-${Date.now().toString(36).toUpperCase()}`);
   const [companyId, setCompanyId] = useState(() => String(company?.id || company?._id || ""));
   const [form, setForm] = useState({
     name: "",
@@ -115,6 +115,10 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
   const resolvedCompany = useMemo(
     () => company || companies.find((c) => String(c.id || c._id) === companyId),
     [company, companies, companyId]
+  );
+  const projectCode = useMemo(
+    () => (resolvedCompany ? generateProjectCode(resolvedCompany, companies) : ""),
+    [resolvedCompany, companies]
   );
   const scopedContacts = useMemo(
     () => (company ? contacts : contacts.filter((c) => String(c.companyId) === companyId)),
@@ -169,7 +173,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
       <div className="space-y-6">
         <FormSection title="Basic Information">
           <Input span label="Project name *" value={form.name} onChange={set("name")} error={errors.name} />
-          <Input label="Project ID" value={projectCode} disabled />
+          <Input label="Project ID" value={projectCode} disabled hint={resolvedCompany ? "Auto-generated from company" : "Select a company to generate"} />
           {company ? (
             <Input label="Company" value={company.name} disabled />
           ) : (

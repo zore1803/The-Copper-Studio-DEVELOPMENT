@@ -1,3 +1,38 @@
+// Structured project code: CS-<4 letters>-<company #>-<MMYY>, e.g. CS-DATC-02-0626.
+
+// First 4 DISTINCT alphabetic letters of the company name, uppercase. Repeats are
+// skipped and the next letter from the name is used instead:
+// "DATACENTRIC" -> D, A, T, (skip A), C -> "DATC". Padded with X if under 4.
+export function companyCodeFromName(name) {
+  const letters = String(name || "").toUpperCase().replace(/[^A-Z]/g, "");
+  const seen = new Set();
+  let code = "";
+  for (const ch of letters) {
+    if (seen.has(ch)) continue;
+    seen.add(ch);
+    code += ch;
+    if (code.length === 4) break;
+  }
+  return code.padEnd(4, "X");
+}
+
+// 1-based creation-order rank of a company among all companies (oldest = 1).
+export function companyNumberOf(company, companies = []) {
+  const id = String(company?._id || company?.id || "");
+  const ordered = [...companies].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+  const index = ordered.findIndex((c) => String(c._id || c.id) === id);
+  return (index >= 0 ? index : ordered.length) + 1;
+}
+
+export function generateProjectCode(company, companies = [], date = new Date()) {
+  if (!company) return "";
+  const d = date instanceof Date ? date : new Date(date);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const num = String(companyNumberOf(company, companies)).padStart(2, "0");
+  return `CS-${companyCodeFromName(company.name)}-${num}-${mm}${yy}`;
+}
+
 function addDays(value, days) {
   const base = value ? new Date(value) : new Date();
   if (Number.isNaN(base.getTime())) return "";

@@ -67,6 +67,14 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
         <Field label="Company owner" value={form.owner} onChange={set("owner")} placeholder="Account owner" />
         <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
+        <div className="sm:col-span-2 mt-1 border-t border-[#f1f1f5] pt-3">
+          <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social profiles</span>
+        </div>
+        <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" />
+        <Field label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="https://instagram.com/…" />
+        <Field label="Facebook" value={form.facebook} onChange={set("facebook")} placeholder="https://facebook.com/…" />
+        <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} placeholder="https://x.com/…" />
+        <Field label="Personal website" value={form.personalWebsite} onChange={set("personalWebsite")} placeholder="https://…" />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea

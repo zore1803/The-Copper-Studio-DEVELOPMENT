@@ -5,7 +5,7 @@ import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
   Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
-  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users
+  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, AtSign
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -21,6 +21,23 @@ const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes",
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const TASK_VIEWS = ["List", "Board", "Calendar", "Gantt"];
 const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
+
+// A clickable social/website chip; renders nothing when the value is empty and
+// prefixes a protocol so bare domains still open correctly.
+function SocialLink({ href, icon: Icon, label }) {
+  if (!href) return null;
+  const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#e5e7eb] bg-white px-3 py-1.5 text-xs font-semibold text-[#374151] transition-colors hover:border-[#C57E5B] hover:text-[#C57E5B]"
+    >
+      <Icon size={13} /> {label}
+    </a>
+  );
+}
 
 function useClickOutside(ref, onOutside, active) {
   useEffect(() => {
@@ -947,6 +964,17 @@ export default function CompanyDetail() {
             <InfoLine label="Lead Source" value={company.leadSource} />
             <InfoLine label="Owner" value={company.owner || company.companyOwner} />
           </div>
+
+          {(company.website || company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <SocialLink href={company.website} icon={Globe} label="Website" />
+              <SocialLink href={company.linkedin} icon={AtSign} label="LinkedIn" />
+              <SocialLink href={company.instagram} icon={AtSign} label="Instagram" />
+              <SocialLink href={company.facebook} icon={AtSign} label="Facebook" />
+              <SocialLink href={company.twitter} icon={AtSign} label="X" />
+              <SocialLink href={company.personalWebsite} icon={Globe} label="Personal site" />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
@@ -1046,7 +1074,7 @@ export default function CompanyDetail() {
       </div>
 
       {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
-      {creatingProject && <ProjectFormPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
+      {creatingProject && <ProjectFormPanel company={company} companies={companies} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {editingNote && <NotePanel company={company} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
