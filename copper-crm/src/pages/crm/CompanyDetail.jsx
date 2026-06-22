@@ -581,7 +581,17 @@ export default function CompanyDetail() {
     };
   }, [company, companyId, contacts, documents, invoices, meetings, projects, tasks]);
   const allDocsForFolders = useMemo(
-    () => [...linked.documents, ...linked.projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })))],
+    () => [
+      ...linked.documents,
+      ...linked.projects.flatMap((project) =>
+        (project.documents || []).map((doc, index) => ({
+          ...doc,
+          projectName: project.name,
+          _sourceProjectId: String(project.id || project._id),
+          _docIndex: index,
+        }))
+      ),
+    ],
     [linked.documents, linked.projects]
   );
   const filteredContacts = useMemo(() => linked.contacts.filter((contact) => {
@@ -747,7 +757,15 @@ export default function CompanyDetail() {
   }
 
   async function handleDeleteDocument(doc) {
-    await removeDocument(doc);
+    if (doc._sourceProjectId) {
+      const project = linked.projects.find((p) => String(p.id || p._id) === doc._sourceProjectId);
+      if (project) {
+        const remaining = (project.documents || []).filter((_, index) => index !== doc._docIndex);
+        await saveProject({ ...project, documents: remaining });
+      }
+    } else {
+      await removeDocument(doc);
+    }
     showToast({ title: "Document deleted", message: `${doc.fileName || doc.name || "Document"} removed from ${company.name}.` });
   }
 
@@ -1417,7 +1435,14 @@ function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFold
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [folderName, setFolderName] = useState("");
   const categories = Array.from(new Set(["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", ...customFolders]));
-  const projectDocs = projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })));
+  const projectDocs = projects.flatMap((project) =>
+    (project.documents || []).map((doc, index) => ({
+      ...doc,
+      projectName: project.name,
+      _sourceProjectId: String(project.id || project._id),
+      _docIndex: index,
+    }))
+  );
   const allDocs = [...documents, ...projectDocs];
 
   function submitFolder() {
@@ -1543,7 +1568,7 @@ function DocumentList({ documents, onDelete }) {
               ) : (
                 <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
               )}
-              {onDelete && (doc._id || doc.id) ? (
+              {onDelete ? (
                 <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                   <Trash2 size={14} />
                 </button>
@@ -1564,7 +1589,6 @@ function FolderViewerPanel({ category, documents, onClose, onDelete }) {
           {documents.map((doc) => {
             const name = doc.fileName || doc.name || "Untitled document";
             const canOpen = Boolean(doc.fileUrl);
-            const canDelete = Boolean(doc._id || doc.id);
             return (
               <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
                 <div className="min-w-0">
@@ -1579,7 +1603,7 @@ function FolderViewerPanel({ category, documents, onClose, onDelete }) {
                   ) : (
                     <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
                   )}
-                  {canDelete && onDelete ? (
+                  {onDelete ? (
                     <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                       <Trash2 size={14} />
                     </button>
