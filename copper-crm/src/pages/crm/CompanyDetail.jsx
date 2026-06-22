@@ -2,13 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
-} from "recharts";
-import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, Globe,
   Link as LinkIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
-  Save, Search, Send, StickyNote, Target, Trash2, TrendingDown, TrendingUp, Unlink, Users
+  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -20,7 +17,7 @@ import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 
-const TABS = ["Overview", "Projects", "Contacts", "Invoices", "Documents", "Tasks", "Activity", "Meetings"];
+const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Activity", "Meetings"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const TASK_VIEWS = ["List", "Board", "Calendar", "Gantt"];
 const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
@@ -475,76 +472,6 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function computeTrend(rows, key) {
-  if (rows.length < 2) return null;
-  const prev = rows[rows.length - 2][key];
-  const curr = rows[rows.length - 1][key];
-  if (!prev) return null;
-  const pct = Math.round(((curr - prev) / prev) * 100);
-  return { pct, up: pct >= 0 };
-}
-
-function OverviewStatCard({ label, value, icon: Icon, trend }) {
-  return (
-    <div className="flex flex-1 flex-col gap-3.5 rounded-xl border border-[#E1E4EA] bg-white p-4">
-      <div className="flex items-end gap-3.5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#E1E4EA]">
-          <Icon size={18} className="text-[#C57E5B]" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs text-[#525866]">{label}</p>
-          <p className="mt-0.5 text-lg font-semibold text-[#0E121B]">{value}</p>
-        </div>
-      </div>
-      {trend && (
-        <div className={`flex items-center gap-1 text-xs ${trend.up ? "text-[#00C950]" : "text-[#E82222]"}`}>
-          {trend.up ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-          <span>{Math.abs(trend.pct)}% vs last month</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SalesRevenueChart({ data }) {
-  const chartData = data.map((row) => ({ month: row.month, revenue: row.collected + row.outstanding }));
-  return (
-    <Section title="Sales Revenue">
-      <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0C4FCD" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#0C4FCD" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid stroke="#E7E4E3" vertical={false} />
-            <XAxis dataKey="month" tick={{ fontSize: 12, fill: "rgba(33,32,31,0.56)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: "rgba(33,32,31,0.56)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${Math.round(v / 1000)}k`} />
-            <Tooltip formatter={(value) => formatINR(value)} />
-            <Area type="monotone" dataKey="revenue" stroke="#0C4FCD" strokeWidth={2} fill="url(#revenueFill)" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </Section>
-  );
-}
-
-function buildRevenueTrend(invoices) {
-  const months = {};
-  invoices.forEach((invoice) => {
-    const date = new Date(invoice.date || invoice.createdAt || invoice.paidAt || Date.now());
-    const key = Number.isNaN(date.getTime()) ? "Current" : date.toLocaleDateString("en-IN", { month: "short" });
-    months[key] = months[key] || { month: key, collected: 0, outstanding: 0 };
-    const amount = parseMoney(invoice.total || invoice.amount);
-    if (String(invoice.status || "").toLowerCase() === "paid") months[key].collected += amount;
-    else months[key].outstanding += amount;
-  });
-  const rows = Object.values(months);
-  return rows.length ? rows : [{ month: "No data", collected: 0, outstanding: 0 }];
-}
-
 function buildActivity(linked, company) {
   const items = [
     ...linked.invoices.map((invoice) => ({
@@ -589,7 +516,7 @@ export default function CompanyDetail() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState("Overview");
+  const [activeTab, setActiveTab] = useState("Projects");
   const [creatingProject, setCreatingProject] = useState(false);
   const [editingCompany, setEditingCompany] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
@@ -679,8 +606,6 @@ export default function CompanyDetail() {
 
   const collected = linked.invoices.filter((i) => String(i.status || "").toLowerCase() === "paid").reduce((sum, i) => sum + parseMoney(i.total || i.amount), 0);
   const outstanding = linked.invoices.filter((i) => String(i.status || "").toLowerCase() !== "paid").reduce((sum, i) => sum + parseMoney(i.total || i.amount), 0);
-  const pipeline = linked.projects.reduce((sum, p) => sum + Number(p.budget || p.value || 0), 0);
-  const companyValue = collected + outstanding + pipeline;
   const today = new Date();
   const activeTasks = linked.tasks.filter((task) => !["completed", "done"].includes(String(task.status || "").toLowerCase())).length;
   const overdueTasks = linked.tasks.filter((task) => {
@@ -689,11 +614,11 @@ export default function CompanyDetail() {
   }).length;
   const primaryContact = linked.contacts.find((contact) => contact.isPrimary || contact.name === company.primaryContact || contact.email === company.primaryContactEmail) || linked.contacts[0];
   const activityItems = buildActivity(linked, company);
-  const lastActivity = activityItems[0]?.dateLabel || "None";
-  const revenueTrend = buildRevenueTrend(linked.invoices);
-  const incomeTrend = computeTrend(revenueTrend.map((row) => ({ ...row, total: row.collected + row.outstanding })), "total");
-  const revenueGeneratedTrend = computeTrend(revenueTrend, "collected");
   const projectsCompleted = linked.projects.filter((project) => String(project.status || project.currentPhase || "").toLowerCase() === "completed").length;
+  const activeProjects = linked.projects.length - projectsCompleted;
+  const totalSignals = linked.projects.length + linked.contacts.length + linked.invoices.length + activeTasks;
+  const riskPenalty = overdueTasks * 12 + (outstanding > 0 ? 8 : 0);
+  const companyHealthScore = Math.max(0, Math.min(100, 68 + Math.min(totalSignals * 3, 24) - riskPenalty));
   const projectPackages = ["All", ...Array.from(new Set(linked.projects.map((project) => project.packageName || project.package).filter(Boolean)))];
   const projectManagers = ["All", ...Array.from(new Set(linked.projects.map((project) => project.projectManager || project.manager).filter(Boolean)))];
   const visibleProjects = linked.projects.filter((project) => {
@@ -895,15 +820,12 @@ export default function CompanyDetail() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-4">
-          <KpiChip label="Company Value" value={formatINR(companyValue)} icon={Target} />
-          <KpiChip label="Collected" value={formatINR(collected)} icon={FileText} />
-          <KpiChip label="Outstanding" value={formatINR(outstanding)} icon={FileText} />
-          <KpiChip label="Projects" value={linked.projects.length} icon={FolderKanban} />
-          <KpiChip label="Contacts" value={linked.contacts.length} icon={Users} />
-          <KpiChip label="Tasks" value={`${activeTasks} active`} icon={StickyNote} />
-          <KpiChip label="Invoices" value={linked.invoices.length} icon={ReceiptText} />
-          <KpiChip label="Activity" value={lastActivity} icon={Clock3} />
+        <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
+          <KpiChip label="Total Revenue" value={formatINR(collected)} icon={CreditCard} />
+          <KpiChip label="Outstanding Due" value={formatINR(outstanding)} icon={AlertTriangle} />
+          <KpiChip label="Active Projects" value={activeProjects} icon={FolderKanban} />
+          <KpiChip label="Completed Projects" value={projectsCompleted} icon={CheckCircle2} />
+          <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} />
         </div>
 
         <div className="flex items-center gap-1 overflow-x-auto px-6">
@@ -920,43 +842,6 @@ export default function CompanyDetail() {
       </div>
 
       <div className="flex-1 p-6">
-        {activeTab === "Overview" && (
-          <div className="grid gap-5 xl:grid-cols-3">
-            <div className="space-y-5 xl:col-span-2">
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <OverviewStatCard label="Total Income" value={formatINR(companyValue)} icon={Target} trend={incomeTrend} />
-                <OverviewStatCard label="Revenue Generated" value={formatINR(collected)} icon={CreditCard} trend={revenueGeneratedTrend} />
-                <OverviewStatCard label="Projects Completed" value={projectsCompleted} icon={FolderKanban} />
-                <OverviewStatCard label="Outstanding Value" value={formatINR(outstanding)} icon={ReceiptText} />
-              </div>
-              <SalesRevenueChart data={revenueTrend} />
-              <Section title="Linked Projects" action={<Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>}>
-                {linked.projects.length ? <ProjectsTable projects={linked.projects} companyId={companyId} onOpen={navigate} /> : <EmptyState icon={FolderKanban} title="No linked projects yet." text="Create the first project from this company so files, invoices, and updates stay connected." action={<Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>} />}
-              </Section>
-              <Section title="Contacts" action={<Button size="sm" onClick={() => setEditingContact({})}><Plus size={14} /> Contact</Button>}>
-                <ContactToolbar query={contactQuery} onQuery={setContactQuery} />
-                {filteredContacts.length ? <ContactsTable contacts={filteredContacts} onEdit={setEditingContact} onDelete={handleDeleteContact} onView={setSelectedContact} onPrimary={handleMakePrimary} /> : <EmptyState icon={Users} title="No contacts linked." text="Add contacts and they will stay attached to this company." />}
-              </Section>
-            </div>
-            <div className="space-y-5">
-              <CompanySidebar
-                company={company}
-                primaryContact={primaryContact}
-                collected={collected}
-                outstanding={outstanding}
-                activeTasks={activeTasks}
-                overdueTasks={overdueTasks}
-                linked={linked}
-                onProject={() => setCreatingProject(true)}
-                onContact={() => setEditingContact({})}
-                onDocuments={() => setActiveTab("Documents")}
-                onProposal={() => navigate("/admin/services/proposal-generator")}
-                onInvoice={() => navigate("/admin/invoices")}
-              />
-              <ActivityTimeline items={activityItems.slice(0, 5)} />
-            </div>
-          </div>
-        )}
         {activeTab === "Projects" && (
           <ProjectsWorkspace
             projects={visibleProjects}
@@ -1073,64 +958,6 @@ function ActivityTimeline({ items, full = false }) {
           })}
         </div>
       ) : <EmptyState icon={Clock3} title="No activity yet." />}
-    </Section>
-  );
-}
-
-function CompanySidebar({ company, primaryContact, outstanding, activeTasks, overdueTasks, linked, onProject, onContact, onInvoice, onProposal, onDocuments }) {
-  const totalSignals = linked.projects.length + linked.contacts.length + linked.invoices.length + activeTasks;
-  const riskPenalty = overdueTasks * 12 + (outstanding > 0 ? 8 : 0);
-  const score = Math.max(0, Math.min(100, 68 + Math.min(totalSignals * 3, 24) - riskPenalty));
-  return (
-    <div className="space-y-5">
-      <Section title="Company Health">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-3xl font-bold text-[#111827]">{score}%</p>
-            <p className="text-sm text-[#6b7280]">{score >= 80 ? "Healthy relationship" : score >= 55 ? "Needs attention" : "High priority"}</p>
-          </div>
-          <div className="grid h-16 w-16 place-items-center rounded-full border-8 border-[#fff1ec] text-sm font-bold text-[#884c2d]">{score}</div>
-        </div>
-      </Section>
-      <Section title="Primary Contact">
-        {primaryContact ? (
-          <div className="space-y-2 text-sm">
-            <p className="font-bold text-[#111827]">{primaryContact.name || `${primaryContact.firstName || ""} ${primaryContact.lastName || ""}`.trim()}</p>
-            <p className="text-[#6b7280]">{primaryContact.phone || "No phone"}</p>
-            <p className="text-[#6b7280]">{primaryContact.email || "No email"}</p>
-          </div>
-        ) : <EmptyState icon={Users} title="No primary contact." action={<Button size="sm" onClick={onContact}><Plus size={14} /> Add Contact</Button>} />}
-      </Section>
-      <Section title="Upcoming">
-        <div className="space-y-2 text-sm text-[#374151]">
-          <p>Deadlines: <b>{linked.tasks.filter((task) => task.dueDate || task.deadline).length}</b></p>
-          <p>Meetings: <b>{linked.meetings.length}</b></p>
-          <p>Invoices due: <b>{linked.invoices.filter((invoice) => String(invoice.status || "").toLowerCase() !== "paid").length}</b></p>
-        </div>
-      </Section>
-      <Section title="Quick Actions">
-        <div className="grid gap-2">
-          <Button variant="secondary" onClick={onProject}><Plus size={14} /> New Project</Button>
-          <Button variant="secondary" onClick={onContact}><Users size={14} /> New Contact</Button>
-          <Button variant="secondary" onClick={onInvoice}><ReceiptText size={14} /> New Invoice</Button>
-          <Button variant="secondary" onClick={onProposal}><FileText size={14} /> Generate Proposal</Button>
-          <Button variant="secondary" onClick={onDocuments}><FolderOpen size={14} /> Upload Document</Button>
-        </div>
-      </Section>
-      <InfoBlock company={company} />
-    </div>
-  );
-}
-
-function InfoBlock({ company }) {
-  return (
-    <Section title="Company Details">
-      <div className="space-y-3 text-sm">
-        <InfoLine label="GSTIN" value={company.gstin} />
-        <InfoLine label="Address" value={company.address} />
-        <InfoLine label="Status" value={company.status} />
-        <InfoLine label="Notes" value={company.notes} />
-      </div>
     </Section>
   );
 }
