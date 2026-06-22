@@ -13,12 +13,6 @@ import { useCrmRecords } from "../hooks/useCrmRecords";
 
 const NAV_SECTIONS = [
   {
-    label: "Overview",
-    items: [
-      { icon: LayoutDashboard, to: "/admin", label: "Dashboard", end: true },
-    ],
-  },
-  {
     label: "CRM",
     items: [
       { icon: Building2, to: "/admin/companies", label: "Companies" },
@@ -101,7 +95,6 @@ const pageNames = {
 };
 
 const searchablePages = [
-  { label: "Dashboard", to: "/admin", keywords: "dashboard overview revenue projects" },
   { label: "Analytics", to: "/admin/analytics", keywords: "revenue orders graph payment analytics" },
   { label: "Companies", to: "/admin/companies", keywords: "accounts gstin company industry client business" },
   { label: "Contacts", to: "/admin/contacts", keywords: "people email phone designation client contact" },
