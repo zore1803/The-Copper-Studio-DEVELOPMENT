@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, LockKeyhole,
   Mail, ShieldCheck, UserRound
@@ -140,6 +140,11 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  if (auth.isAuthenticated) {
+    const fallback = auth.user?.role === "superadmin" ? "/admin" : "/client";
+    return <Navigate to={location.state?.from?.pathname || fallback} replace />;
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();

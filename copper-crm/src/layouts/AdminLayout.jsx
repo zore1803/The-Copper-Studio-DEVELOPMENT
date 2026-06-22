@@ -125,9 +125,13 @@ function getBreadcrumbs(pathname, companies = [], projects = []) {
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = [{ label: "Dashboard", to: "/admin" }];
   let path = "";
-  for (const seg of segments.slice(1)) {
+  const rest = segments.slice(1);
+  for (let i = 0; i < rest.length; i++) {
+    const seg = rest[i];
     path += "/" + seg;
     const fullPath = "/admin" + path;
+    // ".../projects/:id" routes require the id — the bare ".../projects" segment isn't navigable on its own, so skip its link.
+    if (seg === "projects" && rest[i + 1] && !pageNames[fullPath]) continue;
     let name = pageNames[fullPath];
     if (!name) {
       const company = companies.find((c) => String(c.id) === seg || String(c._id) === seg);
