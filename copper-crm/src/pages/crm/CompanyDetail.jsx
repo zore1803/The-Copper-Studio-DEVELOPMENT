@@ -580,6 +580,10 @@ export default function CompanyDetail() {
       documents: documents.filter((d) => isCompanyMatch(d.companyId) || d.company === name || d.companyName === name || linkedProjectIds.has(String(d.projectId))),
     };
   }, [company, companyId, contacts, documents, invoices, meetings, projects, tasks]);
+  const allDocsForFolders = useMemo(
+    () => [...linked.documents, ...linked.projects.flatMap((project) => (project.documents || []).map((doc) => ({ ...doc, projectName: project.name })))],
+    [linked.documents, linked.projects]
+  );
   const filteredContacts = useMemo(() => linked.contacts.filter((contact) => {
     const fullName = `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""}`;
     return `${fullName} ${contact.email} ${contact.phone} ${contact.designation}`.toLowerCase().includes(contactQuery.toLowerCase());
@@ -961,7 +965,7 @@ export default function CompanyDetail() {
             projects={linked.projects}
             customFolders={company.documentFolders || []}
             onUpload={() => setUploadingDocument(true)}
-            onOpenFolder={(category, docs) => setViewingFolder({ category, docs })}
+            onOpenFolder={(category) => setViewingFolder(category)}
             onCreateFolder={handleCreateDocumentFolder}
             onDeleteFolder={handleDeleteDocumentFolder}
             onDelete={handleDeleteDocument}
@@ -1009,7 +1013,12 @@ export default function CompanyDetail() {
         />
       )}
       {viewingFolder && (
-        <FolderViewerPanel category={viewingFolder.category} documents={viewingFolder.docs} onClose={() => setViewingFolder(null)} onDelete={handleDeleteDocument} />
+        <FolderViewerPanel
+          category={viewingFolder}
+          documents={allDocsForFolders.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(viewingFolder.toLowerCase().split(" ")[0]))}
+          onClose={() => setViewingFolder(null)}
+          onDelete={handleDeleteDocument}
+        />
       )}
     </div>
   );
@@ -1471,8 +1480,8 @@ function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFold
                 key={category}
                 role="button"
                 tabIndex={0}
-                onClick={() => onOpenFolder(category, docs)}
-                onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category, docs)}
+                onClick={() => onOpenFolder(category)}
+                onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category)}
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
               >
                 {isCustom && (
