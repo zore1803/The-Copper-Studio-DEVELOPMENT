@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
@@ -34,8 +34,6 @@ const CLIENT_STATUSES = [
 ];
 
 const activityIcon = { upload: UploadCloud, check: CheckCircle2, comment: MessageSquare };
-const PHASE_NODE_SIZE = "h-12 w-12 sm:h-14 sm:w-14";
-const PHASE_NODE_HEIGHT = "h-12 sm:h-14";
 
 function getPhaseIndex(project) {
   const direct = PHASES.findIndex((phase) => phase.key === (project.currentPhase || project.status));
@@ -481,60 +479,52 @@ export default function ProjectDetail() {
           <Section
             title="Phase Roadmap"
             action={
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold text-[#525866]">
-                  <span className="h-2 w-2 rounded-full bg-[#884c2d]" />
-                  Current: {PHASES[phaseIndex]?.label || project.currentPhase}
-                </span>
-                <button
-                  onClick={() => setManaging(true)}
-                  className="flex items-center gap-1.5 rounded-lg border border-[#E1E4EA] bg-white px-2.5 py-1 text-xs font-semibold text-[#525866] hover:bg-[#FFFFFF] transition-colors"
-                >
-                  <Settings2 size={11} /> Update
-                </button>
-              </div>
+              <button
+                onClick={() => setManaging(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-[#E1E4EA] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#525866] hover:bg-[#fafafa] transition-colors"
+              >
+                <Settings2 size={11} /> Update
+              </button>
             }
           >
-            <div className="flex items-center overflow-x-auto pb-1">
-              {PHASES.map((phase, index) => {
-                const Icon = phase.icon;
-                const isDone = index < phaseIndex;
-                const isCurrent = index === phaseIndex;
-                const isLast = index === PHASES.length - 1;
-                return (
-                  <Fragment key={phase.key}>
-                    <div className={`flex w-16 sm:w-20 shrink-0 flex-col items-center gap-3 text-center ${index > phaseIndex ? "opacity-45" : ""}`}>
-                      <div className={`relative flex ${PHASE_NODE_SIZE} items-center justify-center`}>
-                        {isCurrent ? (
-                          <>
-                            <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full border-4 border-[#884c2d] bg-[#FFFFFF] text-xs font-extrabold text-[#884c2d]`}>
-                              {project.progress}%
-                            </div>
-                            <div className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full border-2 border-[#FFFFFF] bg-[#0085FF]">
-                              <Zap size={11} className="text-white" />
-                            </div>
-                          </>
-                        ) : (
-                          <div className={`grid ${PHASE_NODE_SIZE} place-items-center rounded-full ${isDone ? "bg-[#884c2d] text-white shadow-lg shadow-[#884c2d]/25" : "bg-[#F1F1F5] text-[#525866]"}`}>
-                            <Icon size={20} />
-                          </div>
-                        )}
+            <div className="space-y-5">
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold text-[#525866]">
+                  <span>Overall progress · {PHASES[phaseIndex]?.label || project.currentPhase}</span>
+                  <span className="font-bold text-[#884c2d]">{project.progress || 0}%</span>
+                </div>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#F1F1F5]">
+                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${project.progress || 0}%` }} />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-y-5 sm:grid-cols-6">
+                {PHASES.map((phase, index) => {
+                  const Icon = phase.icon;
+                  const isDone = index < phaseIndex;
+                  const isCurrent = index === phaseIndex;
+                  return (
+                    <div key={phase.key} className="flex flex-col items-center gap-2 text-center">
+                      <div
+                        className={`grid h-11 w-11 place-items-center rounded-full border-2 transition-colors ${
+                          isCurrent
+                            ? "border-[#884c2d] bg-[#fff1ec] text-[#884c2d]"
+                            : isDone
+                            ? "border-[#884c2d] bg-[#884c2d] text-white"
+                            : "border-[#E1E4EA] bg-white text-[#9ca3af]"
+                        }`}
+                      >
+                        {isDone ? <CheckCircle2 size={18} /> : <Icon size={18} />}
                       </div>
                       <div>
-                        <p className={`text-xs sm:text-sm font-bold ${isCurrent ? "text-[#884c2d]" : "text-[#0E121B]"}`}>{phase.label}</p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wide ${isCurrent ? "text-[#0085FF]" : "text-[#525866]"}`}>
-                          {isDone ? "Completed" : isCurrent ? "Current" : "Upcoming"}
+                        <p className={`text-xs font-bold ${isCurrent ? "text-[#884c2d]" : "text-[#0E121B]"}`}>{phase.label}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                          {isDone ? "Done" : isCurrent ? "In progress" : "Upcoming"}
                         </p>
                       </div>
                     </div>
-                    {!isLast && (
-                      <div className={`flex ${PHASE_NODE_HEIGHT} min-w-[16px] flex-1 items-center`}>
-                        <div className={`h-[2px] w-full ${index < phaseIndex ? "bg-[#884c2d]" : "bg-[#F1F1F5]"}`} />
-                      </div>
-                    )}
-                  </Fragment>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </Section>
 
