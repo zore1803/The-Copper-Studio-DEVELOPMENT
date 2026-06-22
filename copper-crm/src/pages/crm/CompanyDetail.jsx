@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
-  LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
+  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -769,18 +769,18 @@ export default function CompanyDetail() {
     showToast({ title: "Document deleted", message: `${doc.fileName || doc.name || "Document"} removed from ${company.name}.` });
   }
 
-  async function handleCreateDocumentFolder(name) {
+  async function handleCreateDocumentGroup(name, folders) {
     const trimmed = name.trim();
-    if (!trimmed) return;
-    const folders = Array.from(new Set([...(company.documentFolders || []), trimmed]));
-    await saveCompany({ ...company, documentFolders: folders });
-    showToast({ title: "Group created", message: `"${trimmed}" folder added.` });
+    if (!trimmed || !folders.length) return;
+    const groups = [...(company.documentGroups || []).filter((g) => g.name !== trimmed), { name: trimmed, folders }];
+    await saveCompany({ ...company, documentGroups: groups });
+    showToast({ title: "Group created", message: `"${trimmed}" now includes ${folders.length} folder${folders.length === 1 ? "" : "s"}.` });
   }
 
-  async function handleDeleteDocumentFolder(name) {
-    const folders = (company.documentFolders || []).filter((folder) => folder !== name);
-    await saveCompany({ ...company, documentFolders: folders });
-    showToast({ title: "Group deleted", message: `"${name}" folder removed.` });
+  async function handleDeleteDocumentGroup(name) {
+    const groups = (company.documentGroups || []).filter((g) => g.name !== name);
+    await saveCompany({ ...company, documentGroups: groups });
+    showToast({ title: "Group deleted", message: `"${name}" group removed.` });
   }
 
   async function handleCreateTask(form) {
@@ -981,11 +981,12 @@ export default function CompanyDetail() {
           <DocumentsTab
             documents={linked.documents}
             projects={linked.projects}
-            customFolders={company.documentFolders || []}
+            groups={company.documentGroups || []}
             onUpload={() => setUploadingDocument(true)}
-            onOpenFolder={(category) => setViewingFolder(category)}
-            onCreateFolder={handleCreateDocumentFolder}
-            onDeleteFolder={handleDeleteDocumentFolder}
+            onOpenFolder={(category) => setViewingFolder({ label: category, folders: [category] })}
+            onOpenGroup={(group) => setViewingFolder({ label: group.name, folders: group.folders })}
+            onCreateGroup={handleCreateDocumentGroup}
+            onDeleteGroup={handleDeleteDocumentGroup}
             onDelete={handleDeleteDocument}
           />
         )}
@@ -1032,8 +1033,11 @@ export default function CompanyDetail() {
       )}
       {viewingFolder && (
         <FolderViewerPanel
-          category={viewingFolder}
-          documents={allDocsForFolders.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(viewingFolder.toLowerCase().split(" ")[0]))}
+          category={viewingFolder.label}
+          documents={allDocsForFolders.filter((doc) => {
+            const tag = String(doc.category || doc.folder || doc.fileType || "").toLowerCase();
+            return viewingFolder.folders.some((folder) => tag.includes(folder.toLowerCase().split(" ")[0]));
+          })}
           onClose={() => setViewingFolder(null)}
           onDelete={handleDeleteDocument}
         />
@@ -1430,11 +1434,12 @@ function TaskGantt({ tasks, projects }) {
   );
 }
 
-function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFolder, onCreateFolder, onDeleteFolder, onDelete }) {
+function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onOpenGroup, onCreateGroup, onDeleteGroup, onDelete }) {
   const [view, setView] = useState("Grid");
-  const [creatingFolder, setCreatingFolder] = useState(false);
-  const [folderName, setFolderName] = useState("");
-  const categories = Array.from(new Set(["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", ...customFolders]));
+  const [creatingGroup, setCreatingGroup] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [groupFolders, setGroupFolders] = useState([]);
+  const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
   const projectDocs = projects.flatMap((project) =>
     (project.documents || []).map((doc, index) => ({
       ...doc,
@@ -1445,11 +1450,23 @@ function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFold
   );
   const allDocs = [...documents, ...projectDocs];
 
-  function submitFolder() {
-    if (!folderName.trim()) return;
-    onCreateFolder(folderName);
-    setFolderName("");
-    setCreatingFolder(false);
+  function docsForFolders(folders) {
+    return allDocs.filter((doc) => {
+      const tag = String(doc.category || doc.folder || doc.fileType || "").toLowerCase();
+      return folders.some((folder) => tag.includes(folder.toLowerCase().split(" ")[0]));
+    });
+  }
+
+  function toggleGroupFolder(folder) {
+    setGroupFolders((prev) => (prev.includes(folder) ? prev.filter((f) => f !== folder) : [...prev, folder]));
+  }
+
+  function submitGroup() {
+    if (!groupName.trim() || !groupFolders.length) return;
+    onCreateGroup(groupName, groupFolders);
+    setGroupName("");
+    setGroupFolders([]);
+    setCreatingGroup(false);
   }
 
   return (
@@ -1475,31 +1492,69 @@ function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFold
               <ListIcon size={15} />
             </button>
           </div>
-          <Button variant="secondary" onClick={() => setCreatingFolder((open) => !open)}><FolderPlus size={14} /> New Group</Button>
+          <Button variant="secondary" onClick={() => setCreatingGroup((open) => !open)}><FolderPlus size={14} /> New Group</Button>
           <Button variant="secondary" onClick={onUpload}><Plus size={14} /> Upload Document</Button>
         </div>
       }
     >
-      {creatingFolder && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
+      {creatingGroup && (
+        <div className="mb-4 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
           <input
             autoFocus
-            value={folderName}
-            onChange={(e) => setFolderName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submitFolder()}
-            placeholder="Group name, e.g. Tax Filings"
-            className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            placeholder="Group name, e.g. Client Onboarding"
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
           />
-          <Button size="sm" onClick={submitFolder}>Create</Button>
-          <Button size="sm" variant="secondary" onClick={() => { setCreatingFolder(false); setFolderName(""); }}>Cancel</Button>
+          <p className="mt-3 text-xs font-semibold text-[#374151]">Select folders to include in this group</p>
+          <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+            {categories.map((folder) => (
+              <label key={folder} className="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#374151]">
+                <input type="checkbox" checked={groupFolders.includes(folder)} onChange={() => toggleGroupFolder(folder)} />
+                {folder}
+              </label>
+            ))}
+          </div>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button size="sm" variant="secondary" onClick={() => { setCreatingGroup(false); setGroupName(""); setGroupFolders([]); }}>Cancel</Button>
+            <Button size="sm" onClick={submitGroup} disabled={!groupName.trim() || !groupFolders.length}>Create Group</Button>
+          </div>
         </div>
       )}
 
       {view === "Grid" ? (
         <div className="grid gap-4 md:grid-cols-3">
+          {groups.map((group) => {
+            const docs = docsForFolders(group.folders);
+            return (
+              <div
+                key={group.name}
+                role="button"
+                tabIndex={0}
+                onClick={() => onOpenGroup(group)}
+                onKeyDown={(e) => e.key === "Enter" && onOpenGroup(group)}
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#fff8f6] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+              >
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onDeleteGroup(group.name); }}
+                  className="absolute right-2 top-2 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                  title="Delete group"
+                >
+                  <Trash2 size={13} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><Layers size={17} /></div>
+                  <div>
+                    <p className="font-bold text-[#111827]">{group.name}</p>
+                    <p className="text-xs text-[#6b7280]">{docs.length} files · {group.folders.join(", ")}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
           {categories.map((category) => {
-            const docs = allDocs.filter((doc) => String(doc.category || doc.folder || doc.fileType || "").toLowerCase().includes(category.toLowerCase().split(" ")[0]));
-            const isCustom = customFolders.includes(category);
+            const docs = docsForFolders([category]);
             return (
               <div
                 key={category}
@@ -1509,16 +1564,6 @@ function DocumentsTab({ documents, projects, customFolders, onUpload, onOpenFold
                 onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category)}
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
               >
-                {isCustom && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); onDeleteFolder(category); }}
-                    className="absolute right-2 top-2 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
-                    title="Delete group"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                )}
                 <div className="flex items-center gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><FolderOpen size={17} /></div>
                   <div>
