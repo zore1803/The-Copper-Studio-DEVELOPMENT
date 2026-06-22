@@ -873,7 +873,7 @@ export default function CompanyDetail() {
               >
                 <LinkIcon size={14} /> {company.userId ? "Client Linked" : "Link Client Portal"}
               </Button>
-              <Button variant="secondary" onClick={() => navigate("/admin/companies")}><Edit2 size={14} /> Edit in List</Button>
+              <Button variant="secondary" onClick={() => navigate("/admin/companies", { state: { editCompanyId: company.id || company._id } })}><Edit2 size={14} /> Edit in List</Button>
               <Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>
             </div>
           </div>

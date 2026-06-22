@@ -475,6 +475,17 @@ export default function Companies() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const editCompanyId = location.state?.editCompanyId;
+    if (!editCompanyId || !companies.length) return;
+    const match = companies.find((c) => String(c.id || c._id) === String(editCompanyId));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- opening the
+    // edit panel is a one-time reaction to arriving via "Edit in List", not a
+    // continuous sync of derived state.
+    if (match) setEditing(match);
+    navigate(location.pathname, { replace: true, state: {} });
+  }, [companies, location.state, location.pathname, navigate]);
+
   const industries = useMemo(() => uniqueSorted(companies, "industry"), [companies]);
   const cities = useMemo(() => uniqueSorted(companies, "city"), [companies]);
   const states = useMemo(() => uniqueSorted(companies, "state"), [companies]);
