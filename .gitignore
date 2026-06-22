@@ -9,3 +9,5 @@ api.err.log
 copper-crm/dist/
 dist/
 .local/
+# Replit config holds local secrets — managed in the Replit workspace, not git.
+.replit
