@@ -18,6 +18,7 @@ import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
+import CompanyFormPanel from "../../components/CompanyFormPanel";
 
 const TABS = ["Overview", "Projects", "Contacts", "Invoices", "Documents", "Tasks", "Activity", "Meetings"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -590,6 +591,7 @@ export default function CompanyDetail() {
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("Overview");
   const [creatingProject, setCreatingProject] = useState(false);
+  const [editingCompany, setEditingCompany] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [contactQuery, setContactQuery] = useState("");
@@ -772,6 +774,12 @@ export default function CompanyDetail() {
     setLinkingClient(false);
   }
 
+  async function handleSaveCompanyEdit(form) {
+    await saveCompany({ ...form, projects: Number(form.projects) || 0 });
+    setEditingCompany(false);
+    showToast({ title: "Company updated", message: `${form.name || "Company"} saved.` });
+  }
+
   async function handleUploadDocument(form) {
     if (!form.name.trim()) {
       showToast({ type: "error", title: "File name required", message: "Add a name before uploading." });
@@ -873,7 +881,7 @@ export default function CompanyDetail() {
               >
                 <LinkIcon size={14} /> {company.userId ? "Client Linked" : "Link Client Portal"}
               </Button>
-              <Button variant="secondary" onClick={() => navigate("/admin/companies", { state: { editCompanyId: company.id || company._id } })}><Edit2 size={14} /> Edit in List</Button>
+              <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
               <Button onClick={() => setCreatingProject(true)}><Plus size={14} /> New Project</Button>
             </div>
           </div>
@@ -1003,6 +1011,7 @@ export default function CompanyDetail() {
         {activeTab === "Meetings" && (linked.meetings.length ? <SimpleList items={linked.meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />)}
       </div>
 
+      {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
       {creatingProject && <ProjectFormPanel company={company} contacts={linked.contacts} invoices={linked.invoices} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
