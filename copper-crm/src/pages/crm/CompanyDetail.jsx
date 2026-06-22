@@ -213,9 +213,9 @@ function readFileAsDataUrl(file) {
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
-function DocumentUploadPanel({ company, onClose, onSave }) {
+function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" }) {
   const { showToast } = useToast();
-  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
+  const [form, setForm] = useState({ name: "", category: defaultCategory || "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -1062,7 +1062,12 @@ export default function CompanyDetail() {
         />
       )}
       {uploadingDocument && (
-        <DocumentUploadPanel company={company} onClose={() => setUploadingDocument(false)} onSave={handleUploadDocument} />
+        <DocumentUploadPanel
+          company={company}
+          defaultCategory={typeof uploadingDocument === "string" ? uploadingDocument : ""}
+          onClose={() => setUploadingDocument(false)}
+          onSave={handleUploadDocument}
+        />
       )}
       {creatingTask && (
         <TaskPanel
@@ -1082,6 +1087,7 @@ export default function CompanyDetail() {
           })}
           onClose={() => setViewingFolder(null)}
           onDelete={handleDeleteDocument}
+          onUpload={() => setUploadingDocument(viewingFolder.folders.length === 1 ? viewingFolder.folders[0] : true)}
         />
       )}
     </div>
@@ -1695,9 +1701,12 @@ function DocumentList({ documents, onDelete }) {
   );
 }
 
-function FolderViewerPanel({ category, documents, onClose, onDelete }) {
+function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload }) {
   return (
     <SidePanel title={category} subtitle={`${documents.length} file${documents.length === 1 ? "" : "s"} in this folder.`} onClose={onClose}>
+      {onUpload && (
+        <Button className="mb-4" onClick={onUpload}><Plus size={14} /> Upload to this folder</Button>
+      )}
       {documents.length ? (
         <div className="space-y-2">
           {documents.map((doc) => {
