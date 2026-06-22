@@ -34,8 +34,8 @@ import {
   SettingsPage,
   TasksPage
 } from "./pages/admin/AdminWorkflows";
-import { AnalyticsPage, DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
-import ClientProjectsPage from "./pages/admin/ClientProjectsPage";
+import { DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
+import { AnalyticsPage } from "./pages/admin/AnalyticsPage";
 import CommunicationCenter from "./pages/admin/CommunicationCenter";
 import DocumentCenter from "./pages/admin/DocumentCenter";
 import PublicPackages from "./pages/public/PublicPackages";
@@ -66,7 +66,6 @@ export default function App() {
               <Route path="contacts" element={<Contacts />} />
               <Route path="contacts/:contactId" element={<ContactDetail />} />
               <Route path="projects" element={<ProjectsList />} />
-              <Route path="client-projects" element={<ClientProjectsPage />} />
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />

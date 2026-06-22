@@ -160,225 +160,6 @@ function isDoneStatus(status) {
   return ["completed", "delivered"].includes(String(status || "").toLowerCase());
 }
 
-// Maps the time-range selector to a window length in days (null = all time).
-const RANGE_DAYS = {
-  "Last 7 days": 7,
-  "Last 30 days": 30,
-  "This quarter": 90,
-  "This year": 365,
-  "All time": null,
-};
-
-// Best-effort timestamp for a record from whichever date field it carries.
-function recordTimestamp(record) {
-  const raw = record.createdAt || record.date || record.paidAt || record.generatedAt;
-  const t = raw ? new Date(raw).getTime() : NaN;
-  return Number.isFinite(t) ? t : null;
-}
-
-export function AnalyticsPage() {
-  const [timeFilter, setTimeFilter] = useState("Last 30 days");
-  // Lazy state init keeps "now" stable across re-renders (and pure during render).
-  const [now] = useState(() => Date.now());
-  const { records: orders } = useCrmRecords("orders");
-  const { records: payments } = useCrmRecords("payments");
-  const { records: projects } = useCrmRecords("projects");
-  const { records: companies } = useCrmRecords("companies");
-
-  const data = useMemo(() => {
-    const days = RANGE_DAYS[timeFilter];
-    const rangeStart = days == null ? null : now - days * 24 * 60 * 60 * 1000;
-    const inRange = (record) => {
-      if (rangeStart == null) return true;
-      const t = recordTimestamp(record);
-      return t != null && t >= rangeStart;
-    };
-
-    const rangedOrders = orders.filter(inRange);
-    const rangedPayments = payments.filter(inRange);
-    const rangedProjects = projects.filter(inRange);
-
-    const paidOrders = rangedOrders.filter((order) => isPaidStatus(order.status));
-    const paidPayments = rangedPayments.filter((payment) => isPaidStatus(payment.status));
-    const revenue = [...paidOrders, ...paidPayments].reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.total), 0);
-    const paymentRate = Math.round((paidOrders.length / Math.max(rangedOrders.length, 1)) * 100);
-    const avgProjectValue = Math.round(revenue / Math.max(rangedProjects.length, 1));
-    const completedProjects = rangedProjects.filter((project) => isDoneStatus(project.status || project.clientStatus)).length;
-    const delayedProjects = rangedProjects.filter((project) => {
-      const dueRaw = project.dueDate || project.expectedCompletion || project.expectedEndDate;
-      const due = dueRaw ? new Date(dueRaw).getTime() : NaN;
-      return Number.isFinite(due) && due < now && !isDoneStatus(project.status || project.clientStatus);
-    }).length;
-    const onTrack = Math.max(rangedProjects.length - completedProjects - delayedProjects, 0);
-
-    const statusData = [
-      { name: "On track", value: onTrack, color: ANALYTICS.green },
-      { name: "Delayed", value: delayedProjects, color: ANALYTICS.amber },
-      { name: "Completed", value: completedProjects, color: ANALYTICS.copper },
-    ].filter((item) => item.value > 0);
-    const statusTotal = statusData.reduce((sum, item) => sum + item.value, 0) || 1;
-
-    const packageRevenue = Object.values(rangedOrders.reduce((acc, order) => {
-      const name = order.package || order.packageName || order.projectType || "Unassigned";
-      acc[name] = acc[name] || { name, revenue: 0, count: 0 };
-      acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.total);
-      acc[name].count += 1;
-      return acc;
-    }, {})).sort((a, b) => b.revenue - a.revenue);
-
-    const revenueGraph = Object.values([...rangedOrders, ...rangedPayments].reduce((acc, item) => {
-      const stamp = item.createdAt || item.date || item.paidAt || item.generatedAt;
-      const created = stamp ? new Date(stamp) : new Date(now);
-      const key = created.toISOString().slice(0, 10);
-      const day = created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
-      acc[key] = acc[key] || { key, day, revenue: 0 };
-      acc[key].revenue += moneyValue(item.amount ?? item.value ?? item.total);
-      return acc;
-    }, {})).sort((a, b) => a.key.localeCompare(b.key));
-
-    return { revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, statusData, statusTotal, packageRevenue, revenueGraph, projectCount: rangedProjects.length };
-  }, [orders, payments, projects, now, timeFilter]);
-
-  const metrics = [
-    ["Total revenue", formatMoney(data.revenue), WalletCards],
-    ["Total projects", data.projectCount, PackageCheck],
-    ["Avg project value", formatMoney(data.avgProjectValue), TrendingUp],
-    ["Companies", companies.length, Users],
-    ["Payment rate", `${data.paymentRate}%`, ReceiptText],
-    ["Completed", data.completedProjects, BarChart3],
-    ["On track", data.onTrack, PieChart],
-    ["Delayed", data.delayedProjects, FileText],
-  ];
-
-  return (
-    <PageShell
-      title="Analytics"
-      subtitle="Revenue, projects, payments, product performance, and delivery health."
-      action={
-        <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 outline-none focus:border-[#cda88f]">
-          {["Last 7 days", "Last 30 days", "This quarter", "This year", "All time"].map((item) => <option key={item}>{item}</option>)}
-        </select>
-      }
-    >
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map(([label, value, Icon]) => (
-          <Card key={label} className="p-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
-              <Icon size={17} />
-            </div>
-            <p className="mt-3 text-2xl font-bold text-gray-950">{value}</p>
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{label}</p>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(340px,0.8fr)]">
-        <Card>
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-            <div>
-              <h3 className="text-sm font-bold text-gray-950">Revenue over time</h3>
-              <p className="text-xs text-gray-400">{timeFilter}</p>
-            </div>
-            <span className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500"><span className="h-2 w-2 rounded-full bg-[#884c2d]" /> Revenue</span>
-          </div>
-          <div className="h-80 p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.revenueGraph.slice(-45)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={ANALYTICS.copper} stopOpacity={0.3} />
-                    <stop offset="100%" stopColor={ANALYTICS.copper} stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} stroke={ANALYTICS.grid} />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} minTickGap={24} />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={64} />
-                <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="revenue" name="Revenue" stroke={ANALYTICS.copper} strokeWidth={2.5} fill="url(#revenueFill)" activeDot={{ r: 4 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="border-b border-gray-100 px-5 py-4">
-            <h3 className="text-sm font-bold text-gray-950">Project status</h3>
-          </div>
-          <div className="h-56 p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <RePieChart>
-                <Pie
-                  data={data.statusData.length ? data.statusData : [{ name: "No data", value: 1, color: "#e5e7eb" }]}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={52}
-                  outerRadius={84}
-                  paddingAngle={4}
-                  stroke="#ffffff"
-                  strokeWidth={2}
-                  label={data.statusData.length ? ({ name, percent }) => `${name} ${Math.round(percent * 100)}%` : false}
-                  labelLine={false}
-                >
-                  {(data.statusData.length ? data.statusData : [{ name: "No data", color: "#e5e7eb" }]).map((item) => <Cell key={item.name} fill={item.color} />)}
-                </Pie>
-                <Tooltip content={<ChartTooltip />} />
-              </RePieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-3 gap-2 px-4 pb-4">
-            {(data.statusData.length ? data.statusData : [{ name: "No data", value: 0, color: "#e5e7eb" }]).map((item) => (
-              <div key={item.name} className="rounded-xl bg-gray-50 p-3">
-                <span className="block h-2 w-2 rounded-full" style={{ background: item.color }} />
-                <p className="mt-2 text-xs font-bold text-gray-700">{item.name}</p>
-                <p className="text-sm font-bold text-gray-950">{item.value}<span className="ml-1 text-[11px] font-semibold text-gray-400">({Math.round((item.value / data.statusTotal) * 100)}%)</span></p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="xl:col-span-2">
-          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <div>
-              <h3 className="text-sm font-bold text-gray-950">Top products by revenue</h3>
-              <div className="mt-4 h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.packageRevenue.length ? data.packageRevenue : [{ name: "No orders", revenue: 0 }]} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="barFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={ANALYTICS.copper} stopOpacity={1} />
-                        <stop offset="100%" stopColor={ANALYTICS.copperLight} stopOpacity={0.9} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} stroke={ANALYTICS.grid} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6b7280" }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={56} />
-                    <Tooltip content={<ChartTooltip />} cursor={{ fill: ANALYTICS.copper, opacity: 0.06 }} />
-                    <Bar dataKey="revenue" name="Revenue" fill="url(#barFill)" radius={[8, 8, 0, 0]} maxBarSize={48} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-gray-950">Orders per package</h3>
-              <div className="mt-4 space-y-3">
-                {(data.packageRevenue.length ? data.packageRevenue : [{ name: "No packages yet", revenue: 0, count: 0 }]).map((item) => (
-                  <div key={item.name} className="rounded-xl border border-gray-200 bg-gray-50 p-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                      <p className="text-xs font-bold text-[#884c2d]">{item.count} {item.count === 1 ? "order" : "orders"}</p>
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">{formatMoney(item.revenue)} revenue</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </PageShell>
-  );
-}
-
 function validateProposal(p) {
   const errors = {};
   if (!isRequired(p.client)) errors.client = "Client name is required.";
@@ -571,7 +352,7 @@ export function ProposalGeneratorPage() {
           <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
             <Button variant="secondary" onClick={() => copyText(proposalText, "Proposal copied")}><Copy size={14} /> Copy text</Button>
             <Button onClick={createProposalPdf} disabled={busy}>
-              <FileDown size={14} /> {busy ? "Generating…" : "Save PDF"}
+              <FileDown size={14} /> {busy ? "Generatingâ€¦" : "Save PDF"}
             </Button>
           </div>
         </Card>
@@ -622,7 +403,7 @@ export function ProposalGeneratorPage() {
               </div>
 
               <div className="px-7 py-6">
-                <p className="text-base font-bold text-gray-900">Prepared for {proposal.client || "—"}</p>
+                <p className="text-base font-bold text-gray-900">Prepared for {proposal.client || "â€”"}</p>
 
                 <div className="mt-4 rounded-xl border border-gray-200 p-4">
                   <dl className="space-y-2">
@@ -673,7 +454,7 @@ function validateCoupon(coupon) {
   const errors = {};
   const prefix = String(coupon.prefix || "").trim();
   if (!prefix) errors.prefix = "Prefix is required.";
-  else if (!/^[A-Za-z0-9-]{2,10}$/.test(prefix)) errors.prefix = "2–10 letters, numbers or hyphens.";
+  else if (!/^[A-Za-z0-9-]{2,10}$/.test(prefix)) errors.prefix = "2â€“10 letters, numbers or hyphens.";
 
   const amount = Number(coupon.discount);
   if (String(coupon.discount).trim() === "" || Number.isNaN(amount)) errors.discount = "Enter a discount amount.";
@@ -791,7 +572,7 @@ export function ServicesPage() {
           <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
             <Button variant="secondary" onClick={() => copyText(previewCode, "Prefix copied")}><Copy size={14} /> Copy prefix</Button>
             <Button onClick={createCoupon} disabled={creating}>
-              <Plus size={14} /> {creating ? "Creating…" : "Create Coupon"}
+              <Plus size={14} /> {creating ? "Creatingâ€¦" : "Create Coupon"}
             </Button>
           </div>
         </Card>
@@ -816,7 +597,7 @@ export function ServicesPage() {
                     <span className="font-mono text-xs font-bold text-gray-700">{item.code}</span>
                     <span className="text-[10px] font-bold uppercase tracking-wide text-gray-400">{item.status}</span>
                   </div>
-                  <p className="mt-1 text-[11px] text-gray-500">{item.generatedAt} · Valid till {item.validity || formatDateTime(item.validUntil)}</p>
+                  <p className="mt-1 text-[11px] text-gray-500">{item.generatedAt} Â· Valid till {item.validity || formatDateTime(item.validUntil)}</p>
                   <p className="text-[11px] text-gray-500">{item.clientName || "No client"} / {item.companyName || "No company"}</p>
                 </div>
               )) : (
