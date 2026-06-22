@@ -559,7 +559,7 @@ export default function CompanyDetail() {
   const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
-  const { records: tasks, save: saveTask } = useCrmRecords("tasks");
+  const { records: tasks, save: saveTask, remove: removeTask } = useCrmRecords("tasks");
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents, save: saveDocument, remove: removeDocument } = useCrmRecords("documents");
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
@@ -828,6 +828,11 @@ export default function CompanyDetail() {
     showToast({ title: "Task created", message: `${form.title} was added to ${company.name}.` });
   }
 
+  async function handleDeleteTask(task) {
+    await removeTask(task);
+    showToast({ title: "Task deleted", message: `${task.title || task.taskName || "Task"} removed from ${company.name}.` });
+  }
+
   async function handleMarkInvoicePaid(invoice) {
     await saveInvoice({
       ...invoice,
@@ -1028,13 +1033,14 @@ export default function CompanyDetail() {
             onView={setTaskView}
             onCreate={() => setCreatingTask(true)}
             onMoveTask={(task, status) => saveTask({ ...task, status })}
+            onDelete={handleDeleteTask}
           />
         )}
         {activeTab === "Notes" && (
           <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
         )}
         {activeTab === "Meetings" && (
-          <MeetingsTab meetings={linked.meetings} calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} />
+          <MeetingsTab meetings={linked.meetings} calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} token={token} />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
@@ -1735,7 +1741,7 @@ const TASK_PRIORITY_STYLE = {
   Low: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
-function TaskKanbanBoard({ tasks, onMoveTask }) {
+function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
   async function handleDragEnd(result) {
     const { source, destination, draggableId } = result;
     if (!destination || destination.droppableId === source.droppableId) return;
@@ -1777,7 +1783,16 @@ function TaskKanbanBoard({ tasks, onMoveTask }) {
                             }}
                           >
                             <div className={snap.isDragging ? "kanban-card-lift" : ""}>
-                              <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); onDelete(task); }}
+                                  className="shrink-0 rounded-lg p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                                  title="Delete task"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
                               <div className="mt-2 flex items-center justify-between gap-2">
                                 <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${TASK_PRIORITY_STYLE[task.priority] || TASK_PRIORITY_STYLE.Medium}`}>
                                   {task.priority || "Medium"}
@@ -1806,7 +1821,7 @@ function TaskKanbanBoard({ tasks, onMoveTask }) {
   );
 }
 
-function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask }) {
+function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, onDelete }) {
   const [ganttProjectFilter, setGanttProjectFilter] = useState("All");
   const [ganttStatusFilter, setGanttStatusFilter] = useState("All");
   const [ganttPriorityFilter, setGanttPriorityFilter] = useState("All");
@@ -1847,15 +1862,15 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask })
         </div>
       }
     >
-      {view === "List" && <TasksTable tasks={tasks} projects={projects} />}
-      {view === "Board" && <TaskKanbanBoard tasks={tasks} onMoveTask={onMoveTask} />}
+      {view === "List" && <TasksTable tasks={tasks} projects={projects} onDelete={onDelete} />}
+      {view === "Board" && <TaskKanbanBoard tasks={tasks} onMoveTask={onMoveTask} onDelete={onDelete} />}
       {view === "Calendar" && <CalendarTaskView tasks={tasks} onCreate={onCreate} />}
       {view === "Gantt" && (ganttTasks.length ? <TaskGantt tasks={ganttTasks} projects={projects} /> : <EmptyState icon={Filter} title="No tasks match these filters." />)}
     </Section>
   );
 }
 
-function TasksTable({ tasks, projects }) {
+function TasksTable({ tasks, projects, onDelete }) {
   const projectNames = Object.fromEntries(projects.map((project) => [String(project.id || project._id), project.name]));
   return (
     <div className="overflow-x-auto">
@@ -1868,6 +1883,7 @@ function TasksTable({ tasks, projects }) {
             <th className="py-3 pr-4">Status</th>
             <th className="py-3 pr-4">Due Date</th>
             <th className="py-3 pr-4">Project</th>
+            <th className="py-3 pr-4" />
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6]">
@@ -1879,6 +1895,11 @@ function TasksTable({ tasks, projects }) {
               <td className="py-3 pr-4"><StatusBadge status={task.status || "Backlog"} /></td>
               <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
               <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
+              <td className="py-3 pr-4 text-right">
+                <button onClick={() => onDelete(task)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
+                  <Trash2 size={14} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -2145,9 +2166,29 @@ function NotePanel({ company, note, onClose, onSave }) {
   );
 }
 
-function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl }) {
+function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl, token }) {
+  const [eventTypes, setEventTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(true);
+  const [typesError, setTypesError] = useState("");
+  const [selectedSlug, setSelectedSlug] = useState("");
   const [editingUrl, setEditingUrl] = useState(false);
   const [urlInput, setUrlInput] = useState(calendlyUrl || "");
+
+  useEffect(() => {
+    let alive = true;
+    apiGet("/api/calendly/event-types", token)
+      .then((types) => {
+        if (!alive) return;
+        setEventTypes(Array.isArray(types) ? types : []);
+        setSelectedSlug(types?.[0]?.slug || "");
+      })
+      .catch((err) => { if (alive) setTypesError(err.message || "Could not load Calendly event types."); })
+      .finally(() => { if (alive) setLoadingTypes(false); });
+    return () => { alive = false; };
+  }, [token]);
+
+  const activeEventType = eventTypes.find((type) => type.slug === selectedSlug);
+  const schedulingUrl = activeEventType?.schedulingUrl || calendlyUrl;
 
   function submitUrl() {
     onSaveCalendlyUrl(urlInput.trim());
@@ -2158,30 +2199,60 @@ function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl }) {
     <div className="space-y-5">
       <Section
         title="Book a Meeting"
-        action={calendlyUrl && !editingUrl ? <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button> : null}
+        action={schedulingUrl ? (
+          <a href={schedulingUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+            Open in new tab
+          </a>
+        ) : null}
       >
-        {!calendlyUrl || editingUrl ? (
-          <div className="flex items-center gap-2">
-            <input
-              autoFocus
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitUrl()}
-              placeholder="https://calendly.com/your-name/30min"
-              className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-            />
-            <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
-            {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
+        {loadingTypes ? (
+          <p className="text-sm text-[#6b7280]">Loading your Calendly event types…</p>
+        ) : eventTypes.length ? (
+          <div className="space-y-3">
+            <p className="text-sm text-[#6b7280]">Pick an event type and a free slot — booking it here creates the meeting automatically.</p>
+            <div className="flex flex-wrap gap-2">
+              {eventTypes.map((type) => (
+                <button
+                  key={type.slug}
+                  type="button"
+                  onClick={() => setSelectedSlug(type.slug)}
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    selectedSlug === type.slug ? "border-[#884c2d] bg-[#fff1ec] text-[#884c2d]" : "border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb]"
+                  }`}
+                >
+                  {type.name} · {type.durationMinutes}m
+                </button>
+              ))}
+            </div>
+            <iframe src={schedulingUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm text-[#6b7280]">Pick a free slot below to finalize the meeting straight onto the calendar.</p>
-              <a href={calendlyUrl} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
-                Open in new tab
-              </a>
-            </div>
-            <iframe src={calendlyUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
+            {typesError && (
+              <p className="text-xs text-red-600">{typesError} Add a manual booking link below instead, or check that CALENDLY_ACCESS_TOKEN is configured on the server.</p>
+            )}
+            {!calendlyUrl || editingUrl ? (
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submitUrl()}
+                  placeholder="https://calendly.com/your-name/30min"
+                  className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                />
+                <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
+                {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-[#6b7280]">Pick a free slot below to finalize the meeting straight onto the calendar.</p>
+                  <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button>
+                </div>
+                <iframe src={calendlyUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
+              </div>
+            )}
           </div>
         )}
       </Section>
