@@ -870,11 +870,6 @@ export default function CompanyDetail() {
     showToast({ title: "Note deleted", message: "The note was removed." });
   }
 
-  async function handleSaveCalendlyLink(url) {
-    await saveCompany({ ...company, calendlyUrl: url });
-    showToast({ title: "Calendly link saved", message: url ? "Meetings can now be booked from this tab." : "Calendly link removed." });
-  }
-
   async function handleCreateTask(form) {
     if (!form.title.trim()) {
       showToast({ type: "error", title: "Task title required", message: "Add a title before creating the task." });
@@ -1111,7 +1106,7 @@ export default function CompanyDetail() {
           <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
         )}
         {activeTab === "Meetings" && (
-          <MeetingsTab calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} />
+          <MeetingsTab calendlyUrl={company.calendlyUrl} />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
@@ -2287,48 +2282,24 @@ function CalendlyBookingModal({ url, onClose }) {
   );
 }
 
-function MeetingsTab({ calendlyUrl, onSaveCalendlyUrl }) {
-  const [booking, setBooking] = useState(false);
-  const [editingUrl, setEditingUrl] = useState(!calendlyUrl);
-  const [urlInput, setUrlInput] = useState(calendlyUrl || "");
+const DEFAULT_CALENDLY_URL = "https://calendly.com/rohit-zore-datacircles/30min";
 
-  function submitUrl() {
-    onSaveCalendlyUrl(urlInput.trim());
-    setEditingUrl(false);
-  }
+function MeetingsTab({ calendlyUrl }) {
+  const [booking, setBooking] = useState(false);
+  const schedulingUrl = calendlyUrl || DEFAULT_CALENDLY_URL;
 
   return (
     <div className="space-y-5">
-      <Section
-        title="Book a Meeting"
-        action={calendlyUrl && !editingUrl ? (
-          <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button>
-        ) : null}
-      >
-        {!calendlyUrl || editingUrl ? (
-          <div className="flex items-center gap-2">
-            <input
-              autoFocus
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submitUrl()}
-              placeholder="https://calendly.com/your-name/30min"
-              className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-            />
-            <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
-            {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
-          </div>
-        ) : (
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-[#6b7280]">Opens the Calendly scheduler in a popup. Once booked, it syncs to Google Calendar and shows up below.</p>
-            <Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>
-          </div>
-        )}
+      <Section title="Book a Meeting">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-[#6b7280]">Opens the Calendly scheduler in a popup. Once booked, it syncs to Google Calendar and shows up below.</p>
+          <Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>
+        </div>
       </Section>
       <Section title="Scheduled Meetings">
         <GoogleCalendarEmbed />
       </Section>
-      {booking && calendlyUrl && <CalendlyBookingModal url={calendlyUrl} onClose={() => setBooking(false)} />}
+      {booking && <CalendlyBookingModal url={schedulingUrl} onClose={() => setBooking(false)} />}
     </div>
   );
 }
