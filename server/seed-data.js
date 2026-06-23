@@ -230,6 +230,8 @@ async function seed() {
             companyId: company._id,
             orderId: order._id,
             packageName: pkg.name,
+            budget: pkg.price,
+            paymentStatus: paymentStatus,
             status: projStatus, // not_started, in_progress, completed, delayed
             progress: projStatus === "completed" ? 100 : (projStatus === "not_started" ? 0 : randomInt(10, 90)),
             startDate: createdAt,
@@ -307,6 +309,8 @@ async function seed() {
         companyId: company._id,
         orderId: order._id,
         packageName: pkg.name,
+        budget: pkg.price,
+        paymentStatus: paymentStatus,
         status: projStatus,
         progress: projStatus === "completed" ? 100 : (projStatus === "not_started" ? 0 : randomInt(10, 90)),
         startDate: repeatDate,

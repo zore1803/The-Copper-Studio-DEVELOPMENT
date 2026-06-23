@@ -5,7 +5,7 @@ const taskSchema = new mongoose.Schema(
     id: { type: String, index: true },
     title: { type: String, required: true, trim: true, index: true },
     project: { type: String, trim: true, index: true, default: "" },
-    status: { type: String, default: "Backlog", index: true },
+    status: { type: String, default: "To Do", index: true },
     priority: { type: String, default: "Medium", index: true },
     assignee: { type: String, default: "A" },
     deadline: { type: String, default: "" },
