@@ -1,37 +1,33 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  CalendarRange, CheckCircle2, Columns3, GripVertical, MessageSquare,
-  Plus, Save, Trash2,
+  CalendarRange, CheckCircle2, Columns3, GripVertical,
+  Plus, Save, Trash2, Sparkles, ZoomIn, ZoomOut
 } from "lucide-react";
-import { Avatar, Button } from "../../components/ui";
+import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ProjectHeader from "./ProjectHeader";
 import { today, DAY_MS, parseFullDate, parseShortDate, formatRange } from "../../lib/dates";
+import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS } from "../../lib/taskStatus";
+import { projectRollup } from "../../lib/stageProgress";
 
 const TODAY = today();
 
-const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
-
 const STATUS_DOT = {
-  Backlog: "bg-gray-400",
   "To Do": "bg-sky-500",
   "In Progress": "bg-amber-500",
-  Review: "bg-indigo-500",
-  Completed: "bg-emerald-500",
-  Blocked: "bg-red-500",
+  Review: "bg-violet-500",
+  Done: "bg-emerald-500",
 };
 
 const STATUS_BAR = {
-  Backlog: "from-gray-300 to-gray-400 text-gray-800",
   "To Do": "from-sky-400 to-sky-600 text-white",
   "In Progress": "from-amber-400 to-orange-500 text-white",
   Review: "from-indigo-400 to-violet-600 text-white",
-  Completed: "from-emerald-400 to-emerald-600 text-white",
-  Blocked: "from-red-400 to-red-600 text-white",
+  Done: "from-emerald-400 to-emerald-600 text-white",
 };
 
 const priorityConfig = {
@@ -40,25 +36,12 @@ const priorityConfig = {
   Low: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
-const ZOOM_LEVELS = { Week: 150, Month: 80, Quarter: 40 };
-
-function reorder(list, startIndex, endIndex) {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-  return result;
-}
-
-function move(source, destination, droppableSource, droppableDestination) {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-  destClone.splice(droppableDestination.index, 0, removed);
-  return {
-    [droppableSource.droppableId]: sourceClone,
-    [droppableDestination.droppableId]: destClone,
-  };
-}
+// Free continuous zoom: pixels per week column. Drag the slider or use +/- to zoom
+// the timeline smoothly in and out, like a calendar.
+const MIN_COL_WIDTH = 26;    // zoomed out — see many months at once
+const MAX_COL_WIDTH = 340;   // zoomed in — day-level detail
+const DEFAULT_COL_WIDTH = 150;
+const ZOOM_STEP = 28;
 
 function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "" }) {
   return (
@@ -75,39 +58,39 @@ function TaskField({ label, value, onChange, placeholder = "", type = "text", cl
   );
 }
 
-function TaskEditorModal({ statuses, initialStatus, task, mode, onClose, onSave, onDelete }) {
-  const [form, setForm] = useState(task);
+function StageEditorModal({ statuses, initialStatus, stage, mode, onClose, onSave, onDelete }) {
+  const [form, setForm] = useState(stage);
   const [status, setStatus] = useState(initialStatus);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   function submit(event) {
     event.preventDefault();
-    onSave({ ...form, title: (form.title || "").trim() || "Untitled task" }, status);
+    onSave({ ...form, title: (form.title || "").trim() || "Untitled Stage" }, status);
   }
 
   return (
     <SidePanel
-      title={mode === "create" ? "Create Task" : "Edit Task"}
-      subtitle="Update task details, owner, priority, and stage."
+      title={mode === "create" ? "Create Stage" : "Edit Stage"}
+      subtitle="Stages appear on both the board and the project roadmap."
       onClose={onClose}
       footer={
         <div className="flex w-full items-center justify-between">
           {mode === "edit" ? (
-            <button type="button" onClick={() => onDelete(task)} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">
+            <button type="button" onClick={onDelete} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50">
               <Trash2 size={14} /> Delete
             </button>
           ) : <span />}
           <div className="flex gap-2">
             <Button variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button onClick={submit}><Save size={14} /> Save Task</Button>
+            <Button onClick={submit}><Save size={14} /> Save Stage</Button>
           </div>
         </div>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <TaskField label="Task title" value={form.title || ""} onChange={set("title")} className="sm:col-span-2" />
+        <TaskField label="Stage name" value={form.title || ""} onChange={set("title")} className="sm:col-span-2" />
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Stage</span>
+          <span className="text-xs font-semibold text-[#374151]">Status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]">
             {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
@@ -118,11 +101,10 @@ function TaskEditorModal({ statuses, initialStatus, task, mode, onClose, onSave,
             {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
-        <TaskField label="Assignee" value={form.assignedTo || form.assignee || ""} onChange={set("assignedTo")} />
         <TaskField label="Start date" type="date" value={form.startDate || ""} onChange={set("startDate")} />
         <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} />
         <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Description</span>
+          <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]" />
         </label>
       </div>
@@ -130,15 +112,14 @@ function TaskEditorModal({ statuses, initialStatus, task, mode, onClose, onSave,
   );
 }
 
-function KanbanView({ tasks, onDragEnd, onOpenNew, onOpenEdit }) {
+function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
   const columns = useMemo(() => {
     const grouped = Object.fromEntries(TASK_STATUSES.map((status) => [status, []]));
-    tasks.forEach((task) => {
-      const status = grouped[task.status] ? task.status : "Backlog";
-      grouped[status].push(task);
+    stages.forEach((card) => {
+      grouped[normalizeTaskStatus(card.status)].push(card);
     });
     return grouped;
-  }, [tasks]);
+  }, [stages]);
 
   return (
     <DragDropContext onDragEnd={(result) => onDragEnd(columns, result)}>
@@ -183,9 +164,11 @@ function KanbanView({ tasks, onDragEnd, onOpenNew, onOpenEdit }) {
                           </div>
                           <div className="mt-2 flex items-center justify-between border-t border-[#f1f1f5] pt-2">
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#9ca3af]">
-                              <MessageSquare size={11} /> {task.comments || 0}
+                              <CalendarRange size={11} /> {task.startDate || "No start"}
                             </span>
-                            <Avatar name={task.assignedTo || task.assignee} size="sm" />
+                            <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
+                              <Sparkles size={10} className="mr-1" /> Stage
+                            </div>
                           </div>
                         </article>
                       )}
@@ -194,7 +177,7 @@ function KanbanView({ tasks, onDragEnd, onOpenNew, onOpenEdit }) {
                   {provided.placeholder}
                   {columns[status].length === 0 && (
                     <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#E1E4EA] text-[11px] font-semibold text-[#9ca3af]">
-                      Drop tasks here
+                      Drop stages here
                     </div>
                   )}
                 </div>
@@ -207,21 +190,54 @@ function KanbanView({ tasks, onDragEnd, onOpenNew, onOpenEdit }) {
   );
 }
 
-function GanttView({ tasks, onOpenEdit }) {
-  const [zoom, setZoom] = useState("Week");
+function GanttView({ stages, onOpenEdit }) {
+  const [colWidth, setColWidth] = useState(DEFAULT_COL_WIDTH);
+  const zoomOut = () => setColWidth((w) => Math.max(MIN_COL_WIDTH, w - ZOOM_STEP));
+  const zoomIn = () => setColWidth((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
   const [collapsed, setCollapsed] = useState({});
 
-  const { groups, minDate, maxDate, totalDays, weeks, summary } = useMemo(() => {
+  // Pinch / Ctrl+scroll over the chart zooms the timeline instead of the whole page.
+  // Plain two-finger scrolling (no Ctrl) is left alone so the chart still scrolls.
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      setColWidth((w) => {
+        const next = w * Math.exp(-e.deltaY * 0.002);
+        return Math.min(MAX_COL_WIDTH, Math.max(MIN_COL_WIDTH, next));
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [stages.length]);
+
+  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
     const referenceYear = new Date().getFullYear();
-    const mapped = tasks.map((task) => {
-      const start = task.startDate ? parseFullDate(task.startDate) : null;
-      const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseShortDate(task.deadline, referenceYear) : null;
-      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
-      const safeEnd = end < start ? start : end;
-      return { ...task, start, end: safeEnd, status: TASK_STATUSES.includes(task.status) ? task.status : "Backlog" };
-    }).filter(Boolean);
-    const unscheduled = tasks.length - mapped.length;
-    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, totalDays: 1, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    // First pass: parse whatever dates a stage has, and flag the ones missing them.
+    const parsed = stages.map((card) => {
+      const start = card.startDate ? parseFullDate(card.startDate) : null;
+      const end = card.dueDate ? parseFullDate(card.dueDate) : card.deadline ? parseShortDate(card.deadline, referenceYear) : null;
+      const hasDates = !!start && !!end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime());
+      return { card, start, end, hasDates };
+    });
+
+    // Anchor undated stages to the earliest real start (or today) so EVERY stage still
+    // shows up on the chart — just flagged as "needs dates" instead of being hidden.
+    const dated = parsed.filter((p) => p.hasDates);
+    const anchor = dated.length ? new Date(Math.min(...dated.map((p) => p.start.getTime()))) : new Date(TODAY);
+
+    const mapped = parsed.map(({ card, start, end, hasDates }) => {
+      const status = normalizeTaskStatus(card.status);
+      if (hasDates) {
+        return { ...card, start, end: end < start ? start : end, needsDates: false, status };
+      }
+      return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status };
+    });
+    const unscheduled = parsed.filter((p) => !p.hasDates).length;
+    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
     const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
@@ -230,45 +246,41 @@ function GanttView({ tasks, onOpenEdit }) {
       .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
       .filter((g) => g.tasks.length > 0);
 
-    // Exact day count (not rounded up to a whole number of weeks) so the
-    // pixel-width grid below lines up precisely with the percentage-based
-    // task bars instead of stretching/compacting them against extra columns.
-    const days = Math.max(1, Math.round((max - min) / DAY_MS));
-    const weekCols = [];
-    for (let dayOffset = 0; dayOffset < days; dayOffset += 7) {
-      const weekStart = new Date(min.getTime() + dayOffset * DAY_MS);
-      const spanDays = Math.min(7, days - dayOffset);
-      const weekEnd = new Date(weekStart.getTime() + (spanDays - 1) * DAY_MS);
-      weekCols.push({ label: formatRange(weekStart, weekEnd), days: spanDays });
-    }
+    const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
+    const weekCount = Math.max(1, Math.ceil(totalDays / 7));
+    const weekCols = Array.from({ length: weekCount }, (_, index) => {
+      const weekStart = new Date(min.getTime() + index * 7 * DAY_MS);
+      const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
+      return { label: formatRange(weekStart, weekEnd) };
+    });
     return {
       groups: groupList,
       minDate: min,
       maxDate: max,
-      totalDays: days,
       weeks: weekCols,
       summary: {
         total: mapped.length,
-        completed: mapped.filter((task) => task.status === "Completed").length,
-        blocked: mapped.filter((task) => task.status === "Blocked").length,
+        completed: mapped.filter((task) => task.status === "Done").length,
+        blocked: 0,
         unscheduled,
       },
     };
-  }, [tasks]);
+  }, [stages]);
 
   if (!groups.length) {
     return (
       <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-        <p className="text-sm font-semibold text-[#111827]">No scheduled tasks yet.</p>
-        <p className="mt-1 text-sm text-[#6b7280]">Add real start and due dates to tasks to see them on the Gantt chart.</p>
+        <p className="text-sm font-semibold text-[#111827]">No scheduled stages yet.</p>
+        <p className="mt-1 text-sm text-[#6b7280]">Add start and due dates to stages to see them on the Gantt chart.</p>
       </div>
     );
   }
 
-  const pxPerDay = ZOOM_LEVELS[zoom] / 7;
-  const totalRangeMs = Math.max(1, maxDate - minDate);
-  const timelineWidth = Math.round(totalDays * pxPerDay);
-  const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
+  // Position everything in real pixels-per-day so bars line up exactly under their
+  // date columns (the columns are colWidth px per 7-day week).
+  const pxPerDay = colWidth / 7;
+  const timelineWidth = weeks.length * colWidth;
+  const dateToPx = (date) => ((date - minDate) / DAY_MS) * pxPerDay;
   const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
 
   function toggleGroup(status) {
@@ -286,8 +298,8 @@ function GanttView({ tasks, onOpenEdit }) {
               <CalendarRange size={17} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#111827]">Task Gantt Timeline</h4>
-              <p className="text-xs text-[#6b7280]">{formatRange(minDate, maxDate)} · {summary.total} scheduled tasks</p>
+              <h4 className="text-sm font-bold text-[#111827]">Stage Gantt Timeline</h4>
+              <p className="text-xs text-[#6b7280]">{formatRange(minDate, maxDate)} · {summary.total} scheduled stages</p>
             </div>
           </div>
         </div>
@@ -301,17 +313,34 @@ function GanttView({ tasks, onOpenEdit }) {
           {summary.unscheduled > 0 && (
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{summary.unscheduled} need dates</span>
           )}
-          <div className="flex items-center gap-1 rounded-lg bg-[#F1F1F5] p-1">
-          {Object.keys(ZOOM_LEVELS).map((level) => (
+          <div className="flex items-center gap-1.5 rounded-lg bg-[#F1F1F5] p-1">
             <button
-              key={level}
               type="button"
-              onClick={() => setZoom(level)}
-              className={`rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${zoom === level ? "bg-white text-[#C57E5B] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
+              onClick={zoomOut}
+              disabled={colWidth <= MIN_COL_WIDTH}
+              title="Zoom out"
+              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
             >
-              {level}
+              <ZoomOut size={14} />
             </button>
-          ))}
+            <input
+              type="range"
+              min={MIN_COL_WIDTH}
+              max={MAX_COL_WIDTH}
+              value={colWidth}
+              onChange={(e) => setColWidth(Number(e.target.value))}
+              title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
+              className="w-24 accent-[#C57E5B]"
+            />
+            <button
+              type="button"
+              onClick={zoomIn}
+              disabled={colWidth >= MAX_COL_WIDTH}
+              title="Zoom in"
+              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
+            >
+              <ZoomIn size={14} />
+            </button>
           </div>
         </div>
       </div>
@@ -332,7 +361,7 @@ function GanttView({ tasks, onOpenEdit }) {
                 <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.status, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
                   <span className="min-w-0">
                     <span className="block truncate text-xs font-semibold text-[#374151]">{task.title || task.taskName}</span>
-                    <span className="block truncate text-[10px] text-[#9ca3af]">{formatRange(task.start, task.end)}</span>
+                    <span className={`block truncate text-[10px] ${task.needsDates ? "text-amber-600" : "text-[#9ca3af]"}`}>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
                   </span>
                 </button>
               ))}
@@ -340,18 +369,18 @@ function GanttView({ tasks, onOpenEdit }) {
           ))}
         </div>
 
-        <div className="flex-1 overflow-x-auto">
+        <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="sticky top-0 z-10 flex h-11 border-b border-[#f1f1f5] bg-white">
               {weeks.map((week, index) => (
-                <div key={index} style={{ width: `${Math.round(week.days * pxPerDay)}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
+                <div key={index} style={{ width: `${colWidth}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
                   {week.label}
                 </div>
               ))}
             </div>
-            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${Math.round(pxPerDay * 7)}px 100%` }}>
+            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${colWidth}px 100%` }}>
               {showTodayLine && (
-                <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${toPct(TODAY)}%` }}>
+                <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${dateToPx(TODAY)}px` }}>
                   <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-400" />
                   <span className="absolute left-2 top-2 rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm">Today</span>
                 </div>
@@ -360,16 +389,18 @@ function GanttView({ tasks, onOpenEdit }) {
                 <div key={group.status}>
                   <div className="h-10 border-b border-[#f1f1f5] bg-[#fafafa]/60" />
                   {!collapsed[group.status] && group.tasks.map((task) => {
-                    const left = toPct(task.start);
-                    const width = Math.max(4, toPct(task.end) - left);
-                    const isDone = group.status === "Completed";
+                    const left = dateToPx(task.start);
+                    // +1 day so the bar covers the end date inclusively; clamp so a single-day stage stays visible.
+                    const width = Math.max(pxPerDay, dateToPx(task.end) - left + pxPerDay);
+                    const isDone = group.status === "Done";
                     return (
                       <div key={task.id || task._id} className="relative h-12 border-b border-[#f1f1f5] odd:bg-white/65 even:bg-[#fcfcfd]/65">
                         <button
                           type="button"
                           onClick={() => onOpenEdit(group.status, task)}
-                          style={{ left: `${left}%`, width: `${width}%` }}
-                          className={`absolute top-2 flex h-8 min-w-[110px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm ring-1 ring-white/50 transition-all hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[group.status] || STATUS_BAR.Backlog}`}
+                          style={{ left: `${left}px`, width: `${width}px` }}
+                          title={task.needsDates ? "No dates set — click to add a start and due date" : `${task.title || task.taskName}: ${formatRange(task.start, task.end)}`}
+                          className={`absolute top-2 flex h-8 min-w-[12px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[group.status] || STATUS_BAR["To Do"]} ${task.needsDates ? "opacity-50 saturate-50 border border-dashed border-white/80" : "ring-1 ring-white/50"}`}
                         >
                           <span className="truncate text-[11px] font-bold">{task.title || task.taskName}</span>
                           {isDone && <CheckCircle2 size={12} className="ml-auto shrink-0" />}
@@ -392,10 +423,9 @@ export default function ProjectTimeline() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
-  const { records: projects } = useCrmRecords("projects");
-  const { records: tasks, save: saveTask, remove: removeTask } = useCrmRecords("tasks");
+  const { records: projects, save: saveProject } = useCrmRecords("projects");
   const [view, setView] = useState("kanban");
-  const [taskEditor, setTaskEditor] = useState(null);
+  const [stageEditor, setStageEditor] = useState(null);
 
   const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const project = useMemo(
@@ -403,11 +433,24 @@ export default function ProjectTimeline() {
     [projects, companyId, projectId]
   );
 
-  const projectTasks = useMemo(() => {
-    if (!project) return [];
+  // The board is driven entirely by the project's stages — each stage renders as one
+  // card on the Kanban / Gantt. There is no separate "task" concept here, so anything
+  // added on this board is a stage and shows up on the project roadmap too.
+  const stageCards = useMemo(() => {
+    if (!project || !Array.isArray(project.stages)) return [];
     const pid = String(project.id || project._id);
-    return tasks.filter((task) => String(task.projectId) === pid || String(task.project) === pid || task.project === project.name);
-  }, [tasks, project]);
+    return project.stages.map((stage, idx) => ({
+      isStage: true,
+      stageIndex: idx,
+      id: stage.id || stage._id || `stage-${pid}-${idx}`,
+      title: stage.name || "Untitled Stage",
+      status: normalizeTaskStatus(stage.status),
+      priority: stage.priority || "Medium",
+      startDate: stage.startDate ? String(stage.startDate).slice(0, 10) : "",
+      dueDate: stage.endDate ? String(stage.endDate).slice(0, 10) : "",
+      description: stage.notes || "",
+    }));
+  }, [project]);
 
   if (!company || !project) {
     return (
@@ -423,57 +466,88 @@ export default function ProjectTimeline() {
     showToast({ title: "Link copied", message: "Project timeline link copied to clipboard." });
   }
 
-  function openNewTask(status = "Backlog") {
-    setTaskEditor({
+  function openNewStage(status = "To Do") {
+    // Default to a today → +4 days window so a new stage shows on the Gantt right away;
+    // the admin can adjust the dates in the editor.
+    const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const start = today();
+    const due = new Date(start.getTime() + 4 * DAY_MS);
+    setStageEditor({
       mode: "create",
       status,
-      task: {
-        id: `task-${Date.now()}`,
-        title: "",
-        projectId: project.id || project._id,
-        projectName: project.name,
-        companyId: company._id || company.id,
-        priority: "Medium",
-        assignedTo: "",
-        startDate: "",
-        dueDate: "",
-        description: "",
-        comments: 0,
-      },
+      stageIndex: -1,
+      card: { title: "", priority: "Medium", startDate: fmt(start), dueDate: fmt(due), description: "" },
     });
   }
 
-  function openEditTask(status, task) {
-    setTaskEditor({ mode: "edit", status, task });
+  function openEditStage(status, card) {
+    setStageEditor({ mode: "edit", status, stageIndex: card.stageIndex, card });
   }
 
-  async function handleSaveTask(form, status) {
+  async function handleSaveStage(form, status) {
     try {
-      const isNew = !form._id;
-      await saveTask({ ...form, status, projectId: project.id || project._id, projectName: project.name, companyId: company._id || company.id });
-      setTaskEditor(null);
-      showToast({ title: isNew ? "Task created" : "Task updated", message: `${form.title || "Task"} saved in ${status}.` });
+      const stageStatus = COLUMN_TO_STAGE_STATUS[status] || "not_started";
+      const stages = [...(project.stages || [])];
+      const stageData = {
+        name: (form.title || "").trim() || "Untitled Stage",
+        status: stageStatus,
+        priority: form.priority || "Medium",
+        startDate: form.startDate || null,
+        endDate: form.dueDate || null,
+        notes: form.description || "",
+        completedAt: stageStatus === "completed" ? new Date().toISOString() : null,
+      };
+      const isNew = stageEditor.mode !== "edit" || stageEditor.stageIndex < 0;
+      if (!isNew && stages[stageEditor.stageIndex]) {
+        stages[stageEditor.stageIndex] = { ...stages[stageEditor.stageIndex], ...stageData };
+      } else {
+        stages.push({ id: `stage-${Date.now()}`, ...stageData });
+      }
+      await saveProject(projectRollup(project, stages));
+      setStageEditor(null);
+      showToast({ title: isNew ? "Stage created" : "Stage updated", message: `${stageData.name} saved in ${status}.` });
     } catch (error) {
-      showToast({ type: "error", title: "Could not save task", message: error.message });
+      showToast({ type: "error", title: "Could not save stage", message: error.message });
     }
   }
 
-  async function handleDeleteTask(task) {
-    await removeTask(task);
-    setTaskEditor(null);
-    showToast({ title: "Task deleted", message: `${task.title || "Task"} removed.` });
+  async function handleDeleteStage(card) {
+    try {
+      const stages = [...(project.stages || [])];
+      if (card.stageIndex >= 0 && stages[card.stageIndex]) {
+        stages.splice(card.stageIndex, 1);
+        await saveProject(projectRollup(project, stages));
+      }
+      setStageEditor(null);
+      showToast({ title: "Stage deleted", message: `${card.title || "Stage"} removed.` });
+    } catch (error) {
+      showToast({ type: "error", title: "Could not delete stage", message: error.message });
+    }
   }
 
   async function handleDragEnd(columns, result) {
     const { source, destination } = result;
     if (!destination) return;
-    if (source.droppableId === destination.droppableId) {
-      reorder(columns[source.droppableId], source.index, destination.index);
-      return;
+    // Same column = reorder only; status doesn't change on a status board, so nothing to persist.
+    if (source.droppableId === destination.droppableId) return;
+
+    const movedCard = columns[source.droppableId][source.index];
+    const newStageStatus = COLUMN_TO_STAGE_STATUS[destination.droppableId] || "not_started";
+    try {
+      const stages = [...(project.stages || [])];
+      if (stages[movedCard.stageIndex]) {
+        stages[movedCard.stageIndex] = {
+          ...stages[movedCard.stageIndex],
+          status: newStageStatus,
+          completedAt: newStageStatus === "completed" ? new Date().toISOString() : null,
+        };
+        await saveProject(projectRollup(project, stages));
+        showToast({ title: "Success", message: `Stage "${movedCard.title}" moved to ${destination.droppableId}` });
+      }
+    } catch (err) {
+      console.error(err);
+      showToast({ type: "error", title: "Error", message: "Failed to move stage" });
     }
-    const movedTask = columns[source.droppableId][source.index];
-    move(columns[source.droppableId], columns[destination.droppableId], source, destination);
-    await saveTask({ ...movedTask, status: destination.droppableId });
   }
 
   return (
@@ -483,7 +557,9 @@ export default function ProjectTimeline() {
         project={project}
         activeTab="Timeline"
         onShare={handleShare}
-        onNewTask={() => openNewTask()}
+        actionLabel="New Stage"
+        actionIcon={Plus}
+        onAction={() => openNewStage()}
       />
 
       <div className="flex items-center justify-between">
@@ -505,20 +581,20 @@ export default function ProjectTimeline() {
       </div>
 
       {view === "kanban" ? (
-        <KanbanView tasks={projectTasks} onDragEnd={handleDragEnd} onOpenNew={openNewTask} onOpenEdit={openEditTask} />
+        <KanbanView stages={stageCards} onDragEnd={handleDragEnd} onOpenNew={openNewStage} onOpenEdit={openEditStage} />
       ) : (
-        <GanttView tasks={projectTasks} onOpenEdit={openEditTask} />
+        <GanttView stages={stageCards} onOpenEdit={openEditStage} />
       )}
 
-      {taskEditor && (
-        <TaskEditorModal
+      {stageEditor && (
+        <StageEditorModal
           statuses={TASK_STATUSES}
-          initialStatus={taskEditor.status}
-          task={taskEditor.task}
-          mode={taskEditor.mode}
-          onClose={() => setTaskEditor(null)}
-          onSave={handleSaveTask}
-          onDelete={handleDeleteTask}
+          initialStatus={stageEditor.status}
+          stage={stageEditor.card}
+          mode={stageEditor.mode}
+          onClose={() => setStageEditor(null)}
+          onSave={handleSaveStage}
+          onDelete={() => handleDeleteStage(stageEditor.card)}
         />
       )}
     </div>
