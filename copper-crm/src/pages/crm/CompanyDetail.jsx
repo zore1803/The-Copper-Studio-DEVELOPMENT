@@ -1111,7 +1111,7 @@ export default function CompanyDetail() {
           <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
         )}
         {activeTab === "Meetings" && (
-          <MeetingsTab meetings={linked.meetings} calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} token={token} />
+          <MeetingsTab calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} token={token} />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
@@ -2246,7 +2246,29 @@ function NotePanel({ company, note, onClose, onSave }) {
   );
 }
 
-function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl, token }) {
+const GOOGLE_CALENDAR_ID = import.meta.env.VITE_GOOGLE_CALENDAR_ID || "";
+const GOOGLE_CALENDAR_TZ = import.meta.env.VITE_GOOGLE_CALENDAR_TZ || Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+// Read-only view of whatever calendar Calendly books meetings into — no
+// custom event list to maintain, Google renders its own up-to-date UI.
+function GoogleCalendarEmbed() {
+  if (!GOOGLE_CALENDAR_ID) {
+    return (
+      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-[#fafafa] p-6 text-sm text-[#6b7280]">
+        <p className="font-semibold text-[#374151]">Google Calendar isn't connected yet.</p>
+        <p className="mt-1">
+          Set <code className="rounded bg-[#eef2f6] px-1 py-0.5 text-xs">VITE_GOOGLE_CALENDAR_ID</code> to the calendar Calendly books meetings into
+          (Google Calendar → Settings → that calendar → Integrate calendar → Calendar ID), and under "Access permissions"
+          enable "Make available to public" with "See all event details" so it can be embedded.
+        </p>
+      </div>
+    );
+  }
+  const src = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=${encodeURIComponent(GOOGLE_CALENDAR_TZ)}`;
+  return <iframe src={src} title="Google Calendar" className="h-[650px] w-full rounded-xl border border-[#e5e7eb]" frameBorder="0" scrolling="no" />;
+}
+
+function MeetingsTab({ calendlyUrl, onSaveCalendlyUrl, token }) {
   const [eventTypes, setEventTypes] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(true);
   const [typesError, setTypesError] = useState("");
@@ -2336,23 +2358,10 @@ function MeetingsTab({ meetings, calendlyUrl, onSaveCalendlyUrl, token }) {
           </div>
         )}
       </Section>
-      <Section title="Linked Meetings">
-        {meetings.length ? <SimpleList items={meetings} /> : <EmptyState icon={Calendar} title="No meetings linked." />}
+      <Section title="Scheduled Meetings">
+        <GoogleCalendarEmbed />
       </Section>
     </div>
   );
 }
 
-function SimpleList({ items }) {
-  return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
-      <div className="divide-y divide-[#f3f4f6]">
-        {items.map((item) => (
-          <div key={item.id || item._id || item.title || item.name} className="py-3 text-sm text-[#374151]">
-            {item.title || item.name || item.subject || "Untitled"}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
