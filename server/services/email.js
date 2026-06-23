@@ -1,32 +1,85 @@
 import nodemailer from "nodemailer";
+import Settings from "../models/Settings.js";
 
-const smtpReady = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+function clean(value) {
+  return String(value || "").trim();
+}
 
-function getTransporter() {
-  if (!smtpReady) return null;
+async function getMailConfig() {
+  let settingsEmail = {};
+  try {
+    const settings = await Settings.findOne({});
+    settingsEmail = settings?.email || {};
+  } catch {
+    // Email should still work from .env even if the settings row is unavailable.
+  }
 
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT || 587),
+  const host = clean(process.env.SMTP_HOST || settingsEmail.smtpHost);
+  const port = Number(process.env.SMTP_PORT || settingsEmail.smtpPort || 587);
+  const user = clean(process.env.SMTP_USER || settingsEmail.smtpUser);
+  const pass = clean(process.env.SMTP_PASS || settingsEmail.smtpPass);
+  const senderEmail = clean(process.env.MAIL_FROM || settingsEmail.senderEmail || user);
+  const senderName = clean(settingsEmail.senderName);
+  const from = process.env.MAIL_FROM || (senderName && senderEmail ? `${senderName} <${senderEmail}>` : senderEmail);
+
+  return {
+    host,
+    port,
     secure: process.env.SMTP_SECURE === "true",
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+    user,
+    pass,
+    from
+  };
+}
+
+async function getTransporter() {
+  const config = await getMailConfig();
+  if (!config.host || !config.user || !config.pass) return { transporter: null, config };
+
+  return {
+    config,
+    transporter: nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      auth: {
+        user: config.user,
+        pass: config.pass
+      }
+    })
+  };
 }
 
 async function sendMail(message) {
-  const transporter = getTransporter();
+  const { transporter, config } = await getTransporter();
   if (!transporter) {
-    console.warn("SMTP is not configured. Email skipped:", message.subject);
-    return { skipped: true };
+    const missing = [
+      !config.host && "SMTP_HOST",
+      !config.user && "SMTP_USER",
+      !config.pass && "SMTP_PASS"
+    ].filter(Boolean).join(", ");
+    console.warn(`SMTP is not configured. Email skipped: ${message.subject}. Missing: ${missing}`);
+    return { skipped: true, reason: "smtp_not_configured", missing };
   }
 
-  return transporter.sendMail({
-    from: process.env.MAIL_FROM || process.env.SMTP_USER,
-    ...message
-  });
+  try {
+    return await transporter.sendMail({
+      from: config.from || config.user,
+      ...message
+    });
+  } catch (error) {
+    console.error("Email delivery failed:", error.message);
+    const deliveryError = new Error("Email delivery failed. Check SMTP host, port, username, password, and sender settings.");
+    deliveryError.statusCode = 502;
+    throw deliveryError;
+  }
+}
+
+function portalInviteCopy(packageName) {
+  if (packageName) {
+    return `Your payment for <strong>${packageName}</strong> is complete. Please set your password to access your client portal.`;
+  }
+  return "Your client portal is ready. Please set your password to access your workspace.";
 }
 
 export async function sendPortalInviteEmail({ to, name, setPasswordUrl, packageName }) {
@@ -36,7 +89,7 @@ export async function sendPortalInviteEmail({ to, name, setPasswordUrl, packageN
     html: `
       <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
         <h2 style="margin:0 0 12px">Welcome${name ? `, ${name}` : ""}</h2>
-        <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} is complete. Please set your password to access your client portal.</p>
+        <p>${portalInviteCopy(packageName)}</p>
         <p><a href="${setPasswordUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">Set password</a></p>
         <p style="font-size:13px;color:#6b7280">This secure link expires in 48 hours.</p>
       </div>

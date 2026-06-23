@@ -42,6 +42,7 @@ const BLANK_CONTACT = {
 };
 
 const STATUS_OPTIONS = ["Active", "Inactive", "Prospect", "Lead", "Archived"];
+const SALUTATION_OPTIONS = ["Mr.", "Ms.", "Mrs.", "Dr.", "Prof.", "Mx."];
 
 function FormSection({ title, children, cols = 3 }) {
   return (
@@ -147,6 +148,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
   // Always keep the current value selectable so an existing status outside the
   // standard list isn't silently dropped on save.
   const statusOptions = Array.from(new Set([form.status, ...STATUS_OPTIONS].filter(Boolean)));
+  const salutationOptions = Array.from(new Set([form.salutation, ...SALUTATION_OPTIONS].filter(Boolean)));
 
   async function invitePortalAccess({ email, name, phone }) {
     try {
@@ -157,13 +159,15 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       );
       showToast(result?.alreadyActive
         ? { title: "Client already has access", message: `${email} has already set a password — no email sent.` }
-        : { title: "Portal invite sent", message: `${email} will get a secure link to set their password.` });
+        : result?.emailSkipped
+          ? { type: "error", title: "Setup email not sent", message: "SMTP is not configured, so no setup email was sent." }
+          : { title: "Portal invite sent", message: `${email} will get a secure link to set their password.` });
     } catch (err) {
       showToast({ type: "error", title: "Invite not sent", message: err.message || "Could not send the portal invite." });
     }
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const next = {};
     const composedName = `${form.salutation || ""} ${form.firstName || ""} ${form.lastName || ""}`.trim();
     if (!composedName && !String(form.name || "").trim()) next.firstName = "Enter at least a first or last name.";
@@ -184,10 +188,12 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       // only WhatsApp / alternate was filled in.
       phone: form.phone || form.whatsapp || form.alternatePhone || "",
     };
-    // Fire-and-forget so the save isn't blocked; the toast comes from a root
-    // provider, so it still resolves after this panel closes.
-    if (sendPortalInvite && payload.email) invitePortalAccess(payload);
-    onSave(payload);
+    try {
+      await onSave(payload);
+      if (sendPortalInvite && payload.email) await invitePortalAccess(payload);
+    } catch (err) {
+      showToast({ type: "error", title: "Contact not saved", message: err.message || "Could not save the contact." });
+    }
   }
 
   return (
@@ -205,7 +211,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
     >
       <div className="space-y-6">
         <FormSection title="Personal Information" cols={3}>
-          <Input label="Salutation" value={form.salutation} onChange={set("salutation")} placeholder="Mr / Ms / Dr" />
+          <Select label="Salutation" value={form.salutation} onChange={set("salutation")} options={salutationOptions} placeholder="Select salutation" />
           <Input label="First name" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
           <Input label="Last name" value={form.lastName} onChange={set("lastName")} />
           <Input label="Designation" value={form.designation} onChange={set("designation")} />

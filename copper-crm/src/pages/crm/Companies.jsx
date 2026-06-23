@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Eye, Filter, FolderOpen, FolderPlus,
+  ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, Filter, FolderOpen, FolderPlus,
   Folder as FolderIcon, Globe, Grid2x2, List, MoreVertical, Plus, Save, Search,
-  SlidersHorizontal, X
+  SlidersHorizontal, Trash2, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -208,13 +208,13 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
               onClick={() => { setMenuOpen(false); onEdit(company); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
             >
-              Edit company
+              <Edit2 size={14} /> Edit company
             </button>
             <button
               onClick={() => { setMenuOpen(false); onDelete(company); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
             >
-              Delete
+              <Trash2 size={14} /> Delete
             </button>
           </div>,
           document.body

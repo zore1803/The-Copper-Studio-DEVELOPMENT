@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Eye, Filter, Folder as FolderIcon,
-  FolderOpen, FolderPlus, Grid2x2, Link2, List, Mail, MessageCircle, MoreVertical, Phone, Plus,
+  FolderOpen, FolderPlus, Grid2x2, Edit2, List, Mail, MessageCircle, MoreVertical, Phone, Plus,
   Save, Search, SlidersHorizontal, Trash2, X
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
@@ -133,7 +133,7 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
               <Eye size={14} /> Open profile
             </button>
             <button onClick={() => { setMenuOpen(false); onEdit(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
-              <Link2 size={14} /> Edit contact
+              <Edit2 size={14} /> Edit contact
             </button>
             <button onClick={() => { setMenuOpen(false); onDelete(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50">
               <Trash2 size={14} /> Delete

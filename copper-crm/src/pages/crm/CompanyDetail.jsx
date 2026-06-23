@@ -220,7 +220,7 @@ function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink 
             ))}
           </div>
         ) : (
-          <p className="text-sm text-[#6b7280]">No client accounts found. Clients get an account automatically after their first paid order.</p>
+          <p className="text-sm text-[#6b7280]">No client accounts found. Add an email to a contact, then reopen this panel.</p>
         )}
       </div>
     </SidePanel>
@@ -2246,4 +2246,3 @@ function MeetingsTab({ calendlyUrl }) {
     </div>
   );
 }
-

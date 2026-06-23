@@ -4,15 +4,53 @@ import Order from "../models/Order.js";
 import Project from "../models/Project.js";
 import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
+import Contact from "../models/Contact.js";
+import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { sendPortalInvite } from "../services/portalInvite.js";
+import { ensureClientAccount, sendPortalInvite } from "../services/portalInvite.js";
 
 const router = express.Router();
 
 router.use(requireAuth, requireRole("superadmin"));
 
+function contactDisplayName(contact) {
+  return contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || contact.email;
+}
+
+async function ensureContactClientAccounts() {
+  const contacts = await Contact.find({}).sort({ updatedAt: -1 });
+  const companies = await Company.find({}).catch(() => []);
+  const companyMap = new Map(companies.map((company) => [String(company._id || company.id), company]));
+  const byEmail = new Map();
+
+  for (const contact of contacts) {
+    const email = String(contact.email || "").trim().toLowerCase();
+    if (!email || byEmail.has(email)) continue;
+    byEmail.set(email, contact);
+  }
+
+  for (const contact of byEmail.values()) {
+    const company = companyMap.get(String(contact.companyId || ""));
+    const companyName = contact.companyName || contact.company || company?.name || "";
+    try {
+      await ensureClientAccount({
+        email: contact.email,
+        name: contactDisplayName(contact),
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        phone: contact.phone || contact.whatsapp || contact.alternatePhone,
+        company: companyName,
+        jobTitle: contact.designation
+      });
+    } catch (error) {
+      console.warn("Could not sync contact to client account:", error.message);
+    }
+  }
+}
+
 router.get("/clients", async (req, res, next) => {
   try {
+    await ensureContactClientAccounts();
     const clients = await User.find({ role: "user" }).sort({ createdAt: -1 }).select("-passwordHash -invite -resetPassword");
     res.json(clients);
   } catch (error) {
@@ -28,7 +66,13 @@ router.post("/clients/invite", async (req, res, next) => {
     const { email, name, phone, company } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required to send a portal invite." });
     const result = await sendPortalInvite({ email, name, phone, company, skipIfActive: true });
-    res.status(201).json(result);
+    if (result.emailSkipped) {
+      return res.status(503).json({
+        ...result,
+        message: "Client account was created, but SMTP is not configured so the setup email was not sent."
+      });
+    }
+    res.status(result.alreadyActive ? 200 : 201).json(result);
   } catch (error) {
     next(error);
   }
