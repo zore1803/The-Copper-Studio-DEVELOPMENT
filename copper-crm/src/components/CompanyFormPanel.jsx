@@ -4,6 +4,30 @@ import { Button } from "./ui";
 import SidePanel from "./SidePanel";
 import { isGstin } from "../lib/validators";
 
+const SOCIAL_DOMAINS = {
+  linkedin: { domains: ["linkedin.com", "lnkd.in"], label: "a linkedin.com" },
+  instagram: { domains: ["instagram.com"], label: "an instagram.com" },
+  facebook: { domains: ["facebook.com", "fb.com"], label: "a facebook.com" },
+  twitter: { domains: ["twitter.com", "x.com"], label: "a twitter.com / x.com" },
+};
+
+// Checks the URL's hostname against the platform's known domains, so a
+// LinkedIn link pasted into the Instagram field (or vice versa) gets caught
+// at save time instead of silently pointing the icon button at the wrong site.
+function matchesSocialDomain(value, key) {
+  const rule = SOCIAL_DOMAINS[key];
+  if (!rule) return true;
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return true;
+  try {
+    const url = new URL(/^[a-z]+:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    return rule.domains.some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch {
+    return false;
+  }
+}
+
 function Field({ label, value, onChange, placeholder = "", type = "text", error = "" }) {
   return (
     <label className="block">
@@ -36,6 +60,11 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     if (!String(form.name || "").trim()) next.name = "Company name is required.";
     if (form.gstin && !isGstin(form.gstin)) next.gstin = "Enter a valid 15-character GSTIN.";
     if (form.website && !/^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(String(form.website).trim())) next.website = "Enter a valid website URL.";
+    for (const key of Object.keys(SOCIAL_DOMAINS)) {
+      if (form[key] && !matchesSocialDomain(form[key], key)) {
+        next[key] = `Enter ${SOCIAL_DOMAINS[key].label} link.`;
+      }
+    }
     setErrors(next);
     if (Object.keys(next).length) return;
     onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin });
@@ -70,10 +99,10 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <div className="sm:col-span-2 mt-1 border-t border-[#f1f1f5] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social profiles</span>
         </div>
-        <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" />
-        <Field label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="https://instagram.com/…" />
-        <Field label="Facebook" value={form.facebook} onChange={set("facebook")} placeholder="https://facebook.com/…" />
-        <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} placeholder="https://x.com/…" />
+        <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" error={errors.linkedin} />
+        <Field label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="https://instagram.com/…" error={errors.instagram} />
+        <Field label="Facebook" value={form.facebook} onChange={set("facebook")} placeholder="https://facebook.com/…" error={errors.facebook} />
+        <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} placeholder="https://x.com/…" error={errors.twitter} />
         <Field label="Personal website" value={form.personalWebsite} onChange={set("personalWebsite")} placeholder="https://…" />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
