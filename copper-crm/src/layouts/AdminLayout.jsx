@@ -1,0 +1,605 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import {
+  Bell, BarChart2, Building2, ChevronDown,
+  ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
+  FileText, FolderKanban, FolderOpen, LayoutDashboard, ClipboardList,
+  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Settings,
+  ShoppingCart, Tag, UserRound, Wallet, Package,
+} from "lucide-react";
+import { useAuth } from "../auth/useAuth";
+import { storeGet } from "../lib/store";
+import { useCrmRecords } from "../hooks/useCrmRecords";
+
+const NAV_SECTIONS = [
+  {
+    label: "CRM",
+    items: [
+      { icon: Building2, to: "/admin/companies", label: "Companies" },
+      { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
+      { icon: UserRound, to: "/admin/contacts", label: "Contacts" },
+      {
+        icon: ClipboardList, label: "Activity",
+        children: [
+          { icon: Mail, to: "/admin/communication/email-templates", label: "Email Templates" },
+          { icon: MessageCircle, to: "/admin/communication/whatsapp-templates", label: "WhatsApp Templates" },
+        ],
+      },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      {
+        icon: ShoppingCart, label: "Sales",
+        children: [
+          { icon: ReceiptText, to: "/admin/invoices", label: "Invoices" },
+          { icon: CreditCard, to: "/admin/payments", label: "Payments" },
+        ],
+      },
+      {
+        icon: Package, label: "Products & Services",
+        children: [
+          { icon: FileSignature, to: "/admin/services/proposal-generator", label: "Proposal Generator" },
+          { icon: Tag, to: "/admin/services/coupon-generator", label: "Coupon Generator" },
+          { icon: Wallet, to: "/admin/coupons", label: "Coupons" },
+        ],
+      },
+      {
+        icon: FolderKanban, label: "Projects",
+        children: [
+          { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
+          { icon: LayoutDashboard, to: "/admin/kanban", label: "Kanban Board" },
+          { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
+          { icon: FileText, to: "/admin/tasks", label: "Tasks" },
+        ],
+      },
+      {
+        icon: FolderOpen, label: "Documents",
+        children: [
+          { icon: Building2, to: "/admin/documents/company-folders", label: "Company Folders" },
+          { icon: FolderOpen, to: "/admin/documents/project-folders", label: "Project Folders" },
+        ],
+      },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      { icon: Settings, to: "/admin/settings", label: "Settings" },
+    ],
+  },
+];
+
+const pageNames = {
+  "/admin/analytics": "Analytics",
+  "/admin/timeline": "Timeline",
+  "/admin/payments": "Payments",
+  "/admin/companies": "Companies",
+  "/admin/contacts": "Contacts",
+  "/admin/projects": "Projects",
+  "/admin/kanban": "Kanban Board",
+  "/admin/tasks": "Tasks",
+  "/admin/invoices": "Invoices",
+  "/admin/coupons": "Coupons",
+  "/admin/services/coupon-generator": "Coupon Generator",
+  "/admin/services/proposal-generator": "Proposal Generator",
+  "/admin/services/communications": "Communication",
+  "/admin/communication/email-templates": "Email Templates",
+  "/admin/communication/whatsapp-templates": "WhatsApp Templates",
+  "/admin/documents/company-folders": "Company Folders",
+  "/admin/documents/project-folders": "Project Folders",
+  "/admin/database": "Database",
+  "/admin/settings": "Settings",
+};
+
+const searchablePages = [
+  { label: "Analytics", to: "/admin/analytics", keywords: "revenue orders graph payment analytics" },
+  { label: "Companies", to: "/admin/companies", keywords: "accounts gstin company industry client business" },
+  { label: "Contacts", to: "/admin/contacts", keywords: "people email phone designation client contact" },
+  { label: "Projects", to: "/admin/projects", keywords: "project delivery timeline active orders" },
+  { label: "Kanban Board", to: "/admin/kanban", keywords: "tasks board drag status todo progress done" },
+  { label: "Timeline", to: "/admin/timeline", keywords: "project timeline gantt schedule milestones" },
+  { label: "Tasks", to: "/admin/tasks", keywords: "tasks meetings activities reminders" },
+  { label: "Payments", to: "/admin/payments", keywords: "payments collection transaction gateway" },
+  { label: "Invoices", to: "/admin/invoices", keywords: "billing invoice gst payment" },
+  { label: "Coupons", to: "/admin/coupons", keywords: "coupons discount codes finance" },
+  { label: "Coupon Generator", to: "/admin/services/coupon-generator", keywords: "coupon code discount" },
+  { label: "Proposal Generator", to: "/admin/services/proposal-generator", keywords: "proposal pdf client" },
+  { label: "Company Folders", to: "/admin/documents/company-folders", keywords: "documents company folders files" },
+  { label: "Project Folders", to: "/admin/documents/project-folders", keywords: "documents project folders files" },
+  { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
+  { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
+  { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
+];
+
+function getBreadcrumbs(pathname, companies = [], projects = []) {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs = [{ label: "Analytics", to: "/admin/analytics" }];
+  let path = "";
+  for (const seg of segments.slice(1)) {
+    path += "/" + seg;
+    const fullPath = "/admin" + path;
+    let name = pageNames[fullPath];
+    if (!name) {
+      const company = companies.find((c) => String(c.id) === seg || String(c._id) === seg);
+      const project = projects.find((p) => String(p.id) === seg || String(p._id) === seg);
+      name = company?.name || project?.name || (seg.length > 8 ? seg.slice(0, 8) + "…" : seg.charAt(0).toUpperCase() + seg.slice(1));
+    }
+    crumbs.push({ label: name, to: fullPath });
+  }
+  return crumbs;
+}
+
+function initialsOf(name) {
+  return (name || "").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "—";
+}
+
+function isLeafActive(item, pathname) {
+  return item.end ? pathname === item.to : pathname.startsWith(item.to);
+}
+
+function isGroupActive(item, pathname) {
+  return (item.children || []).some((child) => isLeafActive(child, pathname));
+}
+
+function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
+  return (
+    <button
+      onClick={() => onNavigate(item.to)}
+      title={collapsed ? item.label : undefined}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors ${
+        collapsed ? "justify-center px-0 py-2.5" : `py-2 ${indent ? "pl-9 pr-3" : "px-3"}`
+      } ${active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
+    >
+      <item.icon size={collapsed ? 20 : 16} strokeWidth={1.8} className="shrink-0" />
+      {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+    </button>
+  );
+}
+
+function NavGroup({ item, collapsed, active, onNavigate, location }) {
+  const [userOpen, setUserOpen] = useState(null);
+  const open = userOpen === null ? active : userOpen;
+  const [flyoutOpen, setFlyoutOpen] = useState(false);
+
+  if (collapsed) {
+    return (
+      <div className="relative" onMouseEnter={() => setFlyoutOpen(true)} onMouseLeave={() => setFlyoutOpen(false)}>
+        <button
+          title={item.label}
+          className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+            active ? "bg-white border-[#E5E5E5] text-[#C57E5B]" : "border-transparent text-[#374151] hover:bg-white/70"
+          }`}
+        >
+          <item.icon size={20} strokeWidth={1.8} />
+        </button>
+        {flyoutOpen && (
+          <div className="absolute left-full top-0 ml-2 w-56 rounded-xl border border-[#E5E5E5] bg-white shadow-lg py-1.5 z-50">
+            <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
+            {item.children.map((child) => (
+              <button
+                key={child.to}
+                onClick={() => onNavigate(child.to)}
+                className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-[#f9fafb] ${isLeafActive(child, location) ? "text-[#C57E5B] font-semibold" : "text-[#374151]"}`}
+              >
+                <child.icon size={15} className="shrink-0" />
+                <span className="truncate">{child.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <button
+        onClick={() => setUserOpen(!open)}
+        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#C57E5B]" : "text-[#374151] hover:bg-white/70"}`}
+      >
+        <span className="flex items-center gap-3">
+          <item.icon size={16} strokeWidth={1.8} />
+          <span className="text-sm font-medium">{item.label}</span>
+        </span>
+        <ChevronDown size={14} className={`shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="mt-0.5 space-y-0.5">
+          {item.children.map((child) => (
+            <NavLeaf key={child.to} item={child} collapsed={false} active={isLeafActive(child, location)} onNavigate={onNavigate} indent />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CompanySwitcher({ collapsed, companies, activeCompanyId, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function onOutside(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, []);
+
+  const active = companies.find((c) => String(c.id || c._id) === String(activeCompanyId)) || companies[0] || null;
+  const filtered = companies.filter((c) => (c.name || "").toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div ref={ref} className={`relative ${collapsed ? "flex justify-center" : ""}`}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        title={active ? active.name : "No companies yet"}
+        className={collapsed
+          ? "flex h-10 w-10 items-center justify-center rounded-lg bg-[#C57E5B] text-white text-xs font-semibold"
+          : "flex w-full items-center gap-2.5 rounded-lg border border-[#E5E5E5] bg-white px-3 py-2.5 text-left"}
+      >
+        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#C57E5B] text-xs font-semibold text-white ${collapsed ? "h-full w-full rounded-lg" : ""}`}>
+          {initialsOf(active?.name) || "—"}
+        </span>
+        {!collapsed && (
+          <>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#111827]">
+              {active?.name || "No companies yet"}
+            </span>
+            <ChevronDown size={14} className="shrink-0 text-[#6b7280]" />
+          </>
+        )}
+      </button>
+      {open && (
+        <div className={`absolute z-50 mt-2 w-64 rounded-xl border border-[#E5E5E5] bg-white shadow-lg ${collapsed ? "left-full top-0 ml-2" : "left-0 top-full"}`}>
+          <div className="p-2 border-b border-[#f1f1f5]">
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search companies…"
+              className="w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-sm outline-none focus:border-[#884c2d]"
+            />
+          </div>
+          <div className="max-h-64 overflow-y-auto py-1">
+            {filtered.length ? filtered.map((company) => (
+              <button
+                key={company.id || company._id}
+                onClick={() => { onSelect(company); setOpen(false); setQuery(""); }}
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-[#f9fafb]"
+              >
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#C57E5B] text-[10px] font-semibold text-white">
+                  {initialsOf(company.name)}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-[#111827]">{company.name}</span>
+              </button>
+            )) : (
+              <p className="px-3 py-3 text-xs text-[#6b7280]">No companies yet.</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function AdminLayout() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const { records: companies } = useCrmRecords("companies");
+  const { records: projects } = useCrmRecords("projects");
+  const [collapsed, setCollapsed] = useState(false);
+  const [pinnedCompanyId, setPinnedCompanyId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [recordIndex, setRecordIndex] = useState([]);
+  const searchRef = useRef(null);
+  const quickAddRef = useRef(null);
+
+  useEffect(() => {
+    function onOutside(e) { if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false); }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, []);
+
+  const QUICK_ADD = [
+    { icon: Building2, label: "New Company", to: "/admin/companies" },
+    { icon: UserRound, label: "New Contact", to: "/admin/contacts" },
+    { icon: FolderKanban, label: "New Project", to: "/admin/projects" },
+    { icon: ReceiptText, label: "New Invoice", to: "/admin/invoices" },
+  ];
+
+  const name = auth.user?.name || "Admin";
+  const initials = initialsOf(name);
+  const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects);
+
+  const urlCompanyMatch = location.pathname.match(/^\/admin\/companies\/([^/]+)/);
+  const activeCompanyId = urlCompanyMatch ? urlCompanyMatch[1] : (pinnedCompanyId || companies[0]?.id || companies[0]?._id || null);
+
+  useEffect(() => {
+    function buildIndex() {
+      const companyRecords = storeGet("companies");
+      const contacts = storeGet("contacts");
+      const projects = storeGet("projects");
+      const invoices = storeGet("invoices");
+      const documents = storeGet("documents");
+      setRecordIndex([
+        ...companyRecords.map((c) => ({ type: "Company", label: c.companyName || c.name, sublabel: c.industry, to: `/admin/companies/${c.id || c._id}` })),
+        ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
+        ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
+        ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
+        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
+      ].filter((item) => item.label));
+    }
+    buildIndex();
+    function onUpdate() { buildIndex(); }
+    window.addEventListener("cs-store", onUpdate);
+    return () => window.removeEventListener("cs-store", onUpdate);
+  }, []);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+    const recordMatches = recordIndex
+      .filter((r) => `${r.label} ${r.sublabel || ""}`.toLowerCase().includes(query))
+      .slice(0, 5);
+    const pageMatches = searchablePages
+      .filter((p) => `${p.label} ${p.keywords}`.toLowerCase().includes(query))
+      .map((p) => ({ type: "Page", label: p.label, to: p.to }))
+      .slice(0, 5 - recordMatches.length);
+    return [...recordMatches, ...pageMatches];
+  }, [searchQuery, recordIndex]);
+
+  function openResult(result) {
+    navigate(result.to);
+    setSearchQuery("");
+    setSearchFocused(false);
+  }
+
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  function selectCompany(company) {
+    const id = company.id || company._id;
+    setPinnedCompanyId(id);
+    navigate(`/admin/companies/${id}`);
+  }
+
+  function quickAdd(item) {
+    setQuickAddOpen(false);
+    navigate(item.to, { state: { openCreate: true } });
+  }
+
+  const sidebarW = collapsed ? 66 : 264;
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
+      {/* Sidebar */}
+      <aside
+        className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
+        style={{ width: sidebarW }}
+      >
+        <div className={`flex h-14 items-center border-b border-[#ECECEC] ${collapsed ? "justify-center" : "justify-end px-3"}`}>
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#525252] hover:bg-[#f9fafb] transition-colors"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+          </button>
+        </div>
+
+        <div className={`border-b border-[#E1E4EA] ${collapsed ? "flex justify-center py-3" : "p-3"}`}>
+          <CompanySwitcher collapsed={collapsed} companies={companies} activeCompanyId={activeCompanyId} onSelect={selectCompany} />
+        </div>
+
+        <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
+              {!collapsed && (
+                <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af]">
+                  {section.label}
+                </p>
+              )}
+              {section.items.map((item) =>
+                item.children ? (
+                  <NavGroup
+                    key={item.label}
+                    item={item}
+                    collapsed={collapsed}
+                    active={isGroupActive(item, location.pathname)}
+                    onNavigate={navigate}
+                    location={location.pathname}
+                  />
+                ) : (
+                  <NavLeaf
+                    key={item.to}
+                    item={item}
+                    collapsed={collapsed}
+                    active={isLeafActive(item, location.pathname)}
+                    onNavigate={navigate}
+                  />
+                )
+              )}
+            </div>
+          ))}
+        </nav>
+
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center gap-2 py-3" : "p-3"}`}>
+          {!collapsed && (
+            <div className="mb-2 flex items-center gap-2.5 px-1">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
+                {initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-xs font-semibold text-[#111827]">{name}</p>
+                <p className="truncate text-[11px] text-[#6b7280]">{auth.user?.role || "Admin"}</p>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => { auth.logout(); navigate("/login", { replace: true }); }}
+            title="Log out"
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+          >
+            <LogOut size={14} />
+            {!collapsed && "Log out"}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: sidebarW }}>
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-1.5 text-sm min-w-0 flex-shrink-0">
+            {breadcrumbs.map((crumb, i) => (
+              <div key={crumb.to} className="flex items-center gap-1.5">
+                {i > 0 && <ChevronRight size={13} className="text-[#9ca3af] shrink-0" />}
+                {i < breadcrumbs.length - 1 ? (
+                  <button
+                    onClick={() => navigate(crumb.to)}
+                    className="text-[#525252] hover:text-black font-medium transition-colors whitespace-nowrap"
+                  >
+                    {crumb.label}
+                  </button>
+                ) : (
+                  <span className="text-black font-medium whitespace-nowrap">{crumb.label}</span>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* Right: Search + actions */}
+          <div className="flex items-center gap-4 flex-1 justify-end">
+            {/* Search */}
+            <div className="relative w-72">
+              <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+                <Search size={14} className="text-[#525866] shrink-0" />
+                <input
+                  ref={searchRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") openResult(searchResults[0]);
+                    if (e.key === "Escape") { setSearchQuery(""); setSearchFocused(false); }
+                  }}
+                  placeholder="Search Companies, Deals, Contacts"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+                />
+              </div>
+              {searchFocused && searchQuery.trim() && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
+                  {searchResults.length ? (
+                    <div className="py-1">
+                      {searchResults.map((r) => (
+                        <button
+                          key={`${r.type}-${r.label}`}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => openResult(r)}
+                          className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#f9fafb]"
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-[#111827] truncate">{r.label}</span>
+                            {r.sublabel && <span className="block text-xs text-[#6b7280] truncate">{r.sublabel}</span>}
+                          </span>
+                          <span className="shrink-0 rounded bg-[#f3f4f6] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#6b7280]">{r.type}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-3 py-3 text-xs text-[#6b7280]">No results found.</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bell */}
+            <button className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors">
+              <Bell size={16} />
+              <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />
+            </button>
+
+            {/* + New */}
+            <div ref={quickAddRef} className="relative">
+              <button
+                onClick={() => setQuickAddOpen((v) => !v)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C57E5B] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#b06a48] transition-colors"
+              >
+                <Plus size={16} />
+              </button>
+              {quickAddOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
+                  {QUICK_ADD.map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => quickAdd(item)}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <item.icon size={14} className="text-[#9ca3af]" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Avatar */}
+            <div className="relative">
+              <button
+                onClick={() => setAvatarOpen((v) => !v)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#884c2d]/20 transition-all"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
+                  {initials}
+                </span>
+              </button>
+              {avatarOpen && (
+                <div className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
+                  <div className="px-3 py-2 border-b border-[#f1f1f5]">
+                    <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
+                    <p className="text-[11px] text-[#6b7280] truncate">{auth.user?.role || "Admin"}</p>
+                  </div>
+                  <button
+                    onClick={() => { setAvatarOpen(false); navigate("/admin/settings"); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                  >
+                    <Settings size={14} className="text-[#9ca3af]" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => { setAvatarOpen(false); auth.logout(); navigate("/login", { replace: true }); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={14} />
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto bg-white">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}

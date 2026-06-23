@@ -1,0 +1,95 @@
+import express from "express";
+import mongoose from "mongoose";
+import Order from "../models/Order.js";
+import Invoice from "../models/Invoice.js";
+import { buildInvoiceModel, renderInvoiceHtml } from "../services/invoiceTemplate.js";
+import { htmlToPdfBuffer, PdfUnavailableError } from "../services/pdf.js";
+
+const router = express.Router();
+
+function isObjectId(value) {
+  return mongoose.Types.ObjectId.isValid(value);
+}
+
+function safeFileName(invoiceNumber) {
+  return `${String(invoiceNumber || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`;
+}
+
+async function loadByOrderId(orderId) {
+  if (!isObjectId(orderId)) return null;
+  const order = await Order.findById(orderId);
+  if (!order) return null;
+  const invoice = await Invoice.findOne({ sourceOrderId: order._id });
+  return { order, invoice };
+}
+
+async function loadByInvoiceId(invoiceId) {
+  let invoice = null;
+  if (isObjectId(invoiceId)) invoice = await Invoice.findById(invoiceId);
+  if (!invoice) invoice = await Invoice.findOne({ invoiceNumber: invoiceId });
+  if (!invoice) return null;
+  const order = invoice.sourceOrderId ? await Order.findById(invoice.sourceOrderId) : null;
+  return { order, invoice };
+}
+
+async function respond(res, data, format) {
+  if (!data || (!data.order && !data.invoice)) {
+    return res.status(404).json({ message: "Invoice not found." });
+  }
+  const model = buildInvoiceModel(data);
+  const html = renderInvoiceHtml(model);
+
+  if (format === "html") {
+    res.type("html").send(html);
+    return;
+  }
+
+  try {
+    const pdf = await htmlToPdfBuffer(html);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${safeFileName(model.invoiceNumber)}"`);
+    res.send(pdf);
+  } catch (error) {
+    if (error instanceof PdfUnavailableError) {
+      // Graceful fallback: serve the printable HTML so the user can still get the invoice.
+      console.warn("PDF generation unavailable, serving HTML invoice:", error.message);
+      res.type("html").send(html);
+      return;
+    }
+    throw error;
+  }
+}
+
+router.get("/by-order/:orderId/html", async (req, res, next) => {
+  try {
+    respond(res, await loadByOrderId(req.params.orderId), "html");
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/by-order/:orderId/pdf", async (req, res, next) => {
+  try {
+    await respond(res, await loadByOrderId(req.params.orderId), "pdf");
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:invoiceId/html", async (req, res, next) => {
+  try {
+    respond(res, await loadByInvoiceId(req.params.invoiceId), "html");
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:invoiceId/pdf", async (req, res, next) => {
+  try {
+    await respond(res, await loadByInvoiceId(req.params.invoiceId), "pdf");
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default router;

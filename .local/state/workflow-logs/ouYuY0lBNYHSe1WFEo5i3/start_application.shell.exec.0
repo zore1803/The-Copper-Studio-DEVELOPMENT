@@ -1,0 +1,6640 @@
+
+> copper-crm@0.0.0 dev
+> vite
+
+[1G[0K
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J
+  [32m[1mVITE[22m v8.0.16[39m  [2mready in [0m[1m575[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.0.2:[1m5000[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:00:46 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/auth/AuthContext.jsx, /src/index.css[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:01:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/auth/AuthPages.jsx, /src/index.css[22m
+[2m7:01:05 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:01:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:01:08 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:09 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:09 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:11 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:14 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:40 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:40 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:41 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:44 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:45 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+[2m7:01:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:01:45 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Something went wrong.
+[39m > request src/lib/api.js:16:10
+    14 |    const data = await response.json().catch(() => ({}));
+    15 |    if (!response.ok) {
+    16 |      throw new Error(data.message || "Something went wrong.");
+       |            ^
+    17 |    }
+    18 |    return data;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:01 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/auth/AuthContext.jsx, /src/pages/client/ClientDashboard.jsx, /src/pages/client/ClientPages.jsx, /src/pages/admin/ClientProjectsPage.jsx, /src/pages/crm/Companies.jsx, /src/pages/crm/CompanyDetail.jsx, /src/pages/crm/DealDetail.jsx, /src/pages/crm/Contacts.jsx, /src/pages/crm/ContactDetail.jsx, /src/pages/projects/ProjectDetail.jsx, /src/pages/crm/Leads.jsx, /src/pages/projects/ProjectFiles.jsx, /src/pages/projects/ProjectGantt.jsx, /src/pages/projects/KanbanBoard.jsx and 2 more[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:04 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/auth/AuthContext.jsx, /src/index.css[22m
+[2m7:02:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:16 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:02:21 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:21 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:30 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:30 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x6)[39m
+[2m7:02:36 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:36 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:02:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:02:42 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:42 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:02:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:02:59 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:02:59 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:01 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:03:07 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:07 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:07 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/auth/AuthContext.jsx, /src/pages/client/ClientDashboard.jsx, /src/pages/client/ClientPages.jsx, /src/pages/admin/ClientProjectsPage.jsx, /src/pages/crm/Companies.jsx, /src/pages/crm/CompanyDetail.jsx, /src/pages/crm/DealDetail.jsx, /src/pages/crm/Contacts.jsx, /src/pages/crm/ContactDetail.jsx, /src/pages/projects/ProjectDetail.jsx, /src/pages/crm/Leads.jsx, /src/pages/projects/ProjectFiles.jsx, /src/pages/projects/ProjectGantt.jsx, /src/pages/projects/KanbanBoard.jsx and 2 more[22m
+[2m7:03:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:03:16 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:16 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:03:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:03:24 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:24 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:03:27 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:27 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:03:28 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:04:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:42 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:42 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+[2m7:04:43 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:43 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:04:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:45 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:04:46 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:46 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:04:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:01 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:05:01 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:05:03 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:05:03 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:05:19 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+[2m7:05:22 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:05:22 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:05:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:05:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:05:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:05:30 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:06:48 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:15 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x6)[39m
+[2m7:09:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:09:21 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:21 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:26 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:36 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:59 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:09:59 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:03 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x7)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:03 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x8)[39m
+[2m7:10:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:12 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:10:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:27 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:10:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:29 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:10:31 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mEncountered two children with the same key, `Jun`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[2m7:10:31 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:10:31 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:10:31 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mEncountered two children with the same key, `Jun`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+[2m7:11:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:25 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x6)[39m
+[2m7:11:35 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:35 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:39 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:11:40 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:11:40 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Backend unavailable — working in demo mode.
+[39m > makeNetworkError src/lib/api.js:4:14
+    2  |  
+    3  |  function makeNetworkError(message) {
+    4  |    const err = new Error(message);
+       |                ^
+    5  |    err.isNetworkError = true;
+    6  |    return err;
+ > request src/lib/api.js:28:12
+
+[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:42 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x8)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x9)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x10)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x11)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x12)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x13)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:44 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x14)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x15)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x16)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x17)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x18)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x19)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x20)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:11:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x21)[39m
+[2m7:12:46 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:46 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:47 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:47 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:48 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:48 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:49 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:49 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:52 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:52 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:12:54 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:12:54 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:01 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:01 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:07 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:07 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:09 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/admin/clients[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:12 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:15 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:15 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:35 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:35 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:40 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:40 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/coupons[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:45 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x6)[39m
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:13:53 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:54 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:56 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:56 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:57 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:57 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:57 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:57 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:13:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:13:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:06 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:06 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:08 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:10 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/documents[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:13 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:14 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/projects[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:28 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/client/meetings[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:33 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:38 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x6)[39m
+[2m7:14:56 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:56 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:14:58 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:15:02 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:02 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:03 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:15:04 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:15:04 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Backend unavailable — working in demo mode.
+[39m > makeNetworkError src/lib/api.js:4:14
+    2  |  
+    3  |  function makeNetworkError(message) {
+    4  |    const err = new Error(message);
+       |                ^
+    5  |    err.isNetworkError = true;
+    6  |    return err;
+ > request src/lib/api.js:28:12
+
+[2m7:15:16 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:15:16 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:16:07 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/crm/Companies.jsx, /src/pages/crm/CompanyDetail.jsx, /src/pages/crm/DealDetail.jsx, /src/pages/crm/Contacts.jsx, /src/pages/crm/ContactDetail.jsx, /src/pages/projects/ProjectDetail.jsx, /src/pages/crm/Leads.jsx, /src/pages/projects/ProjectFiles.jsx, /src/pages/projects/ProjectGantt.jsx, /src/pages/projects/KanbanBoard.jsx, /src/pages/admin/AdminTabs.jsx, /src/pages/admin/AdminWorkflows.jsx[22m
+[2m7:16:12 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mReact has detected a change in the order of Hooks called by Companies. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useContext                 useContext
+2. useContext                 useContext
+3. useContext                 useContext
+4. useContext                 useContext
+5. useContext                 useContext
+6. useContext                 useContext
+7. useContext                 useContext
+8. useRef                     useRef
+9. useContext                 useContext
+10. useLayoutEffect           useLayoutEffect
+11. useCallback               useCallback
+12. useState                  useState
+13. useState                  useState
+14. useState                  useState
+15. useState                  useState
+16. useState                  useState
+17. useState                  useState
+18. useEffect                 useEffect
+19. useMemo                   useEffect
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[2m7:16:13 AM[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Rendered more hooks than during the previous render.
+[39m > updateWorkInProgressHook node_modules/react-dom/cjs/react-dom-client.development.js:7848:16
+ > updateMemo node_modules/react-dom/cjs/react-dom-client.development.js:8790:17
+ > useMemo node_modules/react-dom/cjs/react-dom-client.development.js:26484:17
+ > require_react_development</exports.useMemo node_modules/react/cjs/react.development.js:1251:33
+ > Companies src/pages/crm/Companies.jsx:123:19
+    121 |    const { showToast } = useToast();
+    122 |  
+    123 |    const filtered = useMemo(() =>
+        |                     ^
+    124 |      companies.filter((c) =>
+    125 |        `${c.name} ${c.industry} ${c.contact} ${c.status}`.toLowerCase().includes(search.toLowerCase())
+ > react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:19
+ > renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:40
+ > updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:18
+ > beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:17
+ > runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:874:12
+ > performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:21
+ > workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:58
+ > renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:10
+ > performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:34
+ > performSyncWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:18972:24
+ > flushSyncWorkAcrossRoots_impl node_modules/react-dom/cjs/react-dom-client.development.js:18814:20
+ > flushSyncWork$1 node_modules/react-dom/cjs/react-dom-client.development.js:16898:11
+ > scheduleRefresh node_modules/react-dom/cjs/react-dom-client.development.js:113:8
+ > performReactRefresh/< ../../../../@react-refresh:228:17
+ > performReactRefresh ../../../../@react-refresh:217:26
+ > enqueueUpdate< ../../../../@react-refresh:604:3
+
+[2m7:16:13 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mAn error occurred in the <Companies> component.
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:16:23 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/index.css, /src/pages/client/ClientDashboard.jsx, /src/pages/client/ClientPages.jsx, /src/pages/admin/ClientProjectsPage.jsx[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:17:55 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/projects/ProjectDetail.jsx, /src/index.css[22m
+[2m7:18:36 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+[2m7:18:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:18:41 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:18:47 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:18:47 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/contacts[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:18:48 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:18:48 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/leads[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:18:49 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:18:49 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/deals[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:18:51 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/projects/ProjectFiles.jsx, /src/index.css[22m
+[2m7:19:06 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:06 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:11 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x4)[39m
+[2m7:19:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:17 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/tasks[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:20 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m@hello-pangea/dnd
+
+Droppable: unsupported nested scroll container detected.
+A Droppable can only have one scroll parent (which can be itself)
+Nested scroll containers are currently not supported.
+
+We hope to support nested scroll containers soon: https://github.com/atlassian/react-beautiful-dnd/issues/131
+
+👷‍ This is a development only message. It will be removed in production builds. [33m(x7)[39m
+[2m7:19:44 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:19:44 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/crm/companies[39m
+Error: connect ECONNREFUSED 127.0.0.1:3000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) [33m(x2)[39m
+[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x2)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x3)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x4)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x5)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:14 AM[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mThe width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width. [33m(x6)[39m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m7:20:26 AM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/Dashboard.jsx, /src/index.css[22m

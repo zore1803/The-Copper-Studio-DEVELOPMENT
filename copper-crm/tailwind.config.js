@@ -1,0 +1,60 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["DM Sans", "system-ui", "sans-serif"],
+        display: ["Syne", "DM Sans", "system-ui", "sans-serif"],
+        inter: ["Inter", "system-ui", "sans-serif"],
+      },
+      colors: {
+        primary: { DEFAULT: "#894d0d", dark: "#6f381a", light: "#fff1ec", container: "#a76526", fixed: "#ffdcc2" },
+        studio: {
+          background: "#f0ede4",
+          surface: "#fff8f6",
+          card: "#e3d6c5",
+          border: "#d8c2b9",
+          muted: "#6c6355",
+          copper: "#884c2d",
+        },
+        /* Copper Studio OS tokens (for client portal) */
+        "cs-primary": "#894d0d",
+        "cs-primary-container": "#a76526",
+        "cs-primary-fixed": "#ffdcc2",
+        "cs-on-primary": "#ffffff",
+        "cs-background": "#f8f9fb",
+        "cs-surface": "#f8f9fb",
+        "cs-surface-lowest": "#ffffff",
+        "cs-surface-low": "#f2f4f6",
+        "cs-surface-container": "#edeef0",
+        "cs-surface-high": "#e7e8ea",
+        "cs-surface-highest": "#e1e2e4",
+        "cs-outline-variant": "#d8c3b4",
+        "cs-on-surface": "#191c1e",
+        "cs-on-surface-variant": "#524439",
+        "cs-secondary": "#555f6d",
+        "cs-error": "#ba1a1a",
+        /* Material Design color tokens used in UI HTML */
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#f2f4f6",
+        "surface-container": "#edeef0",
+        "surface-container-high": "#e7e8ea",
+        "surface-container-highest": "#e1e2e4",
+        "primary-container": "#a76526",
+        "primary-fixed": "#ffdcc2",
+        "primary-fixed-dim": "#ffb77b",
+        "outline-variant": "#d8c3b4",
+        "on-surface": "#191c1e",
+        "on-surface-variant": "#524439",
+        "secondary-container": "#d6e0f1",
+        "surface-bright": "#f8f9fb",
+      },
+      boxShadow: {
+        card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+        elevated: "0 4px 16px rgba(0,0,0,0.08)",
+      },
+    },
+  },
+  plugins: [],
+};

@@ -1,0 +1,851 @@
+import { useMemo, useState } from "react";
+import {
+  BellRing, Building2, Calendar, CreditCard, Edit3,
+  Globe2, LayoutGrid, List, LockKeyhole, Mail,
+  Plus, Save, Search,
+  Settings as SettingsIcon, SlidersHorizontal,
+  Trash2, UploadCloud, UserPlus
+} from "lucide-react";
+import { Button } from "../../components/ui";
+import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { useToast } from "../../components/useToast";
+import SidePanel from "../../components/SidePanel";
+import { isEmail, isGstin } from "../../lib/validators";
+
+const URL_RE = /^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i;
+
+function Card({ children, className = "" }) {
+  return <section className={`rounded-xl border border-gray-200 bg-white shadow-sm shadow-gray-100/60 ${className}`}>{children}</section>;
+}
+
+function Field({ label, value, onChange, placeholder, type = "text" }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold text-gray-600">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
+      />
+    </label>
+  );
+}
+
+const TASK_STAGES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const MEETING_STAGES = ["requested", "confirmed", "completed", "cancelled"];
+const MEETING_STAGE_LABEL = { requested: "Requested", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled" };
+
+function TaskStatusPill({ status = "Accepted" }) {
+  const map = {
+    Accepted: "bg-blue-50 text-blue-600", High: "bg-red-50 text-red-600", Medium: "bg-yellow-50 text-yellow-600", Low: "bg-gray-100 text-gray-500",
+    requested: "bg-amber-50 text-amber-700", confirmed: "bg-blue-50 text-blue-600", completed: "bg-emerald-50 text-emerald-700", cancelled: "bg-gray-100 text-gray-500",
+  };
+  return <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>{status}</span>;
+}
+
+function meetingWhen(meeting) {
+  const raw = meeting.scheduledAt || meeting.preferredDate;
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function MeetingCalendarView({ meetings }) {
+  const todayDate = useMemo(() => new Date(), []);
+  const [cursor, setCursor] = useState(() => new Date(todayDate.getFullYear(), todayDate.getMonth(), 1));
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const withDates = useMemo(
+    () => meetings.map((meeting) => ({ meeting, when: meetingWhen(meeting) })).filter((m) => m.when),
+    [meetings]
+  );
+
+  const cells = useMemo(() => {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const list = [];
+    for (let i = 0; i < firstWeekday; i++) list.push(null);
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      list.push({ date, meetings: withDates.filter((m) => sameDay(m.when, date)).map((m) => m.meeting) });
+    }
+    return list;
+  }, [cursor, withDates]);
+
+  const monthLabel = cursor.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  const selectedMeetings = selectedDay ? cells.find((c) => c && sameDay(c.date, selectedDay))?.meetings || [] : [];
+
+  return (
+    <div className="p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">← Prev</button>
+        <p className="text-sm font-bold text-gray-900">{monthLabel}</p>
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">Next →</button>
+      </div>
+      <div className="overflow-hidden rounded-xl border border-gray-200">
+        <div className="grid grid-cols-7 bg-gray-50">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((label) => (
+            <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-gray-400">{label}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7">
+          {cells.map((cell, index) => {
+            if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-gray-100 bg-gray-50/60" />;
+            const isToday = sameDay(cell.date, todayDate);
+            return (
+              <button
+                key={cell.date.toISOString()}
+                onClick={() => setSelectedDay(cell.date)}
+                className={`aspect-square border border-gray-100 p-1.5 text-left transition-colors hover:bg-blue-50 ${isToday ? "bg-blue-50/60" : "bg-white"}`}
+              >
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#2563EB] text-white" : "text-gray-700"}`}>
+                  {cell.date.getDate()}
+                </span>
+                {cell.meetings.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-0.5">
+                    {cell.meetings.slice(0, 3).map((m) => <span key={m.id || m._id} className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />)}
+                    {cell.meetings.length > 3 && <span className="text-[9px] font-bold text-[#2563EB]">+{cell.meetings.length - 3}</span>}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {selectedDay && (
+        <SidePanel
+          title={selectedDay.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+          subtitle={`${selectedMeetings.length} meeting${selectedMeetings.length === 1 ? "" : "s"} this day.`}
+          onClose={() => setSelectedDay(null)}
+        >
+          {selectedMeetings.length ? (
+            <div className="space-y-2">
+              {selectedMeetings.map((m) => (
+                <div key={m.id || m._id} className="rounded-xl border border-gray-200 bg-white p-3">
+                  <p className="text-sm font-semibold text-gray-900">{m.title}</p>
+                  <div className="mt-1.5"><TaskStatusPill status={m.status} /></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-gray-400">No meetings on this day.</p>
+          )}
+        </SidePanel>
+      )}
+    </div>
+  );
+}
+
+export function TasksPage() {
+  const { showToast } = useToast();
+  const [tab, setTab] = useState("Tasks");
+  const [view, setView] = useState("list");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
+  const { records: taskRecords, save: saveTask, remove: removeTask } = useCrmRecords("tasks");
+  const { records: meetingRecords, save: saveMeeting, remove: removeMeeting } = useCrmRecords("meetings");
+  const PAGE_SIZE = 10;
+
+  const taskRows = useMemo(() => taskRecords.map((task) => ({
+    ...task,
+    id: task.id || task.taskId || task._id,
+    title: task.title || task.taskName || "",
+    relatedTo: task.relatedTo || task.project || task.projectName || "",
+    relatedType: task.relatedType || "Project",
+    assigned: task.assigned || task.assignedTo || "",
+    due: task.due || task.dueDate || "",
+    status: task.status || "Backlog",
+    priority: task.priority || "Medium",
+  })), [taskRecords]);
+  const meetingRows = useMemo(() => meetingRecords.map((meeting) => ({
+    ...meeting,
+    id: meeting.id || meeting.meetingId || meeting._id,
+    title: meeting.title || meeting.subject || "",
+    type: meeting.type || meeting.channel || "",
+    scheduled: meeting.scheduled || meeting.scheduledAt || meeting.preferredDate || "",
+    duration: meeting.duration || "",
+    status: meeting.status || "requested",
+    contact: meeting.contact || meeting.contactName || meeting.participants?.[0]?.name || "",
+    contactType: meeting.contactType || meeting.companyName || "",
+  })), [meetingRecords]);
+  const filteredTasks = taskRows
+    .filter((t) => `${t.title} ${t.relatedTo} ${t.status}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((t) => statusFilter === "All" || t.status === statusFilter);
+  const filteredMeetings = meetingRows
+    .filter((m) => `${m.title} ${m.contact}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((m) => statusFilter === "All" || m.status === statusFilter);
+
+  const activeRows = tab === "Tasks" ? filteredTasks : filteredMeetings;
+  const totalPages = Math.max(1, Math.ceil(activeRows.length / PAGE_SIZE));
+  const paginated = activeRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const statusOptions = tab === "Tasks" ? TASK_STAGES : MEETING_STAGES;
+
+  function switchTab(t) {
+    setTab(t);
+    setPage(1);
+    setStatusFilter("All");
+    setView((v) => (v === "calendar" && t === "Tasks" ? "list" : v));
+  }
+
+  async function updateMeetingStatus(meeting, status) {
+    setUpdatingId(meeting.id);
+    try {
+      await saveMeeting({ ...meeting, status });
+      showToast({ title: "Meeting updated", message: `${meeting.title || "Meeting"} is now ${status}.` });
+    } catch (err) {
+      showToast({ type: "error", title: "Could not update meeting", message: err.message });
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleDeleteTask(task) {
+    if (!window.confirm(`Delete "${task.title || "this task"}"?`)) return;
+    await removeTask(task);
+    showToast({ title: "Task deleted" });
+  }
+
+  async function handleDeleteMeeting(meeting) {
+    if (!window.confirm(`Delete "${meeting.title || "this meeting"}"?`)) return;
+    await removeMeeting(meeting);
+    showToast({ title: "Meeting deleted" });
+  }
+
+  async function handleSaveSelected() {
+    if (!selected) return;
+    await saveTask(selected);
+    showToast({ title: selected._id ? "Task updated" : "Task created" });
+    setSelected(null);
+  }
+
+  return (
+    <div className="p-5 xl:p-6 bg-[#f9fafb] min-h-full">
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Tasks &amp; Meetings</h1>
+          <p className="text-sm text-gray-500">Manage your Tasks &amp; reminders</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {tab === "Tasks" && (
+            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+              <Plus size={14} /> New Activity
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
+          <div className="flex gap-1">
+            {["Tasks", "Meetings"].map((t) => (
+              <button key={t} onClick={() => switchTab(t)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t ? "border-b-2 border-[#2563EB] text-[#2563EB] rounded-none pb-1" : "text-gray-500 hover:text-gray-700"}`}>{t}</button>
+            ))}
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-xs text-gray-500">
+              <Search size={12} />
+              <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            </div>
+            <div className="relative">
+              <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${statusFilter !== "All" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>
+                <SlidersHorizontal size={13} />
+              </button>
+              {filtersOpen && (
+                <div className="absolute right-0 top-full z-20 mt-1 w-44 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
+                  <p className="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Filter by status</p>
+                  {["All", ...statusOptions].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => { setStatusFilter(status); setPage(1); setFiltersOpen(false); }}
+                      className={`flex w-full items-center rounded-lg px-2 py-1.5 text-left text-xs font-semibold capitalize ${statusFilter === status ? "bg-blue-50 text-[#2563EB]" : "text-gray-600 hover:bg-gray-50"}`}
+                    >
+                      {status}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
+            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
+            {tab === "Meetings" && (
+              <button onClick={() => setView("calendar")} className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${view === "calendar" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
+                <Calendar size={12} /> View in Calendar
+              </button>
+            )}
+          </div>
+        </div>
+
+        {view === "calendar" && tab === "Meetings" ? (
+          <MeetingCalendarView meetings={filteredMeetings} />
+        ) : view === "list" ? (
+          <>
+            <div className="overflow-x-auto">
+              {tab === "Tasks" ? (
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="bg-gray-50/70">
+                      <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></th>
+                      {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map((task) => (
+                      <tr key={task.id} className="border-t border-gray-100 hover:bg-gray-50/60">
+                        <td className="px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900 max-w-[200px] truncate">{task.title}</td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{task.relatedTo}</p>
+                          <p className="text-[11px] text-gray-400">{task.relatedType}</p>
+                        </td>
+                        <td className="px-4 py-3"><TaskStatusPill status={task.status} /></td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{task.assigned}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{task.due}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => setSelected(task)} className="text-gray-400 hover:text-blue-500" title="Edit"><Edit3 size={14} /></button>
+                            <button onClick={() => handleDeleteTask(task)} className="text-gray-400 hover:text-red-500" title="Delete"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {paginated.length === 0 && <tr><td colSpan={7} className="py-12 text-center text-sm text-gray-400">No tasks found</td></tr>}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="w-full min-w-[800px]">
+                  <thead>
+                    <tr className="bg-gray-50/70">
+                      {["Meeting", "Scheduled", "Status", "With", "Actions"].map((h) => (
+                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginated.map((mtg) => (
+                      <tr key={mtg.id} className="border-t border-gray-100 hover:bg-gray-50/60">
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-semibold text-gray-900">{mtg.title}</p>
+                          <span className="inline-flex items-center gap-1 rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">{mtg.type}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{mtg.scheduled ? new Date(mtg.scheduled).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "No date"}</p>
+                          <p className="text-[11px] text-gray-400">{mtg.duration ? `${mtg.duration} mins` : ""}</p>
+                        </td>
+                        <td className="px-4 py-3"><TaskStatusPill status={mtg.status} /></td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-gray-700">{mtg.contact}</p>
+                          <p className="text-[11px] text-gray-400">{mtg.contactType}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          {updatingId === mtg.id ? (
+                            <span className="text-xs text-gray-400">Updating…</span>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              {mtg.status === "requested" && (
+                                <>
+                                  <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Accept</button>
+                                  <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-lg border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50">Reject</button>
+                                </>
+                              )}
+                              {mtg.status === "confirmed" && (
+                                <button onClick={() => updateMeetingStatus(mtg, "completed")} className="rounded-lg bg-[#2563EB] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-blue-600">Mark Done</button>
+                              )}
+                              <button onClick={() => handleDeleteMeeting(mtg)} className="text-gray-400 hover:text-red-500" title="Delete"><Trash2 size={14} /></button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {paginated.length === 0 && <tr><td colSpan={5} className="py-12 text-center text-sm text-gray-400">No meetings found</td></tr>}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
+              <span className="text-xs text-gray-500">Showing {Math.min((page - 1) * PAGE_SIZE + 1, activeRows.length)}–{Math.min(page * PAGE_SIZE, activeRows.length)} of {activeRows.length} {tab}</span>
+              <div className="flex items-center gap-1">
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
+                ))}
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="p-5">
+            {tab === "Tasks" ? (
+              <div className="grid grid-cols-5 gap-4 min-w-[1000px]">
+                {TASK_STAGES.map((stage) => {
+                  const stageItems = filteredTasks.filter((task) => task.status === stage);
+                  return (
+                  <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">{stage} <span className="ml-1 text-gray-400">{stageItems.length}</span></span>
+                    </div>
+                    <div className="space-y-2">
+                      {stageItems.map((task) => (
+                        <button key={task.id} onClick={() => setSelected(task)} className="w-full rounded-xl border border-gray-200 bg-white p-3 text-left shadow-sm">
+                          <p className="text-xs font-bold text-gray-900">{task.title || "Untitled task"}</p>
+                          <p className="mt-1 text-[11px] text-gray-400">{task.relatedTo || "No project linked"}</p>
+                        </button>
+                      ))}
+                      {stageItems.length === 0 && <div className="py-6 text-center text-xs text-gray-300">No items</div>}
+                    </div>
+                  </div>
+                );})}
+              </div>
+            ) : (
+              <div className="grid grid-cols-4 gap-4 min-w-[800px]">
+                {MEETING_STAGES.map((stage) => {
+                  const stageItems = filteredMeetings.filter((m) => m.status === stage);
+                  return (
+                  <div key={stage} className="rounded-xl border border-gray-200 bg-gray-50/60 p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">{MEETING_STAGE_LABEL[stage]} <span className="ml-1 text-gray-400">{stageItems.length}</span></span>
+                    </div>
+                    <div className="space-y-2">
+                      {stageItems.map((mtg) => (
+                        <div key={mtg.id} className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+                          <p className="text-xs font-bold text-gray-900">{mtg.title || "Untitled meeting"}</p>
+                          <p className="mt-1 text-[11px] text-gray-400">{mtg.contact || "No contact linked"}</p>
+                          {mtg.status === "requested" && (
+                            <div className="mt-2 flex gap-1.5">
+                              <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-lg bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-700">Accept</button>
+                              <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-lg border border-red-200 px-2 py-1 text-[10px] font-bold text-red-600 hover:bg-red-50">Reject</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {stageItems.length === 0 && <div className="py-6 text-center text-xs text-gray-300">No items</div>}
+                    </div>
+                  </div>
+                );})}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {selected && (
+        <SidePanel
+          title={selected._id ? "Edit task" : "New Task"}
+          subtitle="Update task title, related entity, status, and due date."
+          onClose={() => setSelected(null)}
+          footer={
+            <div className="flex justify-between">
+              {selected._id ? (
+                <button onClick={() => { handleDeleteTask(selected); setSelected(null); }} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50"><Trash2 size={14} /> Delete</button>
+              ) : <span />}
+              <div className="flex gap-2"><Button variant="secondary" onClick={() => setSelected(null)}>Cancel</Button><Button onClick={handleSaveSelected}><Save size={14} /> Save</Button></div>
+            </div>
+          }
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Task title" value={selected.title} onChange={(v) => setSelected(p => ({ ...p, title: v }))} />
+            <Field label="Related To" value={selected.relatedTo} onChange={(v) => setSelected(p => ({ ...p, relatedTo: v }))} />
+            <Field label="Assigned" value={selected.assigned} onChange={(v) => setSelected(p => ({ ...p, assigned: v }))} />
+            <Field label="Due date" value={selected.due} onChange={(v) => setSelected(p => ({ ...p, due: v }))} />
+            <Field label="Status" value={selected.status} onChange={(v) => setSelected(p => ({ ...p, status: v }))} />
+            <Field label="Priority" value={selected.priority} onChange={(v) => setSelected(p => ({ ...p, priority: v }))} />
+          </div>
+        </SidePanel>
+      )}
+    </div>
+  );
+}
+
+function SettingsField({ label, value, onChange, type = "text", placeholder, error = "" }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        aria-invalid={Boolean(error)}
+        className={`mt-2 w-full rounded-2xl border bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:ring-4 ${
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#884c2d] focus:ring-[#f3dfd7]"
+        }`}
+      />
+      {error && <span className="mt-1.5 block text-[11px] font-semibold text-red-500">{error}</span>}
+    </label>
+  );
+}
+
+function SettingsSelect({ label, value, onChange, options }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7b6f63]">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function SettingsToggle({ title, description, checked, onChange }) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+      <div>
+        <p className="text-sm font-semibold text-[#211a17]">{title}</p>
+        <p className="mt-1 text-xs leading-5 text-[#6c6355]">{description}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#884c2d]" : "bg-[#d8c2b9]"}`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-6" : "left-1"}`}
+        />
+      </button>
+    </div>
+  );
+}
+
+export function SettingsPage() {
+  const { showToast } = useToast();
+  const sections = [
+    { key: "profile", title: "Profile", description: "Agency admin details and primary identity.", icon: UserPlus },
+    { key: "password", title: "Password", description: "Reset rules, OTP window, and secure access.", icon: LockKeyhole },
+    { key: "company", title: "Company Information", description: "Legal business details for billing and display.", icon: Building2 },
+    { key: "billing", title: "Billing Settings", description: "Gateway, invoice defaults, and invite triggers.", icon: CreditCard },
+    { key: "email", title: "Email Settings", description: "Sender identity, SMTP values, and onboarding mail flow.", icon: Mail },
+    { key: "notifications", title: "Notification Settings", description: "Workspace alerts, reminders, and operational notices.", icon: BellRing },
+  ];
+
+  const [activeSection, setActiveSection] = useState("profile");
+  const [profile, setProfile] = useState({
+    fullName: "",
+    email: "",
+    title: "",
+    timezone: "Asia/Kolkata",
+    publicUrl: "",
+  });
+  const [password, setPassword] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    inviteExpiry: "48 hours",
+    otpExpiry: "10 minutes",
+  });
+  const [company, setCompany] = useState({
+    studioName: "The Copper Studio",
+    legalName: "",
+    gstin: "",
+    billingEmail: "",
+    website: "",
+    billingAddress: "",
+  });
+  const [billing, setBilling] = useState({
+    gateway: "Razorpay",
+    apiBase: "",
+    invoicePrefix: "INV",
+    defaultRole: "user",
+    autoInviteAfterPayment: true,
+    allowCouponAtCheckout: true,
+  });
+  const [email, setEmail] = useState({
+    senderName: "The Copper Studio",
+    senderEmail: "",
+    smtpHost: "",
+    smtpPort: "587",
+    onboardingPath: "/client-secure-onboarding/access-setup",
+  });
+  const [notifications, setNotifications] = useState({
+    paymentSuccess: true,
+    failedPayments: true,
+    portalInviteSent: true,
+    overdueInvoices: true,
+  });
+  const [errors, setErrors] = useState({});
+
+  function validateSection(key) {
+    const e = {};
+    if (key === "profile") {
+      if (profile.email && !isEmail(profile.email)) e.email = "Enter a valid email address.";
+      if (profile.publicUrl && !URL_RE.test(profile.publicUrl.trim())) e.publicUrl = "Enter a valid URL.";
+    }
+    if (key === "password") {
+      const touched = password.currentPassword || password.newPassword || password.confirmPassword;
+      if (touched) {
+        if (!password.currentPassword) e.currentPassword = "Enter your current password.";
+        if (password.newPassword.length < 8) e.newPassword = "Use at least 8 characters.";
+        if (password.newPassword !== password.confirmPassword) e.confirmPassword = "Passwords do not match.";
+      }
+    }
+    if (key === "company") {
+      if (company.gstin && !isGstin(company.gstin)) e.gstin = "Enter a valid 15-character GSTIN.";
+      if (company.billingEmail && !isEmail(company.billingEmail)) e.billingEmail = "Enter a valid email.";
+      if (company.website && !URL_RE.test(company.website.trim())) e.website = "Enter a valid website URL.";
+    }
+    if (key === "email") {
+      if (email.senderEmail && !isEmail(email.senderEmail)) e.senderEmail = "Enter a valid email.";
+      const port = Number(email.smtpPort);
+      if (email.smtpPort && (!Number.isInteger(port) || port < 1 || port > 65535)) e.smtpPort = "Port must be a number 1–65535.";
+    }
+    return e;
+  }
+
+  function saveSection(key, label) {
+    const nextErrors = validateSection(key);
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      showToast({ type: "error", title: "Check the form", message: "Please fix the highlighted fields." });
+      return;
+    }
+    showToast({ title: `${label} updated`, message: "Your settings have been saved successfully." });
+  }
+
+  function selectSection(key) {
+    setActiveSection(key);
+    setErrors({});
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">Workspace administration</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#211a17]">Account Settings</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6c6355]">
+            Manage admin identity, secure password flows, company billing details, mail delivery, and the post-payment onboarding pipeline.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="secondary" size="lg">
+            <Globe2 size={15} />
+            Live workspace
+          </Button>
+          <Button size="lg" onClick={() => saveSection(activeSection, sections.find((s) => s.key === activeSection)?.title || "Settings")}>
+            <Save size={15} />
+            Save Changes
+          </Button>
+        </div>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
+        <Card className="p-3 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          {sections.map((section) => (
+            <button
+              key={section.key}
+              type="button"
+              onClick={() => selectSection(section.key)}
+              className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-colors ${
+                activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fff8f6]"
+              }`}
+            >
+              <div className={`grid h-10 w-10 place-items-center rounded-2xl ${
+                activeSection === section.key ? "bg-[#f3dfd7] text-[#884c2d]" : "bg-[#f5e6e1] text-[#6c6355]"
+              }`}>
+                <section.icon size={17} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-[#211a17]">{section.title}</p>
+                <p className="mt-1 text-xs leading-5 text-[#6c6355]">{section.description}</p>
+              </div>
+            </button>
+          ))}
+        </Card>
+
+        <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+          {activeSection === "profile" && (
+            <div>
+              <div className="mb-6 flex items-center gap-3">
+                <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#211a17] text-white"><SettingsIcon size={18} /></div>
+                <div>
+                  <h3 className="text-lg font-semibold text-[#211a17]">Personal Profile</h3>
+                  <p className="text-sm text-[#6c6355]">Update the primary super admin identity shown across the CRM.</p>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Full Name" value={profile.fullName} onChange={(value) => setProfile((prev) => ({ ...prev, fullName: value }))} />
+                <SettingsField label="Email Address" type="email" value={profile.email} error={errors.email} onChange={(value) => setProfile((prev) => ({ ...prev, email: value }))} />
+                <SettingsField label="Job Title" value={profile.title} onChange={(value) => setProfile((prev) => ({ ...prev, title: value }))} />
+                <SettingsSelect label="Timezone" value={profile.timezone} onChange={(value) => setProfile((prev) => ({ ...prev, timezone: value }))} options={["Asia/Kolkata", "Europe/London", "America/New_York"]} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="CRM Public URL" value={profile.publicUrl} error={errors.publicUrl} onChange={(value) => setProfile((prev) => ({ ...prev, publicUrl: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("profile", "Profile")}><Save size={14} /> Save Profile</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "password" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Password & Access</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Control reset behavior, onboarding link life, and OTP validity.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Current Password" type="password" value={password.currentPassword} error={errors.currentPassword} onChange={(value) => setPassword((prev) => ({ ...prev, currentPassword: value }))} />
+                <SettingsField label="New Password" type="password" value={password.newPassword} error={errors.newPassword} onChange={(value) => setPassword((prev) => ({ ...prev, newPassword: value }))} />
+                <SettingsField label="Confirm Password" type="password" value={password.confirmPassword} error={errors.confirmPassword} onChange={(value) => setPassword((prev) => ({ ...prev, confirmPassword: value }))} />
+                <SettingsSelect label="Invite Link Expiry" value={password.inviteExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, inviteExpiry: value }))} options={["24 hours", "48 hours", "72 hours"]} />
+                <SettingsSelect label="OTP Expiry" value={password.otpExpiry} onChange={(value) => setPassword((prev) => ({ ...prev, otpExpiry: value }))} options={["5 minutes", "10 minutes", "15 minutes"]} />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("password", "Password settings")}><Save size={14} /> Update Security</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "company" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Company Information</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Use these values for invoices, proposals, and client-facing mail content.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Studio Name" value={company.studioName} onChange={(value) => setCompany((prev) => ({ ...prev, studioName: value }))} />
+                <SettingsField label="Legal Name" value={company.legalName} onChange={(value) => setCompany((prev) => ({ ...prev, legalName: value }))} />
+                <SettingsField label="GSTIN" value={company.gstin} error={errors.gstin} onChange={(value) => setCompany((prev) => ({ ...prev, gstin: value }))} />
+                <SettingsField label="Billing Email" type="email" value={company.billingEmail} error={errors.billingEmail} onChange={(value) => setCompany((prev) => ({ ...prev, billingEmail: value }))} />
+                <SettingsField label="Website" value={company.website} error={errors.website} onChange={(value) => setCompany((prev) => ({ ...prev, website: value }))} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="Billing Address" value={company.billingAddress} onChange={(value) => setCompany((prev) => ({ ...prev, billingAddress: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-[#d8c2b9] bg-[#fffdfc] px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><UploadCloud size={18} /></div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#211a17]">Logo Upload</p>
+                    <p className="text-xs text-[#6c6355]">Update the brand logo used in the client portal and proposal PDF exports.</p>
+                  </div>
+                </div>
+                <Button variant="secondary">Upload</Button>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("company", "Company information")}><Save size={14} /> Save Company</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "billing" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Billing & Gateway Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Configure checkout behavior, invoice defaults, and automatic portal access after payment.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsSelect label="Payment Gateway" value={billing.gateway} onChange={(value) => setBilling((prev) => ({ ...prev, gateway: value }))} options={["Razorpay", "Stripe", "Manual"]} />
+                <SettingsField label="API Base URL" value={billing.apiBase} onChange={(value) => setBilling((prev) => ({ ...prev, apiBase: value }))} />
+                <SettingsField label="Invoice Prefix" value={billing.invoicePrefix} onChange={(value) => setBilling((prev) => ({ ...prev, invoicePrefix: value }))} />
+                <SettingsSelect label="Default Role After Payment" value={billing.defaultRole} onChange={(value) => setBilling((prev) => ({ ...prev, defaultRole: value }))} options={["user", "superadmin"]} />
+              </div>
+              <div className="mt-6 space-y-3">
+                <SettingsToggle
+                  title="Auto-send portal invite after payment"
+                  description="Once checkout is successful, send the secure password setup link to the client automatically."
+                  checked={billing.autoInviteAfterPayment}
+                  onChange={(value) => setBilling((prev) => ({ ...prev, autoInviteAfterPayment: value }))}
+                />
+                <SettingsToggle
+                  title="Allow coupon codes during package checkout"
+                  description="Keep coupon application visible as an optional field inside the pricing and checkout flow."
+                  checked={billing.allowCouponAtCheckout}
+                  onChange={(value) => setBilling((prev) => ({ ...prev, allowCouponAtCheckout: value }))}
+                />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("billing", "Billing settings")}><Save size={14} /> Save Billing</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "email" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Email Delivery Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Set the mail sender identity and the secure onboarding route used in invite messages.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <SettingsField label="Sender Name" value={email.senderName} onChange={(value) => setEmail((prev) => ({ ...prev, senderName: value }))} />
+                <SettingsField label="Sender Email" type="email" value={email.senderEmail} error={errors.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} />
+                <SettingsField label="SMTP Host" value={email.smtpHost} onChange={(value) => setEmail((prev) => ({ ...prev, smtpHost: value }))} />
+                <SettingsField label="SMTP Port" value={email.smtpPort} error={errors.smtpPort} onChange={(value) => setEmail((prev) => ({ ...prev, smtpPort: value }))} />
+                <div className="sm:col-span-2">
+                  <SettingsField label="Secure Onboarding Path" value={email.onboardingPath} onChange={(value) => setEmail((prev) => ({ ...prev, onboardingPath: value }))} />
+                </div>
+              </div>
+              <div className="mt-6 rounded-2xl border border-[#ead8d1] bg-[#fffdfc] px-4 py-4">
+                <p className="text-sm font-semibold text-[#211a17]">Current flow</p>
+                <p className="mt-2 text-xs leading-6 text-[#6c6355]">
+                  Paid checkout, then success confirmation, then secure invite mail, then unique password setup, then redirect to the shared login page.
+                </p>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("email", "Email settings")}><Save size={14} /> Save Email</Button>
+              </div>
+            </div>
+          )}
+
+          {activeSection === "notifications" && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-[#211a17]">Notification Settings</h3>
+                <p className="mt-1 text-sm text-[#6c6355]">Choose which operational events should surface inside the admin workspace.</p>
+              </div>
+              <div className="space-y-3">
+                <SettingsToggle
+                  title="Payment success alerts"
+                  description="Show a confirmation toast and admin alert when a package payment is completed."
+                  checked={notifications.paymentSuccess}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, paymentSuccess: value }))}
+                />
+                <SettingsToggle
+                  title="Failed payment alerts"
+                  description="Flag payment failures so the team can follow up quickly."
+                  checked={notifications.failedPayments}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, failedPayments: value }))}
+                />
+                <SettingsToggle
+                  title="Portal invite sent alerts"
+                  description="Notify admins when the onboarding email has been dispatched successfully."
+                  checked={notifications.portalInviteSent}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, portalInviteSent: value }))}
+                />
+                <SettingsToggle
+                  title="Overdue invoice alerts"
+                  description="Surface aged or unpaid invoices in the finance workflow."
+                  checked={notifications.overdueInvoices}
+                  onChange={(value) => setNotifications((prev) => ({ ...prev, overdueInvoices: value }))}
+                />
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button onClick={() => saveSection("notifications", "Notification settings")}><Save size={14} /> Save Notifications</Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      </section>
+    </div>
+  );
+}
+

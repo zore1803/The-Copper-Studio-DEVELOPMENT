@@ -1,0 +1,9 @@
+about to fork child process, waiting until server is ready for connections.
+forked process: 1012
+child process started successfully, parent exiting
+
+> the-copper-studio@1.0.0 dev
+> node --watch server/server.js
+
+[1G[0KFailed to start API: MONGO_URI is missing. Add it to .env.
+[31mFailed running 'server/server.js'[39m
