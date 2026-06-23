@@ -2290,13 +2290,10 @@ function MeetingsTab({ calendlyUrl }) {
 
   return (
     <div className="space-y-5">
-      <Section title="Book a Meeting">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-[#6b7280]">Opens the Calendly scheduler in a popup. Once booked, it syncs to Google Calendar and shows up below.</p>
-          <Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>
-        </div>
-      </Section>
-      <Section title="Scheduled Meetings">
+      <Section
+        title="Scheduled Meetings"
+        action={<Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>}
+      >
         <GoogleCalendarEmbed />
       </Section>
       {booking && <CalendlyBookingModal url={schedulingUrl} onClose={() => setBooking(false)} />}
