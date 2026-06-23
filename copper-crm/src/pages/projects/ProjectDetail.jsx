@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
@@ -377,6 +377,18 @@ export default function ProjectDetail() {
     ),
     [companies, companyId, project]
   );
+
+  // Some projects were created without a companyId reference, so the URL can carry
+  // an invalid/"null" companyId even though `company` above was resolved by name. Once
+  // the real company is known, swap in its actual id so the navbar breadcrumb (which
+  // only matches companies by id) can resolve it too.
+  useEffect(() => {
+    if (!company) return;
+    const realId = String(company.id || company._id || "");
+    if (realId && realId !== companyId) {
+      navigate(`/admin/companies/${realId}/projects/${projectId}`, { replace: true });
+    }
+  }, [company, companyId, projectId, navigate]);
 
   if (!project && projectsLoading) {
     return (
