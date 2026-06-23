@@ -263,7 +263,7 @@ export default function ContactDetail() {
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {hasSocial && (
                 <div className="flex items-center gap-1.5 pr-2">
                   <WebsiteIconLink href={contact.website} icon={Globe} label="Website" />
@@ -273,10 +273,21 @@ export default function ContactDetail() {
                   <SocialIconLink href={contact.twitter} icon={XGlyph} label="X" />
                 </div>
               )}
-              <ContactExportMenu contact={contact} companyName={companyName} />
-              <Button variant="secondary" onClick={() => setEditing(true)}><Pencil size={13} /> Edit Contact</Button>
-              <button onClick={handleDelete} className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100">
-                <Trash2 size={13} /> Delete
+              <ContactExportMenu
+                contact={contact}
+                companyName={companyName}
+                triggerLabel="Share Contact"
+                iconSize={14}
+                triggerClassName="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-4 text-sm font-semibold text-[#1F2937] transition-colors hover:bg-[#f9fafb]"
+              />
+              <button
+                onClick={() => setEditing(true)}
+                className="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec]"
+              >
+                <Pencil size={14} /> Edit Contact
+              </button>
+              <button onClick={handleDelete} className="inline-flex h-11 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100">
+                <Trash2 size={14} /> Delete
               </button>
             </div>
           </div>

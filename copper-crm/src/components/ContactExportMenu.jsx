@@ -49,7 +49,7 @@ function vCardFor(contact, companyName) {
 
 // Reused on the Contacts table (per-row) and on the Contact detail header —
 // a single export menu so both surfaces share the same share/copy/download logic.
-export default function ContactExportMenu({ contact, companyName, className = "" }) {
+export default function ContactExportMenu({ contact, companyName, className = "", triggerLabel = "", triggerClassName = "", iconSize = 14 }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState(null);
   const btnRef = useRef(null);
@@ -127,9 +127,10 @@ export default function ContactExportMenu({ contact, companyName, className = ""
         ref={btnRef}
         onClick={toggle}
         title="Export contact"
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+        className={triggerClassName || "flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"}
       >
-        <Share2 size={14} />
+        <Share2 size={iconSize} />
+        {triggerLabel && <span>{triggerLabel}</span>}
       </button>
       {open && pos && createPortal(
         <div
