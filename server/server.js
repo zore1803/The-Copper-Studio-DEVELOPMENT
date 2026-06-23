@@ -23,7 +23,8 @@ import settingsRoutes from "./routes/settings.js";
 import calendlyRoutes from "./routes/calendly.js";
 import invoiceRoutes from "./routes/invoices.js";
 import { packages } from "./data/packages.js";
-import { sendPortalInviteEmail, sendInvoiceEmail } from "./services/email.js";
+import { sendInvoiceEmail } from "./services/email.js";
+import { sendPortalInvite } from "./services/portalInvite.js";
 import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
 import { syncFinanceForOrder } from "./services/finance.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
@@ -52,10 +53,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/settings", settingsRoutes);
 app.use("/api/calendly", calendlyRoutes);
 app.use("/api/invoices", invoiceRoutes);
-
-function sha256(value) {
-  return crypto.createHash("sha256").update(value).digest("hex");
-}
 
 // Build + email the tax invoice for a paid order. Failures are logged but never
 // block the order/payment response (the invoice is always retrievable via the API).
@@ -92,38 +89,13 @@ async function emailInvoiceForOrder(order, invoice) {
 async function createPortalInvite(order) {
   if (order.payment.status !== "paid") return null;
 
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
   const customer = order.customer;
-
-  const user = await User.findOneAndUpdate(
-    { email: customer.customerEmail },
-    {
-      $set: {
-        name: customer.customerName,
-        email: customer.customerEmail,
-        phone: customer.customerPhone,
-        company: customer.customerCompany || "",
-        role: "user",
-        status: "invited",
-        invite: {
-          tokenHash: sha256(rawToken),
-          expiresAt,
-          sentAt: new Date()
-        }
-      },
-      $setOnInsert: { passwordHash: "" }
-    },
-    { upsert: true, new: true }
-  );
-
-  const crmUrl = process.env.CRM_PUBLIC_URL || "http://localhost:5173";
-  const setPasswordUrl = `${crmUrl}/client-secure-onboarding/access-setup?token=${rawToken}`;
-  await sendPortalInviteEmail({
-    to: user.email,
-    name: user.name,
-    packageName: order.package.name,
-    setPasswordUrl
+  const result = await sendPortalInvite({
+    email: customer.customerEmail,
+    name: customer.customerName,
+    phone: customer.customerPhone,
+    company: customer.customerCompany || "",
+    packageName: order.package?.name || ""
   });
 
   order.email.credentialsQueued = false;
@@ -131,7 +103,7 @@ async function createPortalInvite(order) {
   order.workspace.createdAt = new Date();
   await order.save();
 
-  return { userId: user._id, setPasswordUrl };
+  return result;
 }
 
 // First 4 DISTINCT letters of the company name (repeats skipped), e.g.

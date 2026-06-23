@@ -9,9 +9,9 @@ import {
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import SidePanel from "../../components/SidePanel";
+import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { useToast } from "../../components/useToast";
-import { isEmail, isPhone } from "../../lib/validators";
 import { contactFullName } from "../../lib/contacts";
 
 const PAGE_SIZE = 12;
@@ -78,25 +78,6 @@ function EmptyState({ onCreate }) {
       <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">Contacts are people inside companies. Add them with company links so deals, projects, and communication history stay connected.</p>
       <Button className="mt-4" onClick={onCreate}><Plus size={14} /> New Contact</Button>
     </div>
-  );
-}
-
-function Field({ label, value, onChange, type = "text", placeholder = "", error = "" }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
-      <input
-        type={type}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-invalid={Boolean(error)}
-        className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
-        }`}
-      />
-      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
-    </label>
   );
 }
 
@@ -342,79 +323,6 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
           );
         })}
         {list.length === 0 && <p className="py-8 text-center text-sm text-[#6b7280]">No contacts found.</p>}
-      </div>
-    </SidePanel>
-  );
-}
-
-function ContactPanel({ contact, companies, onClose, onSave }) {
-  const [form, setForm] = useState(contact);
-  const [errors, setErrors] = useState({});
-  const set = (key) => (value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
-  };
-
-  function handleSubmit() {
-    const next = {};
-    const hasName = `${form.firstName || ""}${form.lastName || ""}${form.name || ""}`.trim();
-    if (!hasName) next.firstName = "Enter at least a first or last name.";
-    if (form.email && !isEmail(form.email)) next.email = "Enter a valid email.";
-    if (form.phone && !isPhone(form.phone)) next.phone = "Enter a valid 10-digit mobile.";
-    if (form.whatsapp && !isPhone(form.whatsapp)) next.whatsapp = "Enter a valid 10-digit number.";
-    setErrors(next);
-    if (Object.keys(next).length) return;
-    onSave(form);
-  }
-
-  return (
-    <SidePanel
-      title={contact._id || contact.id ? "Edit Contact" : "New Contact"}
-      subtitle="Contacts are linked people inside a company."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}><Save size={14} /> Save Contact</Button>
-        </div>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Salutation" value={form.salutation} onChange={set("salutation")} placeholder="Mr / Ms / Dr" />
-        <Field label="First Name" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
-        <Field label="Last Name" value={form.lastName} onChange={set("lastName")} />
-        <Field label="Email" type="email" value={form.email} onChange={set("email")} error={errors.email} />
-        <Field label="Phone" value={form.phone} onChange={set("phone")} error={errors.phone} />
-        <Field label="WhatsApp" value={form.whatsapp} onChange={set("whatsapp")} error={errors.whatsapp} />
-        <Field label="Position" value={form.designation} onChange={set("designation")} />
-        <Field label="Status" value={form.status} onChange={set("status")} placeholder="Active" />
-        <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Associated Company</span>
-          {companies.length === 0 ? (
-            <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
-              Loading companies... or create a company first
-            </div>
-          ) : (
-            <select value={form.companyId || ""} onChange={(e) => set("companyId")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 cursor-pointer">
-              <option value="">-- Select a company --</option>
-              {companies.map((company) => (
-                <option key={company.id || company._id} value={company.id || company._id}>
-                  {company.companyName || company.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </label>
-        <div className="sm:col-span-2 border-t border-[#f3f4f6] pt-4">
-          <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="linkedin.com/in/..." />
-            <Field label="Website" value={form.website} onChange={set("website")} />
-            <Field label="Instagram" value={form.instagram} onChange={set("instagram")} />
-            <Field label="Facebook" value={form.facebook} onChange={set("facebook")} />
-            <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} />
-          </div>
-        </div>
       </div>
     </SidePanel>
   );
@@ -780,7 +688,7 @@ export default function Contacts() {
       </main>
 
       {editing && (
-        <ContactPanel
+        <ContactFormPanel
           contact={editing}
           companies={companies}
           onClose={() => setEditing(null)}

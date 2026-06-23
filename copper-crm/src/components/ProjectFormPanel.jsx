@@ -22,14 +22,14 @@ function FormSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
       <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid gap-4 sm:grid-cols-3">{children}</div>
     </div>
   );
 }
 
 function Input({ label, value, onChange, type = "text", disabled = false, span = false, hint, error }) {
   return (
-    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
@@ -52,7 +52,7 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
 
 function Textarea({ label, value, onChange, span = false }) {
   return (
-    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <textarea
         value={value || ""}
@@ -67,7 +67,7 @@ function Textarea({ label, value, onChange, span = false }) {
 function Select({ label, value, onChange, options = [], span = false, error, hint }) {
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
-    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <select
         value={value || ""}
@@ -174,6 +174,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     <SidePanel
       title="New Project"
       subtitle={company ? `Link this project to ${company.name}.` : "Create a project linked to an existing company."}
+      width="max-w-2xl"
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">

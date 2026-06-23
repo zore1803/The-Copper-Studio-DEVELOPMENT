@@ -74,6 +74,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     <SidePanel
       title={company._id || company.id ? "Edit Company" : "Add Company"}
       subtitle="Update company profile, GSTIN, contact, and project details."
+      width="max-w-2xl"
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
@@ -82,7 +83,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         </div>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Field label="Company name" value={form.name} onChange={set("name")} error={errors.name} />
         <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
         <Field label="Industry" value={form.industry} onChange={set("industry")} />
@@ -96,7 +97,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
         <Field label="Company owner" value={form.owner} onChange={set("owner")} placeholder="Account owner" />
         <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
-        <div className="sm:col-span-2 mt-1 border-t border-[#f1f1f5] pt-3">
+        <div className="sm:col-span-3 mt-1 border-t border-[#f1f1f5] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social profiles</span>
         </div>
         <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" error={errors.linkedin} />
@@ -104,7 +105,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Facebook" value={form.facebook} onChange={set("facebook")} placeholder="https://facebook.com/…" error={errors.facebook} />
         <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} placeholder="https://x.com/…" error={errors.twitter} />
         <Field label="Personal website" value={form.personalWebsite} onChange={set("personalWebsite")} placeholder="https://…" />
-        <label className="block sm:col-span-2">
+        <label className="block sm:col-span-3">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea
             value={form.notes || ""}

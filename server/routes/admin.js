@@ -5,6 +5,7 @@ import Project from "../models/Project.js";
 import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { sendPortalInvite } from "../services/portalInvite.js";
 
 const router = express.Router();
 
@@ -14,6 +15,20 @@ router.get("/clients", async (req, res, next) => {
   try {
     const clients = await User.find({ role: "user" }).sort({ createdAt: -1 }).select("-passwordHash -invite -resetPassword");
     res.json(clients);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// A CRM contact is a client. This provisions (or refreshes) their portal login
+// and emails a set-password link — the manual counterpart to the paid-order
+// invite. `skipIfActive` avoids resetting a client who already has a password.
+router.post("/clients/invite", async (req, res, next) => {
+  try {
+    const { email, name, phone, company } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required to send a portal invite." });
+    const result = await sendPortalInvite({ email, name, phone, company, skipIfActive: true });
+    res.status(201).json(result);
   } catch (error) {
     next(error);
   }

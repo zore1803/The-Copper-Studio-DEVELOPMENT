@@ -1,14 +1,20 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Building2, ChevronLeft, Globe, Mail, MessageCircle, Pencil, Phone, Save, Trash2 } from "lucide-react";
+import {
+  Building2, Calendar, CheckCircle2, ChevronLeft, Clock3, FileText, FolderKanban,
+  Globe, Mail, MessageCircle, Pencil, Phone, StickyNote, Trash2, Users
+} from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
-import SidePanel from "../../components/SidePanel";
+import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { contactFullName } from "../../lib/contacts";
 
-const TABS = ["Overview", "Notes"];
+// Mirrors the Company workspace layout — header + social row + info bar + KPI
+// chips + tabbed body — so an individual contact (who, in this product, IS a
+// client) reads with the same structure as their company.
+const TABS = ["Overview", "Projects", "Meetings", "Documents", "Notes", "Activity"];
 
 function LinkedInGlyph(props) {
   return (
@@ -108,63 +114,37 @@ function InfoLine({ label, value }) {
   );
 }
 
+function KpiChip({ label, value, icon: Icon }) {
+  return (
+    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+          <Icon size={16} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-[#6b7280]">{label}</p>
+          <p className="mt-0.5 text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmptyTab({ icon: Icon, text }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+        <Icon size={20} />
+      </div>
+      <p className="text-sm text-[#6b7280]">{text}</p>
+    </div>
+  );
+}
+
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value || "No date";
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-}
-
-function Field({ label, value, onChange, placeholder = "" }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold text-gray-600">{label}</span>
-      <input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-      />
-    </label>
-  );
-}
-
-function EditContactPanel({ contact, onClose, onSave }) {
-  const [form, setForm] = useState(contact);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-  return (
-    <SidePanel
-      title="Edit Contact"
-      subtitle="Update this contact's profile details."
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Contact</Button>
-        </div>
-      }
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="First Name" value={form.firstName} onChange={set("firstName")} />
-        <Field label="Last Name" value={form.lastName} onChange={set("lastName")} />
-        <Field label="Designation" value={form.designation} onChange={set("designation")} />
-        <Field label="Status" value={form.status} onChange={set("status")} />
-        <Field label="Email" value={form.email} onChange={set("email")} />
-        <Field label="Phone" value={form.phone} onChange={set("phone")} />
-        <Field label="WhatsApp" value={form.whatsapp} onChange={set("whatsapp")} />
-        <Field label="Company" value={form.company} onChange={set("company")} />
-      </div>
-      <div className="mt-5 border-t border-gray-100 pt-4">
-        <p className="mb-3 text-xs font-bold uppercase tracking-wide text-gray-400">Social</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="linkedin.com/in/..." />
-          <Field label="Website" value={form.website} onChange={set("website")} />
-          <Field label="Instagram" value={form.instagram} onChange={set("instagram")} />
-          <Field label="Facebook" value={form.facebook} onChange={set("facebook")} />
-          <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} />
-        </div>
-      </div>
-    </SidePanel>
-  );
 }
 
 export default function ContactDetail() {
@@ -172,6 +152,11 @@ export default function ContactDetail() {
   const navigate = useNavigate();
   const { records: contacts, loading, save, remove } = useCrmRecords("contacts");
   const { records: companies } = useCrmRecords("companies");
+  const { records: projects } = useCrmRecords("projects");
+  const { records: meetings } = useCrmRecords("meetings");
+  const { records: documents } = useCrmRecords("documents");
+  const { records: tasks } = useCrmRecords("tasks");
+  const { records: notes } = useCrmRecords("notes");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
   const [activeTab, setActiveTab] = useState("Overview");
@@ -199,6 +184,36 @@ export default function ContactDetail() {
   const linkedCompany = companyMap.get(String(contact.companyId));
   const companyName = linkedCompany?.companyName || linkedCompany?.name || contact.company || "Not linked";
   const associated = contacts.filter((c) => String(c.companyId) === String(contact.companyId) && String(c._id || c.id) !== String(contactId)).slice(0, 5);
+  const hasSocial = contact.website || contact.linkedin || contact.instagram || contact.facebook || contact.twitter;
+  const roles = [
+    contact.isDecisionMaker && "Decision Maker",
+    contact.isPrimary && "Primary Contact",
+    contact.isBillingContact && "Billing Contact",
+    contact.isTechnicalContact && "Technical Contact",
+  ].filter(Boolean);
+
+  // The contact is a client of one company, so their workspace mirrors that
+  // company's linked records (matched by companyId, with the human-readable
+  // company name as a fallback for older records).
+  const companyKeys = new Set([contact.companyId, linkedCompany?._id, linkedCompany?.id].filter(Boolean).map(String));
+  const matchesClient = (record) =>
+    companyKeys.has(String(record.companyId)) || record.company === companyName || record.companyName === companyName;
+
+  const linkedProjects = projects.filter((p) => matchesClient(p) || p.client === companyName);
+  const linkedMeetings = meetings.filter(matchesClient);
+  const linkedDocuments = documents.filter(matchesClient);
+  const linkedTasks = tasks.filter(matchesClient);
+  const linkedNotes = notes.filter(matchesClient);
+  const openTasks = linkedTasks.filter((t) => !["completed", "done"].includes(String(t.status || "").toLowerCase())).length;
+
+  const activity = [
+    ...linkedProjects.map((p) => ({ type: "Project", title: `${p.name || "Project"} · ${p.status || p.currentPhase || "updated"}`, date: p.updatedAt || p.createdAt || p.startDate, icon: FolderKanban })),
+    ...linkedMeetings.map((m) => ({ type: "Meeting", title: m.title || m.subject || "Meeting scheduled", date: m.scheduled || m.scheduledAt || m.createdAt, icon: Calendar })),
+    ...linkedDocuments.map((d) => ({ type: "Document", title: `${d.name || d.fileName || "Document"} added`, date: d.createdAt, icon: FileText })),
+    ...(contact.createdAt ? [{ type: "Contact", title: "Contact created", date: contact.createdAt, icon: Users }] : []),
+  ]
+    .map((item) => ({ ...item, sortDate: new Date(item.date || 0), dateLabel: formatDate(item.date) }))
+    .sort((a, b) => b.sortDate - a.sortDate);
 
   async function handleSave(form) {
     await save(form);
@@ -210,6 +225,11 @@ export default function ContactDetail() {
     await remove(contact);
     showToast({ title: "Contact deleted", message: `${contactFullName(contact)} removed.` });
     navigate("/admin/contacts");
+  }
+
+  function openProject(project) {
+    const companyId = project.companyId || contact.companyId;
+    if (companyId) navigate(`/admin/companies/${companyId}/projects/${project.id || project._id}`);
   }
 
   return (
@@ -228,15 +248,23 @@ export default function ContactDetail() {
               <div className="min-w-0">
                 <h2 className="truncate text-2xl font-bold text-[#111827]">{contactFullName(contact)}</h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
-                  {contact.designation && <span>{contact.designation}</span>}
+                  <span>{contact.designation || "No designation"}</span>
+                  <span className="inline-flex items-center gap-1"><Building2 size={12} /> {companyName}</span>
                   {(contact.whatsapp || contact.phone) && (
                     <span className="inline-flex items-center gap-1"><Phone size={12} /> {contact.whatsapp || contact.phone}</span>
                   )}
                 </div>
+                {roles.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {roles.map((role) => (
+                      <span key={role} className="rounded-full bg-[#fff1ec] px-2 py-0.5 text-[11px] font-semibold text-[#884c2d]">{role}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {(contact.website || contact.linkedin || contact.instagram || contact.facebook || contact.twitter) && (
+              {hasSocial && (
                 <div className="flex items-center gap-1.5 pr-2">
                   <WebsiteIconLink href={contact.website} icon={Globe} label="Website" />
                   <SocialIconLink href={contact.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
@@ -262,6 +290,14 @@ export default function ContactDetail() {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
+          <KpiChip label="Projects" value={linkedProjects.length} icon={FolderKanban} />
+          <KpiChip label="Meetings" value={linkedMeetings.length} icon={Calendar} />
+          <KpiChip label="Documents" value={linkedDocuments.length} icon={FileText} />
+          <KpiChip label="Open Tasks" value={openTasks} icon={CheckCircle2} />
+          <KpiChip label="Notes" value={linkedNotes.length} icon={StickyNote} />
+        </div>
+
         <div className="flex items-center gap-1 overflow-x-auto px-6">
           {TABS.map((tab) => (
             <button
@@ -276,52 +312,147 @@ export default function ContactDetail() {
       </div>
 
       <div className="flex-1 p-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 rounded-xl border border-[#e5e7eb] bg-white p-5">
-            {activeTab === "Notes" ? (
-              <>
-                <p className="mb-3 text-sm font-bold text-gray-700">Notes</p>
-                <p className="text-sm text-gray-500">{contact.notes || "No notes added."}</p>
-              </>
-            ) : (
-              <>
-                <p className="mb-3 text-sm font-bold text-gray-700">Contact Details</p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                  <Detail icon={Mail} label="Email" value={contact.email} />
-                  <Detail icon={Phone} label="Phone" value={contact.phone} />
-                  <Detail icon={MessageCircle} label="WhatsApp" value={contact.whatsapp} />
-                  <Detail icon={Building2} label="Company" value={companyName} />
-                  <Detail label="Status" value={contact.status || "Active"} />
-                  <Detail label="Designation" value={contact.designation} />
+        {activeTab === "Overview" && (
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="mb-3 text-sm font-bold text-gray-700">Contact Details</p>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                <Detail icon={Mail} label="Email" value={contact.email} />
+                <Detail icon={Phone} label="Phone" value={contact.phone} />
+                <Detail icon={MessageCircle} label="WhatsApp" value={contact.whatsapp} />
+                <Detail icon={Building2} label="Company" value={companyName} />
+                <Detail label="Department" value={contact.department} />
+                <Detail label="Designation" value={contact.designation} />
+                <Detail label="Status" value={contact.status || "Active"} />
+                <Detail label="Alternative Number" value={contact.alternatePhone} />
+              </div>
+              {contact.preferences && (
+                <div className="mt-5 border-t border-[#f1f1f5] pt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">Preferences</p>
+                  <p className="text-sm text-gray-600">{contact.preferences}</p>
                 </div>
-              </>
-            )}
-          </div>
+              )}
+            </div>
 
-          <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
-            <p className="mb-3 text-sm font-bold text-gray-700">Associated Contacts</p>
-            {associated.length ? (
-              <div className="space-y-3">
-                {associated.map((item) => (
-                  <button
-                    key={item._id || item.id}
-                    onClick={() => navigate(`/admin/contacts/${item._id || item.id}`)}
-                    className="flex w-full items-center gap-2.5 text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-0.5"
-                  >
-                    <Avatar name={contactFullName(item)} size="sm" />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{contactFullName(item)}</p>
-                      <p className="text-xs text-gray-400">{item.email || "No email"}</p>
+            <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="mb-3 text-sm font-bold text-gray-700">Associated Contacts</p>
+              {associated.length ? (
+                <div className="space-y-3">
+                  {associated.map((item) => (
+                    <button
+                      key={item._id || item.id}
+                      onClick={() => navigate(`/admin/contacts/${item._id || item.id}`)}
+                      className="flex w-full items-center gap-2.5 text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-0.5"
+                    >
+                      <Avatar name={contactFullName(item)} size="sm" />
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">{contactFullName(item)}</p>
+                        <p className="text-xs text-gray-400">{item.email || "No email"}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-gray-400">No associated contacts yet.</p>}
+            </div>
+          </div>
+        )}
+
+        {activeTab === "Projects" && (
+          linkedProjects.length ? (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {linkedProjects.map((p) => (
+                <button
+                  key={p._id || p.id}
+                  onClick={() => openProject(p)}
+                  className="rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-all hover:border-[#cda88f] hover:shadow-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <FolderKanban size={15} className="shrink-0 text-[#884c2d]" />
+                    <p className="truncate font-semibold text-[#111827]">{p.name || "Untitled project"}</p>
+                  </div>
+                  <p className="mt-1 text-xs text-[#6b7280]">{p.status || p.currentPhase || "—"}</p>
+                </button>
+              ))}
+            </div>
+          ) : <EmptyTab icon={FolderKanban} text="No projects linked to this client yet." />
+        )}
+
+        {activeTab === "Meetings" && (
+          linkedMeetings.length ? (
+            <div className="space-y-2">
+              {linkedMeetings.map((m) => (
+                <div key={m._id || m.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Calendar size={15} className="text-[#884c2d]" />
+                    <p className="text-sm font-semibold text-[#111827]">{m.title || m.subject || "Meeting"}</p>
+                  </div>
+                  <span className="text-xs text-[#6b7280]">{formatDate(m.scheduled || m.scheduledAt || m.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          ) : <EmptyTab icon={Calendar} text="No meetings linked to this client yet." />
+        )}
+
+        {activeTab === "Documents" && (
+          linkedDocuments.length ? (
+            <div className="space-y-2">
+              {linkedDocuments.map((d) => (
+                <div key={d._id || d.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <FileText size={15} className="shrink-0 text-[#884c2d]" />
+                    <p className="truncate text-sm font-semibold text-[#111827]">{d.name || d.fileName || "Document"}</p>
+                  </div>
+                  <span className="text-xs text-[#6b7280]">{d.category || d.fileType || "—"}</span>
+                </div>
+              ))}
+            </div>
+          ) : <EmptyTab icon={FileText} text="No documents shared with this client yet." />
+        )}
+
+        {activeTab === "Notes" && (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="mb-2 text-sm font-bold text-gray-700">Contact Notes</p>
+              <p className="text-sm text-gray-600">{contact.notes || "No notes added."}</p>
+              {contact.meetingNotes && (
+                <div className="mt-4 border-t border-[#f1f1f5] pt-3">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">Meeting Notes</p>
+                  <p className="text-sm text-gray-600">{contact.meetingNotes}</p>
+                </div>
+              )}
+            </div>
+            {linkedNotes.map((n) => (
+              <div key={n._id || n.id} className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+                <p className="mb-1 text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+                <p className="text-sm text-gray-600">{n.body || n.text || ""}</p>
+                <p className="mt-2 text-xs text-gray-400">{formatDate(n.createdAt)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "Activity" && (
+          activity.length ? (
+            <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <div className="space-y-4">
+                {activity.map((item, index) => (
+                  <div key={index} className="flex gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+                      <item.icon size={14} />
                     </div>
-                  </button>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#111827]">{item.title}</p>
+                      <p className="flex items-center gap-1 text-xs text-[#9ca3af]"><Clock3 size={11} /> {item.dateLabel}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            ) : <p className="text-sm text-gray-400">No associated contacts yet.</p>}
-          </div>
-        </div>
+            </div>
+          ) : <EmptyTab icon={Clock3} text="No activity recorded for this client yet." />
+        )}
       </div>
 
-      {editing && <EditContactPanel contact={contact} onClose={() => setEditing(false)} onSave={handleSave} />}
+      {editing && <ContactFormPanel contact={contact} companies={companies} onClose={() => setEditing(false)} onSave={handleSave} />}
     </div>
   );
 }

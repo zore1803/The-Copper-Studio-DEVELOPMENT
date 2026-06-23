@@ -16,6 +16,7 @@ import { buildProjectPayload } from "../../lib/projectDefaults";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
+import ContactFormPanel from "../../components/ContactFormPanel";
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -171,80 +172,6 @@ function KpiChip({ label, value, icon: Icon }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function ContactPanel({ company, contact, onClose, onSave }) {
-  const [form, setForm] = useState(contact || {
-    salutation: "",
-    firstName: "",
-    lastName: "",
-    designation: "",
-    email: "",
-    whatsapp: "",
-    alternatePhone: "",
-    department: "",
-    isDecisionMaker: false,
-    isPrimary: false,
-    isBillingContact: false,
-    isTechnicalContact: false,
-    linkedin: "",
-    website: "",
-    preferences: "",
-    notes: "",
-    meetingNotes: "",
-    status: "Active",
-  });
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  return (
-    <SidePanel
-      title={contact?._id || contact?.id ? "Edit Contact" : "Add Contact"}
-      subtitle={`Link this person to ${company.name}.`}
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Contact</Button>
-        </div>
-      }
-    >
-      <div className="space-y-6">
-        <FormSection title="Personal Information">
-          <Input label="Salutation" value={form.salutation} onChange={set("salutation")} />
-          <Input label="Designation" value={form.designation} onChange={set("designation")} />
-          <Input label="First name" value={form.firstName} onChange={set("firstName")} />
-          <Input label="Last name" value={form.lastName} onChange={set("lastName")} />
-        </FormSection>
-
-        <FormSection title="Communication">
-          <Input label="Work email" value={form.email} onChange={set("email")} />
-          <Input label="WhatsApp number" value={form.whatsapp} onChange={set("whatsapp")}
-            hint="Primary WhatsApp number used for project updates." />
-          <Input label="Alternative number" value={form.alternatePhone} onChange={set("alternatePhone")} />
-        </FormSection>
-
-        <FormSection title="Company Mapping">
-          <Input label="Associated company" value={company.name} disabled />
-          <Input label="Department" value={form.department} onChange={set("department")} />
-          <Checkbox span label="Decision maker" checked={form.isDecisionMaker} onChange={set("isDecisionMaker")} />
-          <Checkbox label="Primary contact" checked={form.isPrimary} onChange={set("isPrimary")} />
-          <Checkbox label="Billing contact" checked={form.isBillingContact} onChange={set("isBillingContact")} />
-          <Checkbox label="Technical contact" checked={form.isTechnicalContact} onChange={set("isTechnicalContact")} />
-        </FormSection>
-
-        <FormSection title="Social">
-          <Input label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} />
-          <Input label="Website" value={form.website} onChange={set("website")} />
-        </FormSection>
-
-        <FormSection title="Notes">
-          <Textarea span label="Preferences" value={form.preferences} onChange={set("preferences")} />
-          <Textarea span label="Important notes" value={form.notes} onChange={set("notes")} />
-          <Textarea span label="Meeting notes" value={form.meetingNotes} onChange={set("meetingNotes")} />
-        </FormSection>
-      </div>
-    </SidePanel>
   );
 }
 
@@ -502,15 +429,6 @@ function ContactDetailPanel({ contact, projects, meetings, onClose, onEdit, onDe
   );
 }
 
-function FormSection({ title, children }) {
-  return (
-    <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
-    </div>
-  );
-}
-
 function Input({ label, value, onChange, type = "text", disabled = false, span = false, hint }) {
   return (
     <label className={`block ${span ? "sm:col-span-2" : ""}`}>
@@ -554,20 +472,6 @@ function Select({ label, value, onChange, options = [], span = false }) {
         <option value="">Select…</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
-    </label>
-  );
-}
-
-function Checkbox({ label, checked, onChange, span = false }) {
-  return (
-    <label className={`flex items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 py-2.5 text-sm font-medium text-[#374151] cursor-pointer hover:bg-[#f9fafb] ${span ? "sm:col-span-2" : ""}`}>
-      <input
-        type="checkbox"
-        checked={!!checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-[#d1d5db] text-[#884c2d] focus:ring-[#884c2d]/30"
-      />
-      {label}
     </label>
   );
 }
@@ -1155,7 +1059,7 @@ export default function CompanyDetail() {
 
       {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
       {creatingProject && <ProjectFormPanel company={company} companies={companies} contacts={linked.contacts} invoices={linked.invoices} projects={linked.projects} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
-      {editingContact && <ContactPanel company={company} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
+      {editingContact && <ContactFormPanel company={company} companies={companies} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {editingNote && <NotePanel company={company} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
       {selectedInvoice && <InvoicePanel invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} onDownload={downloadInvoicePdf} onMarkPaid={handleMarkInvoicePaid} />}
