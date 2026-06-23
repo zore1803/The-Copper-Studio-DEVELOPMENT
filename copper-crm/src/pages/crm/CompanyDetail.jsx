@@ -24,52 +24,88 @@ const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
 
 function LinkedInGlyph(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM7.119 7.433a2.062 2.062 0 1 1 0-4.124 2.062 2.062 0 0 1 0 4.124zM5.337 20.452h3.564V9H5.337v11.452z" />
+    <svg viewBox="0 0 56 56" {...props}>
+      <circle cx="28" cy="28" r="28" fill="#1877B5" />
+      <path
+        fill="#fff"
+        d="M20.45 23.5h5.6v18.4h-5.6zm2.8-9a3.25 3.25 0 1 1 0 6.5 3.25 3.25 0 0 1 0-6.5zM30.1 23.5h5.36v2.52h.08c.75-1.42 2.58-2.92 5.31-2.92 5.68 0 6.73 3.74 6.73 8.6v10.2h-5.6V32.7c0-2.1-.04-4.8-2.93-4.8-2.93 0-3.37 2.29-3.37 4.65v9.35h-5.58z"
+      />
     </svg>
   );
 }
 
 function InstagramGlyph(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.347 3.608 1.322.975.975 1.26 2.242 1.322 3.608.058 1.266.069 1.646.069 4.85s-.012 3.584-.07 4.85c-.062 1.366-.347 2.633-1.322 3.608-.975.975-2.242 1.26-3.608 1.322-1.266.058-1.646.069-4.85.069s-3.584-.012-4.85-.07c-1.366-.062-2.633-.347-3.608-1.322-.975-.975-1.26-2.242-1.322-3.608C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.062-1.366.347-2.633 1.322-3.608.975-.975 2.242-1.26 3.608-1.322C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.157 0-3.51.012-4.74.068-1.012.046-1.562.215-1.927.358-.485.188-.83.412-1.194.776-.364.364-.588.709-.776 1.194-.143.365-.312.915-.358 1.927-.056 1.23-.068 1.583-.068 4.74s.012 3.51.068 4.74c.046 1.012.215 1.562.358 1.927.188.485.412.83.776 1.194.364.364.709.588 1.194.776.365.143.915.312 1.927.358 1.23.056 1.583.068 4.74.068s3.51-.012 4.74-.068c1.012-.046 1.562-.215 1.927-.358.485-.188.83-.412 1.194-.776.364-.364.588-.709.776-1.194.143-.365.312-.915.358-1.927.056-1.23.068-1.583.068-4.74s-.012-3.51-.068-4.74c-.046-1.012-.215-1.562-.358-1.927a3.121 3.121 0 0 0-.776-1.194 3.121 3.121 0 0 0-1.194-.776c-.365-.143-.915-.312-1.927-.358-1.23-.056-1.583-.068-4.74-.068zm0 4.595a5.44 5.44 0 1 1 0 10.88 5.44 5.44 0 0 1 0-10.88zm0 1.802a3.638 3.638 0 1 0 0 7.276 3.638 3.638 0 0 0 0-7.276zm6.926-2.585a1.27 1.27 0 1 1-2.54 0 1.27 1.27 0 0 1 2.54 0z" />
+    <svg viewBox="0 0 56 56" {...props}>
+      <defs>
+        <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FED576" />
+          <stop offset="25%" stopColor="#F47133" />
+          <stop offset="50%" stopColor="#BC3081" />
+          <stop offset="75%" stopColor="#C92F88" />
+          <stop offset="100%" stopColor="#8B3AB5" />
+        </linearGradient>
+      </defs>
+      <rect width="56" height="56" rx="14" fill="url(#igGradient)" />
+      <rect x="14" y="14" width="28" height="28" rx="8" fill="none" stroke="#fff" strokeWidth="2.6" />
+      <circle cx="28" cy="28" r="7.2" fill="none" stroke="#fff" strokeWidth="2.6" />
+      <circle cx="37.2" cy="18.8" r="1.9" fill="#fff" />
     </svg>
   );
 }
 
 function FacebookGlyph(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M22 12.06C22 6.505 17.523 2 12 2S2 6.505 2 12.06c0 5.022 3.657 9.184 8.438 9.94v-7.03H7.898v-2.91h2.54V9.797c0-2.508 1.493-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.876h2.773l-.443 2.91h-2.33V22c4.78-.756 8.437-4.918 8.437-9.94z" />
+    <svg viewBox="0 0 56 56" {...props}>
+      <circle cx="28" cy="28" r="28" fill="#1877F2" />
+      <path
+        fill="#fff"
+        d="M31.5 28.9h4.1l.65-4.25h-4.75v-2.74c0-1.16.57-2.29 2.39-2.29h1.85v-3.62s-1.68-.29-3.29-.29c-3.36 0-5.55 2.04-5.55 5.73v3.21h-3.73v4.25h3.73v13.7h4.6z"
+      />
     </svg>
   );
 }
 
 function XGlyph(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    <svg viewBox="0 0 56 56" {...props}>
+      <rect width="56" height="56" rx="12" fill="#000" />
+      <path
+        fill="#fff"
+        d="M30.6 25.9 40 14.9h-3.1l-7.9 9.2-6.3-9.2h-7.1l9.1 13.2-9.5 11.1h3.1l8.3-9.7 6.6 9.7h7.1l-9.7-14.3zm-3 3.5-1-1.4-7.6-10.9h2.8l6.2 8.8 1 1.4 7.9 11.3h-2.8z"
+      />
     </svg>
   );
 }
 
-const SOCIAL_BRAND_STYLES = {
-  Website: { color: "#0EA5E9", bg: "#E0F2FE" },
-  LinkedIn: { color: "#0A66C2", bg: "#E1ECF8" },
-  Instagram: { color: "#D6249F", bg: "#FCE4F1" },
-  Facebook: { color: "#1877F2", bg: "#E5EFFF" },
-  X: { color: "#111827", bg: "#F1F1F5" },
-  "Personal site": { color: "#7C3AED", bg: "#EFE6FD" },
-};
-
-// Icon-only social button for the header row — shows just the platform's
-// logo in its brand colour, and renders nothing when the company has no
+// Icon-only social button for the header row — shows the platform's
+// full-colour app badge, and renders nothing when the company has no
 // value for that field.
 function SocialIconLink({ href, icon: Icon, label }) {
   if (!href) return null;
   const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
-  const brand = SOCIAL_BRAND_STYLES[label] || { color: "#6b7280", bg: "#f3f4f6" };
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={label}
+      className="flex h-7 w-7 items-center justify-center transition-transform hover:scale-110"
+    >
+      <Icon className="h-full w-full" />
+    </a>
+  );
+}
+
+const WEBSITE_BRAND_STYLES = {
+  Website: { color: "#0EA5E9", bg: "#E0F2FE" },
+  "Personal site": { color: "#7C3AED", bg: "#EFE6FD" },
+};
+
+function WebsiteIconLink({ href, icon: Icon, label }) {
+  if (!href) return null;
+  const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
+  const brand = WEBSITE_BRAND_STYLES[label] || { color: "#6b7280", bg: "#f3f4f6" };
   return (
     <a
       href={url}
@@ -957,12 +993,12 @@ export default function CompanyDetail() {
             <div className="flex items-center gap-2">
               {(company.website || company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
                 <div className="flex items-center gap-1.5 pr-2">
-                  <SocialIconLink href={company.website} icon={Globe} label="Website" />
+                  <WebsiteIconLink href={company.website} icon={Globe} label="Website" />
                   <SocialIconLink href={company.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
                   <SocialIconLink href={company.instagram} icon={InstagramGlyph} label="Instagram" />
                   <SocialIconLink href={company.facebook} icon={FacebookGlyph} label="Facebook" />
                   <SocialIconLink href={company.twitter} icon={XGlyph} label="X" />
-                  <SocialIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
+                  <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
                 </div>
               )}
               <Button
