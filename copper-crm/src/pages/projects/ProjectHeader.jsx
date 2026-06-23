@@ -38,7 +38,7 @@ function tabsFor(company, project) {
   ];
 }
 
-export default function ProjectHeader({ company, project, activeTab, onShare, onNewTask }) {
+export default function ProjectHeader({ company, project, activeTab, onShare, onNewTask, onAction, actionLabel, actionIcon: ActionIcon = Plus }) {
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
   const tabs = tabsFor(company, project);
   const team = project.team || project.assignedTeam || [];
@@ -79,7 +79,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
           </div>
           <div className="flex flex-wrap shrink-0 gap-3">
             <Button variant="secondary" size="lg" onClick={onShare}><Share2 size={15} /> Share Project</Button>
-            <Button variant="primary" size="lg" onClick={onNewTask}><Plus size={15} /> New Task</Button>
+            <Button variant="primary" size="lg" onClick={actionLabel ? onAction : onNewTask}><ActionIcon size={15} /> {actionLabel || "New Task"}</Button>
           </div>
         </div>
       </div>

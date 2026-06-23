@@ -35,17 +35,6 @@ const CLIENT_STATUSES = [
 
 const activityIcon = { upload: UploadCloud, check: CheckCircle2, comment: MessageSquare };
 
-function getPhaseIndex(project) {
-  const direct = PHASES.findIndex((phase) => phase.key === (project.currentPhase || project.status));
-  if (direct !== -1) return direct;
-  if (project.progress >= 95) return 5;
-  if (project.progress >= 75) return 4;
-  if (project.progress >= 50) return 3;
-  if (project.progress >= 25) return 2;
-  if (project.progress >= 10) return 1;
-  return 0;
-}
-
 function formatINR(value) {
   return `₹${Number(value || 0).toLocaleString("en-IN")}`;
 }
@@ -334,77 +323,135 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
         </div>
 
         <div>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-semibold text-[#374151]">Project Stages</p>
-            <button type="button" onClick={addStage} className="text-[11px] font-bold text-[#884c2d] hover:underline">
-              + Add Stage
-            </button>
+          <label className="block text-xs font-semibold text-[#374151] mb-1.5">Current Phase (Admin Label)</label>
+          <select
+            value={form.currentPhase}
+            onChange={e => set("currentPhase")(e.target.value)}
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          >
+            {PHASES.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#374151] mb-1.5">
+            Notes for Client
+            <span className="ml-1 font-normal text-[#9ca3af]">(visible in client portal)</span>
+          </label>
+          <textarea
+            value={form.adminNotes}
+            onChange={e => set("adminNotes")(e.target.value)}
+            placeholder="Share an update or message with the client…"
+            rows={4}
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 resize-none"
+          />
+        </div>
+
+        <div className="rounded-xl bg-[#EBE1D8] p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[15px] font-bold text-[#2b211c]">Project Stages</h3>
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm">
+              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#884c2d]">i</span>
+              Client Visible
+            </span>
           </div>
-          <p className="text-[11px] text-[#9ca3af] mb-3">Add, remove, reorder, and set dates for each stage. Stages marked "Client Visible" appear in the client portal.</p>
-          <div className="space-y-3">
+
+          <div className="space-y-4">
             {form.stages.map((stage, index) => (
-              <div key={index} className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] p-3">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#884c2d] text-[11px] font-bold text-white">{index + 1}</span>
+              <div key={index} className="flex flex-col gap-3 rounded-2xl bg-[#F2EAE3] p-4 shadow-sm border border-[#EBE1D8]/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#3B2818] text-xs font-bold text-white shadow-sm">
+                    {index + 1}
+                  </div>
                   <input
                     type="text"
-                    placeholder="Stage name"
+                    placeholder="Phase Name"
                     value={stage.name || ""}
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-32 rounded-lg border border-[#e5e7eb] bg-white px-2 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>
                     <option value="review">Review</option>
                     <option value="completed">Completed</option>
                   </select>
-                  <button type="button" onClick={() => moveStageUp(index)} disabled={index === 0} className="text-[#9ca3af] hover:text-[#374151] disabled:opacity-30">▲</button>
-                  <button type="button" onClick={() => moveStageDown(index)} disabled={index === form.stages.length - 1} className="text-[#9ca3af] hover:text-[#374151] disabled:opacity-30">▼</button>
-                  <button type="button" onClick={() => removeStage(index)} className="text-[#9ca3af] hover:text-red-500">
-                    <Trash2 size={14} />
+                  <div className="flex flex-col items-center gap-0.5 border-l border-[#DCD1C8] pl-2">
+                    <button type="button" onClick={() => moveStageUp(index)} disabled={index === 0} className="text-[#8B7C71] hover:text-[#3B2818] disabled:opacity-30">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                    </button>
+                    <button type="button" onClick={() => moveStageDown(index)} disabled={index === form.stages.length - 1} className="text-[#8B7C71] hover:text-[#3B2818] disabled:opacity-30">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                  </div>
+                  <button type="button" onClick={() => removeStage(index)} className="p-1.5 text-[#8B7C71] hover:text-[#E82222] transition-colors ml-1">
+                    <Trash2 size={16} />
                   </button>
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 pl-8">
-                  <input
-                    type="date"
-                    value={stage.startDate || ""}
-                    onChange={(e) => updateStage(index, "startDate", e.target.value)}
-                    className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
-                  />
-                  <input
-                    type="date"
-                    value={stage.endDate || ""}
-                    onChange={(e) => updateStage(index, "endDate", e.target.value)}
-                    className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+
+                <div className="grid grid-cols-2 gap-4 pl-10">
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">Start Date</label>
+                    <input
+                      type="date"
+                      value={stage.startDate || ""}
+                      onChange={(e) => updateStage(index, "startDate", e.target.value)}
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">End Date</label>
+                    <input
+                      type="date"
+                      value={stage.endDate || ""}
+                      onChange={(e) => updateStage(index, "endDate", e.target.value)}
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="pl-10">
+                  <textarea
+                    rows={1}
+                    placeholder="Stage notes (visible to client)..."
+                    value={stage.notes || ""}
+                    onChange={(e) => updateStage(index, "notes", e.target.value)}
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Stage notes (visible to client)…"
-                  value={stage.notes || ""}
-                  onChange={(e) => updateStage(index, "notes", e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 pl-8 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
-                />
-                <label className="mt-2 flex items-center gap-1.5 pl-8 text-[11px] font-semibold text-[#374151]">
-                  <input
-                    type="checkbox"
-                    checked={stage.clientVisible !== false}
-                    onChange={(e) => updateStage(index, "clientVisible", e.target.checked)}
-                    className="accent-[#884c2d]"
+
+                <div className="pl-10 space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-[#3B2818] cursor-pointer w-fit">
+                    <input
+                      type="checkbox"
+                      checked={stage.clientVisible !== false}
+                      onChange={(e) => updateStage(index, "clientVisible", e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-[#0066FF] focus:ring-[#0066FF]"
+                    />
+                    Client Visible
+                  </label>
+                  <textarea
+                    rows={1}
+                    placeholder="Internal notes (hidden from client)..."
+                    value={stage.internalNotes || ""}
+                    onChange={(e) => updateStage(index, "internalNotes", e.target.value)}
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
                   />
-                  Client Visible
-                </label>
+                </div>
               </div>
             ))}
             {!form.stages.length && (
-              <p className="rounded-lg border border-dashed border-[#e5e7eb] px-3 py-4 text-center text-xs text-[#9ca3af]">No stages yet. Add one to start tracking progress.</p>
+              <p className="rounded-lg border border-dashed border-[#8B7C71] bg-white/40 px-3 py-4 text-center text-xs text-[#5C4A3D]">No stages yet. Add one to start tracking progress.</p>
             )}
           </div>
+
+          <button type="button" onClick={addStage} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#8B7C71] py-3 text-sm font-bold text-[#5C4A3D] hover:bg-white/40 transition-colors">
+            + Add Stage
+          </button>
         </div>
       </div>
     </SidePanel>
@@ -467,7 +514,34 @@ export default function ProjectDetail() {
     );
   }
 
-  const phaseIndex = getPhaseIndex(project);
+  const stages = Array.isArray(project.stages) ? project.stages : [];
+  // Driven entirely by the project's real stages — no phantom defaults when empty.
+  const displayPhases = stages.map((s) => {
+    const standardPhase = PHASES.find((p) => p.label === s.name || p.key === s.name);
+    return { key: s.name, label: s.name, icon: standardPhase ? standardPhase.icon : CheckCircle2 };
+  });
+
+  // Derive progress and the active phase live from the stages so the roadmap stays
+  // correct even if the stored project.progress / currentPhase are stale (e.g. after
+  // stages were changed on the Kanban board).
+  const liveProgress = stages.length ? roadmapProgress(stages) : (project.progress || 0);
+
+  // Active stage by INDEX (not name) so duplicate stage names don't collide.
+  let phaseIndex;
+  if (stages.length) {
+    if (isRoadmapComplete(stages)) {
+      phaseIndex = stages.length - 1;
+    } else {
+      phaseIndex = stages.findIndex((s) => s.status === "in_progress");
+      if (phaseIndex === -1) phaseIndex = stages.findIndex((s) => s.status === "review");
+      if (phaseIndex === -1) phaseIndex = stages.findIndex((s) => s.status !== "completed");
+      if (phaseIndex === -1) phaseIndex = 0;
+    }
+  } else {
+    phaseIndex = PHASES.findIndex((p) => p.key === (project.currentPhase || project.status) || p.label === (project.currentPhase || project.status));
+    if (phaseIndex === -1) phaseIndex = project.progress >= 100 ? PHASES.length - 1 : 0;
+  }
+
   const budgetPct = Math.min(100, Math.round(((project.budgetUsed || 0) / Math.max(project.budget || 1, 1)) * 100));
   const currentCompany = company || { id: companyId, name: project.client || project.company || project.companyName || "Company" };
 
@@ -534,12 +608,14 @@ export default function ProjectDetail() {
         project={project}
         activeTab="Overview"
         onShare={handleShare}
-        onNewTask={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/tasks`)}
+        actionLabel="Manage Stages"
+        actionIcon={Settings2}
+        onAction={() => setManaging(true)}
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        <KpiChip label="Progress" value={`${project.progress || 0}%`} icon={Zap} />
-        <KpiChip label="Current Phase" value={PHASES[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
+        <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} />
+        <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
         <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
         <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
         <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
@@ -548,57 +624,109 @@ export default function ProjectDetail() {
 
       <section className="grid grid-cols-12 gap-5">
         <div className="col-span-12 space-y-5 lg:col-span-7 xl:col-span-8">
-          <Section
-            title="Phase Roadmap"
-            action={
+          <div className="rounded-2xl border border-[#E1E4EA] bg-[#FAFAF8] p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold text-[#0E121B] flex items-center gap-2">
+                  <ListChecks className="text-[#884c2d]" size={20} />
+                  Project Roadmap
+                </h3>
+                <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">
+                  {stages.length} stages
+                </span>
+                <span className="rounded-full bg-[#dcfce7] px-2.5 py-1 text-[11px] font-bold text-[#166534]">
+                  {stages.filter((s) => s.status === "completed").length}/{stages.length} done
+                </span>
+              </div>
               <button
                 onClick={() => setManaging(true)}
                 className="flex items-center gap-1.5 rounded-lg border border-[#E1E4EA] bg-white px-2.5 py-1.5 text-xs font-semibold text-[#525866] hover:bg-[#fafafa] transition-colors"
               >
-                <Settings2 size={11} /> Update
+                <Settings2 size={11} /> Manage
               </button>
-            }
-          >
-            <div className="space-y-5">
-              <div>
-                <div className="flex items-center justify-between text-xs font-semibold text-[#525866]">
-                  <span>Overall progress · {PHASES[phaseIndex]?.label || project.currentPhase}</span>
-                  <span className="font-bold text-[#884c2d]">{project.progress || 0}%</span>
-                </div>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#F1F1F5]">
-                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${project.progress || 0}%` }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-y-5 sm:grid-cols-6">
-                {PHASES.map((phase, index) => {
-                  const Icon = phase.icon;
-                  const isDone = index < phaseIndex;
-                  const isCurrent = index === phaseIndex;
-                  return (
-                    <div key={phase.key} className="flex flex-col items-center gap-2 text-center">
-                      <div
-                        className={`grid h-11 w-11 place-items-center rounded-full border-2 transition-colors ${
-                          isCurrent
-                            ? "border-[#884c2d] bg-[#fff1ec] text-[#884c2d]"
-                            : isDone
-                            ? "border-[#884c2d] bg-[#884c2d] text-white"
-                            : "border-[#E1E4EA] bg-white text-[#9ca3af]"
-                        }`}
-                      >
-                        {isDone ? <CheckCircle2 size={18} /> : <Icon size={18} />}
-                      </div>
-                      <div>
-                        <p className={`text-xs font-bold ${isCurrent ? "text-[#884c2d]" : "text-[#0E121B]"}`}>{phase.label}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
-                          {isDone ? "Done" : isCurrent ? "In progress" : "Upcoming"}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-          </Section>
+
+            <div className="relative pl-6 space-y-8 before:absolute before:left-10 before:top-4 before:bottom-4 before:w-0.5 before:bg-[#E1E4EA]">
+              {displayPhases.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+                  <p className="text-sm font-semibold text-[#0E121B]">No stages yet.</p>
+                  <p className="mt-1 text-sm text-[#6b7280]">Click &ldquo;Manage Stages&rdquo; to add the steps for this project.</p>
+                </div>
+              ) : displayPhases.map((phase, index) => {
+                const stageData = stages[index] || { status: index < phaseIndex ? "completed" : index === phaseIndex ? "in_progress" : "not_started" };
+                const isCompleted = stageData.status === "completed";
+                const isReview = stageData.status === "review";
+                const isActive = stageData.status === "in_progress" || isReview || (stageData.status === "not_started" && index === phaseIndex);
+
+                const iconBg = isCompleted ? "bg-[#34d399] border-[#34d399]" : isActive ? "bg-[#fef3c7] border-[#fbbf24]" : "bg-white border-[#E1E4EA]";
+                const iconColor = isCompleted ? "text-white" : isActive ? "text-[#d97706]" : "text-[#9ca3af]";
+
+                const cardBg = isCompleted ? "bg-[#f0fdf4] border-[#bbf7d0]" : isActive ? "bg-[#fffbeb] border-[#fde68a]" : "bg-[#f3f4f6] border-[#e5e7eb]";
+
+                function formatStageDate(dateStr) {
+                  if (!dateStr) return null;
+                  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+                }
+
+                return (
+                  <div key={phase.key || index} className="relative flex items-start gap-6">
+                    <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${iconBg} shadow-sm`}>
+                      {isCompleted ? <CheckCircle2 size={20} className={iconColor} /> : isActive ? <Zap size={18} className={iconColor} /> : <div className="h-2.5 w-2.5 rounded-full bg-[#d1d5db]" />}
+                    </div>
+
+                    <div className={`flex-1 rounded-2xl border p-5 transition-all ${cardBg}`}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/60 text-[11px] font-bold text-[#525866]">
+                          {index + 1}
+                        </span>
+                        <h4 className="text-base font-bold text-[#0E121B]">{phase.label}</h4>
+                      </div>
+
+                      <div className="mb-4">
+                        {isCompleted ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#166534]">
+                            <CheckCircle2 size={12} /> Completed
+                          </span>
+                        ) : isReview ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7c3aed]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed]" /> In Review
+                          </span>
+                        ) : isActive ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#d97706]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#d97706]" /> Currently Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6b7280]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#9ca3af]" /> Upcoming
+                          </span>
+                        )}
+                      </div>
+
+                      {stageData.notes && (
+                        <p className="mb-3 text-sm text-[#525866]">{stageData.notes}</p>
+                      )}
+
+                      {(stageData.startDate || stageData.endDate) && (
+                        <div className="flex items-center gap-3 text-[11px] font-bold text-[#6b7280]">
+                          {stageData.startDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} /> {formatStageDate(stageData.startDate)}
+                            </span>
+                          )}
+                          {stageData.startDate && stageData.endDate && <span className="text-[#d1d5db]">&gt;</span>}
+                          {stageData.endDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} /> {formatStageDate(stageData.endDate)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Section title="Critical Focus">

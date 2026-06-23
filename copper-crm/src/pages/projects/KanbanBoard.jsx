@@ -7,21 +7,14 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS, COLUMN_TO_TASK_STATUS } from "../../lib/taskStatus";
 
 const colConfig = {
-  "Backlog": { dot: "bg-gray-400", ring: "ring-gray-200", header: "bg-[#F5F7FA]" },
   "To Do": { dot: "bg-sky-500", ring: "ring-sky-100", header: "bg-sky-50" },
   "In Progress": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
-  "Requirement Gathering": { dot: "bg-blue-500", ring: "ring-blue-100", header: "bg-blue-50" },
-  "Design": { dot: "bg-violet-500", ring: "ring-violet-100", header: "bg-violet-50" },
-  "Development": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
-  "Testing": { dot: "bg-yellow-500", ring: "ring-yellow-100", header: "bg-yellow-50" },
   "Review": { dot: "bg-indigo-500", ring: "ring-indigo-100", header: "bg-indigo-50" },
-  "Completed": { dot: "bg-emerald-500", ring: "ring-emerald-100", header: "bg-emerald-50" },
-  "Blocked": { dot: "bg-red-500", ring: "ring-red-100", header: "bg-red-50" },
+  "Done": { dot: "bg-emerald-500", ring: "ring-emerald-100", header: "bg-emerald-50" },
 };
-
-const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 
 const priorityConfig = {
   High: "bg-red-50 text-red-600 border-red-100",
@@ -56,21 +49,47 @@ export default function KanbanBoard() {
   const [taskEditor, setTaskEditor] = useState(null);
   const { showToast } = useToast();
   const { records: dbTasks, save: saveDbTask, remove: removeDbTask } = useCrmRecords("tasks");
+  const { records: projects, save: saveProject } = useCrmRecords("projects");
 
   useEffect(() => {
     const nextColumns = Object.fromEntries(TASK_STATUSES.map((key) => [key, []]));
     dbTasks.forEach((task) => {
-      const status = nextColumns[task.status] ? task.status : "Backlog";
-      nextColumns[status].push(task);
+      nextColumns[normalizeTaskStatus(task.status)].push(task);
     });
+
+    // Surface each project's stages as draggable cards too, so moving a stage between
+    // columns updates project.stages directly (see onDragEnd's isStage branch below).
+    projects.forEach((p) => {
+      if (!Array.isArray(p.stages)) return;
+      p.stages.forEach((stage, idx) => {
+        if (!stage || typeof stage !== "object") return;
+        const mappedStatus = normalizeTaskStatus(stage.status);
+        nextColumns[mappedStatus].push({
+          isStage: true,
+          projectId: String(p.id || p._id || "unknown"),
+          stageIndex: idx,
+          id: `stage-${p.id || p._id}-${idx}`,
+          title: `Stage: ${stage.name || "Unnamed"}`,
+          project: p.name || "Unknown Project",
+          status: mappedStatus,
+          priority: "High",
+          dueDate: stage.endDate || "",
+          startDate: stage.startDate || "",
+          subtasks: 0,
+          comments: 0,
+          description: stage.notes || "Project Stage",
+        });
+      });
+    });
+
     queueMicrotask(() => setColumns(nextColumns));
-  }, [dbTasks]);
+  }, [dbTasks, projects]);
 
   const totals = useMemo(() => {
     const tasks = Object.values(columns).flat();
     return {
       total: tasks.length,
-      done: columns.Completed?.length || 0,
+      done: columns.Done?.length || 0,
       high: tasks.filter((task) => task.priority === "High").length,
     };
   }, [columns]);
@@ -83,22 +102,44 @@ export default function KanbanBoard() {
     setActiveTaskId("");
     const { source, destination } = result;
     if (!destination) return;
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
     if (source.droppableId === destination.droppableId) {
-      const reordered = reorder(columns[source.droppableId], source.index, destination.index);
-      setColumns({ ...columns, [source.droppableId]: reordered });
+      setColumns((prev) => ({
+        ...prev,
+        [source.droppableId]: reorder(prev[source.droppableId], source.index, destination.index),
+      }));
       return;
     }
 
     const movedTask = columns[source.droppableId][source.index];
-    setColumns({
-      ...columns,
-      ...move(columns[source.droppableId], columns[destination.droppableId], source, destination),
+
+    setColumns((prev) => {
+      const next = move(prev[source.droppableId], prev[destination.droppableId], source, destination);
+      return { ...prev, ...next };
     });
-    await saveDbTask({ ...movedTask, status: destination.droppableId });
+
+    if (movedTask.isStage) {
+      const newStageStatus = COLUMN_TO_STAGE_STATUS[destination.droppableId] || "not_started";
+      const proj = projects.find((p) => String(p.id || p._id) === movedTask.projectId);
+      if (proj && Array.isArray(proj.stages) && proj.stages[movedTask.stageIndex]) {
+        const nextStages = [...proj.stages];
+        nextStages[movedTask.stageIndex] = { ...nextStages[movedTask.stageIndex], status: newStageStatus };
+        await saveProject({ ...proj, stages: nextStages });
+        showToast({ title: "Stage moved", message: `"${movedTask.title}" moved to ${destination.droppableId}.` });
+      }
+      return;
+    }
+
+    try {
+      await saveDbTask({ ...movedTask, status: COLUMN_TO_TASK_STATUS[destination.droppableId] || destination.droppableId });
+      showToast({ title: "Task moved", message: `Task moved to ${destination.droppableId}.` });
+    } catch (error) {
+      showToast({ type: "error", title: "Could not move task", message: error.message });
+    }
   }
 
-  function openNewTask(column = "Backlog") {
+  function openNewTask(column = "To Do") {
     setTaskEditor({
       mode: "create",
       column,
@@ -123,7 +164,7 @@ export default function KanbanBoard() {
   async function saveTask(nextTask, nextColumn) {
     try {
       const isNew = !nextTask._id;
-      const savedTask = await saveDbTask({ ...nextTask, status: nextColumn });
+      const savedTask = await saveDbTask({ ...nextTask, status: COLUMN_TO_TASK_STATUS[nextColumn] || nextColumn });
       setColumns((current) => {
         const cleaned = Object.fromEntries(
           Object.entries(current).map(([column, tasks]) => [
@@ -188,7 +229,7 @@ export default function KanbanBoard() {
       <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div className="flex flex-1 gap-4 overflow-x-auto pb-4" style={{ minHeight: 0 }}>
           {Object.entries(columns).map(([col, tasks]) => {
-            const cfg = colConfig[col] || colConfig.Backlog;
+            const cfg = colConfig[col] || colConfig["To Do"];
             return (
               <section key={col} className="flex w-[270px] shrink-0 flex-col rounded-2xl border border-[#E1E4EA] bg-[#ffffff] shadow-sm shadow-gray-100/70">
                 <div className={`rounded-t-2xl border-b border-[#EAECF0] px-3.5 py-3 ${cfg.header}`}>
@@ -218,7 +259,7 @@ export default function KanbanBoard() {
                     >
                       <div className="space-y-2.5">
                         {tasks.map((task, index) => {
-                          const isDone = col === "Completed";
+                          const isDone = col === "Done";
                           const priority = priorityConfig[task.priority] || priorityConfig.Low;
                           return (
                             <Draggable key={task.id || task._id} draggableId={String(task.id || task._id)} index={index}>
@@ -256,17 +297,19 @@ export default function KanbanBoard() {
                                           {task.title || task.taskName || "Untitled task"}
                                         </h3>
                                       </div>
-                                      <button
-                                        type="button"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          openEditTask(col, task);
-                                        }}
-                                        className="grid h-5 w-5 shrink-0 place-items-center rounded-md text-gray-300 opacity-0 hover:bg-[#f9fafb] hover:text-[#6B7280] group-hover/card:opacity-100"
-                                        title="Edit task"
-                                      >
-                                        <MoreHorizontal size={12} />
-                                      </button>
+                                      {!task.isStage && (
+                                        <button
+                                          type="button"
+                                          onClick={(event) => {
+                                            event.stopPropagation();
+                                            openEditTask(col, task);
+                                          }}
+                                          className="grid h-5 w-5 shrink-0 place-items-center rounded-md text-gray-300 opacity-0 hover:bg-[#f9fafb] hover:text-[#6B7280] group-hover/card:opacity-100"
+                                          title="Edit task"
+                                        >
+                                          <MoreHorizontal size={12} />
+                                        </button>
+                                      )}
                                     </div>
 
                                     <p className="mb-2.5 line-clamp-2 text-[11px] leading-4 text-[#6B7280]">{task.description || "No description added."}</p>
@@ -290,22 +333,28 @@ export default function KanbanBoard() {
                                           {task.comments || 0}
                                         </span>
                                       </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <button
-                                          type="button"
-                                          onClick={(event) => {
-                                            event.stopPropagation();
-                                            openEditTask(col, task);
-                                          }}
-                                          className="grid h-6 w-6 place-items-center rounded-full text-gray-300 hover:bg-blue-50 hover:text-[#2563EB]"
-                                          title="Edit task"
-                                        >
-                                          <Edit3 size={11} />
-                                        </button>
-                                        <div className={`grid h-6 w-6 place-items-center rounded-full text-[9px] font-bold text-white ${assigneeColor[assigneeIdx(task.assignee || task.assignedTo)]}`}>
-                                          {(task.assignee || task.assignedTo || "U").slice(0, 1).toUpperCase()}
+                                      {!task.isStage ? (
+                                        <div className="flex items-center gap-1.5">
+                                          <button
+                                            type="button"
+                                            onClick={(event) => {
+                                              event.stopPropagation();
+                                              openEditTask(col, task);
+                                            }}
+                                            className="grid h-6 w-6 place-items-center rounded-full text-gray-300 hover:bg-blue-50 hover:text-[#2563EB]"
+                                            title="Edit task"
+                                          >
+                                            <Edit3 size={11} />
+                                          </button>
+                                          <div className={`grid h-6 w-6 place-items-center rounded-full text-[9px] font-bold text-white ${assigneeColor[assigneeIdx(task.assignee || task.assignedTo)]}`}>
+                                            {(task.assignee || task.assignedTo || "U").slice(0, 1).toUpperCase()}
+                                          </div>
                                         </div>
-                                      </div>
+                                      ) : (
+                                        <div className="flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-bold text-violet-600">
+                                          <Sparkles size={10} /> Project Stage
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </article>
