@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { FolderKanban, Plus, Share2, Calendar, Clock3, AlertCircle } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
+import { isRoadmapComplete } from "../../lib/stageProgress";
 
 const statusColor = {
   "Requirement Gathering": "gray",
@@ -10,6 +11,17 @@ const statusColor = {
   Review: "blue",
   Completed: "green",
 };
+
+// Derive the project's status from its actual stages so the badge can never get
+// stuck on a stale stored "Completed". Falls back to the stored status only when
+// the project has no stages at all.
+function liveProjectStatus(project) {
+  const stages = Array.isArray(project.stages) ? project.stages : [];
+  if (!stages.length) return project.status || "Requirement Gathering";
+  if (isRoadmapComplete(stages)) return "Completed";
+  const anyStarted = stages.some((s) => s?.status && s.status !== "not_started");
+  return anyStarted ? "In Progress" : "Requirement Gathering";
+}
 
 const priorityPill = {
   urgent: { label: "Urgent", color: "red", icon: AlertCircle },
@@ -30,6 +42,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
   const tabs = tabsFor(company, project);
   const team = project.team || project.assignedTeam || [];
+  const liveStatus = liveProjectStatus(project);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
@@ -43,7 +56,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
               <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
               <p className="mt-0.5 text-sm text-[#525866]">{company.name}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <Badge color={statusColor[project.status] || "gray"}>{project.status}</Badge>
+                <Badge color={statusColor[liveStatus] || "gray"}>{liveStatus}</Badge>
                 <Badge color={pill.color}>
                   <pill.icon size={12} className="mr-1 inline" />{pill.label}
                 </Badge>

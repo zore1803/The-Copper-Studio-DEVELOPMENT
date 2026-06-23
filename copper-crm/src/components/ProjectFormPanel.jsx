@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
-import { generateProjectCode, generateDefaultProjectName } from "../lib/projectDefaults";
+import { generateProjectCode, generateDefaultProjectName, PROJECT_TEMPLATES } from "../lib/projectDefaults";
 
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
+const PROJECT_TEMPLATE_OPTIONS = Object.keys(PROJECT_TEMPLATES);
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
@@ -63,7 +64,7 @@ function Textarea({ label, value, onChange, span = false }) {
   );
 }
 
-function Select({ label, value, onChange, options = [], span = false, error }) {
+function Select({ label, value, onChange, options = [], span = false, error, hint }) {
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
     <label className={`block ${span ? "sm:col-span-2" : ""}`}>
@@ -79,7 +80,11 @@ function Select({ label, value, onChange, options = [], span = false, error }) {
         <option value="">Select…</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
-      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+      {error
+        ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
+        : hint
+          ? <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>
+          : null}
     </label>
   );
 }
@@ -97,6 +102,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     expectedEndDate: "",
     priority: "Medium",
     status: "Requirement Gathering",
+    template: "Custom",
     budget: "",
     discount: "",
     linkedInvoiceId: "",
@@ -203,7 +209,9 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
         </FormSection>
 
         <FormSection title="Delivery Pipeline">
-          <Select span label="Delivery stage" value={form.status} onChange={set("status")} options={PROJECT_STATUS} />
+          <Select label="Delivery stage" value={form.status} onChange={set("status")} options={PROJECT_STATUS} />
+          <Select label="Project template" value={form.template} onChange={set("template")} options={PROJECT_TEMPLATE_OPTIONS}
+            hint="Generates the editable project-stage roadmap" />
         </FormSection>
 
         <FormSection title="Commercials">

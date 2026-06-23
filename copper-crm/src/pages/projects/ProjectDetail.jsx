@@ -3,13 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
   UploadCloud, CheckCircle2, MessageSquare, Send, Calendar,
-  Settings2, Save,
+  Settings2, Save, Trash2,
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ProjectHeader from "./ProjectHeader";
+import { roadmapProgress, isRoadmapComplete, nextPhaseForStages } from "../../lib/stageProgress";
 
 const PHASES = [
   { key: "Requirement Gathering", label: "Requirement", icon: ListChecks },
@@ -20,7 +21,6 @@ const PHASES = [
   { key: "Completed", label: "Deployment", icon: Rocket },
 ];
 
-const STAGE_NAMES = ["Requirement Gathering", "Design", "Development", "Testing", "Review", "Delivery"];
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
@@ -52,22 +52,6 @@ function formatINR(value) {
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
-}
-
-function roadmapProgress(stages = []) {
-  if (!stages.length) return 0;
-  const completed = stages.filter((stage) => stage.status === "completed").length;
-  return Math.round((completed / stages.length) * 100);
-}
-
-function isRoadmapComplete(stages = []) {
-  return stages.length > 0 && stages.every((stage) => stage.status === "completed");
-}
-
-function nextPhaseForStages(stages = []) {
-  if (isRoadmapComplete(stages)) return "Completed";
-  const activeStage = stages.find((stage) => stage.status === "in_progress") || stages.find((stage) => stage.status !== "completed");
-  return activeStage?.name || "Requirement Gathering";
 }
 
 function PanelField({ label, value, onChange, type = "text", disabled = false, span = false }) {
@@ -182,10 +166,9 @@ function InviteCollaborators({ client }) {
 }
 
 function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
-  const stages = STAGE_NAMES.map(name => {
-    const existing = (project.stages || []).find(s => s.name === name);
-    return existing || { name, status: "not_started" };
-  });
+  // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
+  // deleting every stage would make them reappear. Use "+ Add Stage" to add new ones.
+  const initialStages = Array.isArray(project.stages) ? project.stages : [];
 
   const [form, setForm] = useState({
     name: project.name || "",
@@ -204,40 +187,61 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
     clientStatus: project.clientStatus || "in_progress",
     currentPhase: project.currentPhase || project.status || "In Progress",
     adminNotes: project.adminNotes || "",
-    stages,
+    stages: initialStages,
   });
 
   const set = (key) => (val) => setForm(prev => ({ ...prev, [key]: val }));
 
-  function cycleStage(name) {
-    const order = ["not_started", "in_progress", "completed"];
-    setForm(prev => ({
-      ...prev,
-      ...(() => {
-        const nextStages = prev.stages.map(s =>
-        s.name === name
-          ? { ...s, status: order[(order.indexOf(s.status) + 1) % order.length] }
-          : s
-        );
+  function updateStage(index, field, value) {
+    setForm(prev => {
+      const nextStages = [...prev.stages];
+      nextStages[index] = { ...nextStages[index], [field]: value };
+
+      let updates = {};
+      if (field === "status") {
         const complete = isRoadmapComplete(nextStages);
         const nextPhase = nextPhaseForStages(nextStages);
-        return {
-          stages: nextStages,
+        updates = {
           progress: roadmapProgress(nextStages),
           currentPhase: nextPhase,
           status: complete ? "Completed" : nextPhase,
           clientStatus: complete ? "completed" : prev.clientStatus === "completed" ? "in_progress" : prev.clientStatus,
         };
-      })(),
+      }
+
+      return { ...prev, stages: nextStages, ...updates };
+    });
+  }
+
+  function addStage() {
+    setForm(prev => ({
+      ...prev,
+      stages: [...prev.stages, { name: "New Phase", status: "not_started", clientVisible: true }],
     }));
   }
 
-  const stageColor = {
-    completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    in_progress: "bg-[#884c2d]/10 text-[#884c2d] border-[#884c2d]/20",
-    not_started: "bg-gray-100 text-gray-500 border-gray-200",
-  };
-  const stageLabel = { completed: "Completed", in_progress: "In Progress", not_started: "Not Started" };
+  function removeStage(index) {
+    setForm(prev => ({ ...prev, stages: prev.stages.filter((_, i) => i !== index) }));
+  }
+
+  function moveStageUp(index) {
+    if (index === 0) return;
+    setForm(prev => {
+      const nextStages = [...prev.stages];
+      [nextStages[index - 1], nextStages[index]] = [nextStages[index], nextStages[index - 1]];
+      return { ...prev, stages: nextStages };
+    });
+  }
+
+  function moveStageDown(index) {
+    setForm(prev => {
+      if (index === prev.stages.length - 1) return prev;
+      const nextStages = [...prev.stages];
+      [nextStages[index + 1], nextStages[index]] = [nextStages[index], nextStages[index + 1]];
+      return { ...prev, stages: nextStages };
+    });
+  }
+
   const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
 
   return (
@@ -330,20 +334,76 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-[#374151] mb-2">Engagement Roadmap Stages</p>
-          <p className="text-[11px] text-[#9ca3af] mb-3">Tap a stage to cycle: Not Started → In Progress → Completed</p>
-          <div className="space-y-2">
-            {form.stages.map(stage => (
-              <button
-                key={stage.name}
-                type="button"
-                onClick={() => cycleStage(stage.name)}
-                className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-xs font-semibold transition-colors ${stageColor[stage.status]}`}
-              >
-                <span>{stage.name}</span>
-                <span>{stageLabel[stage.status]}</span>
-              </button>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-semibold text-[#374151]">Project Stages</p>
+            <button type="button" onClick={addStage} className="text-[11px] font-bold text-[#884c2d] hover:underline">
+              + Add Stage
+            </button>
+          </div>
+          <p className="text-[11px] text-[#9ca3af] mb-3">Add, remove, reorder, and set dates for each stage. Stages marked "Client Visible" appear in the client portal.</p>
+          <div className="space-y-3">
+            {form.stages.map((stage, index) => (
+              <div key={index} className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] p-3">
+                <div className="flex items-center gap-2">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#884c2d] text-[11px] font-bold text-white">{index + 1}</span>
+                  <input
+                    type="text"
+                    placeholder="Stage name"
+                    value={stage.name || ""}
+                    onChange={(e) => updateStage(index, "name", e.target.value)}
+                    className="flex-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                  />
+                  <select
+                    value={stage.status || "not_started"}
+                    onChange={(e) => updateStage(index, "status", e.target.value)}
+                    className="w-32 rounded-lg border border-[#e5e7eb] bg-white px-2 py-1.5 text-xs font-semibold outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                  >
+                    <option value="not_started">Not Started</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="review">Review</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                  <button type="button" onClick={() => moveStageUp(index)} disabled={index === 0} className="text-[#9ca3af] hover:text-[#374151] disabled:opacity-30">▲</button>
+                  <button type="button" onClick={() => moveStageDown(index)} disabled={index === form.stages.length - 1} className="text-[#9ca3af] hover:text-[#374151] disabled:opacity-30">▼</button>
+                  <button type="button" onClick={() => removeStage(index)} className="text-[#9ca3af] hover:text-red-500">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 pl-8">
+                  <input
+                    type="date"
+                    value={stage.startDate || ""}
+                    onChange={(e) => updateStage(index, "startDate", e.target.value)}
+                    className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                  />
+                  <input
+                    type="date"
+                    value={stage.endDate || ""}
+                    onChange={(e) => updateStage(index, "endDate", e.target.value)}
+                    className="rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Stage notes (visible to client)…"
+                  value={stage.notes || ""}
+                  onChange={(e) => updateStage(index, "notes", e.target.value)}
+                  className="mt-2 w-full rounded-lg border border-[#e5e7eb] bg-white px-2.5 py-1.5 pl-8 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30"
+                />
+                <label className="mt-2 flex items-center gap-1.5 pl-8 text-[11px] font-semibold text-[#374151]">
+                  <input
+                    type="checkbox"
+                    checked={stage.clientVisible !== false}
+                    onChange={(e) => updateStage(index, "clientVisible", e.target.checked)}
+                    className="accent-[#884c2d]"
+                  />
+                  Client Visible
+                </label>
+              </div>
             ))}
+            {!form.stages.length && (
+              <p className="rounded-lg border border-dashed border-[#e5e7eb] px-3 py-4 text-center text-xs text-[#9ca3af]">No stages yet. Add one to start tracking progress.</p>
+            )}
           </div>
         </div>
       </div>

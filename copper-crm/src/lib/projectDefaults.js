@@ -51,6 +51,28 @@ function addDays(value, days) {
   return base.toISOString().slice(0, 10);
 }
 
+// Stage names per project template — drives the editable roadmap shown on the
+// project detail page (Manage Project > Project Stages).
+export const PROJECT_TEMPLATES = {
+  "Logo Design": ["Requirements", "Research", "Concept Sketches", "Typography", "Logo Design", "Client Review", "Final Delivery"],
+  Website: ["Requirements", "Wireframes", "UI Design", "Development", "Testing", "Deployment"],
+  SEO: ["Requirements", "Keyword Research", "On-Page SEO", "Technical SEO", "Reporting"],
+  Custom: ["Phase 1", "Phase 2", "Delivery"],
+};
+
+function stagesFromTemplate(templateName, startDate) {
+  const stageNames = PROJECT_TEMPLATES[templateName] || PROJECT_TEMPLATES.Custom;
+  return stageNames.map((name, index) => ({
+    id: `stage-${Date.now()}-${index}`,
+    name,
+    status: "not_started",
+    startDate: addDays(startDate, index * 5),
+    endDate: addDays(startDate, index * 5 + 4),
+    notes: "",
+    clientVisible: true,
+  }));
+}
+
 export function createDefaultTimeline(startDate) {
   const stages = [
     ["Requirement Gathering", 0, 4],
@@ -113,7 +135,8 @@ export function buildProjectPayload(form, company) {
     linkedInvoiceId: form.linkedInvoiceId,
     budgetUsed: 0,
     progress: Number(form.progress) || 0,
-    stages: timeline.map((item) => ({ name: item.name, status: item.status === "On Track" ? "in_progress" : "not_started" })),
+    stages: stagesFromTemplate(form.template, form.startDate),
+    template: form.template || "Custom",
     timeline,
     tasksBoard: ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"],
     documents: [],
