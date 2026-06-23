@@ -5,7 +5,7 @@ import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
   Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
-  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users
+  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -1111,7 +1111,7 @@ export default function CompanyDetail() {
           <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
         )}
         {activeTab === "Meetings" && (
-          <MeetingsTab calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} token={token} />
+          <MeetingsTab calendlyUrl={company.calendlyUrl} onSaveCalendlyUrl={handleSaveCalendlyLink} />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
@@ -2268,29 +2268,29 @@ function GoogleCalendarEmbed() {
   return <iframe src={src} title="Google Calendar" className="h-[650px] w-full rounded-xl border border-[#e5e7eb]" frameBorder="0" scrolling="no" />;
 }
 
-function MeetingsTab({ calendlyUrl, onSaveCalendlyUrl, token }) {
-  const [eventTypes, setEventTypes] = useState([]);
-  const [loadingTypes, setLoadingTypes] = useState(true);
-  const [typesError, setTypesError] = useState("");
-  const [selectedSlug, setSelectedSlug] = useState("");
-  const [editingUrl, setEditingUrl] = useState(false);
+// Popup overlay for the Calendly booking widget — kept separate from the
+// page flow so booking doesn't require leaving the Meetings tab.
+function CalendlyBookingModal({ url, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 p-4" onClick={onClose}>
+      <div className="relative h-[85vh] w-full max-w-3xl rounded-xl bg-white shadow-xl" onClick={(event) => event.stopPropagation()}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] shadow hover:text-[#884c2d]"
+        >
+          <X size={16} />
+        </button>
+        <iframe src={url} title="Book a meeting" className="h-full w-full rounded-xl border-0" />
+      </div>
+    </div>
+  );
+}
+
+function MeetingsTab({ calendlyUrl, onSaveCalendlyUrl }) {
+  const [booking, setBooking] = useState(false);
+  const [editingUrl, setEditingUrl] = useState(!calendlyUrl);
   const [urlInput, setUrlInput] = useState(calendlyUrl || "");
-
-  useEffect(() => {
-    let alive = true;
-    apiGet("/api/calendly/event-types", token)
-      .then((types) => {
-        if (!alive) return;
-        setEventTypes(Array.isArray(types) ? types : []);
-        setSelectedSlug(types?.[0]?.slug || "");
-      })
-      .catch((err) => { if (alive) setTypesError(err.message || "Could not load Calendly event types."); })
-      .finally(() => { if (alive) setLoadingTypes(false); });
-    return () => { alive = false; };
-  }, [token]);
-
-  const activeEventType = eventTypes.find((type) => type.slug === selectedSlug);
-  const schedulingUrl = activeEventType?.schedulingUrl || calendlyUrl;
 
   function submitUrl() {
     onSaveCalendlyUrl(urlInput.trim());
@@ -2301,66 +2301,34 @@ function MeetingsTab({ calendlyUrl, onSaveCalendlyUrl, token }) {
     <div className="space-y-5">
       <Section
         title="Book a Meeting"
-        action={schedulingUrl ? (
-          <a href={schedulingUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
-            Open in new tab
-          </a>
+        action={calendlyUrl && !editingUrl ? (
+          <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button>
         ) : null}
       >
-        {loadingTypes ? (
-          <p className="text-sm text-[#6b7280]">Loading your Calendly event types…</p>
-        ) : eventTypes.length ? (
-          <div className="space-y-3">
-            <p className="text-sm text-[#6b7280]">Pick an event type and a free slot — booking it here creates the meeting automatically.</p>
-            <div className="flex flex-wrap gap-2">
-              {eventTypes.map((type) => (
-                <button
-                  key={type.slug}
-                  type="button"
-                  onClick={() => setSelectedSlug(type.slug)}
-                  className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    selectedSlug === type.slug ? "border-[#884c2d] bg-[#fff1ec] text-[#884c2d]" : "border-[#e5e7eb] text-[#374151] hover:bg-[#f9fafb]"
-                  }`}
-                >
-                  {type.name} · {type.durationMinutes}m
-                </button>
-              ))}
-            </div>
-            <iframe src={schedulingUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
+        {!calendlyUrl || editingUrl ? (
+          <div className="flex items-center gap-2">
+            <input
+              autoFocus
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitUrl()}
+              placeholder="https://calendly.com/your-name/30min"
+              className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            />
+            <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
+            {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
           </div>
         ) : (
-          <div className="space-y-3">
-            {typesError && (
-              <p className="text-xs text-red-600">{typesError} Add a manual booking link below instead, or check that CALENDLY_ACCESS_TOKEN is configured on the server.</p>
-            )}
-            {!calendlyUrl || editingUrl ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && submitUrl()}
-                  placeholder="https://calendly.com/your-name/30min"
-                  className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-                />
-                <Button size="sm" onClick={submitUrl} disabled={!urlInput.trim()}>Save</Button>
-                {calendlyUrl && <Button size="sm" variant="secondary" onClick={() => { setEditingUrl(false); setUrlInput(calendlyUrl); }}>Cancel</Button>}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-[#6b7280]">Pick a free slot below to finalize the meeting straight onto the calendar.</p>
-                  <Button size="sm" variant="secondary" onClick={() => { setUrlInput(calendlyUrl); setEditingUrl(true); }}>Change Link</Button>
-                </div>
-                <iframe src={calendlyUrl} title="Calendly scheduling" className="h-[700px] w-full rounded-xl border border-[#e5e7eb]" />
-              </div>
-            )}
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-[#6b7280]">Opens the Calendly scheduler in a popup. Once booked, it syncs to Google Calendar and shows up below.</p>
+            <Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>
           </div>
         )}
       </Section>
       <Section title="Scheduled Meetings">
         <GoogleCalendarEmbed />
       </Section>
+      {booking && calendlyUrl && <CalendlyBookingModal url={calendlyUrl} onClose={() => setBooking(false)} />}
     </div>
   );
 }
