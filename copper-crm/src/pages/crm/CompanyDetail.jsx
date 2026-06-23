@@ -65,9 +65,9 @@ function SocialIconLink({ href, icon: Icon, label }) {
       target="_blank"
       rel="noopener noreferrer"
       title={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] transition-colors hover:border-[#C57E5B] hover:text-[#C57E5B]"
+      className="flex h-7 w-7 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] transition-colors hover:border-[#C57E5B] hover:text-[#C57E5B]"
     >
-      <Icon size={15} />
+      <Icon size={12} />
     </a>
   );
 }
