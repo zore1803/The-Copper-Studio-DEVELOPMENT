@@ -342,9 +342,12 @@ export default function Contacts() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [designationFilter, setDesignationFilter] = useState("All");
   const [companyFilter, setCompanyFilter] = useState("All");
+  const [actionsOpen, setActionsOpen] = useState(false);
   const [sortBy, setSortBy] = useState("name_asc");
   const [sortOpen, setSortOpen] = useState(false);
+  const actionsRef = useRef(null);
   const sortRef = useRef(null);
+  useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   const [folders, setFolders] = useState(loadStoredFolders);
@@ -479,27 +482,37 @@ export default function Contacts() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
-      <header className="border-b border-[#E1E4EA] bg-white px-6 py-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">CRM</p>
-            <h1 className="mt-1 text-2xl font-bold text-[#111827]">Contacts</h1>
-            <p className="mt-1 text-sm text-[#6b7280]">People inside companies, linked to communication, deals, projects, and activity.</p>
+    <div className="flex h-full flex-col bg-white">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50" />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-              <Search size={14} className="text-[#9ca3af]" />
-              <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search contacts" className="w-64 bg-transparent text-sm outline-none" />
-            </div>
+          <div className="relative" ref={actionsRef}>
+            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
+              <MoreVertical size={16} />
+            </button>
+            {actionsOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                  <X size={14} /> Clear filters
+                </button>
+              </div>
+            )}
+          </div>
 
             {/* Sort */}
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen((value) => !value)}
-                className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
+                className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
               >
-                <ArrowUpDown size={14} />
+                <ArrowUpDown size={15} />
                 <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
               </button>
               {sortOpen && (
@@ -521,9 +534,9 @@ export default function Contacts() {
             {/* Filters */}
             <button
               onClick={() => setFiltersOpen((value) => !value)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
+              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
-              <Filter size={15} />
+              <Filter size={16} />
             </button>
 
             {/* View toggle */}
@@ -537,14 +550,17 @@ export default function Contacts() {
               </span>
             </button>
 
-            <Button onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}>
-              <Plus size={14} /> New Contact
-            </Button>
+            <button
+              onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}
+              className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
+            >
+              <Plus size={16} /> New Contact
+            </button>
           </div>
         </div>
 
         {filtersOpen && (
-          <div className="mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
+          <div className="mx-6 mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
             <label className="block">
               <span className="text-xs font-semibold text-[#6b7280]">Status</span>
               <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
@@ -568,9 +584,8 @@ export default function Contacts() {
             </div>
           </div>
         )}
-      </header>
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
           <>
             <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
