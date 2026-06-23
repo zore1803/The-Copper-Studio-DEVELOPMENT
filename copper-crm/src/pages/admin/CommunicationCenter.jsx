@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Archive, Copy, Mail, MessageCircle, Plus, Save, Search, Settings2, X } from "lucide-react";
+import { Archive, Copy, Mail, MessageCircle, Plus, Save, Search, Settings2, Sparkles, X } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -14,6 +14,54 @@ const EMAIL_CATEGORIES = [
 const WHATSAPP_CATEGORIES = [
   "OTP", "Proposal Sent", "Coupon Shared", "Payment Received", "Invoice Generated",
   "Project Started", "Milestone Completed", "Project Delivered", "Reminder",
+];
+
+const DEFAULT_EMAIL_TEMPLATES = [
+  { category: "Welcome", name: "Welcome to The Copper Studio", subject: "Welcome aboard, {{client_name}}!",
+    body: "Hi {{client_name}},\n\nWelcome to The Copper Studio! We're thrilled to have {{company_name}} on board.\n\nOur team will be in touch shortly to kick things off. If you have any questions in the meantime, just reply to this email.\n\nWarm regards,\nThe Copper Studio Team" },
+  { category: "Consultation Booked", name: "Consultation Confirmation", subject: "Your consultation is confirmed, {{client_name}}",
+    body: "Hi {{client_name}},\n\nThanks for booking a consultation with us. We've confirmed your slot and look forward to discussing {{company_name}}'s goals.\n\nWe'll send a calendar invite with the meeting link shortly.\n\nSee you soon,\nThe Copper Studio Team" },
+  { category: "Proposal Sent", name: "Proposal Delivered", subject: "Your proposal {{proposal_id}} is ready",
+    body: "Hi {{client_name}},\n\nWe've prepared proposal {{proposal_id}} for {{company_name}}. Please review it at your convenience and let us know if you have any questions.\n\nLooking forward to working with you,\nThe Copper Studio Team" },
+  { category: "Proposal Reminder", name: "Proposal Follow-up", subject: "Following up on proposal {{proposal_id}}",
+    body: "Hi {{client_name}},\n\nJust a friendly reminder about proposal {{proposal_id}} we sent over for {{company_name}}. Let us know if you'd like to discuss any part of it or move forward.\n\nBest,\nThe Copper Studio Team" },
+  { category: "Coupon Issued", name: "Coupon Code Issued", subject: "Here's your coupon code, {{client_name}}",
+    body: "Hi {{client_name}},\n\nAs promised, here's your coupon code: {{coupon_code}}. Apply it at checkout to redeem your discount.\n\nThanks for choosing The Copper Studio,\nThe Copper Studio Team" },
+  { category: "Payment Success", name: "Payment Received", subject: "Payment received - thank you, {{client_name}}",
+    body: "Hi {{client_name}},\n\nWe've received your payment of {{payment_amount}}. Thank you! A receipt will follow shortly.\n\nBest,\nThe Copper Studio Team" },
+  { category: "Invoice Generated", name: "New Invoice", subject: "Invoice {{invoice_id}} for {{company_name}}",
+    body: "Hi {{client_name}},\n\nPlease find invoice {{invoice_id}} attached for {{company_name}}. Let us know if you have any questions about the charges.\n\nThanks,\nThe Copper Studio Team" },
+  { category: "Project Started", name: "Project Kickoff", subject: "{{project_name}} has officially started",
+    body: "Hi {{client_name}},\n\nGreat news - {{project_name}} is now underway! We'll keep you posted as we hit each milestone.\n\nExcited to get started,\nThe Copper Studio Team" },
+  { category: "Project Update", name: "Project Status Update", subject: "Update on {{project_name}}",
+    body: "Hi {{client_name}},\n\nHere's a quick update on {{project_name}}: current status is {{project_status}}.\n\nReach out if you have any questions.\n\nBest,\nThe Copper Studio Team" },
+  { category: "Testing Started", name: "Testing Phase Started", subject: "{{project_name}} has entered testing",
+    body: "Hi {{client_name}},\n\n{{project_name}} has moved into the testing phase. We'll share results and next steps soon.\n\nThanks for your patience,\nThe Copper Studio Team" },
+  { category: "Project Delivered", name: "Project Delivered", subject: "{{project_name}} is complete!",
+    body: "Hi {{client_name}},\n\nWe're excited to let you know that {{project_name}} has been delivered. Thank you for trusting The Copper Studio with this project.\n\nWarm regards,\nThe Copper Studio Team" },
+  { category: "Support Follow-up", name: "Support Follow-up", subject: "Checking in, {{client_name}}",
+    body: "Hi {{client_name}},\n\nJust checking in to see how things are going with {{company_name}}. Let us know if you need any support or have questions.\n\nBest,\nThe Copper Studio Team" },
+];
+
+const DEFAULT_WHATSAPP_TEMPLATES = [
+  { category: "OTP", name: "OTP Verification",
+    body: "Your Copper Studio verification code is {{coupon_code}}. Do not share this code with anyone." },
+  { category: "Proposal Sent", name: "Proposal Sent",
+    body: "Hi {{client_name}}, your proposal {{proposal_id}} from The Copper Studio is ready for review. Check your email for details." },
+  { category: "Coupon Shared", name: "Coupon Shared",
+    body: "Hi {{client_name}}, here's your coupon code: {{coupon_code}}. Use it at checkout to redeem your discount." },
+  { category: "Payment Received", name: "Payment Received",
+    body: "Hi {{client_name}}, we've received your payment of {{payment_amount}}. Thank you for choosing The Copper Studio!" },
+  { category: "Invoice Generated", name: "Invoice Generated",
+    body: "Hi {{client_name}}, invoice {{invoice_id}} for {{company_name}} has been generated. Please check your email for the details." },
+  { category: "Project Started", name: "Project Started",
+    body: "Hi {{client_name}}, great news - {{project_name}} has officially started! We'll keep you updated on progress." },
+  { category: "Milestone Completed", name: "Milestone Completed",
+    body: "Hi {{client_name}}, a milestone for {{project_name}} has been completed. Current status: {{project_status}}." },
+  { category: "Project Delivered", name: "Project Delivered",
+    body: "Hi {{client_name}}, {{project_name}} has been delivered! Thank you for trusting The Copper Studio." },
+  { category: "Reminder", name: "Reminder",
+    body: "Hi {{client_name}}, just a quick reminder regarding {{company_name}}. Reach out anytime if you have questions." },
 ];
 
 const VARIABLES = [
@@ -192,6 +240,7 @@ export default function CommunicationCenter({ mode = "email" }) {
   const { showToast } = useToast();
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [variablesOpen, setVariablesOpen] = useState(false);
+  const [seeding, setSeeding] = useState(false);
 
   const stats = useMemo(() => ({
     emailTemplates: emailTemplates.length,
@@ -227,6 +276,27 @@ export default function CommunicationCenter({ mode = "email" }) {
     showToast({ title: nextStatus === "Archived" ? "Template archived" : "Template restored", message: `${template.name || "Template"} is now ${nextStatus}.` });
   }
 
+  async function handleCreateDefaults() {
+    const existing = mode === "whatsapp" ? whatsappTemplates : emailTemplates;
+    const defaults = mode === "whatsapp" ? DEFAULT_WHATSAPP_TEMPLATES : DEFAULT_EMAIL_TEMPLATES;
+    const missing = defaults.filter((def) => !existing.some((record) => record.category === def.category));
+
+    if (!missing.length) {
+      showToast({ title: "Nothing to create", message: "All default templates already exist." });
+      return;
+    }
+
+    setSeeding(true);
+    try {
+      for (const def of missing) {
+        await saveTemplate({ ...def, status: "Active", id: `${mode}-template-${Date.now()}-${def.category.replace(/\s+/g, "-")}` });
+      }
+      showToast({ title: "Templates created", message: `Added ${missing.length} default ${mode} template${missing.length === 1 ? "" : "s"}.` });
+    } finally {
+      setSeeding(false);
+    }
+  }
+
   return (
     <div className="min-h-full bg-[#f5f6fa] p-6">
       <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -242,7 +312,12 @@ export default function CommunicationCenter({ mode = "email" }) {
             </div>
           </div>
         </div>
-        <Button variant="secondary" onClick={() => setVariablesOpen(true)}><Settings2 size={14} /> Variables</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" onClick={handleCreateDefaults} disabled={seeding}>
+            <Sparkles size={14} /> {seeding ? "Creating..." : "Create All Templates"}
+          </Button>
+          <Button variant="secondary" onClick={() => setVariablesOpen(true)}><Settings2 size={14} /> Variables</Button>
+        </div>
       </div>
 
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
