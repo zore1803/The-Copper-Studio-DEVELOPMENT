@@ -11,6 +11,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { isEmail, isGstin } from "../../lib/validators";
+import { TASK_STATUSES, normalizeTaskStatus } from "../../lib/taskStatus";
 
 const URL_RE = /^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i;
 
@@ -33,13 +34,14 @@ function Field({ label, value, onChange, placeholder, type = "text" }) {
   );
 }
 
-const TASK_STAGES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const TASK_STAGES = TASK_STATUSES;
 const MEETING_STAGES = ["requested", "confirmed", "completed", "cancelled"];
 const MEETING_STAGE_LABEL = { requested: "Requested", confirmed: "Confirmed", completed: "Completed", cancelled: "Cancelled" };
 
 function TaskStatusPill({ status = "Accepted" }) {
   const map = {
     Accepted: "bg-blue-50 text-blue-600", High: "bg-red-50 text-red-600", Medium: "bg-yellow-50 text-yellow-600", Low: "bg-gray-100 text-gray-500",
+    "To Do": "bg-sky-50 text-sky-700", "In Progress": "bg-amber-50 text-amber-700", Review: "bg-violet-50 text-violet-700", Done: "bg-emerald-50 text-emerald-700",
     requested: "bg-amber-50 text-amber-700", confirmed: "bg-blue-50 text-blue-600", completed: "bg-emerald-50 text-emerald-700", cancelled: "bg-gray-100 text-gray-500",
   };
   return <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${map[status] ?? "bg-gray-100 text-gray-600"}`}>{status}</span>;
@@ -166,7 +168,7 @@ export function TasksPage() {
     relatedType: task.relatedType || "Project",
     assigned: task.assigned || task.assignedTo || "",
     due: task.due || task.dueDate || "",
-    status: task.status || "Backlog",
+    status: normalizeTaskStatus(task.status),
     priority: task.priority || "Medium",
   })), [taskRecords]);
   const meetingRows = useMemo(() => meetingRecords.map((meeting) => ({
@@ -239,7 +241,7 @@ export function TasksPage() {
         </div>
         <div className="flex items-center gap-2">
           {tab === "Tasks" && (
-            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "To Do", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
               <Plus size={14} /> New Activity
             </button>
           )}

@@ -16,6 +16,7 @@ import { useToast } from "../../components/useToast";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
+import { TASK_STATUSES, normalizeTaskStatus } from "../../lib/taskStatus";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 
@@ -265,7 +266,7 @@ function DocumentUploadPanel({ company, onClose, onSave }) {
 }
 
 function TaskPanel({ company, projects, onClose, onSave }) {
-  const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "Backlog", assignedTo: "", dueDate: "", description: "" });
+  const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "To Do", assignedTo: "", dueDate: "", description: "" });
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   return (
@@ -285,7 +286,7 @@ function TaskPanel({ company, projects, onClose, onSave }) {
         <Select label="Project" value={form.projectId} onChange={set("projectId")}
           options={projects.map((p) => ({ value: String(p._id || p.id), label: p.name }))} />
         <Select label="Priority" value={form.priority} onChange={set("priority")} options={["Low", "Medium", "High", "Critical"]} />
-        <Select label="Status" value={form.status} onChange={set("status")} options={["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"]} />
+        <Select label="Status" value={form.status} onChange={set("status")} options={TASK_STATUSES} />
         <Input label="Assigned to" value={form.assignedTo} onChange={set("assignedTo")} />
         <Input type="date" label="Due date" value={form.dueDate} onChange={set("dueDate")} />
         <Textarea span label="Description" value={form.description} onChange={set("description")} />
@@ -1448,7 +1449,7 @@ function TaskGantt({ tasks, projects }) {
             <div key={task.id || task._id} className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-center">
               <div>
                 <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
-                <p className="text-xs text-[#6b7280]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"} / {task.status || "Backlog"}</p>
+                <p className="text-xs text-[#6b7280]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"} / {normalizeTaskStatus(task.status)}</p>
               </div>
               <div className="relative h-9 rounded-lg bg-[#f3f4f6]">
                 <div
@@ -1538,7 +1539,7 @@ function FolderViewerPanel({ category, documents, onClose }) {
   );
 }
 
-const TASK_BOARD_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const TASK_BOARD_STATUSES = TASK_STATUSES;
 const TASK_PRIORITY_STYLE = {
   High: "bg-red-50 text-red-600 border-red-100",
   Medium: "bg-amber-50 text-amber-700 border-amber-100",
@@ -1555,9 +1556,9 @@ function TaskKanbanBoard({ tasks, onMoveTask }) {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {TASK_BOARD_STATUSES.map((status) => {
-          const columnTasks = tasks.filter((task) => (task.status || "Backlog") === status);
+          const columnTasks = tasks.filter((task) => normalizeTaskStatus(task.status) === status);
           return (
             <div key={status} className="flex flex-col rounded-xl border border-[#e5e7eb] bg-[#f9fafb]">
               <p className="px-3 pt-3 pb-2 text-xs font-bold uppercase tracking-wide text-[#6b7280]">
@@ -1659,7 +1660,7 @@ function TasksTable({ tasks, projects }) {
               <td className="py-3 pr-4 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</td>
               <td className="py-3 pr-4 text-[#374151]">{task.assignedTo || task.assigned || "Unassigned"}</td>
               <td className="py-3 pr-4"><StatusBadge status={task.priority || "Medium"} /></td>
-              <td className="py-3 pr-4"><StatusBadge status={task.status || "Backlog"} /></td>
+              <td className="py-3 pr-4"><StatusBadge status={normalizeTaskStatus(task.status)} /></td>
               <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
               <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
             </tr>
@@ -1764,7 +1765,7 @@ function CalendarTaskView({ tasks }) {
                 <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
                   <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <StatusBadge status={task.status || "Backlog"} />
+                    <StatusBadge status={normalizeTaskStatus(task.status)} />
                     <span className="text-xs text-[#6b7280]">{task.priority || "Medium"} priority · {task.assignedTo || "Unassigned"}</span>
                   </div>
                 </div>

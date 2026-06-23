@@ -160,7 +160,9 @@ export default function ProjectFiles() {
         project={project}
         activeTab="Files"
         onShare={handleShare}
-        onNewTask={() => navigate("/admin/kanban")}
+        actionLabel="Upload File"
+        actionIcon={FilePlus2}
+        onAction={() => fileInputRef.current?.click()}
       />
 
       {/* Upload folder selector */}

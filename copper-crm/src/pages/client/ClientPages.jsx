@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
+import { TASK_STATUSES, normalizeTaskStatus } from "../../lib/taskStatus";
 
 /* ─── Shared primitives ─── */
 
@@ -22,14 +23,12 @@ const CS = {
 };
 
 /* Gantt status palette — shared with the admin task Gantt for visual parity. */
-const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const GANTT_TASK_STATUSES = TASK_STATUSES;
 const GANTT_STATUS_COLOR = {
-  Backlog: "#9ca3af",
   "To Do": "#0ea5e9",
   "In Progress": "#f59e0b",
   Review: "#6366f1",
-  Completed: "#10b981",
-  Blocked: "#ef4444",
+  Done: "#10b981",
 };
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
@@ -164,7 +163,7 @@ function ClientTaskGantt({ tasks }) {
       const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
       if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
       const safeEnd = end < start ? start : end;
-      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
+      const status = normalizeTaskStatus(task.status);
       return { ...task, start, end: safeEnd, status };
     }).filter(Boolean);
 
@@ -195,8 +194,8 @@ function ClientTaskGantt({ tasks }) {
       weeks: weekCols,
       summary: {
         total: mapped.length,
-        completed: mapped.filter((t) => t.status === "Completed").length,
-        blocked: mapped.filter((t) => t.status === "Blocked").length,
+        completed: mapped.filter((t) => t.status === "Done").length,
+        blocked: 0,
         unscheduled,
       },
     };

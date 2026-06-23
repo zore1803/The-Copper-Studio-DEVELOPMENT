@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
@@ -10,6 +10,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ProjectHeader from "./ProjectHeader";
+import { roadmapProgress, isRoadmapComplete, nextPhaseForStages } from "../../lib/stageProgress";
 
 const PHASES = [
   { key: "Requirement Gathering", label: "Requirement", icon: ListChecks },
@@ -20,7 +21,6 @@ const PHASES = [
   { key: "Completed", label: "Deployment", icon: Rocket },
 ];
 
-const STAGE_NAMES = ["Requirement Gathering", "Design", "Development", "Testing", "Review", "Delivery"];
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
@@ -34,8 +34,6 @@ const CLIENT_STATUSES = [
 ];
 
 const activityIcon = { upload: UploadCloud, check: CheckCircle2, comment: MessageSquare };
-const PHASE_NODE_SIZE = "h-12 w-12 sm:h-14 sm:w-14";
-const PHASE_NODE_HEIGHT = "h-12 sm:h-14";
 
 function formatINR(value) {
   return `₹${Number(value || 0).toLocaleString("en-IN")}`;
@@ -43,22 +41,6 @@ function formatINR(value) {
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
-}
-
-function roadmapProgress(stages = []) {
-  if (!stages.length) return 0;
-  const completed = stages.filter((stage) => stage.status === "completed").length;
-  return Math.round((completed / stages.length) * 100);
-}
-
-function isRoadmapComplete(stages = []) {
-  return stages.length > 0 && stages.every((stage) => stage.status === "completed");
-}
-
-function nextPhaseForStages(stages = []) {
-  if (isRoadmapComplete(stages)) return "Completed";
-  const activeStage = stages.find((stage) => stage.status === "in_progress") || stages.find((stage) => stage.status !== "completed");
-  return activeStage?.name || "Requirement Gathering";
 }
 
 function PanelField({ label, value, onChange, type = "text", disabled = false, span = false }) {
@@ -173,8 +155,9 @@ function InviteCollaborators({ client }) {
 }
 
 function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
-  const defaultStages = STAGE_NAMES.map(name => ({ name, status: "not_started" }));
-  const initialStages = project.stages?.length ? project.stages : defaultStages;
+  // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
+  // deleting every stage would make them reappear. Use "+ Add Stage" to add new ones.
+  const initialStages = Array.isArray(project.stages) ? project.stages : [];
 
   const [form, setForm] = useState({
     name: project.name || "",
@@ -197,24 +180,6 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
   });
 
   const set = (key) => (val) => setForm(prev => ({ ...prev, [key]: val }));
-
-  function cycleStage(index) {
-    const order = ["not_started", "in_progress", "completed"];
-    setForm(prev => {
-      const nextStages = [...prev.stages];
-      nextStages[index] = { ...nextStages[index], status: order[(order.indexOf(nextStages[index].status) + 1) % order.length] };
-      const complete = isRoadmapComplete(nextStages);
-      const nextPhase = nextPhaseForStages(nextStages);
-      return {
-        ...prev,
-        stages: nextStages,
-        progress: roadmapProgress(nextStages),
-        currentPhase: nextPhase,
-        status: complete ? "Completed" : nextPhase,
-        clientStatus: complete ? "completed" : prev.clientStatus === "completed" ? "in_progress" : prev.clientStatus,
-      };
-    });
-  }
 
   function updateStage(index, field, value) {
     setForm(prev => {
@@ -269,12 +234,6 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
     });
   }
 
-  const stageColor = {
-    completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    in_progress: "bg-[#884c2d]/10 text-[#884c2d] border-[#884c2d]/20",
-    not_started: "bg-gray-100 text-gray-500 border-gray-200",
-  };
-  const stageLabel = { completed: "Completed", in_progress: "In Progress", not_started: "Not Started" };
   const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
 
   return (
@@ -459,8 +418,6 @@ export default function ProjectDetail() {
   const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
   const [managing, setManaging] = useState(false);
-  const [addingNote, setAddingNote] = useState(false);
-  const [noteText, setNoteText] = useState("");
 
   const project = useMemo(
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
@@ -495,15 +452,33 @@ export default function ProjectDetail() {
     );
   }
 
-  const displayPhases = project.stages?.length 
-    ? project.stages.map(s => {
-        const standardPhase = PHASES.find(p => p.label === s.name || p.key === s.name);
-        return { key: s.name, label: s.name, icon: standardPhase ? standardPhase.icon : CheckCircle2 };
-      }) 
-    : PHASES;
+  const stages = Array.isArray(project.stages) ? project.stages : [];
+  // Driven entirely by the project's real stages — no phantom defaults when empty.
+  const displayPhases = stages.map(s => {
+    const standardPhase = PHASES.find(p => p.label === s.name || p.key === s.name);
+    return { key: s.name, label: s.name, icon: standardPhase ? standardPhase.icon : CheckCircle2 };
+  });
 
-  let phaseIndex = displayPhases.findIndex(p => p.key === (project.currentPhase || project.status) || p.label === (project.currentPhase || project.status));
-  if (phaseIndex === -1) phaseIndex = project.progress >= 100 ? displayPhases.length - 1 : 0;
+  // Derive progress and the active phase live from the stages so the roadmap stays
+  // correct even if the stored project.progress / currentPhase are stale (e.g. after
+  // stages were changed on the Kanban/Gantt board).
+  const liveProgress = stages.length ? roadmapProgress(stages) : (project.progress || 0);
+
+  // Active stage by INDEX (not name) so duplicate stage names don't collide.
+  let phaseIndex;
+  if (stages.length) {
+    if (isRoadmapComplete(stages)) {
+      phaseIndex = stages.length - 1;
+    } else {
+      phaseIndex = stages.findIndex(s => s.status === "in_progress");
+      if (phaseIndex === -1) phaseIndex = stages.findIndex(s => s.status === "review");
+      if (phaseIndex === -1) phaseIndex = stages.findIndex(s => s.status !== "completed");
+      if (phaseIndex === -1) phaseIndex = 0;
+    }
+  } else {
+    phaseIndex = displayPhases.findIndex(p => p.key === (project.currentPhase || project.status) || p.label === (project.currentPhase || project.status));
+    if (phaseIndex === -1) phaseIndex = project.progress >= 100 ? displayPhases.length - 1 : 0;
+  }
 
   const budgetPct = Math.min(100, Math.round(((project.budgetUsed || 0) / Math.max(project.budget || 1, 1)) * 100));
   const currentCompany = company || { id: companyId, name: project.client || project.company || project.companyName || "Company" };
@@ -547,23 +522,6 @@ export default function ProjectDetail() {
     showToast({ title: "Project updated", message: "Details, commercials, and client updates were saved." });
   }
 
-  async function handleAddNote(e) {
-    e.preventDefault();
-    if (!noteText.trim()) return;
-    const updatedProject = {
-      ...project,
-      adminNotes: noteText.trim(),
-      activity: [
-        { icon: "comment", text: `Admin added a note for the client`, time: "Just now" },
-        ...(project.activity || []).slice(0, 9),
-      ],
-    };
-    await saveProject(updatedProject);
-    setNoteText("");
-    setAddingNote(false);
-    showToast({ title: "Note saved", message: "Client can now see this note in their portal." });
-  }
-
   return (
     <div className="space-y-6">
       <ProjectHeader
@@ -571,11 +529,13 @@ export default function ProjectDetail() {
         project={project}
         activeTab="Overview"
         onShare={handleShare}
-        onNewTask={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/tasks`)}
+        actionLabel="Manage Stages"
+        actionIcon={Settings2}
+        onAction={() => setManaging(true)}
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        <KpiChip label="Progress" value={`${project.progress || 0}%`} icon={Zap} />
+        <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} />
         <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
         <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
         <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
@@ -593,25 +553,25 @@ export default function ProjectDetail() {
                   Project Roadmap
                 </h3>
                 <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">
-                  {displayPhases.length} stages
+                  {stages.length} stages
                 </span>
                 <span className="rounded-full bg-[#dcfce7] px-2.5 py-1 text-[11px] font-bold text-[#166534]">
-                  {project.stages?.filter(s => s.status === 'completed').length || 0}/{displayPhases.length} done
+                  {stages.filter(s => s.status === 'completed').length}/{stages.length} done
                 </span>
               </div>
-              <button
-                onClick={() => setManaging(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-[#E1E4EA] bg-white px-3 py-1.5 text-xs font-semibold text-[#525866] hover:bg-[#F9FAFB] transition-colors shadow-sm"
-              >
-                <Settings2 size={14} /> Manage Stages
-              </button>
             </div>
 
             <div className="relative pl-6 space-y-8 before:absolute before:left-10 before:top-4 before:bottom-4 before:w-0.5 before:bg-[#E1E4EA]">
-              {displayPhases.map((phase, index) => {
-                const stageData = project.stages?.find(s => s.name === phase.key || s.name === phase.label) || { status: index < phaseIndex ? 'completed' : index === phaseIndex ? 'in_progress' : 'not_started' };
+              {displayPhases.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+                  <p className="text-sm font-semibold text-[#0E121B]">No stages yet.</p>
+                  <p className="mt-1 text-sm text-[#6b7280]">Click &ldquo;Manage Stages&rdquo; to add the steps for this project.</p>
+                </div>
+              ) : displayPhases.map((phase, index) => {
+                const stageData = stages[index] || { status: index < phaseIndex ? 'completed' : index === phaseIndex ? 'in_progress' : 'not_started' };
                 const isCompleted = stageData.status === 'completed';
-                const isActive = stageData.status === 'in_progress' || (stageData.status === 'not_started' && index === phaseIndex);
+                const isReview = stageData.status === 'review';
+                const isActive = stageData.status === 'in_progress' || isReview || (stageData.status === 'not_started' && index === phaseIndex);
                 
                 const iconBg = isCompleted ? 'bg-[#34d399] border-[#34d399]' : isActive ? 'bg-[#fef3c7] border-[#fbbf24]' : 'bg-white border-[#E1E4EA]';
                 const iconColor = isCompleted ? 'text-white' : isActive ? 'text-[#d97706]' : 'text-[#9ca3af]';
@@ -641,6 +601,10 @@ export default function ProjectDetail() {
                         {isCompleted ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#166534]">
                             <CheckCircle2 size={12} /> Completed
+                          </span>
+                        ) : isReview ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7c3aed]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#7c3aed]" /> In Review
                           </span>
                         ) : isActive ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#d97706]">
@@ -675,56 +639,6 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Section title="Critical Focus">
-              <p className="text-sm text-[#525866]">View and manage this project's tasks as a Kanban board or Gantt timeline. Open a task to set priority and assign team members.</p>
-              <button
-                type="button"
-                onClick={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/tasks`)}
-                className="mt-4 text-xs font-bold text-[#884c2d] hover:underline"
-              >
-                Open Project Timeline →
-              </button>
-            </Section>
-
-            <Section
-              title="Note for Client"
-              action={
-                <button onClick={() => setAddingNote(v => !v)} className="text-[11px] font-bold text-[#884c2d] hover:underline">
-                  {addingNote ? "Cancel" : "Edit"}
-                </button>
-              }
-            >
-              <div className="flex h-full flex-col justify-between">
-                <div>
-                  {addingNote ? (
-                    <form onSubmit={handleAddNote} className="space-y-2">
-                      <textarea
-                        value={noteText}
-                        onChange={e => setNoteText(e.target.value)}
-                        placeholder="Message to show the client…"
-                        rows={3}
-                        className="w-full rounded-lg border border-[#E1E4EA] bg-white px-3 py-2 text-xs outline-none focus:border-[#884c2d] focus:ring-1 focus:ring-[#884c2d]/30 resize-none"
-                        autoFocus
-                      />
-                      <button type="submit" className="flex items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
-                        <Save size={11} /> Save Note
-                      </button>
-                    </form>
-                  ) : (
-                    <p className="text-sm italic leading-5 text-[#0E121B]">
-                      &ldquo;{project.adminNotes || "No note for client yet. Click Edit to add one."}&rdquo;
-                    </p>
-                  )}
-                </div>
-                {!addingNote && (
-                  <Button variant="secondary" className="mt-6 w-full justify-center" onClick={() => navigate(`/admin/companies/${currentCompany.id}/projects/${project.id || project._id}/files`)}>
-                    Open Client Workspace
-                  </Button>
-                )}
-              </div>
-            </Section>
-          </div>
         </div>
 
         <div className="col-span-12 space-y-5 lg:col-span-5 xl:col-span-4">

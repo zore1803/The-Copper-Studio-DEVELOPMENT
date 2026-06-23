@@ -75,7 +75,7 @@ export function buildProjectPayload(form, company) {
     progress: 0,
     stages,
     template: templateName,
-    tasksBoard: ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"],
+    tasksBoard: ["To Do", "In Progress", "Review", "Done"],
     documents: [],
     customFolders: [],
     activity: [

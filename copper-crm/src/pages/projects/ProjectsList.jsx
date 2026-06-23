@@ -86,12 +86,16 @@ export default function ProjectsList() {
          currentStage = p.currentPhase || "No stages defined";
       }
 
-      // Automatically determine global project status based on progress unless overridden
-      let effectiveStatus = p.status || "not_started";
-      if (!p.status || p.status === "Requirement Gathering") { // Override legacy statuses
+      // When stages exist, completion is driven by the stages (all done = completed),
+      // never by a possibly-stale stored status. Only fall back to the stored status
+      // for projects that have no stages defined at all.
+      let effectiveStatus;
+      if (totalStages > 0) {
         if (progress === 100) effectiveStatus = "completed";
         else if (progress > 0) effectiveStatus = "in_progress";
         else effectiveStatus = "not_started";
+      } else {
+        effectiveStatus = p.status || "not_started";
       }
 
       return { ...p, computedProgress: progress, currentStage, effectiveStatus };

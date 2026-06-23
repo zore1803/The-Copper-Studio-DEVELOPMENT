@@ -7,21 +7,14 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS } from "../../lib/taskStatus";
 
 const colConfig = {
-  "Backlog": { dot: "bg-gray-400", ring: "ring-gray-200", header: "bg-gray-50" },
   "To Do": { dot: "bg-sky-500", ring: "ring-sky-100", header: "bg-sky-50" },
   "In Progress": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
-  "Requirement Gathering": { dot: "bg-blue-500", ring: "ring-blue-100", header: "bg-blue-50" },
-  "Design": { dot: "bg-violet-500", ring: "ring-violet-100", header: "bg-violet-50" },
-  "Development": { dot: "bg-amber-500", ring: "ring-amber-100", header: "bg-amber-50" },
-  "Testing": { dot: "bg-yellow-500", ring: "ring-yellow-100", header: "bg-yellow-50" },
-  "Review": { dot: "bg-indigo-500", ring: "ring-indigo-100", header: "bg-indigo-50" },
-  "Completed": { dot: "bg-emerald-500", ring: "ring-emerald-100", header: "bg-emerald-50" },
-  "Blocked": { dot: "bg-red-500", ring: "ring-red-100", header: "bg-red-50" },
+  "Review": { dot: "bg-violet-500", ring: "ring-violet-100", header: "bg-violet-50" },
+  "Done": { dot: "bg-emerald-500", ring: "ring-emerald-100", header: "bg-emerald-50" },
 };
-
-const TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 
 const priorityConfig = {
   High: "bg-red-50 text-red-600 border-red-100",
@@ -61,8 +54,7 @@ export default function KanbanBoard() {
   useEffect(() => {
     const nextColumns = Object.fromEntries(TASK_STATUSES.map((key) => [key, []]));
     dbTasks.forEach((task) => {
-      const status = nextColumns[task.status] ? task.status : "Backlog";
-      nextColumns[status].push(task);
+      nextColumns[normalizeTaskStatus(task.status)].push(task);
     });
 
     if (projects && projects.length > 0) {
@@ -70,12 +62,7 @@ export default function KanbanBoard() {
         if (Array.isArray(p.stages)) {
           p.stages.forEach((stage, idx) => {
             if (!stage || typeof stage !== "object") return;
-            let mappedStatus = "To Do";
-            if (stage.status === "in_progress") mappedStatus = "In Progress";
-            if (stage.status === "completed") mappedStatus = "Completed";
-            if (stage.status === "review") mappedStatus = "Review";
-            if (stage.status === "blocked") mappedStatus = "Blocked";
-            if (!nextColumns[mappedStatus]) mappedStatus = "Backlog";
+            const mappedStatus = normalizeTaskStatus(stage.status);
 
             nextColumns[mappedStatus].push({
               isStage: true,
@@ -104,7 +91,7 @@ export default function KanbanBoard() {
     const tasks = Object.values(columns).flat();
     return {
       total: tasks.length,
-      done: columns.Completed?.length || 0,
+      done: columns.Done?.length || 0,
       high: tasks.filter((task) => task.priority === "High").length,
     };
   }, [columns]);
@@ -136,11 +123,7 @@ export default function KanbanBoard() {
     });
 
     if (movedTask.isStage) {
-      let newStageStatus = "not_started";
-      if (destination.droppableId === "In Progress") newStageStatus = "in_progress";
-      if (destination.droppableId === "Completed") newStageStatus = "completed";
-      if (destination.droppableId === "Review") newStageStatus = "review";
-      if (destination.droppableId === "Blocked") newStageStatus = "blocked";
+      const newStageStatus = COLUMN_TO_STAGE_STATUS[destination.droppableId] || "not_started";
 
       const proj = projects.find(p => String(p.id || p._id) === movedTask.projectId);
       if (proj) {
@@ -148,7 +131,8 @@ export default function KanbanBoard() {
         if (updatedProj.stages[movedTask.stageIndex]) {
           updatedProj.stages[movedTask.stageIndex] = {
             ...updatedProj.stages[movedTask.stageIndex],
-            status: newStageStatus
+            status: newStageStatus,
+            completedAt: newStageStatus === "completed" ? new Date().toISOString() : null
           };
           await saveProject(updatedProj);
           showToast({ title: "Success", message: `Stage "${movedTask.title}" moved to ${destination.droppableId}` });
@@ -166,7 +150,7 @@ export default function KanbanBoard() {
     }
   }
 
-  function openNewTask(column = "Backlog") {
+  function openNewTask(column = "To Do") {
     setTaskEditor({
       mode: "create",
       column,
@@ -256,7 +240,7 @@ export default function KanbanBoard() {
       <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div className="flex flex-1 gap-4 overflow-x-auto pb-4" style={{ minHeight: 0 }}>
           {Object.entries(columns).map(([col, tasks]) => {
-            const cfg = colConfig[col] || colConfig.Backlog;
+            const cfg = colConfig[col] || colConfig["To Do"];
             return (
               <section key={col} className="flex w-[270px] shrink-0 flex-col rounded-2xl border border-gray-200 bg-white shadow-sm shadow-gray-100/70">
                 <div className={`rounded-t-2xl border-b border-gray-100 px-3.5 py-3 ${cfg.header}`}>
@@ -286,7 +270,7 @@ export default function KanbanBoard() {
                     >
                       <div className="space-y-2.5">
                         {tasks.map((task, index) => {
-                          const isDone = col === "Completed";
+                          const isDone = col === "Done";
                           const priority = priorityConfig[task.priority] || priorityConfig.Low;
                           return (
                             <Draggable key={task.id || task._id} draggableId={String(task.id || task._id)} index={index}>
