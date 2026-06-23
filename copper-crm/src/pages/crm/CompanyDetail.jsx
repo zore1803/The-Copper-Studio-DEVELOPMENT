@@ -1132,14 +1132,6 @@ export default function CompanyDetail() {
           onUnlink={handleUnlinkClient}
         />
       )}
-      {uploadingDocument && (
-        <DocumentUploadPanel
-          company={company}
-          defaultCategory={typeof uploadingDocument === "string" ? uploadingDocument : ""}
-          onClose={() => setUploadingDocument(false)}
-          onSave={handleUploadDocument}
-        />
-      )}
       {creatingTask && (
         <TaskPanel
           company={company}
@@ -1159,6 +1151,14 @@ export default function CompanyDetail() {
           onClose={() => setViewingFolder(null)}
           onDelete={handleDeleteDocument}
           onUpload={() => setUploadingDocument(viewingFolder.folders.length === 1 ? viewingFolder.folders[0] : true)}
+        />
+      )}
+      {uploadingDocument && (
+        <DocumentUploadPanel
+          company={company}
+          defaultCategory={typeof uploadingDocument === "string" ? uploadingDocument : ""}
+          onClose={() => setUploadingDocument(false)}
+          onSave={handleUploadDocument}
         />
       )}
     </div>
