@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  Plus, MoreHorizontal, Calendar, MessageSquare, CheckSquare,
-  Edit3, GripVertical, ListFilter, Save, Sparkles, Trash2
+  MoreHorizontal, Calendar, MessageSquare, CheckSquare,
+  GripVertical, ListFilter, Sparkles
 } from "lucide-react";
-import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS } from "../../lib/taskStatus";
@@ -44,48 +44,39 @@ function move(source, destination, droppableSource, droppableDestination) {
 }
 
 export default function KanbanBoard() {
+  const navigate = useNavigate();
   const [columns, setColumns] = useState(() => Object.fromEntries(TASK_STATUSES.map((key) => [key, []])));
   const [activeTaskId, setActiveTaskId] = useState("");
-  const [taskEditor, setTaskEditor] = useState(null);
   const { showToast } = useToast();
-  const { records: dbTasks, save: saveDbTask, remove: removeDbTask } = useCrmRecords("tasks");
   const { records: projects, save: saveProject } = useCrmRecords("projects");
 
   useEffect(() => {
     const nextColumns = Object.fromEntries(TASK_STATUSES.map((key) => [key, []]));
-    dbTasks.forEach((task) => {
-      nextColumns[normalizeTaskStatus(task.status)].push(task);
-    });
 
     if (projects && projects.length > 0) {
       projects.forEach((p) => {
-        if (Array.isArray(p.stages)) {
-          p.stages.forEach((stage, idx) => {
-            if (!stage || typeof stage !== "object") return;
-            const mappedStatus = normalizeTaskStatus(stage.status);
+        const mappedStatus = normalizeTaskStatus(p.status);
 
-            nextColumns[mappedStatus].push({
-              isStage: true,
-              projectId: String(p.id || p._id || "unknown"),
-              stageIndex: idx,
-              id: `stage-${p.id || p._id}-${idx}`,
-              title: `Stage: ${stage.name || "Unnamed"}`,
-              project: p.name || "Unknown Project",
-              status: mappedStatus,
-              priority: "High",
-              dueDate: stage.expectedEndDate || stage.endDate || "",
-              startDate: stage.startDate || "",
-              subtasks: 0,
-              comments: 0,
-              description: stage.internalNotes || "Project Stage"
-            });
-          });
-        }
+        nextColumns[mappedStatus].push({
+          isProject: true,
+          projectId: String(p.id || p._id || "unknown"),
+          companyId: p.companyId,
+          id: String(p.id || p._id || "unknown"),
+          title: p.name || "Unknown Project",
+          project: p.clientName || p.packageName || "Unknown Client",
+          status: mappedStatus,
+          priority: p.priority || "Medium",
+          dueDate: p.expectedEndDate || p.endDate || "",
+          subtasks: Array.isArray(p.stages) ? p.stages.length : 0,
+          comments: 0,
+          description: p.currentPhase || p.adminNotes || "Delivery Pipeline Project",
+          assignedTo: p.assignedTeam?.[0]?.name || "Unassigned"
+        });
       });
     }
 
     queueMicrotask(() => setColumns(nextColumns));
-  }, [dbTasks, projects]);
+  }, [projects]);
 
   const totals = useMemo(() => {
     const tasks = Object.values(columns).flat();
@@ -122,97 +113,24 @@ export default function KanbanBoard() {
       return { ...prev, ...next };
     });
 
-    if (movedTask.isStage) {
-      const newStageStatus = COLUMN_TO_STAGE_STATUS[destination.droppableId] || "not_started";
+    if (movedTask.isProject) {
+      const newStatus = COLUMN_TO_STAGE_STATUS[destination.droppableId] || "not_started";
 
       const proj = projects.find(p => String(p.id || p._id) === movedTask.projectId);
       if (proj) {
-        const updatedProj = { ...proj, stages: [...(proj.stages || [])] };
-        if (updatedProj.stages[movedTask.stageIndex]) {
-          updatedProj.stages[movedTask.stageIndex] = {
-            ...updatedProj.stages[movedTask.stageIndex],
-            status: newStageStatus,
-            completedAt: newStageStatus === "completed" ? new Date().toISOString() : null
-          };
+        const updatedProj = { ...proj, status: newStatus };
+        try {
           await saveProject(updatedProj);
-          showToast({ title: "Success", message: `Stage "${movedTask.title}" moved to ${destination.droppableId}` });
+          showToast({ title: "Success", message: `Project "${movedTask.title}" moved to ${destination.droppableId}` });
+        } catch (err) {
+          console.error(err);
+          showToast({ type: "error", title: "Error", message: "Failed to update project status" });
         }
       }
-      return;
-    }
-
-    try {
-      await saveDbTask({ ...movedTask, status: destination.droppableId });
-      showToast({ title: "Success", message: `Task moved to ${destination.droppableId}` });
-    } catch (err) {
-      console.error(err);
-      showToast({ type: "error", title: "Error", message: "Failed to move task" });
     }
   }
 
-  function openNewTask(column = "To Do") {
-    setTaskEditor({
-      mode: "create",
-      column,
-      task: {
-        id: `t-${Date.now()}`,
-        title: "",
-        project: "",
-        priority: "Medium",
-        assignee: "A",
-        deadline: "",
-        description: "",
-        subtasks: 0,
-        comments: 0,
-      },
-    });
-  }
 
-  function openEditTask(column, task) {
-    setTaskEditor({ mode: "edit", column, task });
-  }
-
-  async function saveTask(nextTask, nextColumn) {
-    try {
-      const isNew = !nextTask._id;
-      const savedTask = await saveDbTask({ ...nextTask, status: nextColumn });
-      setColumns((current) => {
-        const cleaned = Object.fromEntries(
-          Object.entries(current).map(([column, tasks]) => [
-            column,
-            tasks.filter((task) => task.id !== nextTask.id && task._id !== nextTask._id),
-          ])
-        );
-        return {
-          ...cleaned,
-          [nextColumn]: [...(cleaned[nextColumn] || []), savedTask],
-        };
-      });
-      setTaskEditor(null);
-      showToast({
-        title: isNew ? "Task created" : "Task updated",
-        message: `${nextTask.title || "Task"} saved in ${nextColumn}.`,
-      });
-    } catch (error) {
-      showToast({ type: "error", title: "Could not save task", message: error.message });
-    }
-  }
-
-  async function deleteTask(task) {
-    try {
-      await removeDbTask(task);
-      setColumns((current) => Object.fromEntries(
-        Object.entries(current).map(([column, tasks]) => [
-          column,
-          tasks.filter((item) => item.id !== task.id && item._id !== task._id),
-        ])
-      ));
-      setTaskEditor(null);
-      showToast({ title: "Task deleted", message: `${task.title || "Task"} removed successfully.` });
-    } catch (error) {
-      showToast({ type: "error", title: "Could not delete task", message: error.message });
-    }
-  }
 
   return (
     <div className="flex h-full flex-col p-5 xl:p-6">
@@ -231,9 +149,8 @@ export default function KanbanBoard() {
           </button>
           <div className="hidden sm:inline-flex h-10 items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 text-xs font-bold text-blue-700">
             <Sparkles size={14} />
-            Drag tasks between stages
+            Drag projects between stages
           </div>
-          <Button className="h-10" onClick={() => openNewTask()}><Plus size={14} strokeWidth={2.5} /> Add Task</Button>
         </div>
       </div>
 
@@ -250,9 +167,6 @@ export default function KanbanBoard() {
                       <h2 className="truncate text-sm font-bold text-gray-900">{col}</h2>
                       <span className="rounded-md bg-white/80 px-1.5 py-0.5 text-[11px] font-bold text-gray-500">{tasks.length}</span>
                     </div>
-                    <button onClick={() => openNewTask(col)} className="grid h-7 w-7 place-items-center rounded-lg text-gray-400 hover:bg-white hover:text-gray-700">
-                      <Plus size={14} />
-                    </button>
                   </div>
                 </div>
 
@@ -313,10 +227,12 @@ export default function KanbanBoard() {
                                           type="button"
                                           onClick={(event) => {
                                             event.stopPropagation();
-                                            openEditTask(col, task);
+                                            if (task.companyId && task.projectId) {
+                                              navigate(`/admin/companies/${task.companyId}/projects/${task.projectId}`);
+                                            }
                                           }}
                                           className="grid h-5 w-5 shrink-0 place-items-center rounded-md text-gray-300 opacity-0 hover:bg-gray-50 hover:text-gray-500 group-hover/card:opacity-100"
-                                          title="Edit task"
+                                          title="View Project"
                                         >
                                           <MoreHorizontal size={12} />
                                         </button>
@@ -351,11 +267,7 @@ export default function KanbanBoard() {
                                               {(task.assignedTo || task.assignee || "U")[0].toUpperCase()}
                                             </div>
                                           </div>
-                                        ) : (
-                                          <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
-                                            <Sparkles size={10} className="mr-1" /> Project Stage
-                                          </div>
-                                        )}
+                                        ) : null}
                                         <div className="flex items-center gap-2"></div>
                                       </div>
                                     </div>
@@ -381,105 +293,7 @@ export default function KanbanBoard() {
           })}
         </div>
       </DragDropContext>
-      {taskEditor && (
-        <TaskEditorModal
-          columns={Object.keys(columns)}
-          initialColumn={taskEditor.column}
-          task={taskEditor.task}
-          mode={taskEditor.mode}
-          onClose={() => setTaskEditor(null)}
-          onSave={saveTask}
-          onDelete={deleteTask}
-        />
-      )}
+
     </div>
-  );
-}
-
-function TaskEditorModal({ columns, initialColumn, task, mode, onClose, onSave, onDelete }) {
-  const [form, setForm] = useState(task);
-  const [column, setColumn] = useState(initialColumn);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  function submit(event) {
-    event.preventDefault();
-    onSave(
-      {
-        ...form,
-        title: form.title.trim() || "Untitled task",
-        project: form.project.trim() || "General",
-        assignee: (form.assignee || "A").slice(0, 1).toUpperCase(),
-        subtasks: Number(form.subtasks) || 0,
-        comments: Number(form.comments) || 0,
-      },
-      column
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-gray-950/35 px-4">
-      <form onSubmit={submit} className="w-full max-w-2xl rounded-2xl border border-gray-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-          <div>
-            <h2 className="text-sm font-bold text-gray-950">{mode === "create" ? "Create task" : "Edit task"}</h2>
-            <p className="text-xs text-gray-400">Update task details, owner, priority, and workflow stage.</p>
-          </div>
-          <button type="button" onClick={onClose} className="rounded-lg px-2 py-1 text-xs font-bold text-gray-500 hover:bg-gray-100">Close</button>
-        </div>
-
-        <div className="grid gap-4 p-5 sm:grid-cols-2">
-          <TaskField label="Task title" value={form.title} onChange={set("title")} className="sm:col-span-2" />
-          <TaskField label="Project" value={form.project} onChange={set("project")} />
-          <label className="block">
-            <span className="text-xs font-bold text-gray-600">Stage</span>
-            <select value={column} onChange={(event) => setColumn(event.target.value)} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50">
-              {columns.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-bold text-gray-600">Priority</span>
-            <select value={form.priority} onChange={(event) => set("priority")(event.target.value)} className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50">
-              {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
-          <TaskField label="Assignee initial" value={form.assignee} onChange={set("assignee")} />
-          <TaskField label="Deadline" value={form.deadline} onChange={set("deadline")} placeholder="26 Jun" />
-          <TaskField label="Subtasks" type="number" value={form.subtasks} onChange={set("subtasks")} />
-          <TaskField label="Comments" type="number" value={form.comments} onChange={set("comments")} />
-          <label className="block sm:col-span-2">
-            <span className="text-xs font-bold text-gray-600">Description</span>
-            <textarea value={form.description} onChange={(event) => set("description")(event.target.value)} className="mt-1.5 min-h-24 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50" />
-          </label>
-        </div>
-
-        <div className="flex items-center justify-between border-t border-gray-100 p-4">
-          {mode === "edit" ? (
-            <button type="button" onClick={() => onDelete(task)} className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50">
-              <Trash2 size={14} />
-              Delete
-            </button>
-          ) : <span />}
-          <div className="flex gap-2">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button type="submit"><Save size={14} /> Save task</Button>
-          </div>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "" }) {
-  return (
-    <label className={`block ${className}`}>
-      <span className="text-xs font-bold text-gray-600">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="mt-1.5 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-50"
-      />
-    </label>
   );
 }
