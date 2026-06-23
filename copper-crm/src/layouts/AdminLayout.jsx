@@ -15,8 +15,8 @@ const NAV_SECTIONS = [
   {
     label: "CRM",
     items: [
-      { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
+      { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: UserRound, to: "/admin/contacts", label: "Contacts" },
       {
         icon: ClipboardList, label: "Activity",
@@ -72,7 +72,7 @@ const NAV_SECTIONS = [
 ];
 
 const pageNames = {
-  "/admin": "Dashboard",
+  "/admin": "Analytics",
   "/admin/analytics": "Analytics",
   "/admin/timeline": "Timeline",
   "/admin/payments": "Payments",
@@ -116,7 +116,7 @@ const searchablePages = [
 
 function getBreadcrumbs(pathname, companies = [], projects = []) {
   const segments = pathname.split("/").filter(Boolean);
-  const crumbs = [{ label: "Dashboard", to: "/admin" }];
+  const crumbs = [{ label: "Analytics", to: "/admin" }];
   let path = "";
   const rest = segments.slice(1);
   for (let i = 0; i < rest.length; i++) {
@@ -141,6 +141,7 @@ function initialsOf(name) {
 }
 
 function isLeafActive(item, pathname) {
+  if (item.to === "/admin/analytics" && pathname === "/admin") return true;
   return item.end ? pathname === item.to : pathname.startsWith(item.to);
 }
 
