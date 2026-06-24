@@ -1,7 +1,8 @@
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 export default function SidePanel({ title, subtitle, children, footer, onClose, width = "max-w-xl" }) {
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 bg-gray-950/30">
       <div className={`ml-auto flex h-full w-full ${width} animate-[panel-in_180ms_ease-out] flex-col border-l border-gray-200 bg-white shadow-2xl`}>
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4">
@@ -16,6 +17,7 @@ export default function SidePanel({ title, subtitle, children, footer, onClose, 
         <div className="flex-1 overflow-y-auto p-5">{children}</div>
         {footer && <div className="border-t border-gray-100 p-4">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

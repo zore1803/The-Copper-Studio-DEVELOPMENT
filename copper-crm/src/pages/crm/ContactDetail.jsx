@@ -2,14 +2,67 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Building2, Calendar, CheckCircle2, ChevronLeft, Clock3, FileText, FolderKanban,
-  Globe, Mail, MessageCircle, Pencil, Phone, StickyNote, Trash2, Users
+  Globe, Mail, MessageCircle, Pencil, Phone, Plus, Save, StickyNote, Trash2, Users
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { contactFullName } from "../../lib/contacts";
+
+function NoteInput({ label, value, onChange, placeholder }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <input
+        value={value || ""}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+      />
+    </label>
+  );
+}
+
+function NoteTextarea({ label, value, onChange }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <textarea
+        value={value || ""}
+        rows={5}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+      />
+    </label>
+  );
+}
+
+function NotePanel({ contact, note, onClose, onSave }) {
+  const [form, setForm] = useState(note || { title: "", body: "" });
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <SidePanel
+      title={note?._id || note?.id ? "Edit Note" : "Add Note"}
+      subtitle={`Saved against ${contact.name || "this contact"}.`}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(form)}><Save size={14} /> Save Note</Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <NoteInput label="Title" value={form.title} onChange={set("title")} placeholder="e.g. Pricing discussion" />
+        <NoteTextarea label="Note" value={form.body} onChange={set("body")} />
+      </div>
+    </SidePanel>
+  );
+}
 
 // Mirrors the Company workspace layout — header + social row + info bar + KPI
 // chips + tabbed body — so an individual contact (who, in this product, IS a
@@ -156,11 +209,12 @@ export default function ContactDetail() {
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents } = useCrmRecords("documents");
   const { records: tasks } = useCrmRecords("tasks");
-  const { records: notes } = useCrmRecords("notes");
+  const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
   const [activeTab, setActiveTab] = useState("Overview");
   const [editing, setEditing] = useState(false);
+  const [editingNote, setEditingNote] = useState(null);
 
   const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
 
@@ -233,6 +287,21 @@ export default function ContactDetail() {
     await remove(contact);
     showToast({ title: "Contact deleted", message: `${contactFullName(contact)} removed.` });
     navigate("/admin/contacts");
+  }
+
+  async function handleSaveNote(form) {
+    if (!form.title?.trim() && !form.body?.trim()) {
+      showToast({ type: "error", title: "Note is empty", message: "Add a title or some text before saving." });
+      return;
+    }
+    await saveNote({ ...form, companyId: contact.companyId, company: companyName });
+    setEditingNote(null);
+    showToast({ title: "Note saved", message: `Saved to ${contactFullName(contact)}.` });
+  }
+
+  async function handleDeleteNote(note) {
+    await removeNote(note);
+    showToast({ title: "Note deleted", message: "The note was removed." });
   }
 
   function openProject(project) {
@@ -447,6 +516,10 @@ export default function ContactDetail() {
 
         {activeTab === "Notes" && (
           <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-gray-700">Notes</p>
+              <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Add Note</Button>
+            </div>
             <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
               <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
                 <p className="text-sm font-bold text-gray-700">Contact Notes</p>
@@ -463,11 +536,16 @@ export default function ContactDetail() {
             </div>
             {linkedNotes.map((n) => (
               <div key={n._id || n.id} className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-                <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
-                  <p className="text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+                <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                  <button type="button" onClick={() => setEditingNote(n)} className="min-w-0 flex-1 text-left">
+                    <p className="text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+                  </button>
+                  <button type="button" onClick={() => handleDeleteNote(n)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
                 <div className="p-5">
-                <p className="text-sm text-gray-600">{n.body || n.text || ""}</p>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{n.body || n.text || ""}</p>
                 <p className="mt-2 text-xs text-gray-400">{formatDate(n.createdAt)}</p>
                 </div>
               </div>
