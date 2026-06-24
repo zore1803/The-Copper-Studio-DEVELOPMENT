@@ -36,7 +36,7 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
 function Section({ title, subtitle, action, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#ead9d0] bg-[#ffffff] shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3.5">
+      <div className="flex items-center justify-between border-b border-[#f3e9e4] bg-[#fff1ec] px-5 py-3.5">
         <div>
           <h3 className="text-sm font-bold text-[#2b211c]">{title}</h3>
           {subtitle && <p className="mt-0.5 text-xs text-[#6c6355]">{subtitle}</p>}
@@ -144,7 +144,7 @@ export default function ProjectsList() {
   ];
 
   return (
-    <div className="min-h-full bg-[#faf6f3] p-6 space-y-6">
+    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight text-[#2b211c]">All Projects</h2>
@@ -193,7 +193,7 @@ export default function ProjectsList() {
         }
       >
         <table className="w-full text-left text-sm text-[#6c6355]">
-          <thead className="bg-[#fbf3ee] text-xs uppercase text-[#9b8c83]">
+          <thead className="bg-[#fff1ec] text-xs uppercase text-[#9b8c83]">
             <tr>
               <th className="px-5 py-3 font-semibold">Project Name</th>
               <th className="px-5 py-3 font-semibold">Company</th>
@@ -210,7 +210,7 @@ export default function ProjectsList() {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
-                <tr key={project.id || project._id} className="hover:bg-[#fbf3ee] transition-colors">
+                <tr key={project.id || project._id} className="hover:bg-[#fafafa] transition-colors">
                   <td className="px-5 py-4">
                     <Link
                       to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}

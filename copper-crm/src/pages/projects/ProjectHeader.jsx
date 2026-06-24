@@ -49,7 +49,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
       <div className="px-6 py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff8f6]">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff1ec]">
               <FolderKanban size={24} className="text-[#884c2d]" />
             </div>
             <div className="min-w-0">

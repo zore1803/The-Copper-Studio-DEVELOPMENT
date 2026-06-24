@@ -93,7 +93,7 @@ function ProjectGanttChart({ project, tasks }) {
 
   if (!rows.length) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#ead9d0] bg-[#fbf3ee] py-16 text-center">
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[#ead9d0] bg-[#fafafa] py-16 text-center">
         <Calendar size={28} className="mb-3 text-[#b49f96]" />
         <p className="text-sm font-semibold text-[#6c6355]">No dated timeline items for this project yet.</p>
         <p className="mt-1 text-xs text-[#9b8c83]">Add start and due dates to milestones or tasks to see them on the timeline.</p>
@@ -119,7 +119,7 @@ function ProjectGanttChart({ project, tasks }) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-[#ead9d0] bg-[#ffffff] shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#f3e9e4] bg-[#fff1ec] px-5 py-3.5">
         <div>
           <h3 className="font-display text-sm font-bold text-[#2b211c]">{project.name} — Timeline</h3>
           <p className="mt-0.5 text-xs text-[#6c6355]">{fmt(min)} → {fmt(max)} · {rows.length} item{rows.length === 1 ? "" : "s"}</p>
@@ -137,7 +137,7 @@ function ProjectGanttChart({ project, tasks }) {
         <div style={{ minWidth: `${gridWidth + 240}px` }} className="flex">
           {/* Left: item names + meta */}
           <div className="w-60 shrink-0 border-r border-[#f3e9e4]">
-            <div className="flex h-9 items-center bg-[#fbf3ee] px-4 text-[10px] font-bold uppercase tracking-wider text-[#9b8c83]">Item</div>
+            <div className="flex h-9 items-center bg-[#fff1ec] px-4 text-[10px] font-bold uppercase tracking-wider text-[#9b8c83]">Item</div>
             {rows.map((r, i) => {
               const style = STAGE_STYLE[r.status];
               const Icon = r.kind === "Task" ? ListTodo : style.icon;
@@ -230,7 +230,7 @@ export default function TimelinePage() {
   const selected = projects.find((p) => String(p.id || p._id) === selectedId) || filtered[0] || null;
 
   return (
-    <div className="min-h-full space-y-5 bg-[#faf6f3] p-6">
+    <div className="min-h-full space-y-5 bg-[#F1F1F5] p-6">
       <div>
         <h2 className="font-display text-2xl font-bold tracking-tight text-[#2b211c]">Project Timelines</h2>
         <p className="mt-1 text-sm text-[#6c6355]">Stages and tasks plotted on a date-accurate Gantt — bars move and resize to the dates you set.</p>
@@ -248,7 +248,7 @@ export default function TimelinePage() {
         <div className="grid grid-cols-12 gap-5">
           <div className="col-span-12 lg:col-span-4 xl:col-span-3">
             <div className="overflow-hidden rounded-xl border border-[#ead9d0] bg-[#ffffff]">
-              <div className="border-b border-[#f3e9e4] bg-[#fbf3ee] p-3">
+              <div className="border-b border-[#f3e9e4] bg-[#fff1ec] p-3">
                 <div className="flex h-9 items-center gap-2 rounded-lg border border-[#ead9d0] bg-[#ffffff] px-3">
                   <Search size={14} className="shrink-0 text-[#9b8c83]" />
                   <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search projects…" className="w-full bg-transparent text-sm text-[#2b211c] outline-none" />
@@ -261,7 +261,7 @@ export default function TimelinePage() {
                     <button
                       key={p.id || p._id}
                       onClick={() => setSelectedId(String(p.id || p._id))}
-                      className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors ${isSelected ? "bg-[#fff1ec]" : "hover:bg-[#fbf3ee]"}`}
+                      className={`flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors ${isSelected ? "bg-[#fff1ec]" : "hover:bg-[#fafafa]"}`}
                     >
                       <span className="truncate text-sm font-bold text-[#2b211c]">{p.name}</span>
                       <span className="truncate text-xs text-[#6c6355]">{companyName(p)}</span>
