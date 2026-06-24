@@ -44,19 +44,19 @@
               <label for="customerPhone"><span>Mobile Number</span></label>
               <div class="input-action">
                 <div class="phone-field">
-                  <select name="customerCountryCode" aria-label="Country code">
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+61">🇦🇺 +61</option>
-                    <option value="+971">🇦🇪 +971</option>
-                    <option value="+65">🇸🇬 +65</option>
-                    <option value="+60">🇲🇾 +60</option>
-                    <option value="+49">🇩🇪 +49</option>
-                    <option value="+33">🇫🇷 +33</option>
-                    <option value="+81">🇯🇵 +81</option>
-                  </select>
-                  <input id="customerPhone" name="customerPhone" type="tel" placeholder="98765 43210" required>
+                  <div class="country-picker" data-country-picker>
+                    <button type="button" class="country-picker-trigger" data-country-trigger aria-haspopup="listbox" aria-expanded="false">
+                      <span data-country-flag>🇮🇳</span>
+                      <span data-country-dial>+91</span>
+                      <span class="country-picker-caret">▾</span>
+                    </button>
+                    <input type="hidden" name="customerCountryCode" id="customerCountryCode" value="+91">
+                    <div class="country-picker-menu" data-country-menu hidden role="listbox">
+                      <input type="text" class="country-picker-search" placeholder="Search country…" data-country-search autocomplete="off">
+                      <div class="country-picker-list" data-country-list></div>
+                    </div>
+                  </div>
+                  <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="98765 43210" required>
                 </div>
                 <button class="btn btn-secondary" type="button" data-send-otp="phone">Send OTP</button>
               </div>

@@ -92,8 +92,136 @@ function formatCurrency(value) {
   }).format(value);
 }
 
+// ISO country codes paired with their dial code; flags are derived from the
+// ISO code so this list doesn't need to carry emoji literals.
+const COUNTRY_DIAL_CODES = [
+  ["IN", "India", "+91"], ["US", "United States", "+1"], ["GB", "United Kingdom", "+44"],
+  ["AU", "Australia", "+61"], ["AE", "United Arab Emirates", "+971"], ["SG", "Singapore", "+65"],
+  ["MY", "Malaysia", "+60"], ["DE", "Germany", "+49"], ["FR", "France", "+33"], ["JP", "Japan", "+81"],
+  ["AF", "Afghanistan", "+93"], ["AL", "Albania", "+355"], ["DZ", "Algeria", "+213"], ["AD", "Andorra", "+376"],
+  ["AO", "Angola", "+244"], ["AR", "Argentina", "+54"], ["AM", "Armenia", "+374"], ["AT", "Austria", "+43"],
+  ["AZ", "Azerbaijan", "+994"], ["BH", "Bahrain", "+973"], ["BD", "Bangladesh", "+880"], ["BY", "Belarus", "+375"],
+  ["BE", "Belgium", "+32"], ["BZ", "Belize", "+501"], ["BJ", "Benin", "+229"], ["BT", "Bhutan", "+975"],
+  ["BO", "Bolivia", "+591"], ["BA", "Bosnia and Herzegovina", "+387"], ["BW", "Botswana", "+267"],
+  ["BR", "Brazil", "+55"], ["BN", "Brunei", "+673"], ["BG", "Bulgaria", "+359"], ["BF", "Burkina Faso", "+226"],
+  ["BI", "Burundi", "+257"], ["KH", "Cambodia", "+855"], ["CM", "Cameroon", "+237"], ["CA", "Canada", "+1"],
+  ["CL", "Chile", "+56"], ["CN", "China", "+86"], ["CO", "Colombia", "+57"], ["CR", "Costa Rica", "+506"],
+  ["HR", "Croatia", "+385"], ["CU", "Cuba", "+53"], ["CY", "Cyprus", "+357"], ["CZ", "Czech Republic", "+420"],
+  ["DK", "Denmark", "+45"], ["DO", "Dominican Republic", "+1809"], ["EC", "Ecuador", "+593"], ["EG", "Egypt", "+20"],
+  ["SV", "El Salvador", "+503"], ["EE", "Estonia", "+372"], ["ET", "Ethiopia", "+251"], ["FJ", "Fiji", "+679"],
+  ["FI", "Finland", "+358"], ["GE", "Georgia", "+995"], ["GH", "Ghana", "+233"], ["GR", "Greece", "+30"],
+  ["GT", "Guatemala", "+502"], ["HN", "Honduras", "+504"], ["HK", "Hong Kong", "+852"], ["HU", "Hungary", "+36"],
+  ["IS", "Iceland", "+354"], ["ID", "Indonesia", "+62"], ["IR", "Iran", "+98"], ["IQ", "Iraq", "+964"],
+  ["IE", "Ireland", "+353"], ["IL", "Israel", "+972"], ["IT", "Italy", "+39"], ["JM", "Jamaica", "+1876"],
+  ["JO", "Jordan", "+962"], ["KZ", "Kazakhstan", "+7"], ["KE", "Kenya", "+254"], ["KW", "Kuwait", "+965"],
+  ["KG", "Kyrgyzstan", "+996"], ["LA", "Laos", "+856"], ["LV", "Latvia", "+371"], ["LB", "Lebanon", "+961"],
+  ["LS", "Lesotho", "+266"], ["LY", "Libya", "+218"], ["LI", "Liechtenstein", "+423"], ["LT", "Lithuania", "+370"],
+  ["LU", "Luxembourg", "+352"], ["MO", "Macau", "+853"], ["MG", "Madagascar", "+261"], ["MW", "Malawi", "+265"],
+  ["MV", "Maldives", "+960"], ["ML", "Mali", "+223"], ["MT", "Malta", "+356"], ["MU", "Mauritius", "+230"],
+  ["MX", "Mexico", "+52"], ["MD", "Moldova", "+373"], ["MC", "Monaco", "+377"], ["MN", "Mongolia", "+976"],
+  ["ME", "Montenegro", "+382"], ["MA", "Morocco", "+212"], ["MZ", "Mozambique", "+258"], ["MM", "Myanmar", "+95"],
+  ["NA", "Namibia", "+264"], ["NP", "Nepal", "+977"], ["NL", "Netherlands", "+31"], ["NZ", "New Zealand", "+64"],
+  ["NI", "Nicaragua", "+505"], ["NE", "Niger", "+227"], ["NG", "Nigeria", "+234"], ["KP", "North Korea", "+850"],
+  ["MK", "North Macedonia", "+389"], ["NO", "Norway", "+47"], ["OM", "Oman", "+968"], ["PK", "Pakistan", "+92"],
+  ["PA", "Panama", "+507"], ["PG", "Papua New Guinea", "+675"], ["PY", "Paraguay", "+595"], ["PE", "Peru", "+51"],
+  ["PH", "Philippines", "+63"], ["PL", "Poland", "+48"], ["PT", "Portugal", "+351"], ["QA", "Qatar", "+974"],
+  ["RO", "Romania", "+40"], ["RU", "Russia", "+7"], ["RW", "Rwanda", "+250"], ["SA", "Saudi Arabia", "+966"],
+  ["SN", "Senegal", "+221"], ["RS", "Serbia", "+381"], ["SK", "Slovakia", "+421"], ["SI", "Slovenia", "+386"],
+  ["SO", "Somalia", "+252"], ["ZA", "South Africa", "+27"], ["KR", "South Korea", "+82"], ["SS", "South Sudan", "+211"],
+  ["ES", "Spain", "+34"], ["LK", "Sri Lanka", "+94"], ["SD", "Sudan", "+249"], ["SE", "Sweden", "+46"],
+  ["CH", "Switzerland", "+41"], ["SY", "Syria", "+963"], ["TW", "Taiwan", "+886"], ["TJ", "Tajikistan", "+992"],
+  ["TZ", "Tanzania", "+255"], ["TH", "Thailand", "+66"], ["TG", "Togo", "+228"], ["TT", "Trinidad and Tobago", "+1868"],
+  ["TN", "Tunisia", "+216"], ["TR", "Turkey", "+90"], ["TM", "Turkmenistan", "+993"], ["UG", "Uganda", "+256"],
+  ["UA", "Ukraine", "+380"], ["UY", "Uruguay", "+598"], ["UZ", "Uzbekistan", "+998"], ["VE", "Venezuela", "+58"],
+  ["VN", "Vietnam", "+84"], ["YE", "Yemen", "+967"], ["ZM", "Zambia", "+260"], ["ZW", "Zimbabwe", "+263"]
+].map(([iso, name, dial]) => ({
+  iso,
+  name,
+  dial,
+  flag: String.fromCodePoint(...[...iso].map((c) => 127397 + c.charCodeAt(0)))
+}));
+
+function setupCountryPicker() {
+  const picker = document.querySelector("[data-country-picker]");
+  if (!picker) return;
+
+  const trigger = picker.querySelector("[data-country-trigger]");
+  const menu = picker.querySelector("[data-country-menu]");
+  const search = picker.querySelector("[data-country-search]");
+  const list = picker.querySelector("[data-country-list]");
+  const hiddenInput = document.getElementById("customerCountryCode");
+  const flagEl = picker.querySelector("[data-country-flag]");
+  const dialEl = picker.querySelector("[data-country-dial]");
+
+  function syncTrigger() {
+    const current = COUNTRY_DIAL_CODES.find((c) => c.dial === hiddenInput.value) || COUNTRY_DIAL_CODES[0];
+    flagEl.textContent = current.flag;
+    dialEl.textContent = current.dial;
+  }
+
+  function renderList(query) {
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? COUNTRY_DIAL_CODES.filter((c) => `${c.name} ${c.dial}`.toLowerCase().includes(q))
+      : COUNTRY_DIAL_CODES;
+
+    list.innerHTML = filtered.length
+      ? filtered.map((c) => `
+          <button type="button" class="country-picker-option${c.dial === hiddenInput.value ? " is-active" : ""}" data-dial="${c.dial}">
+            <span>${c.flag} ${c.name}</span>
+            <span class="country-picker-dial">${c.dial}</span>
+          </button>
+        `).join("")
+      : `<p class="country-picker-empty">No matches</p>`;
+  }
+
+  function openMenu() {
+    menu.hidden = false;
+    trigger.setAttribute("aria-expanded", "true");
+    search.value = "";
+    renderList("");
+    search.focus();
+  }
+
+  function closeMenu() {
+    menu.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  trigger.addEventListener("click", () => {
+    if (menu.hidden) openMenu();
+    else closeMenu();
+  });
+
+  search.addEventListener("input", () => renderList(search.value));
+
+  list.addEventListener("click", (event) => {
+    const option = event.target.closest("[data-dial]");
+    if (!option) return;
+    hiddenInput.value = option.dataset.dial;
+    hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+    syncTrigger();
+    closeMenu();
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!picker.contains(event.target)) closeMenu();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeMenu();
+  });
+
+  syncTrigger();
+}
+
 function selectedPackage() {
   return packages.find((item) => item.id === order.selectedPackageId) || packages[1];
+}
+
+function customerFullPhone() {
+  const code = order.customer.customerCountryCode || "+91";
+  const number = order.customer.customerPhone || "";
+  return number ? `${code} ${number}` : "";
 }
 
 function packageTotal(pkg = selectedPackage()) {
@@ -214,6 +342,15 @@ function renderCheckoutPage() {
     const input = document.querySelector(`[name="${key}"]`);
     if (input) input.value = value;
   });
+
+  setupCountryPicker();
+
+  const phoneInput = document.getElementById("customerPhone");
+  if (phoneInput) {
+    phoneInput.addEventListener("input", () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+    });
+  }
 
   updateVerificationUI();
 
@@ -368,7 +505,7 @@ function renderPaymentPage() {
   document.getElementById("checkoutSummary").innerHTML = overviewTemplate(pkg);
   document.getElementById("paymentAmount").textContent = formatCurrency(packageTotal(pkg));
   document.getElementById("summaryCustomer").textContent = order.customer.customerName;
-  document.getElementById("summaryContact").textContent = `${order.customer.customerEmail} | ${order.customer.customerPhone}`;
+  document.getElementById("summaryContact").textContent = `${order.customer.customerEmail} | ${customerFullPhone()}`;
 
   document.querySelectorAll("[data-method]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -410,7 +547,7 @@ function renderPaymentPage() {
         prefill: {
           name: order.customer.customerName,
           email: order.customer.customerEmail,
-          contact: order.customer.customerPhone
+          contact: customerFullPhone()
         },
         notes: {
           packageId: pkg.id,
