@@ -33,7 +33,7 @@ import {
   SettingsPage,
   TasksPage
 } from "./pages/admin/AdminWorkflows";
-import { DatabaseTablesPage, ProposalGeneratorPage, ServicesPage } from "./pages/admin/AdminTabs";
+import { DatabaseTablesPage, ProposalGeneratorPage } from "./pages/admin/AdminTabs";
 import { AnalyticsPage } from "./pages/admin/AnalyticsPage";
 import CommunicationCenter from "./pages/admin/CommunicationCenter";
 import DocumentCenter from "./pages/admin/DocumentCenter";
@@ -72,7 +72,7 @@ export default function App() {
               <Route path="invoices" element={<Invoices />} />
               <Route path="coupons" element={<Coupons />} />
               <Route path="services" element={<Navigate to="/admin/services/proposal-generator" replace />} />
-              <Route path="services/coupon-generator" element={<ServicesPage />} />
+              <Route path="services/coupon-generator" element={<Navigate to="/admin/coupons" replace />} />
               <Route path="services/proposal-generator" element={<ProposalGeneratorPage />} />
               <Route path="services/communications" element={<Navigate to="/admin/communication/email-templates" replace />} />
               <Route path="documents/company-folders" element={<DocumentCenter mode="company" />} />

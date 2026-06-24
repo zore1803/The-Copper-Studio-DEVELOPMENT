@@ -1,10 +1,159 @@
 import { useMemo, useState } from "react";
-import { BarChart2, Copy, Plus, Search, Tag, TrendingUp } from "lucide-react";
+import { BarChart2, Copy, Plus, Save, Search, Tag, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
+import SidePanel from "../../components/SidePanel";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { useToast } from "../../components/useToast";
+import { isEmail, isPhone, isFutureDate } from "../../lib/validators";
 
 function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
+}
+
+function toDateTimeLocal(date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) {
+  const zoned = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return zoned.toISOString().slice(0, 16);
+}
+
+function formatDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", hour12: true });
+}
+
+const COUPON_DEFAULTS = {
+  prefix: "COP-STU",
+  discount: "",
+  packageName: "",
+  validity: toDateTimeLocal(),
+  amountType: "percentage",
+  clientName: "",
+  companyName: "",
+  email: "",
+  phone: "",
+};
+
+function validateCoupon(coupon) {
+  const errors = {};
+  const prefix = String(coupon.prefix || "").trim();
+  if (!prefix) errors.prefix = "Prefix is required.";
+  else if (!/^[A-Za-z0-9-]{2,10}$/.test(prefix)) errors.prefix = "2–10 letters, numbers or hyphens.";
+
+  const amount = Number(coupon.discount);
+  if (String(coupon.discount).trim() === "" || Number.isNaN(amount)) errors.discount = "Enter a discount amount.";
+  else if (amount <= 0) errors.discount = "Must be greater than 0.";
+  else if (coupon.amountType === "percentage" && amount > 100) errors.discount = "Percentage can't exceed 100.";
+
+  if (!String(coupon.packageName || "").trim()) errors.packageName = "Package is required.";
+  if (!isFutureDate(coupon.validity)) errors.validity = "Validity must be a future date.";
+  if (coupon.email && !isEmail(coupon.email)) errors.email = "Enter a valid email.";
+  if (coupon.phone && !isPhone(coupon.phone)) errors.phone = "Enter a valid 10-digit mobile.";
+  return errors;
+}
+
+function nineDigitCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({ length: 9 }, (_, index) => {
+    const char = alphabet[Math.floor(Math.random() * alphabet.length)];
+    return index === 3 || index === 6 ? `-${char}` : char;
+  }).join("");
+}
+
+function CouponField({ label, value, onChange, error = "", required = false, type = "text", placeholder = "", maxLength, inputMode }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}{required && <span className="text-red-500"> *</span>}</span>
+      <input
+        type={type}
+        value={value}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+        }`}
+      />
+      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+    </label>
+  );
+}
+
+function CouponFormPanel({ onClose, onCreate }) {
+  const [coupon, setCoupon] = useState(COUPON_DEFAULTS);
+  const [errors, setErrors] = useState({});
+  const [creating, setCreating] = useState(false);
+  const setField = (key) => (value) => {
+    setCoupon((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
+  };
+
+  const previewCode = `${(coupon.prefix || "COP").slice(0, 6).toUpperCase()}-XXX-XXXX`;
+  const discountLabel = coupon.amountType === "percentage" ? `${coupon.discount || 0}%` : `Rs ${coupon.discount || 0}`;
+
+  async function submit() {
+    if (creating) return;
+    const next = validateCoupon(coupon);
+    setErrors(next);
+    if (Object.keys(next).length) return;
+    setCreating(true);
+    try {
+      await onCreate(coupon);
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  return (
+    <SidePanel
+      title="Create Coupon"
+      subtitle="Generate a package-specific, time-bound discount code. Fields marked * are required."
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={submit} disabled={creating}><Save size={14} /> {creating ? "Creating…" : "Create Coupon"}</Button>
+        </div>
+      }
+    >
+      <div className="mb-4 rounded-xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-4 text-center">
+        <Tag size={20} className="mx-auto text-[#884c2d]" />
+        <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">{previewCode}</p>
+        <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">{discountLabel} off on {coupon.packageName || "selected package"}</p>
+        <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {formatDateTime(coupon.validity)}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <CouponField label="Prefix" required value={coupon.prefix} onChange={setField("prefix")} error={errors.prefix} maxLength={10} placeholder="COP-STU" />
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <CouponField label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">Type</span>
+            <select value={coupon.amountType} onChange={(e) => setField("amountType")(e.target.value)} className="mt-1.5 h-[38px] w-full rounded-lg border border-[#e5e7eb] px-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+              <option value="percentage">%</option>
+              <option value="fixed">Rs</option>
+            </select>
+          </label>
+        </div>
+        <CouponField label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">Valid until</span>
+          <input
+            type="datetime-local"
+            value={coupon.validity}
+            onChange={(e) => setField("validity")(e.target.value)}
+            className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"}`}
+          />
+          {errors.validity && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validity}</span>}
+        </label>
+        <CouponField label="Client name" value={coupon.clientName} onChange={setField("clientName")} placeholder="Optional" />
+        <CouponField label="Company name" value={coupon.companyName} onChange={setField("companyName")} placeholder="Optional" />
+        <CouponField label="Email ID" type="email" value={coupon.email} onChange={setField("email")} error={errors.email} placeholder="Optional" />
+        <CouponField label="Phone no." type="tel" inputMode="numeric" value={coupon.phone} onChange={setField("phone")} error={errors.phone} placeholder="Optional" maxLength={10} />
+      </div>
+    </SidePanel>
+  );
 }
 
 function Metric({ label, value, icon: Icon }) {
@@ -25,7 +174,34 @@ export default function Coupons() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [copied, setCopied] = useState("");
-  const { records: coupons } = useCrmRecords("coupons");
+  const [creating, setCreating] = useState(false);
+  const { records: coupons, save: saveCoupon } = useCrmRecords("coupons");
+  const { showToast } = useToast();
+
+  async function createCoupon(coupon) {
+    const code = `${coupon.prefix.slice(0, 6).toUpperCase()}-${nineDigitCode()}`;
+    const validUntil = coupon.validity ? new Date(coupon.validity).toISOString() : null;
+    try {
+      const created = await saveCoupon({
+        code,
+        generatedAt: new Date().toLocaleString("en-IN"),
+        validity: formatDateTime(validUntil),
+        validUntil,
+        amountType: coupon.amountType,
+        amount: coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`,
+        status: "Not used",
+        clientName: coupon.clientName.trim(),
+        companyName: coupon.companyName.trim(),
+        email: coupon.email.trim(),
+        phone: coupon.phone.trim(),
+        packageName: coupon.packageName.trim(),
+      });
+      setCreating(false);
+      showToast({ title: "Coupon created", message: `${created?.code || code} stored successfully.` });
+    } catch (error) {
+      showToast({ type: "error", title: "Could not create coupon", message: error.message || "Please try again." });
+    }
+  }
 
   const filtered = useMemo(() => coupons.filter((coupon) => {
     const couponStatus = coupon.status || "Draft";
@@ -56,7 +232,7 @@ export default function Coupons() {
           <h1 className="mt-1 text-2xl font-bold text-[#111827]">Coupons</h1>
           <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
         </div>
-        <Button><Plus size={14} /> Create Coupon</Button>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Create Coupon</Button>
       </div>
 
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -113,6 +289,8 @@ export default function Coupons() {
           </div>
         )}
       </section>
+
+      {creating && <CouponFormPanel onClose={() => setCreating(false)} onCreate={createCoupon} />}
     </div>
   );
 }
