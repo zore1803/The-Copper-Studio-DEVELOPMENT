@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  BellRing, Building2, Calendar, CreditCard, Edit3, Eye, EyeOff,
-  Globe2, LayoutGrid, List, LockKeyhole, Mail,
+  Calendar, Edit3, Eye, EyeOff,
+  Globe2, LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
   Plus, Save, Search,
   Settings as SettingsIcon, ShieldCheck, SlidersHorizontal,
   Trash2, UploadCloud, UserPlus
@@ -618,16 +619,12 @@ function SecurityGate({ onUnlock }) {
 }
 
 const GENERAL_SECTIONS = [
-  { key: "profile", title: "Profile", description: "Agency admin details and primary identity.", icon: UserPlus },
-  { key: "company", title: "Company Information", description: "Legal business details for billing and display.", icon: Building2 },
-  { key: "notifications", title: "Notification Settings", description: "Workspace alerts, reminders, and operational notices.", icon: BellRing },
+  { key: "profile", title: "Super Admin", description: "Super admin details and primary identity.", icon: UserPlus },
+  { key: "password", title: "Password", description: "Change your account password.", icon: LockKeyhole },
+  { key: "activity", title: "Activity", description: "Manage email and WhatsApp message templates.", icon: Mail },
 ];
 
-const SECURE_SECTIONS = [
-  { key: "password", title: "Password & Access", description: "Change your password and invite/OTP windows.", icon: LockKeyhole },
-  { key: "email", title: "Email Settings", description: "Sender identity, SMTP values, and onboarding mail flow.", icon: Mail },
-  { key: "billing", title: "Billing & Gateway", description: "Gateway, invoice defaults, and invite triggers.", icon: CreditCard },
-];
+const SECURE_SECTIONS = [];
 
 const ALL_SECTIONS = [...GENERAL_SECTIONS, ...SECURE_SECTIONS];
 
@@ -667,6 +664,7 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
 export function SettingsPage() {
   const { showToast } = useToast();
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState("profile");
   const [unlocked, setUnlocked] = useState(false);
@@ -784,8 +782,7 @@ export function SettingsPage() {
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">Workspace administration</p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-[#211a17]">Account Settings</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6c6355]">
-            Manage admin identity, company billing details, mail delivery, and the post-payment onboarding pipeline.
-            Credentials live behind a separate, password-gated tab.
+            Manage the super admin identity, change your password, and edit the email and WhatsApp message templates.
           </p>
         </div>
 
@@ -794,7 +791,7 @@ export function SettingsPage() {
             <Globe2 size={15} />
             Live workspace
           </Button>
-          {!showGate && !loading && (
+          {!showGate && !loading && activeSection !== "activity" && (
             <Button size="lg" disabled={saving} onClick={() => saveSection(activeSection, activeMeta?.title || "Settings")}>
               <Save size={15} />
               {saving ? "Saving…" : "Save Changes"}
@@ -806,8 +803,6 @@ export function SettingsPage() {
       <section className="grid gap-6 xl:grid-cols-[290px_minmax(0,1fr)]">
         <Card className="p-3 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
           <SettingsSidebarGroup label="General" sections={GENERAL_SECTIONS} activeSection={activeSection} locked={false} onSelect={selectSection} />
-          <div className="mt-2 border-t border-[#f1e7e2]" />
-          <SettingsSidebarGroup label="Security & Integrations" icon={LockKeyhole} sections={SECURE_SECTIONS} activeSection={activeSection} locked={!unlocked} onSelect={selectSection} />
         </Card>
 
         <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
@@ -844,18 +839,49 @@ export function SettingsPage() {
               {activeSection === "password" && (
                 <div>
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#211a17]">Password & Access</h3>
-                    <p className="mt-1 text-sm text-[#6c6355]">Change your password, and set onboarding link life and OTP validity.</p>
+                    <h3 className="text-lg font-semibold text-[#211a17]">Password</h3>
+                    <p className="mt-1 text-sm text-[#6c6355]">Change the password for your super admin account.</p>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <SettingsField label="Current Password" type="password" value={passwordForm.currentPassword} error={errors.currentPassword} onChange={(value) => setPasswordForm((prev) => ({ ...prev, currentPassword: value }))} />
                     <SettingsField label="New Password" type="password" value={passwordForm.newPassword} error={errors.newPassword} onChange={(value) => setPasswordForm((prev) => ({ ...prev, newPassword: value }))} />
                     <SettingsField label="Confirm Password" type="password" value={passwordForm.confirmPassword} error={errors.confirmPassword} onChange={(value) => setPasswordForm((prev) => ({ ...prev, confirmPassword: value }))} />
-                    <SettingsSelect label="Invite Link Expiry" value={security.inviteExpiry} onChange={(value) => setSecurity((prev) => ({ ...prev, inviteExpiry: value }))} options={["24 hours", "48 hours", "72 hours"]} />
-                    <SettingsSelect label="OTP Expiry" value={security.otpExpiry} onChange={(value) => setSecurity((prev) => ({ ...prev, otpExpiry: value }))} options={["5 minutes", "10 minutes", "15 minutes"]} />
                   </div>
                   <div className="mt-6 flex justify-end">
-                    <Button onClick={() => saveSection("password", "Password settings")}><Save size={14} /> Update Security</Button>
+                    <Button onClick={() => saveSection("password", "Password")}><Save size={14} /> Update Password</Button>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === "activity" && (
+                <div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-[#211a17]">Activity</h3>
+                    <p className="mt-1 text-sm text-[#6c6355]">Manage the message templates used across the CRM.</p>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/admin/communication/email-templates")}
+                      className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
+                    >
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><Mail size={18} /></div>
+                      <div>
+                        <p className="text-sm font-bold text-[#211a17]">Email Templates</p>
+                        <p className="mt-1 text-xs leading-5 text-[#6c6355]">Create and edit the email templates sent to clients.</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/admin/communication/whatsapp-templates")}
+                      className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
+                    >
+                      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><MessageCircle size={18} /></div>
+                      <div>
+                        <p className="text-sm font-bold text-[#211a17]">WhatsApp Templates</p>
+                        <p className="mt-1 text-xs leading-5 text-[#6c6355]">Create and edit the WhatsApp message templates.</p>
+                      </div>
+                    </button>
                   </div>
                 </div>
               )}
