@@ -4,14 +4,12 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
-  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
-  Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
+  Layers, LayoutGrid, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
+  Save, Search, Send, StickyNote, Target, Trash2, Users, X
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
-import { useAuth } from "../../auth/useAuth";
-import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
@@ -172,68 +170,6 @@ function KpiChip({ label, value, icon: Icon }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink }) {
-  const [query, setQuery] = useState("");
-  const linkedIds = new Set(
-    [...(Array.isArray(company.userIds) ? company.userIds : []), company.userId].filter(Boolean).map(String)
-  );
-  const linkedUsers = clients.filter((u) => linkedIds.has(String(u._id)));
-  const filtered = clients.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
-
-  return (
-    <SidePanel
-      title="Link Client Portal Accounts"
-      subtitle={`Connect one or more client logins to ${company.name} so project and timeline updates appear in their portals.`}
-      onClose={onClose}
-    >
-      <div className="space-y-4">
-        {linkedUsers.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Currently Linked ({linkedUsers.length})</p>
-            {linkedUsers.map((user) => (
-              <div key={user._id} className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                <div>
-                  <p className="text-sm font-semibold text-[#111827]">{user.name}</p>
-                  <p className="text-xs text-[#6b7280]">{user.email}</p>
-                </div>
-                <Button variant="secondary" onClick={() => onUnlink(user)}><Unlink size={14} /> Unlink</Button>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="flex h-10 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-          <Search size={14} className="text-[#9ca3af]" />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client accounts by name or email" className="w-full bg-transparent text-sm outline-none" />
-        </div>
-        {loading ? (
-          <p className="text-sm text-[#6b7280]">Loading client accounts…</p>
-        ) : filtered.length ? (
-          <div className="max-h-96 space-y-2 overflow-y-auto">
-            {filtered.map((user) => {
-              const isLinked = linkedIds.has(String(user._id));
-              return (
-                <button
-                  key={user._id}
-                  onClick={() => (isLinked ? onUnlink(user) : onLink(user))}
-                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${isLinked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
-                >
-                  <div>
-                    <p className="font-semibold text-[#111827]">{user.name}</p>
-                    <p className="text-xs text-[#6b7280]">{user.email}</p>
-                  </div>
-                  {isLinked && <CheckCircle2 size={16} className="text-[#884c2d]" />}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-sm text-[#6b7280]">No client accounts found. Add an email to a contact, then reopen this panel.</p>
-        )}
-      </div>
-    </SidePanel>
   );
 }
 
@@ -550,7 +486,6 @@ export default function CompanyDetail() {
   const { companyId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("Projects");
   const [creatingProject, setCreatingProject] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -560,9 +495,6 @@ export default function CompanyDetail() {
   const [selectedContact, setSelectedContact] = useState(null);
   const [contactQuery, setContactQuery] = useState("");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [linkingClient, setLinkingClient] = useState(false);
-  const [clientUsers, setClientUsers] = useState([]);
-  const [loadingClients, setLoadingClients] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
   const [viewingFolder, setViewingFolder] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
@@ -625,21 +557,6 @@ export default function CompanyDetail() {
     const fullName = `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""}`;
     return `${fullName} ${contact.email} ${contact.phone} ${contact.designation}`.toLowerCase().includes(contactQuery.toLowerCase());
   }), [contactQuery, linked.contacts]);
-
-  useEffect(() => {
-    if (!linkingClient) return;
-    let alive = true;
-    apiGet("/api/admin/clients", token)
-      .then((users) => { if (alive) setClientUsers(Array.isArray(users) ? users : []); })
-      .catch(() => { if (alive) setClientUsers([]); })
-      .finally(() => { if (alive) setLoadingClients(false); });
-    return () => { alive = false; };
-  }, [linkingClient, token]);
-
-  function openLinkClient() {
-    setLoadingClients(true);
-    setLinkingClient(true);
-  }
 
   if (!company && companiesLoading) {
     return (
@@ -750,24 +667,6 @@ export default function CompanyDetail() {
       contact: contact.name || company.contact,
     });
     showToast({ title: "Primary contact updated", message: `${contact.name || contact.email} is now the primary contact.` });
-  }
-
-  function linkedClientIds(target = company) {
-    const ids = Array.isArray(target.userIds) ? target.userIds.map(String) : [];
-    if (target.userId && !ids.includes(String(target.userId))) ids.push(String(target.userId));
-    return ids;
-  }
-
-  async function handleLinkClient(user) {
-    const ids = Array.from(new Set([...linkedClientIds(), String(user._id)]));
-    await saveCompany({ ...company, userId: ids[0], userIds: ids });
-    showToast({ title: "Client account linked", message: `${company.name} is now connected to ${user.email}. Projects and updates will sync to their portal.` });
-  }
-
-  async function handleUnlinkClient(user) {
-    const ids = linkedClientIds().filter((id) => id !== String(user._id));
-    await saveCompany({ ...company, userId: ids[0] || null, userIds: ids });
-    showToast({ title: "Client account unlinked", message: `${user.email} can no longer access ${company.name}'s portal.` });
   }
 
   async function handleSaveCompanyEdit(form) {
@@ -927,12 +826,6 @@ export default function CompanyDetail() {
                   <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
                 </div>
               )}
-              <Button
-                variant={linkedClientIds().length ? "secondary" : "primary"}
-                onClick={openLinkClient}
-              >
-                <LinkIcon size={14} /> {linkedClientIds().length ? `${linkedClientIds().length} Client${linkedClientIds().length > 1 ? "s" : ""} Linked` : "Link Client Portal"}
-              </Button>
               <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
               <div className="relative" ref={addMenuRef}>
                 <Button onClick={() => setAddMenuOpen((open) => !open)}><Plus size={14} /> Add New</Button>
@@ -1079,16 +972,6 @@ export default function CompanyDetail() {
       {editingNote && <NotePanel company={company} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
       {selectedContact && <ContactDetailPanel contact={selectedContact} projects={linked.projects} meetings={linked.meetings} onClose={() => setSelectedContact(null)} onEdit={(contact) => { setSelectedContact(null); setEditingContact(contact); }} onDelete={handleDeleteContact} onPrimary={handleMakePrimary} />}
       {selectedInvoice && <InvoicePanel invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} onDownload={downloadInvoicePdf} onMarkPaid={handleMarkInvoicePaid} />}
-      {linkingClient && (
-        <LinkClientPanel
-          company={company}
-          clients={clientUsers}
-          loading={loadingClients}
-          onClose={() => setLinkingClient(false)}
-          onLink={handleLinkClient}
-          onUnlink={handleUnlinkClient}
-        />
-      )}
       {creatingTask && (
         <TaskPanel
           company={company}

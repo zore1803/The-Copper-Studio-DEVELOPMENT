@@ -10,7 +10,12 @@ const schema = new mongoose.Schema(
     phone: { type: String, trim: true, default: "" },
     designation: { type: String, trim: true, default: "" },
     department: { type: String, default: "" },
-    notes: { type: String, default: "" }
+    notes: { type: String, default: "" },
+    // A contact can be given their own client-portal login (`userId`) and
+    // scoped to specific projects (`projectIds`) instead of seeing everything
+    // under their company.
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    projectIds: { type: [mongoose.Schema.Types.ObjectId], ref: "Project", default: [] }
   },
   { timestamps: true, strict: false }
 );
@@ -25,6 +30,8 @@ export default defineModel({
     phone: "",
     designation: "",
     department: "",
-    notes: ""
+    notes: "",
+    userId: null,
+    projectIds: []
   }
 });
