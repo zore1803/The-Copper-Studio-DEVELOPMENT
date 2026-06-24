@@ -707,9 +707,9 @@ export default function Companies() {
               <Filter size={16} />
             </button>
             {filtersOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-lg">
+              <div className="absolute right-0 z-20 mt-2 w-[640px] max-w-[90vw] rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-lg">
                 <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Filters</p>
-                <div className="max-h-[60vh] space-y-3 overflow-y-auto">
+                <div className="grid max-h-[60vh] grid-cols-3 gap-3 overflow-y-auto">
                   <label className="block">
                     <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
                     <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
