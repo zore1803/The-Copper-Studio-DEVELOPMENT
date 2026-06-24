@@ -92,6 +92,22 @@ function formatCurrency(value) {
   }).format(value);
 }
 
+let toastTimer;
+function showToast(message, type = "error") {
+  let toast = document.getElementById("appToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "appToast";
+    document.body.appendChild(toast);
+  }
+  toast.className = `app-toast app-toast-${type}`;
+  toast.textContent = message;
+  // Re-trigger the transition even if the same message fires twice in a row.
+  requestAnimationFrame(() => toast.classList.add("is-visible"));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 4200);
+}
+
 // ISO country codes paired with their dial code; flags are derived from the
 // ISO code so this list doesn't need to carry emoji literals.
 const COUNTRY_DIAL_CODES = [
@@ -423,7 +439,7 @@ function renderCheckoutPage() {
         });
 
         if (!result.sent && !result.devCode) {
-          alert(`We couldn't send the OTP ${result.via === "sms" ? "SMS" : "email"} right now. Please try again in a moment or contact support.`);
+          showToast(`We couldn't send the OTP ${result.via === "sms" ? "SMS" : "email"} right now. Please try again in a moment or contact support.`);
           return;
         }
 
@@ -437,7 +453,7 @@ function renderCheckoutPage() {
           console.info(`[dev only] OTP for ${type}:`, result.devCode);
         }
       } catch (error) {
-        alert(error.message);
+        showToast(error.message);
       } finally {
         button.disabled = false;
         button.textContent = originalText;
@@ -451,7 +467,7 @@ function renderCheckoutPage() {
       const input = document.querySelector(`[data-otp-input="${type}"]`);
       const code = input.value.trim();
       if (!code) {
-        alert("Please enter the OTP that was sent to you.");
+        showToast("Please enter the OTP that was sent to you.");
         return;
       }
 
@@ -465,9 +481,10 @@ function renderCheckoutPage() {
         order.verified[type] = true;
         saveOrder(order);
         updateVerificationUI();
+        showToast(`${type === "phone" ? "Mobile number" : "Email"} verified.`, "success");
       } catch (error) {
         input.value = "";
-        alert(error.message);
+        showToast(error.message);
       } finally {
         button.disabled = false;
       }
@@ -480,7 +497,7 @@ function renderCheckoutPage() {
     if (!form.reportValidity()) return;
 
     if (!order.verified.phone || !order.verified.email) {
-      alert("Please verify both mobile number and email OTP before continuing to Razorpay.");
+      showToast("Please verify both mobile number and email OTP before continuing to Razorpay.");
       return;
     }
 
@@ -611,7 +628,7 @@ function renderPaymentPage() {
       button.disabled = false;
       button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
       if (gatewayNote) gatewayNote.textContent = error.message;
-      alert(error.message);
+      showToast(error.message);
     }
   });
 }

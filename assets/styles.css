@@ -1524,3 +1524,54 @@ select:focus {
     min-width: 0;
   }
 }
+
+.app-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 360px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px rgba(54, 47, 44, 0.18);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.app-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.app-toast::before {
+  content: "";
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.app-toast-error {
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.app-toast-error::before {
+  background: var(--danger);
+}
+
+.app-toast-success::before {
+  background: var(--success);
+}

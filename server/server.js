@@ -166,6 +166,7 @@ async function ensureContactForOrder(order, company) {
     name: customer.customerName || `${customer.firstName || ""} ${customer.lastName || ""}`.trim(),
     email,
     phone: fullPhone,
+    designation: customer.designation || "",
     company: company?.name || customer.customerCompany || "",
     companyId: company?._id || null,
     linkedin: customer.linkedinUrl || "",
