@@ -38,3 +38,7 @@ services:
         sync: false
       - key: FAST2SMS_API_KEY
         sync: false
+      - key: SENDER_ID
+        sync: false
+      - key: DLT_TEMPLATE_ID
+        sync: false

@@ -14,15 +14,36 @@ export async function sendSmsOtp({ phone, code }) {
   const digits = String(phone || "").replace(/\D/g, "");
   if (digits.length !== 10) return { skipped: true, reason: "invalid_phone" };
 
+  // Route selection:
+  //  - "dlt": uses a template registered in the Fast2SMS DLT Manager. SENDER_ID
+  //    is the approved header and DLT_TEMPLATE_ID is the Fast2SMS "Message ID"
+  //    (e.g. 204838). Fast2SMS fills the OTP into its own stored approved
+  //    template, so we never hand-build the message text.
+  //  - "otp": Fast2SMS's own pre-approved OTP template (fallback).
+  const senderId = process.env.SENDER_ID;
+  const messageId = process.env.DLT_TEMPLATE_ID;
+  const useDlt = Boolean(senderId && messageId);
+
+  const body = useDlt
+    ? {
+        route: "dlt",
+        sender_id: senderId,
+        message: messageId,
+        variables_values: code,
+        numbers: digits,
+        flash: 0
+      }
+    : {
+        route: "otp",
+        variables_values: code,
+        numbers: digits,
+        flash: 0
+      };
+
   const response = await fetch(FAST2SMS_URL, {
     method: "POST",
     headers: { authorization: apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      route: "otp",
-      variables_values: code,
-      numbers: digits,
-      flash: 0
-    })
+    body: JSON.stringify(body)
   });
 
   const data = await response.json().catch(() => ({}));
@@ -32,5 +53,10 @@ export async function sendSmsOtp({ phone, code }) {
     error.statusCode = 502;
     throw error;
   }
-  return { skipped: false, provider: "fast2sms" };
+  return {
+    skipped: false,
+    provider: "fast2sms",
+    route: useDlt ? "dlt" : "otp",
+    requestId: data.request_id
+  };
 }
