@@ -347,10 +347,10 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
           />
         </div>
 
-        <div className="rounded-xl bg-[#EBE1D8] p-5 shadow-sm">
+        <div className="rounded-xl bg-white p-5 shadow-sm border border-[#e5e7eb]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-[#2b211c]">Project Stages</h3>
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm">
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm border border-[#EBE1D8]">
               <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#884c2d]">i</span>
               Client Visible
             </span>
@@ -358,7 +358,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
 
           <div className="space-y-4">
             {form.stages.map((stage, index) => (
-              <div key={index} className="flex flex-col gap-3 rounded-2xl bg-[#F2EAE3] p-4 shadow-sm border border-[#EBE1D8]/50">
+              <div key={index} className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-[#e5e7eb]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#3B2818] text-xs font-bold text-white shadow-sm">
                     {index + 1}
@@ -368,12 +368,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Phase Name"
                     value={stage.name || ""}
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="w-36 rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>
@@ -400,7 +400,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                       type="date"
                       value={stage.startDate || ""}
                       onChange={(e) => updateStage(index, "startDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
                   </div>
                   <div>
@@ -409,7 +409,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                       type="date"
                       value={stage.endDate || ""}
                       onChange={(e) => updateStage(index, "endDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
                   </div>
                 </div>
@@ -420,7 +420,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Stage notes (visible to client)..."
                     value={stage.notes || ""}
                     onChange={(e) => updateStage(index, "notes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
                   />
                 </div>
 
@@ -439,17 +439,17 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Internal notes (hidden from client)..."
                     value={stage.internalNotes || ""}
                     onChange={(e) => updateStage(index, "internalNotes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-[#f9fafb] px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
                   />
                 </div>
               </div>
             ))}
             {!form.stages.length && (
-              <p className="rounded-lg border border-dashed border-[#8B7C71] bg-white/40 px-3 py-4 text-center text-xs text-[#5C4A3D]">No stages yet. Add one to start tracking progress.</p>
+              <p className="rounded-lg border border-dashed border-[#8B7C71] bg-[#f3f4f6] px-3 py-4 text-center text-xs text-[#5C4A3D]">No stages yet. Add one to start tracking progress.</p>
             )}
           </div>
 
-          <button type="button" onClick={addStage} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#8B7C71] py-3 text-sm font-bold text-[#5C4A3D] hover:bg-white/40 transition-colors">
+          <button type="button" onClick={addStage} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#8B7C71] py-3 text-sm font-bold text-[#5C4A3D] hover:bg-[#f3f4f6] transition-colors">
             + Add Stage
           </button>
         </div>
