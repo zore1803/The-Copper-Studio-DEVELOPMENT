@@ -215,6 +215,14 @@ export default function ContactDetail() {
     .map((item) => ({ ...item, sortDate: new Date(item.date || 0), dateLabel: formatDate(item.date) }))
     .sort((a, b) => b.sortDate - a.sortDate);
 
+  const tabCounts = {
+    Projects: linkedProjects.length,
+    Meetings: linkedMeetings.length,
+    Documents: linkedDocuments.length,
+    Notes: linkedNotes.length,
+    Activity: activity.length,
+  };
+
   async function handleSave(form) {
     await save(form);
     setEditing(false);
@@ -317,6 +325,15 @@ export default function ContactDetail() {
               className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#1D1E22] hover:text-[#884c2d]"}`}
             >
               {tab}
+              {Boolean(tabCounts[tab]) && (
+                <span
+                  className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
+                    activeTab === tab ? "bg-[#C57E5B] text-white" : "bg-[#e5e7eb] text-[#374151]"
+                  }`}
+                >
+                  {tabCounts[tab]}
+                </span>
+              )}
             </button>
           ))}
         </div>
