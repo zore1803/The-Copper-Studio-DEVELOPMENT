@@ -33,10 +33,13 @@ function ToolbarButton({ onClick, title, children, active = false }) {
 /** Lightweight contentEditable rich-text field with a basic formatting toolbar. */
 export default function RichTextEditor({ label, value, onChange, placeholder = "", span = false }) {
   const ref = useRef(null);
-  const lastValue = useRef(value);
+  // Sentinel, not `value` — initializing this to the incoming value meant the
+  // mount-time sync effect below saw "no change" and never painted the
+  // existing note body into the contentEditable div at all.
+  const lastValue = useRef(undefined);
 
-  // Only push external value changes (e.g. switching notes) into the DOM —
-  // never on every keystroke, or the caret jumps to the start.
+  // Only push external value changes (mount, or switching notes) into the
+  // DOM — never on every keystroke, or the caret jumps to the start.
   useEffect(() => {
     if (ref.current && value !== lastValue.current && document.activeElement !== ref.current) {
       ref.current.innerHTML = value || "";
