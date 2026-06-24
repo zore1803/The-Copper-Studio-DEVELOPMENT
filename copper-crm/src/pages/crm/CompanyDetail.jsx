@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, Building2, Calendar, CheckCircle2, Clock3, CreditCard, Download,
-  Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe,
+  Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe, GripVertical,
   Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
 } from "lucide-react";
@@ -17,6 +17,7 @@ import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
+import RichTextEditor, { isRichTextEmpty } from "../../components/RichTextEditor";
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -678,7 +679,9 @@ export default function CompanyDetail() {
       tasks: tasks.filter((t) => isCompanyMatch(t.companyId) || t.company === name || t.companyName === name || linkedProjectIds.has(String(t.projectId)) || linkedProjectIds.has(String(t.project))),
       meetings: meetings.filter((m) => isCompanyMatch(m.companyId) || m.company === name),
       documents: documents.filter((d) => isCompanyMatch(d.companyId) || d.company === name || d.companyName === name || linkedProjectIds.has(String(d.projectId))),
-      notes: notes.filter((n) => isCompanyMatch(n.companyId) || n.company === name),
+      notes: notes
+        .filter((n) => isCompanyMatch(n.companyId) || n.company === name)
+        .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)),
     };
   }, [company, companyId, contacts, documents, invoices, meetings, notes, projects, tasks]);
   const allDocsForFolders = useMemo(
@@ -869,7 +872,7 @@ export default function CompanyDetail() {
   }
 
   async function handleSaveNote(form) {
-    if (!form.title.trim() && !form.body.trim()) {
+    if (!form.title.trim() && isRichTextEmpty(form.body)) {
       showToast({ type: "error", title: "Note is empty", message: "Add a title or some text before saving." });
       return;
     }
@@ -881,6 +884,15 @@ export default function CompanyDetail() {
   async function handleDeleteNote(note) {
     await removeNote(note);
     showToast({ title: "Note deleted", message: "The note was removed." });
+  }
+
+  async function handleReorderNotes(sourceIndex, destIndex) {
+    const ordered = [...linked.notes];
+    const [moved] = ordered.splice(sourceIndex, 1);
+    ordered.splice(destIndex, 0, moved);
+    await Promise.all(
+      ordered.map((n, index) => (n.order === index ? null : saveNote({ ...n, order: index }))).filter(Boolean)
+    );
   }
 
   async function handleCreateTask(form) {
@@ -1111,7 +1123,7 @@ export default function CompanyDetail() {
           />
         )}
         {activeTab === "Notes" && (
-          <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} />
+          <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} onReorder={handleReorderNotes} />
         )}
         {activeTab === "Meetings" && (
           <MeetingsTab calendlyUrl={company.calendlyUrl} />
@@ -2200,26 +2212,56 @@ function CalendarTaskView({ tasks, onCreate }) {
   );
 }
 
-function NotesTab({ notes, onCreate, onEdit, onDelete }) {
+function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
+  function handleDragEnd(result) {
+    if (!result.destination || result.destination.index === result.source.index) return;
+    onReorder(result.source.index, result.destination.index);
+  }
+
   return (
     <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
       {notes.length ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {notes.map((note) => (
-            <div key={note.id || note._id} className="rounded-xl border border-[#e5e7eb] bg-white p-4">
-              <div className="flex items-start justify-between gap-2">
-                <button type="button" onClick={() => onEdit(note)} className="min-w-0 flex-1 text-left">
-                  <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
-                  <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm text-[#6b7280]">{note.body || "No content."}</p>
-                </button>
-                <button type="button" onClick={() => onDelete(note)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
-                  <Trash2 size={14} />
-                </button>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="notes" direction="horizontal">
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps} className="grid gap-3 sm:grid-cols-2">
+                {notes.map((note, index) => (
+                  <Draggable key={note.id || note._id} draggableId={String(note.id || note._id)} index={index}>
+                    {(prov, snap) => (
+                      <div
+                        ref={prov.innerRef}
+                        {...prov.draggableProps}
+                        className={`rounded-xl border bg-white p-4 transition-shadow ${snap.isDragging ? "border-[#884c2d]/40 shadow-lg" : "border-[#e5e7eb]"}`}
+                        style={prov.draggableProps.style}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span {...prov.dragHandleProps} className="mt-0.5 cursor-grab text-[#d1d5db] hover:text-[#9ca3af] active:cursor-grabbing" title="Drag to reorder">
+                            <GripVertical size={14} />
+                          </span>
+                          <button type="button" onClick={() => onEdit(note)} className="min-w-0 flex-1 text-left">
+                            <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
+                            <div
+                              className="mt-1 line-clamp-3 text-sm text-[#6b7280] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+                              dangerouslySetInnerHTML={{ __html: note.body || "No content." }}
+                            />
+                          </button>
+                          <button type="button" onClick={() => onDelete(note)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                          Created {formatDate(note.createdAt)}
+                          {note.updatedAt && note.updatedAt !== note.createdAt ? ` · Updated ${formatDate(note.updatedAt)}` : ""}
+                        </p>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{formatDateTime(note.updatedAt || note.createdAt)}</p>
-            </div>
-          ))}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       ) : (
         <EmptyState icon={StickyNote} title="No notes yet." action={<Button onClick={onCreate}><Plus size={14} /> Add Note</Button>} />
       )}
@@ -2245,7 +2287,7 @@ function NotePanel({ company, note, onClose, onSave }) {
     >
       <div className="space-y-4">
         <Input span label="Title" value={form.title} onChange={set("title")} placeholder="e.g. Pricing discussion" />
-        <Textarea span label="Note" value={form.body} onChange={set("body")} />
+        <RichTextEditor span label="Note" value={form.body} onChange={set("body")} placeholder="Write a note…" />
       </div>
     </SidePanel>
   );

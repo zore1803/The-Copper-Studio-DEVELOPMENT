@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   Building2, Calendar, CheckCircle2, ChevronLeft, Clock3, FileText, FolderKanban,
-  Globe, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, StickyNote, Trash2, Users
+  Globe, GripVertical, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, StickyNote, Trash2, Users
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -10,6 +11,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
+import RichTextEditor, { isRichTextEmpty } from "../../components/RichTextEditor";
 import { contactFullName } from "../../lib/contacts";
 
 function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave }) {
@@ -80,20 +82,6 @@ function NoteInput({ label, value, onChange, placeholder }) {
   );
 }
 
-function NoteTextarea({ label, value, onChange }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
-      <textarea
-        value={value || ""}
-        rows={5}
-        onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-      />
-    </label>
-  );
-}
-
 function NotePanel({ contact, note, onClose, onSave }) {
   const [form, setForm] = useState(note || { title: "", body: "" });
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -112,7 +100,7 @@ function NotePanel({ contact, note, onClose, onSave }) {
     >
       <div className="space-y-4">
         <NoteInput label="Title" value={form.title} onChange={set("title")} placeholder="e.g. Pricing discussion" />
-        <NoteTextarea label="Note" value={form.body} onChange={set("body")} />
+        <RichTextEditor label="Note" value={form.body} onChange={set("body")} placeholder="Write a note…" />
       </div>
     </SidePanel>
   );
@@ -312,7 +300,7 @@ export default function ContactDetail() {
   const linkedMeetings = meetings.filter(matchesClient);
   const linkedDocuments = documents.filter(matchesClient);
   const linkedTasks = tasks.filter(matchesClient);
-  const linkedNotes = notes.filter(matchesClient);
+  const linkedNotes = notes.filter(matchesClient).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
   const openTasks = linkedTasks.filter((t) => !["completed", "done"].includes(String(t.status || "").toLowerCase())).length;
 
   const activity = [
@@ -345,7 +333,7 @@ export default function ContactDetail() {
   }
 
   async function handleSaveNote(form) {
-    if (!form.title?.trim() && !form.body?.trim()) {
+    if (!form.title?.trim() && isRichTextEmpty(form.body)) {
       showToast({ type: "error", title: "Note is empty", message: "Add a title or some text before saving." });
       return;
     }
@@ -357,6 +345,15 @@ export default function ContactDetail() {
   async function handleDeleteNote(note) {
     await removeNote(note);
     showToast({ title: "Note deleted", message: "The note was removed." });
+  }
+
+  async function handleReorderNotes(sourceIndex, destIndex) {
+    const ordered = [...linkedNotes];
+    const [moved] = ordered.splice(sourceIndex, 1);
+    ordered.splice(destIndex, 0, moved);
+    await Promise.all(
+      ordered.map((n, index) => (n.order === index ? null : saveNote({ ...n, order: index }))).filter(Boolean)
+    );
   }
 
   async function handleSaveProjectAccess(projectIds) {
@@ -603,22 +600,54 @@ export default function ContactDetail() {
                 </div>
               </div>
             )}
-            {linkedNotes.map((n) => (
-              <div key={n._id || n.id} className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-                <div className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
-                  <button type="button" onClick={() => setEditingNote(n)} className="min-w-0 flex-1 text-left">
-                    <p className="text-sm font-bold text-gray-700">{n.title || "Note"}</p>
-                  </button>
-                  <button type="button" onClick={() => handleDeleteNote(n)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <div className="p-5">
-                <p className="text-sm text-gray-600 whitespace-pre-wrap">{n.body || n.text || ""}</p>
-                <p className="mt-2 text-xs text-gray-400">{formatDate(n.createdAt)}</p>
-                </div>
-              </div>
-            ))}
+            {linkedNotes.length > 0 && (
+              <DragDropContext onDragEnd={(result) => {
+                if (!result.destination || result.destination.index === result.source.index) return;
+                handleReorderNotes(result.source.index, result.destination.index);
+              }}>
+                <Droppable droppableId="contact-notes">
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
+                      {linkedNotes.map((n, index) => (
+                        <Draggable key={n._id || n.id} draggableId={String(n._id || n.id)} index={index}>
+                          {(prov, snap) => (
+                            <div
+                              ref={prov.innerRef}
+                              {...prov.draggableProps}
+                              className={`overflow-hidden rounded-xl border bg-white transition-shadow ${snap.isDragging ? "border-[#884c2d]/40 shadow-lg" : "border-[#e5e7eb]"}`}
+                              style={prov.draggableProps.style}
+                            >
+                              <div className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
+                                <span {...prov.dragHandleProps} className="mr-2 cursor-grab text-[#d1d5db] hover:text-[#9ca3af] active:cursor-grabbing" title="Drag to reorder">
+                                  <GripVertical size={14} />
+                                </span>
+                                <button type="button" onClick={() => setEditingNote(n)} className="min-w-0 flex-1 text-left">
+                                  <p className="text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+                                </button>
+                                <button type="button" onClick={() => handleDeleteNote(n)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                              <div className="p-5">
+                                <div
+                                  className="text-sm text-gray-600 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                                  dangerouslySetInnerHTML={{ __html: n.body || n.text || "" }}
+                                />
+                                <p className="mt-2 text-xs text-gray-400">
+                                  Created {formatDate(n.createdAt)}
+                                  {n.updatedAt && n.updatedAt !== n.createdAt ? ` · Updated ${formatDate(n.updatedAt)}` : ""}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </DragDropContext>
+            )}
           </div>
         )}
 
