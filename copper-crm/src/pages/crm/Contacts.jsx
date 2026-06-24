@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Eye, Filter, Folder as FolderIcon,
   FolderOpen, FolderPlus, Grid2x2, Edit2, List, Mail, MessageCircle, MoreVertical, Phone, Plus,
@@ -330,12 +330,22 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
 
 export default function Contacts() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(() => (location.state?.openCreate
+    ? { salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" }
+    : null));
   const { records: contacts, save, remove, loading } = useCrmRecords("contacts");
   const { records: companies } = useCrmRecords("companies");
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [view, setView] = useState("table");
   const [filtersOpen, setFiltersOpen] = useState(false);

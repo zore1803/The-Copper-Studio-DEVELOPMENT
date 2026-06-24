@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -58,9 +58,10 @@ const PROJECT_STATUS_OPTIONS = [
 
 export default function ProjectsList() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: projects, loading, save, update } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
@@ -68,6 +69,13 @@ export default function ProjectsList() {
   const { save: saveTask } = useCrmRecords("tasks");
 
   const [statusFilter, setStatusFilter] = useState("All");
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const computedProjects = useMemo(() => {
     return projects.map((p) => {

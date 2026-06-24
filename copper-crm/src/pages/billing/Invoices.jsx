@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Download, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -75,12 +76,21 @@ function InvoiceModal({ companies, onClose, onSave }) {
 }
 
 export default function Invoices() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filtered = useMemo(() => invoices.filter((invoice) => {
     const invoiceStatus = invoice.status || "Draft";
