@@ -764,7 +764,7 @@ export default function Companies() {
           <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
-                <thead className="bg-[#F5F7FA] border-b border-[#E1E4EA]">
+                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                   <tr>
                     <th className="px-3 py-3 w-12">
                       <input type="checkbox" className="rounded border-[#d1d5db] accent-[#884c2d]" />

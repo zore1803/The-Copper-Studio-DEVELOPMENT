@@ -149,7 +149,7 @@ export default function Invoices() {
         {filtered.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-[#fafafa]">
+              <thead className="bg-[#fff1ec]">
                 <tr className="text-left text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
                   {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3">{head}</th>)}
                 </tr>
