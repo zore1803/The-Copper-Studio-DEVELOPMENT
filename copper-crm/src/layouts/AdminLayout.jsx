@@ -363,6 +363,21 @@ export default function AdminLayout() {
         className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
+        {/* Logo */}
+        <div className={`flex items-center border-b border-[#ECECEC] ${collapsed ? "justify-center px-0 py-4" : "px-4 py-4"}`}>
+          {collapsed ? (
+            <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-9 w-9 rounded-lg object-cover" />
+          ) : (
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-[#211a17] truncate">The Copper Studio</p>
+                <p className="text-[10px] text-[#9ca3af] truncate">CRM</p>
+              </div>
+            </div>
+          )}
+        </div>
+
         <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
