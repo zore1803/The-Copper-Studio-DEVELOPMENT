@@ -13,6 +13,7 @@ import { useToast } from "../../components/useToast";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
+import { isSameLocalDay } from "../../lib/dates";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
@@ -2213,6 +2214,9 @@ function CalendarTaskView({ tasks, onCreate }) {
 }
 
 function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
+  const [dateFilter, setDateFilter] = useState("");
+  const visibleNotes = dateFilter ? notes.filter((n) => isSameLocalDay(n.createdAt, dateFilter)) : notes;
+
   function handleDragEnd(result) {
     if (!result.destination || result.destination.index === result.source.index) return;
     onReorder(result.source.index, result.destination.index);
@@ -2220,13 +2224,27 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
 
   return (
     <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
-      {notes.length ? (
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-xs font-semibold text-[#6b7280]">Filter by date</span>
+        <input
+          type="date"
+          value={dateFilter}
+          onChange={(event) => setDateFilter(event.target.value)}
+          className="rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        />
+        {dateFilter && (
+          <button type="button" onClick={() => setDateFilter("")} className="rounded-lg px-2 py-1 text-xs font-semibold text-[#884c2d] hover:bg-[#fff1ec]">
+            Clear
+          </button>
+        )}
+      </div>
+      {visibleNotes.length ? (
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="notes" direction="horizontal">
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps} className="grid gap-3 sm:grid-cols-2">
-                {notes.map((note, index) => (
-                  <Draggable key={note.id || note._id} draggableId={String(note.id || note._id)} index={index}>
+                {visibleNotes.map((note, index) => (
+                  <Draggable key={note.id || note._id} draggableId={String(note.id || note._id)} index={index} isDragDisabled={Boolean(dateFilter)}>
                     {(prov, snap) => (
                       <div
                         ref={prov.innerRef}
@@ -2262,6 +2280,8 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
             )}
           </Droppable>
         </DragDropContext>
+      ) : dateFilter ? (
+        <EmptyState icon={StickyNote} title="No notes on this date." action={<Button variant="secondary" onClick={() => setDateFilter("")}>Clear filter</Button>} />
       ) : (
         <EmptyState icon={StickyNote} title="No notes yet." action={<Button onClick={onCreate}><Plus size={14} /> Add Note</Button>} />
       )}

@@ -32,3 +32,13 @@ export function formatRange(start, end) {
 export function daysBetween(start, end) {
   return Math.round((end - start) / DAY_MS);
 }
+
+// Same-calendar-day check against a "YYYY-MM-DD" filter value, in the
+// browser's local timezone (matches what <input type="date"> produces).
+export function isSameLocalDay(value, yyyyMmDd) {
+  if (!yyyyMmDd) return true;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  const local = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return local === yyyyMmDd;
+}

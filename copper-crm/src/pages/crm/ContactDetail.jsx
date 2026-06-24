@@ -12,6 +12,7 @@ import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import RichTextEditor, { isRichTextEmpty } from "../../components/RichTextEditor";
+import { isSameLocalDay } from "../../lib/dates";
 import { contactFullName } from "../../lib/contacts";
 
 function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave }) {
@@ -257,6 +258,7 @@ export default function ContactDetail() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [editing, setEditing] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
+  const [noteDateFilter, setNoteDateFilter] = useState("");
   const [managingAccess, setManagingAccess] = useState(false);
 
   const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
@@ -584,6 +586,22 @@ export default function ContactDetail() {
               <p className="text-sm font-bold text-gray-700">Notes</p>
               <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Add Note</Button>
             </div>
+            {linkedNotes.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-[#6b7280]">Filter by date</span>
+                <input
+                  type="date"
+                  value={noteDateFilter}
+                  onChange={(event) => setNoteDateFilter(event.target.value)}
+                  className="rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                />
+                {noteDateFilter && (
+                  <button type="button" onClick={() => setNoteDateFilter("")} className="rounded-lg px-2 py-1 text-xs font-semibold text-[#884c2d] hover:bg-[#fff1ec]">
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
             {!linkedNotes.length && (
               <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
                 <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
@@ -600,7 +618,17 @@ export default function ContactDetail() {
                 </div>
               </div>
             )}
-            {linkedNotes.length > 0 && (
+            {linkedNotes.length > 0 && (() => {
+              const visibleNotes = noteDateFilter ? linkedNotes.filter((n) => isSameLocalDay(n.createdAt, noteDateFilter)) : linkedNotes;
+              if (!visibleNotes.length) {
+                return (
+                  <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-6 text-center">
+                    <p className="text-sm text-gray-500">No notes on this date.</p>
+                    <Button variant="secondary" className="mt-3" onClick={() => setNoteDateFilter("")}>Clear filter</Button>
+                  </div>
+                );
+              }
+              return (
               <DragDropContext onDragEnd={(result) => {
                 if (!result.destination || result.destination.index === result.source.index) return;
                 handleReorderNotes(result.source.index, result.destination.index);
@@ -608,8 +636,8 @@ export default function ContactDetail() {
                 <Droppable droppableId="contact-notes">
                   {(provided) => (
                     <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
-                      {linkedNotes.map((n, index) => (
-                        <Draggable key={n._id || n.id} draggableId={String(n._id || n.id)} index={index}>
+                      {visibleNotes.map((n, index) => (
+                        <Draggable key={n._id || n.id} draggableId={String(n._id || n.id)} index={index} isDragDisabled={Boolean(noteDateFilter)}>
                           {(prov, snap) => (
                             <div
                               ref={prov.innerRef}
@@ -647,7 +675,8 @@ export default function ContactDetail() {
                   )}
                 </Droppable>
               </DragDropContext>
-            )}
+              );
+            })()}
           </div>
         )}
 
