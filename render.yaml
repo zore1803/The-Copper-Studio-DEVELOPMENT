@@ -28,15 +28,11 @@ services:
         sync: false
       - key: SUPERADMIN_NAME
         value: Super Admin
-      - key: SMTP_HOST
-        value: smtp.gmail.com
-      - key: SMTP_PORT
-        value: 587
-      - key: SMTP_SECURE
-        value: false
-      - key: SMTP_USER
+      - key: SENDGRID_API_KEY
         sync: false
-      - key: SMTP_PASS
+      - key: MAIL_FROM_EMAIL
         sync: false
-      - key: MAIL_FROM
-        value: DataCircles CRM <your-email@gmail.com>
+      - key: MAIL_FROM_NAME
+        value: The Copper Studio
+      - key: CONTACT_NOTIFY_EMAIL
+        sync: false

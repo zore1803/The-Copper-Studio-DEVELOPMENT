@@ -160,7 +160,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       showToast(result?.alreadyActive
         ? { title: "Client already has access", message: `${email} has already set a password — no email sent.` }
         : result?.emailSkipped
-          ? { type: "error", title: "Setup email not sent", message: "SMTP is not configured, so no setup email was sent." }
+          ? { type: "error", title: "Setup email not sent", message: "SendGrid is not configured, so no setup email was sent." }
           : { title: "Portal invite sent", message: `${email} will get a secure link to set their password.` });
     } catch (err) {
       showToast({ type: "error", title: "Invite not sent", message: err.message || "Could not send the portal invite." });
