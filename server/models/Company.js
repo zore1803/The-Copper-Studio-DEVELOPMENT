@@ -23,7 +23,11 @@ const schema = new mongoose.Schema(
     address: { type: String, default: "" },
     website: { type: String, default: "" },
     notes: { type: String, default: "" },
+    // `userId` is kept for backward compatibility with older records; `userIds`
+    // is the source of truth and supports linking several client portal
+    // accounts (e.g. multiple contacts) to one company.
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    userIds: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] },
     activity: [activitySchema]
   },
   { timestamps: true, strict: false }
@@ -43,6 +47,7 @@ export default defineModel({
     website: "",
     notes: "",
     userId: null,
+    userIds: [],
     activity: []
   }
 });

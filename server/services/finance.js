@@ -30,7 +30,9 @@ function paymentIdFor(order) {
 async function findLinkedCompany(order, clientId) {
   const companyName = order.customer?.customerCompany?.trim();
   if (clientId) {
-    const company = await Company.findOne({ userId: clientId }).select("_id name userId").catch(() => null);
+    const id = String(clientId);
+    const companies = await Company.find({}).select("_id name userId userIds").catch(() => []);
+    const company = companies.find((c) => String(c.userId || "") === id || (c.userIds || []).map(String).includes(id));
     if (company) return company;
   }
   if (!companyName) return null;

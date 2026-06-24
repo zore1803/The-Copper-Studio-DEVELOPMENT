@@ -91,14 +91,20 @@ async function expireOldCoupons() {
 
 async function withClientLink(type, payload) {
   if (!companyLinkedTypes.has(type) || !payload.companyId || payload.clientId) return payload;
-  const company = await Company.findById(payload.companyId).select("userId").catch(() => null);
-  if (company?.userId) return { ...payload, clientId: company.userId };
+  const company = await Company.findById(payload.companyId).select("userId userIds").catch(() => null);
+  const primaryClientId = company?.userIds?.[0] || company?.userId;
+  if (primaryClientId) return { ...payload, clientId: primaryClientId };
   return payload;
 }
 
-async function cascadeClientLink(companyId, userId) {
+// A record's `clientId` only tracks one "primary" client account for legacy
+// admin views — actual client-portal visibility for companies with several
+// linked accounts is resolved by company membership (see routes/client.js),
+// not by this field, so we just keep it pointed at the first linked user.
+async function cascadeClientLink(companyId, userIds) {
+  const primaryClientId = (Array.isArray(userIds) ? userIds[0] : userIds) || null;
   const filter = { companyId };
-  const update = { $set: { clientId: userId || null } };
+  const update = { $set: { clientId: primaryClientId } };
   await Promise.all([
     Project.updateMany(filter, update),
     Document.updateMany(filter, update),
@@ -140,8 +146,8 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
     payload = await withClientLink(type, payload);
     const record = await Model.findByIdAndUpdate(req.params.id, payload, { new: true });
     if (!record) return res.status(404).json({ message: "CRM record not found." });
-    if (type === "companies" && Object.prototype.hasOwnProperty.call(payload, "userId")) {
-      await cascadeClientLink(record._id, payload.userId);
+    if (type === "companies" && (Object.prototype.hasOwnProperty.call(payload, "userId") || Object.prototype.hasOwnProperty.call(payload, "userIds"))) {
+      await cascadeClientLink(record._id, record.userIds?.length ? record.userIds : record.userId);
     }
     res.json(asPublicRecord(record));
   } catch (error) {

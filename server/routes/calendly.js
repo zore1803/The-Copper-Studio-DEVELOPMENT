@@ -45,7 +45,9 @@ function verifySignature(req) {
 async function matchClient(email) {
   const user = await User.findOne({ email: String(email || "").toLowerCase() });
   if (!user) return { clientId: null, companyId: null };
-  const company = await Company.findOne({ userId: user._id }).select("_id");
+  const companies = await Company.find({}).select("_id userId userIds");
+  const id = String(user._id);
+  const company = companies.find((c) => String(c.userId || "") === id || (c.userIds || []).map(String).includes(id));
   return { clientId: user._id, companyId: company?._id || null };
 }
 

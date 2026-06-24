@@ -6,11 +6,31 @@ import Project from "../models/Project.js";
 import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
 import Task from "../models/Task.js";
+import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
 
 router.use(requireAuth);
+
+// A company can have several portal accounts linked to it (e.g. multiple
+// contacts at the same client), so a logged-in client's visible records are
+// everything tagged with their own `clientId` PLUS everything under any
+// company they're linked to via `userIds` (or the legacy single `userId`).
+async function resolveClientCompanyIds(clientId) {
+  const companies = await Company.find({}).select("userId userIds");
+  const id = String(clientId);
+  return companies
+    .filter((c) => String(c.userId || "") === id || (c.userIds || []).map(String).includes(id))
+    .map((c) => String(c._id));
+}
+
+async function visibilityFilter(clientId) {
+  const companyIds = await resolveClientCompanyIds(clientId);
+  return companyIds.length
+    ? { $or: [{ clientId }, { companyId: { $in: companyIds } }] }
+    : { clientId };
+}
 
 function publicUser(user) {
   return {
@@ -89,7 +109,8 @@ router.get("/orders", async (req, res, next) => {
 
 router.get("/projects", async (req, res, next) => {
   try {
-    const projects = await Project.find({ clientId: req.auth.sub }).sort({ createdAt: -1 });
+    const filter = await visibilityFilter(req.auth.sub);
+    const projects = await Project.find(filter).sort({ createdAt: -1 });
     res.json(projects);
   } catch (error) {
     next(error);
@@ -98,7 +119,8 @@ router.get("/projects", async (req, res, next) => {
 
 router.get("/projects/:id/tasks", async (req, res, next) => {
   try {
-    const project = await Project.findOne({ _id: req.params.id, clientId: req.auth.sub });
+    const filter = await visibilityFilter(req.auth.sub);
+    const project = await Project.findOne({ $and: [{ _id: req.params.id }, filter] });
     if (!project) return res.status(404).json({ message: "Project not found." });
 
     const projectIds = [String(project._id), project.id].filter(Boolean);
@@ -113,10 +135,8 @@ router.get("/projects/:id/tasks", async (req, res, next) => {
 
 router.get("/documents", async (req, res, next) => {
   try {
-    const docs = await Document.find({
-      clientId: req.auth.sub,
-      scope: { $ne: "internal" }
-    }).sort({ createdAt: -1 });
+    const filter = await visibilityFilter(req.auth.sub);
+    const docs = await Document.find({ $and: [filter, { scope: { $ne: "internal" } }] }).sort({ createdAt: -1 });
     res.json(docs);
   } catch (error) {
     next(error);
@@ -125,7 +145,8 @@ router.get("/documents", async (req, res, next) => {
 
 router.get("/meetings", async (req, res, next) => {
   try {
-    const meetings = await Meeting.find({ clientId: req.auth.sub }).sort({ createdAt: -1 });
+    const filter = await visibilityFilter(req.auth.sub);
+    const meetings = await Meeting.find(filter).sort({ createdAt: -1 });
     res.json(meetings);
   } catch (error) {
     next(error);

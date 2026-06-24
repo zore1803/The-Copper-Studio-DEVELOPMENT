@@ -177,24 +177,31 @@ function KpiChip({ label, value, icon: Icon }) {
 
 function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink }) {
   const [query, setQuery] = useState("");
-  const linkedUser = clients.find((u) => String(u._id) === String(company.userId));
+  const linkedIds = new Set(
+    [...(Array.isArray(company.userIds) ? company.userIds : []), company.userId].filter(Boolean).map(String)
+  );
+  const linkedUsers = clients.filter((u) => linkedIds.has(String(u._id)));
   const filtered = clients.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <SidePanel
-      title="Link Client Portal Account"
-      subtitle={`Connect ${company.name} to a client login so project and timeline updates appear in their portal.`}
+      title="Link Client Portal Accounts"
+      subtitle={`Connect one or more client logins to ${company.name} so project and timeline updates appear in their portals.`}
       onClose={onClose}
     >
       <div className="space-y-4">
-        {linkedUser && (
-          <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Currently Linked</p>
-              <p className="mt-1 text-sm font-semibold text-[#111827]">{linkedUser.name}</p>
-              <p className="text-xs text-[#6b7280]">{linkedUser.email}</p>
-            </div>
-            <Button variant="secondary" onClick={onUnlink}><Unlink size={14} /> Unlink</Button>
+        {linkedUsers.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Currently Linked ({linkedUsers.length})</p>
+            {linkedUsers.map((user) => (
+              <div key={user._id} className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                <div>
+                  <p className="text-sm font-semibold text-[#111827]">{user.name}</p>
+                  <p className="text-xs text-[#6b7280]">{user.email}</p>
+                </div>
+                <Button variant="secondary" onClick={() => onUnlink(user)}><Unlink size={14} /> Unlink</Button>
+              </div>
+            ))}
           </div>
         )}
         <div className="flex h-10 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
@@ -205,19 +212,22 @@ function LinkClientPanel({ company, clients, loading, onClose, onLink, onUnlink 
           <p className="text-sm text-[#6b7280]">Loading client accounts…</p>
         ) : filtered.length ? (
           <div className="max-h-96 space-y-2 overflow-y-auto">
-            {filtered.map((user) => (
-              <button
-                key={user._id}
-                onClick={() => onLink(user)}
-                className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${String(user._id) === String(company.userId) ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
-              >
-                <div>
-                  <p className="font-semibold text-[#111827]">{user.name}</p>
-                  <p className="text-xs text-[#6b7280]">{user.email}</p>
-                </div>
-                {String(user._id) === String(company.userId) && <CheckCircle2 size={16} className="text-[#884c2d]" />}
-              </button>
-            ))}
+            {filtered.map((user) => {
+              const isLinked = linkedIds.has(String(user._id));
+              return (
+                <button
+                  key={user._id}
+                  onClick={() => (isLinked ? onUnlink(user) : onLink(user))}
+                  className={`flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors ${isLinked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                >
+                  <div>
+                    <p className="font-semibold text-[#111827]">{user.name}</p>
+                    <p className="text-xs text-[#6b7280]">{user.email}</p>
+                  </div>
+                  {isLinked && <CheckCircle2 size={16} className="text-[#884c2d]" />}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <p className="text-sm text-[#6b7280]">No client accounts found. Add an email to a contact, then reopen this panel.</p>
@@ -742,16 +752,22 @@ export default function CompanyDetail() {
     showToast({ title: "Primary contact updated", message: `${contact.name || contact.email} is now the primary contact.` });
   }
 
-  async function handleLinkClient(user) {
-    await saveCompany({ ...company, userId: user._id });
-    showToast({ title: "Client account linked", message: `${company.name} is now connected to ${user.email}. Projects and updates will sync to their portal.` });
-    setLinkingClient(false);
+  function linkedClientIds(target = company) {
+    const ids = Array.isArray(target.userIds) ? target.userIds.map(String) : [];
+    if (target.userId && !ids.includes(String(target.userId))) ids.push(String(target.userId));
+    return ids;
   }
 
-  async function handleUnlinkClient() {
-    await saveCompany({ ...company, userId: null });
-    showToast({ title: "Client account unlinked", message: `${company.name} is no longer connected to a client login.` });
-    setLinkingClient(false);
+  async function handleLinkClient(user) {
+    const ids = Array.from(new Set([...linkedClientIds(), String(user._id)]));
+    await saveCompany({ ...company, userId: ids[0], userIds: ids });
+    showToast({ title: "Client account linked", message: `${company.name} is now connected to ${user.email}. Projects and updates will sync to their portal.` });
+  }
+
+  async function handleUnlinkClient(user) {
+    const ids = linkedClientIds().filter((id) => id !== String(user._id));
+    await saveCompany({ ...company, userId: ids[0] || null, userIds: ids });
+    showToast({ title: "Client account unlinked", message: `${user.email} can no longer access ${company.name}'s portal.` });
   }
 
   async function handleSaveCompanyEdit(form) {
@@ -912,10 +928,10 @@ export default function CompanyDetail() {
                 </div>
               )}
               <Button
-                variant={company.userId ? "secondary" : "primary"}
+                variant={linkedClientIds().length ? "secondary" : "primary"}
                 onClick={openLinkClient}
               >
-                <LinkIcon size={14} /> {company.userId ? "Client Linked" : "Link Client Portal"}
+                <LinkIcon size={14} /> {linkedClientIds().length ? `${linkedClientIds().length} Client${linkedClientIds().length > 1 ? "s" : ""} Linked` : "Link Client Portal"}
               </Button>
               <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
               <div className="relative" ref={addMenuRef}>
