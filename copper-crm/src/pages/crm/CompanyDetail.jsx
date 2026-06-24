@@ -2213,13 +2213,21 @@ function CalendarTaskView({ tasks, onCreate }) {
   );
 }
 
+// @hello-pangea/dnd (and react-beautiful-dnd before it) only understands a
+// single row/column of droppable items — handed a wrapping 2-column grid, it
+// miscalculates positions and the whole layout jumps on drag. Plain HTML5
+// drag-and-drop has no such assumption, so it's used here instead.
 function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   const [dateFilter, setDateFilter] = useState("");
+  const [dragIndex, setDragIndex] = useState(null);
+  const [overIndex, setOverIndex] = useState(null);
   const visibleNotes = dateFilter ? notes.filter((n) => isSameLocalDay(n.createdAt, dateFilter)) : notes;
+  const canDrag = !dateFilter;
 
-  function handleDragEnd(result) {
-    if (!result.destination || result.destination.index === result.source.index) return;
-    onReorder(result.source.index, result.destination.index);
+  function handleDrop(index) {
+    if (dragIndex !== null && dragIndex !== index) onReorder(dragIndex, index);
+    setDragIndex(null);
+    setOverIndex(null);
   }
 
   return (
@@ -2239,47 +2247,42 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
         )}
       </div>
       {visibleNotes.length ? (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="notes">
-            {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
-                {visibleNotes.map((note, index) => (
-                  <Draggable key={note.id || note._id} draggableId={String(note.id || note._id)} index={index} isDragDisabled={Boolean(dateFilter)}>
-                    {(prov, snap) => (
-                      <div
-                        ref={prov.innerRef}
-                        {...prov.draggableProps}
-                        className={`rounded-xl border bg-white p-4 transition-shadow ${snap.isDragging ? "border-[#884c2d]/40 shadow-lg" : "border-[#e5e7eb]"}`}
-                        style={prov.draggableProps.style}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <span {...prov.dragHandleProps} className="mt-0.5 cursor-grab text-[#d1d5db] hover:text-[#9ca3af] active:cursor-grabbing" title="Drag to reorder">
-                            <GripVertical size={14} />
-                          </span>
-                          <button type="button" onClick={() => onEdit(note)} className="min-w-0 flex-1 text-left">
-                            <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
-                            <div
-                              className="mt-1 line-clamp-3 text-sm text-[#6b7280] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
-                              dangerouslySetInnerHTML={{ __html: note.body || "No content." }}
-                            />
-                          </button>
-                          <button type="button" onClick={() => onDelete(note)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                        <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
-                          Created {formatDate(note.createdAt)}
-                          {note.updatedAt && note.updatedAt !== note.createdAt ? ` · Updated ${formatDate(note.updatedAt)}` : ""}
-                        </p>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {visibleNotes.map((note, index) => (
+            <div
+              key={note.id || note._id}
+              draggable={canDrag}
+              onDragStart={() => setDragIndex(index)}
+              onDragOver={(event) => { event.preventDefault(); if (canDrag) setOverIndex(index); }}
+              onDragLeave={() => setOverIndex((prev) => (prev === index ? null : prev))}
+              onDrop={(event) => { event.preventDefault(); handleDrop(index); }}
+              onDragEnd={() => { setDragIndex(null); setOverIndex(null); }}
+              className={`rounded-xl border bg-white p-4 transition-shadow ${
+                dragIndex === index ? "opacity-50" : overIndex === index ? "border-[#884c2d]/50 shadow-md" : "border-[#e5e7eb]"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className={`mt-0.5 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} text-[#d1d5db] hover:text-[#9ca3af]`} title="Drag to reorder">
+                  <GripVertical size={14} />
+                </span>
+                <button type="button" onClick={() => onEdit(note)} className="min-w-0 flex-1 text-left">
+                  <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
+                  <div
+                    className="mt-1 line-clamp-3 text-sm text-[#6b7280] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+                    dangerouslySetInnerHTML={{ __html: note.body || "No content." }}
+                  />
+                </button>
+                <button type="button" onClick={() => onDelete(note)} className="shrink-0 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                  <Trash2 size={14} />
+                </button>
               </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                Created {formatDate(note.createdAt)}
+                {note.updatedAt && note.updatedAt !== note.createdAt ? ` · Updated ${formatDate(note.updatedAt)}` : ""}
+              </p>
+            </div>
+          ))}
+        </div>
       ) : dateFilter ? (
         <EmptyState icon={StickyNote} title="No notes on this date." action={<Button variant="secondary" onClick={() => setDateFilter("")}>Clear filter</Button>} />
       ) : (
