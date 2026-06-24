@@ -9,6 +9,7 @@ import Contact from "./models/Contact.js";
 import Order from "./models/Order.js";
 import Payment from "./models/Payment.js";
 import Project from "./models/Project.js";
+import Task from "./models/Task.js";
 import User from "./models/User.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -85,13 +86,14 @@ async function seed() {
     console.log("Connecting to Database...");
     await mongoose.connect(process.env.MONGO_URI);
 
-    console.log("Clearing old data...");
+    await User.deleteMany({ role: "client" });
     await Company.deleteMany({});
     await Contact.deleteMany({});
     await Order.deleteMany({});
     await Payment.deleteMany({});
     await Project.deleteMany({});
-    await User.deleteMany({ role: "user" }); // Only clear test clients, preserve admins
+    await Task.deleteMany({});
+    console.log("Cleared existing client data, companies, contacts, orders, payments, projects, and tasks.");
 
     const yearsDist = {
       2023: 15,
@@ -223,6 +225,46 @@ async function seed() {
 
           // 6. Project
           const projStatus = getProjectStatus(createdAt, isLongTerm);
+          const projectDurationDays = randomInt(30, 90);
+          const expectedEndDate = new Date(createdAt.getTime() + (projectDurationDays * 24 * 60 * 60 * 1000));
+          
+          const possibleStages = ["Discovery phase", "Wireframing", "UI/UX Design", "Frontend Dev", "Backend Dev", "QA Testing", "UAT", "Deployment", "Post-launch Review"];
+          const numStages = randomInt(3, 6);
+          const stages = [];
+          let currentStageStart = new Date(createdAt);
+          const stageDurationDays = Math.max(1, Math.floor(projectDurationDays / numStages));
+
+          const selectedStageNames = [...possibleStages].sort(() => 0.5 - Math.random()).slice(0, numStages);
+
+          for (let s = 0; s < numStages; s++) {
+            const isLastStage = s === numStages - 1;
+            const stageEnd = isLastStage 
+              ? new Date(expectedEndDate) 
+              : new Date(currentStageStart.getTime() + (stageDurationDays - 1) * 24 * 60 * 60 * 1000);
+            
+            let stageStatus = "not_started";
+            if (projStatus === "completed") {
+              stageStatus = "completed";
+            } else if (projStatus === "not_started") {
+              stageStatus = "not_started";
+            } else {
+              const now = new Date();
+              if (stageEnd < now) stageStatus = "completed";
+              else if (currentStageStart <= now && stageEnd >= now) stageStatus = "in_progress";
+              else stageStatus = "not_started";
+            }
+
+            stages.push({
+              name: selectedStageNames[s],
+              status: stageStatus,
+              startDate: new Date(currentStageStart),
+              endDate: new Date(stageEnd),
+              notes: ""
+            });
+
+            currentStageStart = new Date(stageEnd.getTime() + 24 * 60 * 60 * 1000); // Start next stage the next day
+          }
+
           const project = new Project({
             name: `${companyName} - ${pkg.name}`,
             description: `Standard implementation for ${pkg.name}`,
@@ -232,14 +274,59 @@ async function seed() {
             packageName: pkg.name,
             budget: pkg.price,
             paymentStatus: paymentStatus,
-            status: projStatus, // not_started, in_progress, completed, delayed
+            status: projStatus,
             progress: projStatus === "completed" ? 100 : (projStatus === "not_started" ? 0 : randomInt(10, 90)),
             startDate: createdAt,
-            expectedEndDate: new Date(createdAt.getTime() + (randomInt(30, 90) * 24 * 60 * 60 * 1000)),
+            expectedEndDate: expectedEndDate,
+            stages: stages,
             createdAt: createdAt,
             updatedAt: projStatus === "completed" ? new Date(createdAt.getTime() + (randomInt(30, 90) * 24 * 60 * 60 * 1000)) : new Date()
           });
           await project.save();
+
+          // 7. Tasks
+          const numTasks = randomInt(3, 6);
+          const possibleTaskNames = ["Initial Client Kickoff", "Requirements Gathering", "Setup Development Environment", "Database Architecture Design", "Create API Endpoints", "Frontend Component Library", "Integrate Payment Gateway", "Write Unit Tests", "Deploy to Staging", "Client Feedback Review", "Production Deployment", "Post-Launch Monitoring"];
+          const selectedTaskNames = [...possibleTaskNames].sort(() => 0.5 - Math.random()).slice(0, numTasks);
+          
+          for (let t = 0; t < numTasks; t++) {
+            // Assign task date within the project's expected duration
+            const taskStartOffset = randomInt(0, projectDurationDays - 3);
+            const taskDuration = randomInt(2, 7); // 2 to 7 days task duration
+            const taskStartDate = new Date(createdAt.getTime() + (taskStartOffset * 24 * 60 * 60 * 1000));
+            const taskEndDate = new Date(taskStartDate.getTime() + (taskDuration * 24 * 60 * 60 * 1000));
+            
+            // Format deadline for the original schema requirement
+            const deadlineMonth = taskEndDate.toLocaleString('en-US', { month: 'short' });
+            const deadlineDay = taskEndDate.getDate();
+            const formattedDeadline = `${deadlineDay} ${deadlineMonth}`;
+
+            let taskStatus = "To Do";
+            const now = new Date();
+            if (projStatus === "completed" || taskEndDate < now) {
+              taskStatus = "Completed";
+            } else if (taskStartDate <= now && taskEndDate >= now) {
+              taskStatus = "In Progress";
+            }
+
+            const task = new Task({
+              id: `TSK-${year}-${randomInt(10000, 99999)}`,
+              title: selectedTaskNames[t],
+              project: project.name,
+              projectId: project._id.toString(), // ensure it maps properly
+              projectName: project.name,
+              status: taskStatus,
+              priority: randomChoice(["Low", "Medium", "High", "Urgent"]),
+              assignee: randomChoice(["John D", "Sarah M", "Mike T", "Emily W", "Alex K"]),
+              deadline: formattedDeadline,
+              startDate: taskStartDate,
+              endDate: taskEndDate,
+              description: `This task covers ${selectedTaskNames[t].toLowerCase()} for the ${project.name} project.`,
+              subtasks: randomInt(0, 5),
+              comments: randomInt(0, 8),
+            });
+            await task.save();
+          }
         }
       }
     }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   CalendarRange, CheckCircle2, Columns3, GripVertical,
-  Plus, Save, Trash2, Sparkles, ZoomIn, ZoomOut
+  Plus, Save, Trash2, Sparkles, ZoomIn, ZoomOut, AlertTriangle
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -14,7 +14,20 @@ import { today, DAY_MS, parseFullDate, parseShortDate, formatRange } from "../..
 import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS } from "../../lib/taskStatus";
 import { projectRollup } from "../../lib/stageProgress";
 
-const TODAY = today();
+function getProgressText(start, end, status, needsDates = false) {
+  if (needsDates || status === "Done" || !start || !end) return "";
+  const TODAY = today();
+  const totalDays = Math.max(1, Math.round((end - start) / DAY_MS));
+  if (TODAY < start) {
+    return `0/${totalDays}d`;
+  } else if (TODAY > end) {
+    return `${totalDays}/${totalDays}d (Overdue)`;
+  } else {
+    const elapsed = Math.max(0, Math.round((TODAY - start) / DAY_MS));
+    const left = Math.max(0, totalDays - elapsed);
+    return left > 0 ? `${elapsed}/${totalDays}d (${left} left)` : `${elapsed}/${totalDays}d`;
+  }
+}
 
 const STATUS_DOT = {
   "To Do": "bg-sky-500",
@@ -43,13 +56,15 @@ const MAX_COL_WIDTH = 340;   // zoomed in — day-level detail
 const DEFAULT_COL_WIDTH = 150;
 const ZOOM_STEP = 28;
 
-function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "" }) {
+function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "", min, max }) {
   return (
     <label className={`block ${className}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
         value={value}
+        min={min}
+        max={max}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B] focus:ring-2 focus:ring-[#C57E5B]/20"
@@ -58,7 +73,7 @@ function TaskField({ label, value, onChange, placeholder = "", type = "text", cl
   );
 }
 
-function StageEditorModal({ statuses, initialStatus, stage, mode, onClose, onSave, onDelete }) {
+export function StageEditorModal({ statuses, initialStatus, stage, mode, projectDates = {}, onClose, onSave, onDelete }) {
   const [form, setForm] = useState(stage);
   const [status, setStatus] = useState(initialStatus);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -101,8 +116,8 @@ function StageEditorModal({ statuses, initialStatus, stage, mode, onClose, onSav
             {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
-        <TaskField label="Start date" type="date" value={form.startDate || ""} onChange={set("startDate")} />
-        <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} />
+        <TaskField label="Start date" type="date" value={form.startDate || ""} onChange={set("startDate")} min={projectDates.startDate} max={projectDates.endDate} />
+        <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} min={projectDates.startDate} max={projectDates.endDate} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]" />
@@ -112,7 +127,7 @@ function StageEditorModal({ statuses, initialStatus, stage, mode, onClose, onSav
   );
 }
 
-function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
+export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
   const columns = useMemo(() => {
     const grouped = Object.fromEntries(TASK_STATUSES.map((status) => [status, []]));
     stages.forEach((card) => {
@@ -163,8 +178,14 @@ function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                             <span className="text-[10px] font-semibold text-[#9ca3af]">{task.dueDate || task.deadline || "No due date"}</span>
                           </div>
                           <div className="mt-2 flex items-center justify-between border-t border-[#f1f1f5] pt-2">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#9ca3af]">
-                              <CalendarRange size={11} /> {task.startDate || "No start"}
+                            <span className="inline-flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[#9ca3af]">
+                              <span className="inline-flex items-center gap-1"><CalendarRange size={11} /> {task.startDate || "No start"}</span>
+                              {(() => {
+                                const st = task.startDate ? parseFullDate(task.startDate) : null;
+                                const en = task.dueDate ? parseFullDate(task.dueDate) : task.endDate ? parseFullDate(task.endDate) : task.deadline ? parseShortDate(task.deadline, new Date().getFullYear()) : null;
+                                const pText = getProgressText(st, en, status, !st || !en);
+                                return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
+                              })()}
                             </span>
                             <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
                               <Sparkles size={10} className="mr-1" /> Stage
@@ -190,22 +211,35 @@ function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
   );
 }
 
-function GanttView({ stages, onOpenEdit }) {
+export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategories }) {
   const [colWidth, setColWidth] = useState(DEFAULT_COL_WIDTH);
-  const zoomOut = () => setColWidth((w) => Math.max(MIN_COL_WIDTH, w - ZOOM_STEP));
-  const zoomIn = () => setColWidth((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
+  const scrollRef = useRef(null);
+  const targetCenterRef = useRef(null);
+
+  const updateZoom = (updater) => {
+    setColWidth((prevWidth) => {
+      const nextWidth = typeof updater === "function" ? updater(prevWidth) : updater;
+      if (nextWidth === prevWidth) return prevWidth;
+      if (scrollRef.current) {
+        targetCenterRef.current = (scrollRef.current.scrollLeft + scrollRef.current.clientWidth / 2) / prevWidth;
+      }
+      return nextWidth;
+    });
+  };
+
+  const zoomOut = () => updateZoom((w) => Math.max(MIN_COL_WIDTH, w - ZOOM_STEP));
+  const zoomIn = () => updateZoom((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
   const [collapsed, setCollapsed] = useState({});
 
   // Pinch / Ctrl+scroll over the chart zooms the timeline instead of the whole page.
   // Plain two-finger scrolling (no Ctrl) is left alone so the chart still scrolls.
-  const scrollRef = useRef(null);
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const onWheel = (e) => {
       if (!e.ctrlKey) return;
       e.preventDefault();
-      setColWidth((w) => {
+      updateZoom((w) => {
         const next = w * Math.exp(-e.deltaY * 0.002);
         return Math.min(MAX_COL_WIDTH, Math.max(MIN_COL_WIDTH, next));
       });
@@ -215,11 +249,12 @@ function GanttView({ stages, onOpenEdit }) {
   }, [stages.length]);
 
   const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+    const TODAY = today();
     const referenceYear = new Date().getFullYear();
     // First pass: parse whatever dates a stage has, and flag the ones missing them.
     const parsed = stages.map((card) => {
       const start = card.startDate ? parseFullDate(card.startDate) : null;
-      const end = card.dueDate ? parseFullDate(card.dueDate) : card.deadline ? parseShortDate(card.deadline, referenceYear) : null;
+      const end = card.dueDate ? parseFullDate(card.dueDate) : card.endDate ? parseFullDate(card.endDate) : card.deadline ? parseShortDate(card.deadline, referenceYear) : null;
       const hasDates = !!start && !!end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime());
       return { card, start, end, hasDates };
     });
@@ -231,20 +266,43 @@ function GanttView({ stages, onOpenEdit }) {
 
     const mapped = parsed.map(({ card, start, end, hasDates }) => {
       const status = normalizeTaskStatus(card.status);
-      if (hasDates) {
-        return { ...card, start, end: end < start ? start : end, needsDates: false, status };
+      let isDanger = false;
+      if (hasDates && status !== "Done") {
+        const daysToDeadline = Math.round((end - TODAY) / DAY_MS);
+        if (daysToDeadline <= 3) {
+          isDanger = true;
+        }
       }
-      return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status };
+      
+      if (hasDates) {
+        return { ...card, start, end: end < start ? start : end, needsDates: false, status, isDanger };
+      }
+      return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status, isDanger: false };
     });
     const unscheduled = parsed.filter((p) => !p.hasDates).length;
-    if (!mapped.length) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
-    const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
-    const groupList = TASK_STATUSES
-      .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
-      .filter((g) => g.tasks.length > 0);
+    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(TODAY.getTime() - 3 * DAY_MS);
+    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(TODAY.getTime() + 14 * DAY_MS);
+    min.setHours(0, 0, 0, 0);
+    max.setHours(23, 59, 59, 999);
+    
+    const groupList = groupCategories
+      ? groupCategories.map(cat => ({
+          id: cat.id,
+          title: cat.title,
+          tasks: mapped.filter((t) => (groupBy === "project" ? String(t.projectId) === String(cat.id) : t.status === cat.id)),
+        }))
+      : groupBy === "project"
+      ? Array.from(new Set(mapped.map((t) => t.projectName || "Unknown Project"))).map((name) => ({
+          id: name,
+          title: name,
+          tasks: mapped.filter((t) => (t.projectName || "Unknown Project") === name),
+        }))
+      : TASK_STATUSES
+          .map((status) => ({ id: status, title: status, tasks: mapped.filter((t) => t.status === status) }))
+          .filter((g) => g.tasks.length > 0);
 
     const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
     const weekCount = Math.max(1, Math.ceil(totalDays / 7));
@@ -265,7 +323,29 @@ function GanttView({ stages, onOpenEdit }) {
         unscheduled,
       },
     };
-  }, [stages]);
+  }, [stages, groupBy, groupCategories]);
+
+  // Auto-scroll the timeline to TODAY (or the nearest date) when it loads or when the date range changes.
+  useEffect(() => {
+    if (scrollRef.current && minDate && maxDate) {
+      const TODAY = today();
+      const pxPerDay = colWidth / 7;
+      let targetDate = TODAY;
+      if (targetDate < minDate) targetDate = minDate;
+      if (targetDate > maxDate) targetDate = maxDate;
+      
+      const targetPx = ((targetDate.getTime() - minDate.getTime()) / DAY_MS) * pxPerDay;
+      // Scroll so the target date is slightly offset from the left edge (e.g. roughly 1 column)
+      scrollRef.current.scrollLeft = Math.max(0, targetPx - colWidth);
+    }
+  }, [minDate, maxDate]); // We explicitly removed colWidth from deps so it doesn't snap to Today on zoom.
+
+  useEffect(() => {
+    if (scrollRef.current && targetCenterRef.current != null) {
+      scrollRef.current.scrollLeft = targetCenterRef.current * colWidth - scrollRef.current.clientWidth / 2;
+      targetCenterRef.current = null;
+    }
+  }, [colWidth]);
 
   if (!groups.length) {
     return (
@@ -279,12 +359,24 @@ function GanttView({ stages, onOpenEdit }) {
   // Position everything in real pixels-per-day so bars line up exactly under their
   // date columns (the columns are colWidth px per 7-day week).
   const pxPerDay = colWidth / 7;
-  const timelineWidth = weeks.length * colWidth;
+  const showDays = pxPerDay >= 30; // Render daily headers if wide enough
+
+  const totalDays = Math.max(1, Math.ceil((maxDate - minDate) / DAY_MS));
+  const timeCols = showDays
+    ? Array.from({ length: totalDays }, (_, index) => {
+        const day = new Date(minDate.getTime() + index * DAY_MS);
+        return { label: day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), width: pxPerDay };
+      })
+    : weeks.map(w => ({ ...w, width: colWidth }));
+
+  const timelineWidth = timeCols.reduce((sum, col) => sum + col.width, 0);
+  const gridBackgroundSize = showDays ? `${pxPerDay}px 100%` : `${colWidth}px 100%`;
   const dateToPx = (date) => ((date - minDate) / DAY_MS) * pxPerDay;
+  const TODAY = today();
   const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
 
-  function toggleGroup(status) {
-    setCollapsed((current) => ({ ...current, [status]: !current[status] }));
+  function toggleGroup(id) {
+    setCollapsed((current) => ({ ...current, [id]: !current[id] }));
   }
 
   const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
@@ -327,8 +419,9 @@ function GanttView({ stages, onOpenEdit }) {
               type="range"
               min={MIN_COL_WIDTH}
               max={MAX_COL_WIDTH}
+              step="any"
               value={colWidth}
-              onChange={(e) => setColWidth(Number(e.target.value))}
+              onChange={(e) => updateZoom(Number(e.target.value))}
               title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
               className="w-24 accent-[#C57E5B]"
             />
@@ -345,23 +438,32 @@ function GanttView({ stages, onOpenEdit }) {
         </div>
       </div>
 
-      <div className="flex max-h-[620px] overflow-hidden">
-        <div className="sticky left-0 z-20 w-64 shrink-0 border-r border-[#f1f1f5] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
-          <div className="flex h-11 items-center border-b border-[#f1f1f5] bg-[#fafafa] px-4">
+      <div className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#f1f1f5] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
+          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#f1f1f5] bg-[#fafafa] px-4">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Stage / Task</span>
           </div>
           {groups.map((group) => (
-            <div key={group.status} className="border-b border-[#f1f1f5]">
-              <button type="button" onClick={() => toggleGroup(group.status)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
-                <span className={`h-2 w-2 rounded-full ${STATUS_DOT[group.status]}`} />
-                <span className="text-sm font-semibold text-[#111827]">{group.status}</span>
-                <span className="ml-auto text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
+            <div key={group.id} className="border-b border-[#f1f1f5]">
+              <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#C57E5B]"}`} />
+                <span className="truncate text-sm font-semibold text-[#111827]">{group.title}</span>
+                <span className="ml-auto shrink-0 text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
               </button>
-              {!collapsed[group.status] && group.tasks.map((task) => (
-                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.status, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-semibold text-[#374151]">{task.title || task.taskName}</span>
-                    <span className={`block truncate text-[10px] ${task.needsDates ? "text-amber-600" : "text-[#9ca3af]"}`}>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
+              {!collapsed[group.id] && group.tasks.map((task) => (
+                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.id, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5 truncate text-xs font-semibold text-[#374151]">
+                      <span className="truncate">{task.title || task.taskName}</span>
+                      {task.isDanger && <AlertTriangle size={12} className="shrink-0 text-red-500" strokeWidth={2.5} />}
+                    </span>
+                    <span className={`flex items-center gap-1.5 truncate text-[10px] ${task.needsDates ? "text-amber-600" : task.isDanger ? "text-red-500 font-semibold" : "text-[#9ca3af]"}`}>
+                      <span>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
+                      {(() => {
+                        const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
+                        return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
+                      })()}
+                    </span>
                   </span>
                 </button>
               ))}
@@ -371,14 +473,14 @@ function GanttView({ stages, onOpenEdit }) {
 
         <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="sticky top-0 z-10 flex h-11 border-b border-[#f1f1f5] bg-white">
-              {weeks.map((week, index) => (
-                <div key={index} style={{ width: `${colWidth}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
-                  {week.label}
+            <div className="sticky top-0 z-20 flex h-11 border-b border-[#f1f1f5] bg-white">
+              {timeCols.map((col, index) => (
+                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
+                  {col.label}
                 </div>
               ))}
             </div>
-            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: `${colWidth}px 100%` }}>
+            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: gridBackgroundSize }}>
               {showTodayLine && (
                 <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${dateToPx(TODAY)}px` }}>
                   <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-400" />
@@ -386,23 +488,28 @@ function GanttView({ stages, onOpenEdit }) {
                 </div>
               )}
               {groups.map((group) => (
-                <div key={group.status}>
+                <div key={group.id}>
                   <div className="h-10 border-b border-[#f1f1f5] bg-[#fafafa]/60" />
-                  {!collapsed[group.status] && group.tasks.map((task) => {
+                  {!collapsed[group.id] && group.tasks.map((task) => {
                     const left = dateToPx(task.start);
                     // +1 day so the bar covers the end date inclusively; clamp so a single-day stage stays visible.
                     const width = Math.max(pxPerDay, dateToPx(task.end) - left + pxPerDay);
-                    const isDone = group.status === "Done";
+                    const isDone = task.status === "Done";
                     return (
                       <div key={task.id || task._id} className="relative h-12 border-b border-[#f1f1f5] odd:bg-white/65 even:bg-[#fcfcfd]/65">
                         <button
                           type="button"
-                          onClick={() => onOpenEdit(group.status, task)}
+                          onClick={() => onOpenEdit(group.id, task)}
                           style={{ left: `${left}px`, width: `${width}px` }}
                           title={task.needsDates ? "No dates set — click to add a start and due date" : `${task.title || task.taskName}: ${formatRange(task.start, task.end)}`}
-                          className={`absolute top-2 flex h-8 min-w-[12px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[group.status] || STATUS_BAR["To Do"]} ${task.needsDates ? "opacity-50 saturate-50 border border-dashed border-white/80" : "ring-1 ring-white/50"}`}
+                          className={`absolute top-2 flex h-8 min-w-[12px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm transition-[transform,box-shadow,opacity] hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[task.status] || STATUS_BAR["To Do"]} ${task.needsDates ? "opacity-50 saturate-50 border border-dashed border-white/80" : "ring-1 ring-white/50"}`}
                         >
                           <span className="truncate text-[11px] font-bold">{task.title || task.taskName}</span>
+                          {(() => {
+                            const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
+                            return pText ? <span className="ml-2 truncate text-[9px] opacity-90 font-medium">{pText}</span> : null;
+                          })()}
+                          {task.isDanger && !isDone && <AlertTriangle size={12} className="ml-auto shrink-0 text-red-500 drop-shadow-sm" strokeWidth={2.5} />}
                           {isDone && <CheckCircle2 size={12} className="ml-auto shrink-0" />}
                         </button>
                       </div>
@@ -461,11 +568,6 @@ export default function ProjectTimeline() {
     );
   }
 
-  function handleShare() {
-    navigator.clipboard?.writeText(`${window.location.origin}/admin/companies/${company.id || company._id}/projects/${project.id || project._id}/tasks`);
-    showToast({ title: "Link copied", message: "Project timeline link copied to clipboard." });
-  }
-
   function openNewStage(status = "To Do") {
     // Default to a today → +4 days window so a new stage shows on the Gantt right away;
     // the admin can adjust the dates in the editor.
@@ -485,6 +587,16 @@ export default function ProjectTimeline() {
   }
 
   async function handleSaveStage(form, status) {
+    const pStartStr = project.startDate ? new Date(project.startDate).toISOString().slice(0, 10) : null;
+    const pEndStr = (project.expectedEndDate || project.endDate) ? new Date(project.expectedEndDate || project.endDate).toISOString().slice(0, 10) : null;
+
+    if (form.startDate && pStartStr && form.startDate < pStartStr) {
+      return showToast({ type: "error", title: "Invalid Date", message: `Stage start date cannot be before project start (${pStartStr}).` });
+    }
+    if (form.dueDate && pEndStr && form.dueDate > pEndStr) {
+      return showToast({ type: "error", title: "Invalid Date", message: `Stage due date cannot be after project end (${pEndStr}).` });
+    }
+
     try {
       const stageStatus = COLUMN_TO_STAGE_STATUS[status] || "not_started";
       const stages = [...(project.stages || [])];
@@ -556,7 +668,6 @@ export default function ProjectTimeline() {
         company={company}
         project={project}
         activeTab="Timeline"
-        onShare={handleShare}
         actionLabel="New Stage"
         actionIcon={Plus}
         onAction={() => openNewStage()}
@@ -592,8 +703,12 @@ export default function ProjectTimeline() {
           initialStatus={stageEditor.status}
           stage={stageEditor.card}
           mode={stageEditor.mode}
+          projectDates={{
+            startDate: project.startDate ? new Date(project.startDate).toISOString().slice(0, 10) : undefined,
+            endDate: (project.expectedEndDate || project.endDate) ? new Date(project.expectedEndDate || project.endDate).toISOString().slice(0, 10) : undefined,
+          }}
           onClose={() => setStageEditor(null)}
-          onSave={handleSaveStage}
+          onSave={(form, status) => handleSaveStage(form, status)}
           onDelete={() => handleDeleteStage(stageEditor.card)}
         />
       )}

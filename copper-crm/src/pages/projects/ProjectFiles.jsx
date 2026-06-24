@@ -96,11 +96,6 @@ export default function ProjectFiles() {
     );
   }
 
-  function handleShare() {
-    navigator.clipboard?.writeText(`${window.location.origin}/admin/companies/${company.id}/projects/${project.id}/files`);
-    showToast({ title: "Link copied", message: "Project files link copied to clipboard." });
-  }
-
   async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -159,7 +154,6 @@ export default function ProjectFiles() {
         company={company}
         project={project}
         activeTab="Files"
-        onShare={handleShare}
         actionLabel="Upload File"
         actionIcon={FilePlus2}
         onAction={() => fileInputRef.current?.click()}

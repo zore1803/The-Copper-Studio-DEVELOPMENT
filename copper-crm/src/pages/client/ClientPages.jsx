@@ -32,7 +32,6 @@ const GANTT_STATUS_COLOR = {
 };
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
-const GANTT_TODAY = today();
 
 function PageShell({ title, subtitle, children, action }) {
   return (
@@ -158,6 +157,7 @@ function ClientTaskGantt({ tasks }) {
   const [zoom, setZoom] = useState("Week");
 
   const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+    const GANTT_TODAY = today();
     const mapped = tasks.map((task) => {
       const start = task.startDate ? parseFullDate(task.startDate) : null;
       const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
@@ -173,8 +173,11 @@ function ClientTaskGantt({ tasks }) {
     }
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
-    const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
+    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(GANTT_TODAY.getTime() - 3 * DAY_MS);
+    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(GANTT_TODAY.getTime() + 14 * DAY_MS);
+    min.setHours(0, 0, 0, 0);
+    max.setHours(23, 59, 59, 999);
+
     const groupList = GANTT_TASK_STATUSES
       .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
       .filter((g) => g.tasks.length > 0);
@@ -218,6 +221,7 @@ function ClientTaskGantt({ tasks }) {
   const totalRangeMs = Math.max(1, maxDate - minDate);
   const timelineWidth = weeks.length * colWidth;
   const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
+  const GANTT_TODAY = today();
   const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
   const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
 

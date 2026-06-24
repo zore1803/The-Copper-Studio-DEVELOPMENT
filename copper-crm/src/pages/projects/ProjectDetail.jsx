@@ -126,35 +126,11 @@ function MetaRow({ icon: Icon, label, value }) {
   );
 }
 
-function InviteCollaborators({ client }) {
-  const { showToast } = useToast();
-  function handleInvite(event) {
-    event.preventDefault();
-    const email = event.target.elements.email.value.trim();
-    if (!email) return;
-    showToast({ title: "Invite sent", message: `${email} can now access this project dashboard.` });
-    event.target.reset();
-  }
-  return (
-    <div className="rounded-2xl border border-[#6f381a] bg-[#884c2d] p-6 text-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-      <h4 className="font-display mb-2 text-lg font-semibold">Invite Collaborators</h4>
-      <p className="mb-4 text-sm text-white/85">Grant the {client} team access to the real-time project dashboard.</p>
-      <form onSubmit={handleInvite} className="flex items-center gap-2">
-        <input
-          name="email"
-          type="email"
-          placeholder="Email address"
-          className="flex-1 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs placeholder:text-white/60 outline-none focus:ring-1 focus:ring-white"
-        />
-        <button type="submit" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-[#884c2d] transition-transform hover:scale-105">
-          <Send size={15} />
-        </button>
-      </form>
-    </div>
-  );
-}
+
 
 function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
+  const { showToast } = useToast();
+
   // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
   // deleting every stage would make them reappear. Use "+ Add Stage" to add new ones.
   const initialStages = Array.isArray(project.stages) ? project.stages : [];
@@ -163,8 +139,8 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
     name: project.name || "",
     packageName: project.packageName || project.packagePurchased || project.package || "",
     customPackageName: "",
-    startDate: project.startDate || "",
-    expectedEndDate: project.expectedEndDate || project.dueDate || "",
+    startDate: project.startDate ? String(project.startDate).slice(0, 10) : "",
+    expectedEndDate: (project.expectedEndDate || project.dueDate) ? String(project.expectedEndDate || project.dueDate).slice(0, 10) : "",
     priority: project.priority || "Medium",
     status: project.status || "Requirement Gathering",
     budget: project.budget ?? project.packageValue ?? "",
@@ -236,6 +212,23 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
 
   const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
 
+  function handleSaveClick() {
+    const pStartStr = form.startDate;
+    const pEndStr = form.expectedEndDate;
+
+    for (let i = 0; i < form.stages.length; i++) {
+      const stage = form.stages[i];
+      if (stage.startDate && pStartStr && stage.startDate < pStartStr) {
+        return showToast({ type: "error", title: "Invalid Date", message: `Stage ${i+1} start date cannot be before project start.` });
+      }
+      if (stage.endDate && pEndStr && stage.endDate > pEndStr) {
+        return showToast({ type: "error", title: "Invalid Date", message: `Stage ${i+1} end date cannot be after project expected completion.` });
+      }
+    }
+
+    onSave(form);
+  }
+
   return (
     <SidePanel
       title="Manage Project"
@@ -244,14 +237,22 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save & Publish</Button>
+          <Button onClick={handleSaveClick}><Save size={14} /> Save & Publish</Button>
         </div>
       }
     >
       <div className="space-y-5">
         <PanelSection title="Basic Details">
           <PanelField span label="Project name" value={form.name} onChange={set("name")} />
-          <PanelSelect label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
+          <PanelSelect label="Package purchased" value={form.packageName} onChange={(val) => {
+            setForm(prev => {
+              let autoBudget = prev.budget;
+              if (val === "Starter") autoBudget = 24999;
+              else if (val === "Growth") autoBudget = 49999;
+              else if (val === "Enterprise") autoBudget = 89999;
+              return { ...prev, packageName: val, budget: autoBudget };
+            });
+          }} options={PACKAGE_OPTIONS} />
           {form.packageName === "Custom" && (
             <PanelField label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} />
           )}
@@ -277,13 +278,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
           <label className="block text-xs font-semibold text-[#374151] mb-2">
             Overall Progress — {form.progress}%
           </label>
-          <input
-            type="range" min="0" max="100" step="1"
-            value={form.progress}
-            onChange={e => set("progress")(Number(e.target.value))}
-            className="w-full accent-[#884c2d]"
-          />
-          <div className="mt-1.5 h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
+          <div className="h-2 rounded-full bg-[#f3f4f6] overflow-hidden">
             <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${form.progress}%` }} />
           </div>
         </div>
@@ -350,7 +345,9 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">Start Date</label>
                     <input 
                       type="date" 
-                      value={stage.startDate || ""} 
+                      value={stage.startDate ? String(stage.startDate).slice(0, 10) : ""} 
+                      min={form.startDate || undefined}
+                      max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "startDate", e.target.value)}
                       className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
@@ -359,7 +356,9 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">End Date</label>
                     <input 
                       type="date" 
-                      value={stage.endDate || ""} 
+                      value={stage.endDate ? String(stage.endDate).slice(0, 10) : ""} 
+                      min={form.startDate || undefined}
+                      max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "endDate", e.target.value)}
                       className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
@@ -483,10 +482,6 @@ export default function ProjectDetail() {
   const budgetPct = Math.min(100, Math.round(((project.budgetUsed || 0) / Math.max(project.budget || 1, 1)) * 100));
   const currentCompany = company || { id: companyId, name: project.client || project.company || project.companyName || "Company" };
 
-  function handleShare() {
-    navigator.clipboard?.writeText(`${window.location.origin}/admin/companies/${currentCompany.id}/projects/${project.id || project._id}`);
-    showToast({ title: "Link copied", message: "Project workspace link copied to clipboard." });
-  }
 
   async function handleSaveProject(updates) {
     const packageName = updates.packageName === "Custom" ? (updates.customPackageName || "Custom") : updates.packageName;
@@ -528,7 +523,6 @@ export default function ProjectDetail() {
         company={currentCompany}
         project={project}
         activeTab="Overview"
-        onShare={handleShare}
         actionLabel="Manage Stages"
         actionIcon={Settings2}
         onAction={() => setManaging(true)}
@@ -540,7 +534,6 @@ export default function ProjectDetail() {
         <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
         <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
         <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
-        <KpiChip label="Activity" value={project.activity?.length || 0} icon={CheckCircle2} />
       </div>
 
       <section className="grid grid-cols-12 gap-5">
@@ -644,11 +637,6 @@ export default function ProjectDetail() {
         <div className="col-span-12 space-y-5 lg:col-span-5 xl:col-span-4">
           <Section
             title="Project Metadata"
-            action={
-              <button onClick={() => setManaging(true)} className="flex items-center gap-1 text-xs font-semibold text-[#884c2d] hover:underline">
-                <Settings2 size={11} /> Edit
-              </button>
-            }
           >
             <div className="space-y-5">
               <MetaRow icon={Calendar} label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "—"} />
@@ -665,27 +653,6 @@ export default function ProjectDetail() {
               </div>
             </div>
           </Section>
-
-          <Section title="Activity">
-            <div className="space-y-5">
-              {project.activity?.length ? project.activity.map((item, index) => {
-                const Icon = activityIcon[item.icon] || CheckCircle2;
-                return (
-                  <div key={index} className="flex gap-3">
-                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#F1F1F5] text-[#525866]">
-                      <Icon size={14} />
-                    </div>
-                    <div>
-                      <p className="text-sm text-[#0E121B]">{item.text}</p>
-                      <p className="text-[10px] uppercase text-[#9ca3af]">{item.time}</p>
-                    </div>
-                  </div>
-                );
-              }) : <p className="text-sm text-[#525866]">No activity recorded yet.</p>}
-            </div>
-          </Section>
-
-          <InviteCollaborators client={currentCompany.name} />
         </div>
       </section>
 

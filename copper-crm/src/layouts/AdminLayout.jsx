@@ -216,73 +216,6 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   );
 }
 
-function CompanySwitcher({ collapsed, companies, activeCompanyId, onSelect }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const ref = useRef(null);
-
-  useEffect(() => {
-    function onOutside(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
-    document.addEventListener("mousedown", onOutside);
-    return () => document.removeEventListener("mousedown", onOutside);
-  }, []);
-
-  const active = companies.find((c) => String(c.id || c._id) === String(activeCompanyId)) || companies[0] || null;
-  const filtered = companies.filter((c) => (c.name || "").toLowerCase().includes(query.toLowerCase()));
-
-  return (
-    <div ref={ref} className={`relative ${collapsed ? "flex justify-center" : ""}`}>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        title={active ? active.name : "No companies yet"}
-        className={collapsed
-          ? "flex h-10 w-10 items-center justify-center rounded-lg bg-[#C57E5B] text-white text-xs font-semibold"
-          : "flex w-full items-center gap-2.5 rounded-lg border border-[#E5E5E5] bg-white px-3 py-2.5 text-left"}
-      >
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#C57E5B] text-xs font-semibold text-white ${collapsed ? "h-full w-full rounded-lg" : ""}`}>
-          {initialsOf(active?.name) || "—"}
-        </span>
-        {!collapsed && (
-          <>
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-[#111827]">
-              {active?.name || "No companies yet"}
-            </span>
-            <ChevronDown size={14} className="shrink-0 text-[#6b7280]" />
-          </>
-        )}
-      </button>
-      {open && (
-        <div className={`absolute z-50 mt-2 w-64 rounded-xl border border-[#E5E5E5] bg-white shadow-lg ${collapsed ? "left-full top-0 ml-2" : "left-0 top-full"}`}>
-          <div className="p-2 border-b border-[#f1f1f5]">
-            <input
-              autoFocus
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search companies…"
-              className="w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-sm outline-none focus:border-[#884c2d]"
-            />
-          </div>
-          <div className="max-h-64 overflow-y-auto py-1">
-            {filtered.length ? filtered.map((company) => (
-              <button
-                key={company.id || company._id}
-                onClick={() => { onSelect(company); setOpen(false); setQuery(""); }}
-                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm hover:bg-[#f9fafb]"
-              >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#C57E5B] text-[10px] font-semibold text-white">
-                  {initialsOf(company.name)}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-[#111827]">{company.name}</span>
-              </button>
-            )) : (
-              <p className="px-3 py-3 text-xs text-[#6b7280]">No companies yet.</p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function AdminLayout() {
   const location = useLocation();
@@ -291,7 +224,6 @@ export default function AdminLayout() {
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
   const [collapsed, setCollapsed] = useState(false);
-  const [pinnedCompanyId, setPinnedCompanyId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -316,9 +248,6 @@ export default function AdminLayout() {
   const name = auth.user?.name || "Admin";
   const initials = initialsOf(name);
   const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects);
-
-  const urlCompanyMatch = location.pathname.match(/^\/admin\/companies\/([^/]+)/);
-  const activeCompanyId = urlCompanyMatch ? urlCompanyMatch[1] : (pinnedCompanyId || companies[0]?.id || companies[0]?._id || null);
 
   useEffect(() => {
     function buildIndex() {
@@ -371,12 +300,6 @@ export default function AdminLayout() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  function selectCompany(company) {
-    const id = company.id || company._id;
-    setPinnedCompanyId(id);
-    navigate(`/admin/companies/${id}`);
-  }
-
   function quickAdd(item) {
     setQuickAddOpen(false);
     navigate(item.to, { state: { openCreate: true } });
@@ -399,10 +322,6 @@ export default function AdminLayout() {
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
           </button>
-        </div>
-
-        <div className={`border-b border-[#E1E4EA] ${collapsed ? "flex justify-center py-3" : "p-3"}`}>
-          <CompanySwitcher collapsed={collapsed} companies={companies} activeCompanyId={activeCompanyId} onSelect={selectCompany} />
         </div>
 
         <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>

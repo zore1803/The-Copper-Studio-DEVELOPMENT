@@ -98,9 +98,12 @@ export default function ProjectsList() {
         effectiveStatus = p.status || "not_started";
       }
 
-      return { ...p, computedProgress: progress, currentStage, effectiveStatus };
+      const company = companies.find(c => c.id === p.companyId || c._id === p.companyId);
+      const companyName = company ? company.name || company.companyName : p.clientCompany || p.company || p.client || "-";
+
+      return { ...p, computedProgress: progress, currentStage, effectiveStatus, computedCompanyName: companyName };
     });
-  }, [projects]);
+  }, [projects, companies]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -206,7 +209,16 @@ export default function ProjectsList() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#f3e9e4] bg-white">
-            {filtered.length > 0 ? filtered.map((project) => {
+            {loading ? (
+              <tr>
+                <td colSpan={8} className="px-5 py-10 text-center">
+                  <div className="mx-auto flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#884c2d]"></div>
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-[#2b211c]">Loading projects...</p>
+                </td>
+              </tr>
+            ) : filtered.length > 0 ? filtered.map((project) => {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
@@ -219,7 +231,7 @@ export default function ProjectsList() {
                       {project.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-4 font-medium text-[#2b211c]">{project.client}</td>
+                  <td className="px-5 py-4 font-medium text-[#2b211c]">{project.computedCompanyName}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
                       {project.template || project.packageName || "Custom"}
