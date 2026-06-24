@@ -368,7 +368,7 @@ export default function AdminLayout() {
           <img
             src="/copper-studio-logo.jpeg"
             alt="Copper Studio"
-            className={`rounded-xl object-cover ${collapsed ? "h-10 w-10" : "h-20 w-20"}`}
+            className={`rounded-xl object-cover ${collapsed ? "h-10 w-10" : "h-20 w-full"}`}
           />
           {!collapsed && (
             <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#211a17] text-center">
