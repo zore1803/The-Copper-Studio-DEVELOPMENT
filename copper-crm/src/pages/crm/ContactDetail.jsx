@@ -1,96 +1,67 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Building2, Calendar, CheckCircle2, ChevronLeft, Clock3, FileText, FolderKanban,
-  Globe, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, Search, StickyNote, Trash2, Unlink, Users
+  Globe, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, StickyNote, Trash2, Users
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
-import { useAuth } from "../../auth/useAuth";
-import { apiGet } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { contactFullName } from "../../lib/contacts";
 
-function LinkClientPanel({ contact, contactName, projects, clients, loading, onClose, onLink, onUnlink, onToggleProject }) {
-  const [query, setQuery] = useState("");
-  const linkedUser = clients.find((u) => String(u._id) === String(contact.userId));
-  const projectIds = new Set((contact.projectIds || []).map(String));
-  const filtered = clients.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
+function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave }) {
+  const [draftIds, setDraftIds] = useState(new Set((contact.projectIds || []).map(String)));
+  const isLinked = Boolean(contact.userId);
+
+  function toggle(id) {
+    setDraftIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <SidePanel
-      title="Link Client Portal Account"
-      subtitle={`Give ${contactName} a client login and choose which project(s) they can see in their portal.`}
+      title="Project Access"
+      subtitle={`Choose which project(s) ${contactName} can see in their client portal.`}
       onClose={onClose}
-    >
-      <div className="space-y-5">
-        <div className="space-y-3">
-          {linkedUser ? (
-            <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-              <div>
-                <p className="text-sm font-semibold text-[#111827]">{linkedUser.name}</p>
-                <p className="text-xs text-[#6b7280]">{linkedUser.email}</p>
-              </div>
-              <Button variant="secondary" onClick={() => onUnlink(linkedUser)}><Unlink size={14} /> Unlink</Button>
-            </div>
-          ) : (
-            <>
-              <div className="flex h-10 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-                <Search size={14} className="text-[#9ca3af]" />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client accounts by name or email" className="w-full bg-transparent text-sm outline-none" />
-              </div>
-              {loading ? (
-                <p className="text-sm text-[#6b7280]">Loading client accounts…</p>
-              ) : filtered.length ? (
-                <div className="max-h-72 space-y-2 overflow-y-auto">
-                  {filtered.map((user) => (
-                    <button
-                      key={user._id}
-                      onClick={() => onLink(user)}
-                      className="flex w-full items-center justify-between rounded-lg border border-[#e5e7eb] px-3 py-2.5 text-left text-sm hover:bg-[#f9fafb]"
-                    >
-                      <div>
-                        <p className="font-semibold text-[#111827]">{user.name}</p>
-                        <p className="text-xs text-[#6b7280]">{user.email}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[#6b7280]">No client accounts found. Add an email and send a portal invite from the Edit Contact form first.</p>
-              )}
-            </>
-          )}
-        </div>
-
-        {linkedUser && (
-          <div className="space-y-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-[#374151]">Projects visible in their portal</p>
-            {projects.length ? (
-              <div className="max-h-72 space-y-2 overflow-y-auto">
-                {projects.map((project) => {
-                  const id = String(project._id || project.id);
-                  const checked = projectIds.has(id);
-                  return (
-                    <label
-                      key={id}
-                      className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
-                    >
-                      <span className="font-semibold text-[#111827]">{project.name}</span>
-                      <input type="checkbox" checked={checked} onChange={() => onToggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
-                    </label>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-[#6b7280]">No projects under this contact's company yet.</p>
-            )}
+      footer={
+        isLinked ? (
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button onClick={() => onSave(Array.from(draftIds))}><Save size={14} /> Save</Button>
           </div>
-        )}
-      </div>
+        ) : null
+      }
+    >
+      {!isLinked ? (
+        <p className="text-sm text-[#6b7280]">
+          {contactName} doesn't have a client portal login yet. Link one from this contact's company page first, then come back here to choose their projects.
+        </p>
+      ) : projects.length ? (
+        <div className="space-y-2">
+          {projects.map((project) => {
+            const id = String(project._id || project.id);
+            const checked = draftIds.has(id);
+            return (
+              <label
+                key={id}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+              >
+                <span className="font-semibold text-[#111827]">{project.name}</span>
+                <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
+              </label>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-sm text-[#6b7280]">No projects under this contact's company yet.</p>
+      )}
     </SidePanel>
   );
 }
@@ -294,24 +265,11 @@ export default function ContactDetail() {
   const { records: tasks } = useCrmRecords("tasks");
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
-  const { token } = useAuth();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
   const [activeTab, setActiveTab] = useState("Overview");
   const [editing, setEditing] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
-  const [linkingClient, setLinkingClient] = useState(false);
-  const [clientUsers, setClientUsers] = useState([]);
-  const [loadingClients, setLoadingClients] = useState(false);
-
-  useEffect(() => {
-    if (!linkingClient) return;
-    let alive = true;
-    apiGet("/api/admin/clients", token)
-      .then((users) => { if (alive) setClientUsers(Array.isArray(users) ? users : []); })
-      .catch(() => { if (alive) setClientUsers([]); })
-      .finally(() => { if (alive) setLoadingClients(false); });
-    return () => { alive = false; };
-  }, [linkingClient, token]);
+  const [managingAccess, setManagingAccess] = useState(false);
 
   const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
 
@@ -401,22 +359,10 @@ export default function ContactDetail() {
     showToast({ title: "Note deleted", message: "The note was removed." });
   }
 
-  async function handleLinkClient(user) {
-    await save({ ...contact, userId: user._id });
-    showToast({ title: "Client account linked", message: `${contactFullName(contact)} can now log in as ${user.email}. Pick which projects they should see.` });
-  }
-
-  async function handleUnlinkClient() {
-    await save({ ...contact, userId: null, projectIds: [] });
-    showToast({ title: "Client account unlinked", message: `${contactFullName(contact)} no longer has portal access.` });
-    setLinkingClient(false);
-  }
-
-  async function handleToggleProject(projectId) {
-    const current = new Set((contact.projectIds || []).map(String));
-    if (current.has(projectId)) current.delete(projectId);
-    else current.add(projectId);
-    await save({ ...contact, projectIds: Array.from(current) });
+  async function handleSaveProjectAccess(projectIds) {
+    await save({ ...contact, projectIds });
+    setManagingAccess(false);
+    showToast({ title: "Project access updated", message: `${contactFullName(contact)}'s portal now shows ${projectIds.length} project${projectIds.length === 1 ? "" : "s"}.` });
   }
 
   function openProject(project) {
@@ -473,10 +419,10 @@ export default function ContactDetail() {
                 triggerClassName="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-4 text-sm font-semibold text-[#1F2937] transition-colors hover:bg-[#f9fafb]"
               />
               <button
-                onClick={() => setLinkingClient(true)}
+                onClick={() => setManagingAccess(true)}
                 className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#884c2d] hover:bg-[#ffe7da]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
               >
-                <LinkIcon size={14} /> {contact.userId ? "Client Linked" : "Link Client Portal"}
+                <LinkIcon size={14} /> Project Access
               </button>
               <button
                 onClick={() => setEditing(true)}
@@ -699,17 +645,13 @@ export default function ContactDetail() {
 
       {editing && <ContactFormPanel contact={contact} companies={companies} onClose={() => setEditing(false)} onSave={handleSave} />}
       {editingNote && <NotePanel contact={contact} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
-      {linkingClient && (
-        <LinkClientPanel
+      {managingAccess && (
+        <ProjectAccessPanel
           contact={contact}
           contactName={contactFullName(contact)}
           projects={linkedProjects}
-          clients={clientUsers}
-          loading={loadingClients}
-          onClose={() => setLinkingClient(false)}
-          onLink={handleLinkClient}
-          onUnlink={handleUnlinkClient}
-          onToggleProject={handleToggleProject}
+          onClose={() => setManagingAccess(false)}
+          onSave={handleSaveProjectAccess}
         />
       )}
     </div>

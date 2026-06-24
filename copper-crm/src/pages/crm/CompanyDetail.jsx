@@ -175,77 +175,123 @@ function KpiChip({ label, value, icon: Icon }) {
   );
 }
 
-function ContactClientLinkRow({ contact, projects, clients, onLink, onUnlink, onToggleProject }) {
-  const [searching, setSearching] = useState(false);
+function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) {
+  const [editing, setEditing] = useState(false);
   const [query, setQuery] = useState("");
+  const [draftUserId, setDraftUserId] = useState(contact.userId || null);
+  const [draftProjectIds, setDraftProjectIds] = useState(new Set((contact.projectIds || []).map(String)));
+
   const linkedUser = clients.find((u) => String(u._id) === String(contact.userId));
-  const projectIds = new Set((contact.projectIds || []).map(String));
+  const draftUser = clients.find((u) => String(u._id) === String(draftUserId));
+  const linkedProjectNames = projects.filter((p) => (contact.projectIds || []).map(String).includes(String(p._id || p.id))).map((p) => p.name);
   const filtered = clients.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
   const contactName = contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || contact.email || "Contact";
 
-  return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
-          <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
+  function startEditing() {
+    setDraftUserId(contact.userId || null);
+    setDraftProjectIds(new Set((contact.projectIds || []).map(String)));
+    setQuery("");
+    setEditing(true);
+  }
+
+  function toggleProject(id) {
+    setDraftProjectIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function save() {
+    onSave(contact, { userId: draftUserId, projectIds: Array.from(draftProjectIds) });
+    setEditing(false);
+  }
+
+  if (!editing) {
+    return (
+      <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
+            <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            {linkedUser && <Button variant="secondary" onClick={() => onUnlink(contact)}><Unlink size={14} /> Unlink</Button>}
+            <Button variant="secondary" onClick={startEditing}><LinkIcon size={14} /> {linkedUser ? "Edit" : "Link Account"}</Button>
+          </div>
         </div>
-        {linkedUser ? (
-          <Button variant="secondary" onClick={() => onUnlink(contact)}><Unlink size={14} /> Unlink</Button>
-        ) : (
-          <Button variant="secondary" onClick={() => setSearching((v) => !v)}><LinkIcon size={14} /> Link Account</Button>
+        {linkedUser && (
+          <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Linked Account</p>
+            <p className="mt-0.5 text-sm font-semibold text-[#111827]">{linkedUser.name}</p>
+            <p className="text-xs text-[#6b7280]">{linkedUser.email}</p>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible</p>
+            <p className="text-xs text-[#6b7280]">{linkedProjectNames.length ? linkedProjectNames.join(", ") : "None yet"}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border-2 border-[#884c2d] bg-white p-4">
+      <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
+      <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
+
+      <div className="mt-3 space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Client account</p>
+        {draftUser && (
+          <div className="flex items-center justify-between rounded-lg border border-[#884c2d] bg-[#fff1ec] px-3 py-2">
+            <div>
+              <p className="text-sm font-semibold text-[#111827]">{draftUser.name}</p>
+              <p className="text-xs text-[#6b7280]">{draftUser.email}</p>
+            </div>
+            <button type="button" onClick={() => setDraftUserId(null)} className="text-xs font-semibold text-[#884c2d] hover:underline">Change</button>
+          </div>
+        )}
+        {!draftUser && (
+          <>
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+              <Search size={13} className="text-[#9ca3af]" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client accounts" className="w-full bg-transparent text-sm outline-none" />
+            </div>
+            {filtered.length ? (
+              <div className="max-h-40 space-y-1.5 overflow-y-auto">
+                {filtered.map((user) => (
+                  <button
+                    key={user._id}
+                    onClick={() => setDraftUserId(user._id)}
+                    className="flex w-full items-center justify-between rounded-lg border border-[#e5e7eb] px-3 py-2 text-left text-sm hover:bg-[#f9fafb]"
+                  >
+                    <span>
+                      <span className="block font-semibold text-[#111827]">{user.name}</span>
+                      <span className="block text-xs text-[#6b7280]">{user.email}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#6b7280]">No client accounts found.</p>
+            )}
+          </>
         )}
       </div>
 
-      {linkedUser && (
-        <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
-          <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Linked Account</p>
-          <p className="mt-0.5 text-sm font-semibold text-[#111827]">{linkedUser.name}</p>
-          <p className="text-xs text-[#6b7280]">{linkedUser.email}</p>
-        </div>
-      )}
-
-      {!linkedUser && searching && (
-        <div className="mt-3 space-y-2">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-            <Search size={13} className="text-[#9ca3af]" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client accounts" className="w-full bg-transparent text-sm outline-none" />
-          </div>
-          {filtered.length ? (
-            <div className="max-h-40 space-y-1.5 overflow-y-auto">
-              {filtered.map((user) => (
-                <button
-                  key={user._id}
-                  onClick={() => { onLink(contact, user); setSearching(false); }}
-                  className="flex w-full items-center justify-between rounded-lg border border-[#e5e7eb] px-3 py-2 text-left text-sm hover:bg-[#f9fafb]"
-                >
-                  <span>
-                    <span className="block font-semibold text-[#111827]">{user.name}</span>
-                    <span className="block text-xs text-[#6b7280]">{user.email}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-[#6b7280]">No client accounts found.</p>
-          )}
-        </div>
-      )}
-
-      {linkedUser && (
+      {draftUser && (
         <div className="mt-3 space-y-1.5">
           <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible in their portal</p>
           {projects.length ? (
             projects.map((project) => {
               const id = String(project._id || project.id);
-              const checked = projectIds.has(id);
+              const checked = draftProjectIds.has(id);
               return (
                 <label
                   key={id}
                   className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
                 >
                   <span className="font-semibold text-[#111827]">{project.name}</span>
-                  <input type="checkbox" checked={checked} onChange={() => onToggleProject(contact, id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
+                  <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
                 </label>
               );
             })
@@ -254,11 +300,16 @@ function ContactClientLinkRow({ contact, projects, clients, onLink, onUnlink, on
           )}
         </div>
       )}
+
+      <div className="mt-4 flex justify-end gap-2">
+        <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+        <Button onClick={save} disabled={!draftUser}><Save size={14} /> Save</Button>
+      </div>
     </div>
   );
 }
 
-function LinkClientPanel({ company, contacts, projects, clients, loading, onClose, onLink, onUnlink, onToggleProject }) {
+function LinkClientPanel({ company, contacts, projects, clients, loading, onClose, onSave, onUnlink }) {
   return (
     <SidePanel
       title="Link Client Portal Accounts"
@@ -275,9 +326,8 @@ function LinkClientPanel({ company, contacts, projects, clients, loading, onClos
               contact={contact}
               projects={projects}
               clients={clients}
-              onLink={onLink}
+              onSave={onSave}
               onUnlink={onUnlink}
-              onToggleProject={onToggleProject}
             />
           ))}
         </div>
@@ -803,6 +853,16 @@ export default function CompanyDetail() {
     showToast({ title: "Primary contact updated", message: `${contact.name || contact.email} is now the primary contact.` });
   }
 
+  async function handleSaveContactClientLink(contact, { userId, projectIds }) {
+    await saveContact({ ...contact, userId, projectIds });
+    showToast({ title: "Client access saved", message: `${contact.name || contact.email} can see ${projectIds.length} project${projectIds.length === 1 ? "" : "s"} in their portal.` });
+  }
+
+  async function handleUnlinkContactClient(contact) {
+    await saveContact({ ...contact, userId: null, projectIds: [] });
+    showToast({ title: "Client account unlinked", message: `${contact.name || contact.email} no longer has portal access.` });
+  }
+
   async function handleSaveCompanyEdit(form) {
     await saveCompany({ ...form, projects: Number(form.projects) || 0 });
     setEditingCompany(false);
@@ -960,6 +1020,7 @@ export default function CompanyDetail() {
                   <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
                 </div>
               )}
+              <Button variant="secondary" onClick={openLinkClient}><LinkIcon size={14} /> Link Client Portal</Button>
               <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
               <div className="relative" ref={addMenuRef}>
                 <Button onClick={() => setAddMenuOpen((open) => !open)}><Plus size={14} /> Add New</Button>
@@ -1101,6 +1162,18 @@ export default function CompanyDetail() {
       </div>
 
       {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
+      {linkingClient && (
+        <LinkClientPanel
+          company={company}
+          contacts={linked.contacts}
+          projects={linked.projects}
+          clients={clientUsers}
+          loading={loadingClients}
+          onClose={() => setLinkingClient(false)}
+          onSave={handleSaveContactClientLink}
+          onUnlink={handleUnlinkContactClient}
+        />
+      )}
       {creatingProject && <ProjectFormPanel company={company} companies={companies} contacts={linked.contacts} invoices={linked.invoices} projects={linked.projects} onClose={() => setCreatingProject(false)} onSave={handleCreateProject} />}
       {editingContact && <ContactFormPanel company={company} companies={companies} contact={editingContact._id || editingContact.id ? editingContact : null} onClose={() => setEditingContact(null)} onSave={handleSaveContact} />}
       {editingNote && <NotePanel company={company} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
