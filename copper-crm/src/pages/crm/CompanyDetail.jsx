@@ -177,20 +177,16 @@ function KpiChip({ label, value, icon: Icon }) {
 
 function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) {
   const [editing, setEditing] = useState(false);
-  const [query, setQuery] = useState("");
-  const [draftUserId, setDraftUserId] = useState(contact.userId || null);
   const [draftProjectIds, setDraftProjectIds] = useState(new Set((contact.projectIds || []).map(String)));
 
-  const linkedUser = clients.find((u) => String(u._id) === String(contact.userId));
-  const draftUser = clients.find((u) => String(u._id) === String(draftUserId));
+  // The contact itself IS the client — match their client-portal account by
+  // email instead of making the admin pick a person from an unrelated list.
+  const matchedUser = clients.find((u) => u.email && contact.email && u.email.toLowerCase() === contact.email.toLowerCase());
   const linkedProjectNames = projects.filter((p) => (contact.projectIds || []).map(String).includes(String(p._id || p.id))).map((p) => p.name);
-  const filtered = clients.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(query.toLowerCase()));
   const contactName = contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim() || contact.email || "Contact";
 
   function startEditing() {
-    setDraftUserId(contact.userId || null);
     setDraftProjectIds(new Set((contact.projectIds || []).map(String)));
-    setQuery("");
     setEditing(true);
   }
 
@@ -204,7 +200,7 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
   }
 
   function save() {
-    onSave(contact, { userId: draftUserId, projectIds: Array.from(draftProjectIds) });
+    onSave(contact, { userId: matchedUser?._id || null, projectIds: Array.from(draftProjectIds) });
     setEditing(false);
   }
 
@@ -217,15 +213,18 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
             <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
           </div>
           <div className="flex shrink-0 gap-2">
-            {linkedUser && <Button variant="secondary" onClick={() => onUnlink(contact)}><Unlink size={14} /> Unlink</Button>}
-            <Button variant="secondary" onClick={startEditing}><LinkIcon size={14} /> {linkedUser ? "Edit" : "Link Account"}</Button>
+            {contact.projectIds?.length > 0 && <Button variant="secondary" onClick={() => onUnlink(contact)}><Unlink size={14} /> Unlink</Button>}
+            <Button variant="secondary" onClick={startEditing} disabled={!matchedUser}><LinkIcon size={14} /> Manage Projects</Button>
           </div>
         </div>
-        {linkedUser && (
+        {!matchedUser && (
+          <p className="mt-3 text-xs text-[#9ca3af]">No client portal account found for {contact.email || "this contact"}. Send a portal invite from Edit Contact first.</p>
+        )}
+        {matchedUser && (
           <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
-            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Linked Account</p>
-            <p className="mt-0.5 text-sm font-semibold text-[#111827]">{linkedUser.name}</p>
-            <p className="text-xs text-[#6b7280]">{linkedUser.email}</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Client Account</p>
+            <p className="mt-0.5 text-sm font-semibold text-[#111827]">{matchedUser.name}</p>
+            <p className="text-xs text-[#6b7280]">{matchedUser.email}</p>
             <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible</p>
             <p className="text-xs text-[#6b7280]">{linkedProjectNames.length ? linkedProjectNames.join(", ") : "None yet"}</p>
           </div>
@@ -239,71 +238,30 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
       <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
       <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
 
-      <div className="mt-3 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Client account</p>
-        {draftUser && (
-          <div className="flex items-center justify-between rounded-lg border border-[#884c2d] bg-[#fff1ec] px-3 py-2">
-            <div>
-              <p className="text-sm font-semibold text-[#111827]">{draftUser.name}</p>
-              <p className="text-xs text-[#6b7280]">{draftUser.email}</p>
-            </div>
-            <button type="button" onClick={() => setDraftUserId(null)} className="text-xs font-semibold text-[#884c2d] hover:underline">Change</button>
-          </div>
-        )}
-        {!draftUser && (
-          <>
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-              <Search size={13} className="text-[#9ca3af]" />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search client accounts" className="w-full bg-transparent text-sm outline-none" />
-            </div>
-            {filtered.length ? (
-              <div className="max-h-40 space-y-1.5 overflow-y-auto">
-                {filtered.map((user) => (
-                  <button
-                    key={user._id}
-                    onClick={() => setDraftUserId(user._id)}
-                    className="flex w-full items-center justify-between rounded-lg border border-[#e5e7eb] px-3 py-2 text-left text-sm hover:bg-[#f9fafb]"
-                  >
-                    <span>
-                      <span className="block font-semibold text-[#111827]">{user.name}</span>
-                      <span className="block text-xs text-[#6b7280]">{user.email}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[#6b7280]">No client accounts found.</p>
-            )}
-          </>
+      <div className="mt-3 space-y-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible in their portal</p>
+        {projects.length ? (
+          projects.map((project) => {
+            const id = String(project._id || project.id);
+            const checked = draftProjectIds.has(id);
+            return (
+              <label
+                key={id}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+              >
+                <span className="font-semibold text-[#111827]">{project.name}</span>
+                <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
+              </label>
+            );
+          })
+        ) : (
+          <p className="text-xs text-[#6b7280]">No projects yet under this company.</p>
         )}
       </div>
 
-      {draftUser && (
-        <div className="mt-3 space-y-1.5">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible in their portal</p>
-          {projects.length ? (
-            projects.map((project) => {
-              const id = String(project._id || project.id);
-              const checked = draftProjectIds.has(id);
-              return (
-                <label
-                  key={id}
-                  className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
-                >
-                  <span className="font-semibold text-[#111827]">{project.name}</span>
-                  <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
-                </label>
-              );
-            })
-          ) : (
-            <p className="text-xs text-[#6b7280]">No projects yet under this company.</p>
-          )}
-        </div>
-      )}
-
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
-        <Button onClick={save} disabled={!draftUser}><Save size={14} /> Save</Button>
+        <Button onClick={save}><Save size={14} /> Save</Button>
       </div>
     </div>
   );
