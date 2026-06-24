@@ -325,8 +325,11 @@ export default function ContactDetail() {
       <div className="flex-1 p-6">
         {activeTab === "Overview" && (
           <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 rounded-xl border border-[#e5e7eb] bg-white p-5">
-              <p className="mb-3 text-sm font-bold text-gray-700">Contact Details</p>
+            <div className="lg:col-span-2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+              <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                <p className="text-sm font-bold text-gray-700">Contact Details</p>
+              </div>
+              <div className="p-5">
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 <Detail icon={Mail} label="Email" value={contact.email} />
                 <Detail icon={Phone} label="Phone" value={contact.phone} />
@@ -343,10 +346,14 @@ export default function ContactDetail() {
                   <p className="text-sm text-gray-600">{contact.preferences}</p>
                 </div>
               )}
+              </div>
             </div>
 
-            <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
-              <p className="mb-3 text-sm font-bold text-gray-700">Associated Contacts</p>
+            <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+              <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                <p className="text-sm font-bold text-gray-700">Associated Contacts</p>
+              </div>
+              <div className="p-5">
               {associated.length ? (
                 <div className="space-y-3">
                   {associated.map((item) => (
@@ -364,6 +371,7 @@ export default function ContactDetail() {
                   ))}
                 </div>
               ) : <p className="text-sm text-gray-400">No associated contacts yet.</p>}
+              </div>
             </div>
           </div>
         )}
@@ -422,8 +430,11 @@ export default function ContactDetail() {
 
         {activeTab === "Notes" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-[#e5e7eb] bg-white p-5">
-              <p className="mb-2 text-sm font-bold text-gray-700">Contact Notes</p>
+            <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+              <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                <p className="text-sm font-bold text-gray-700">Contact Notes</p>
+              </div>
+              <div className="p-5">
               <p className="text-sm text-gray-600">{contact.notes || "No notes added."}</p>
               {contact.meetingNotes && (
                 <div className="mt-4 border-t border-[#f1f1f5] pt-3">
@@ -431,12 +442,17 @@ export default function ContactDetail() {
                   <p className="text-sm text-gray-600">{contact.meetingNotes}</p>
                 </div>
               )}
+              </div>
             </div>
             {linkedNotes.map((n) => (
-              <div key={n._id || n.id} className="rounded-xl border border-[#e5e7eb] bg-white p-5">
-                <p className="mb-1 text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+              <div key={n._id || n.id} className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+                <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                  <p className="text-sm font-bold text-gray-700">{n.title || "Note"}</p>
+                </div>
+                <div className="p-5">
                 <p className="text-sm text-gray-600">{n.body || n.text || ""}</p>
                 <p className="mt-2 text-xs text-gray-400">{formatDate(n.createdAt)}</p>
+                </div>
               </div>
             ))}
           </div>

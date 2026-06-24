@@ -28,6 +28,8 @@ function matchesSocialDomain(value, key) {
   }
 }
 
+const EMPLOYEE_RANGES = ["1–10", "11–50", "51–200", "201–500", "501–1000", "1001–5000", "5000+"];
+
 function Field({ label, value, onChange, placeholder = "", type = "text", error = "" }) {
   return (
     <label className="block">
@@ -43,6 +45,24 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
         }`}
       />
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+    </label>
+  );
+}
+
+function SelectField({ label, value, onChange, options, placeholder = "Select…" }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <select
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 bg-white"
+      >
+        <option value="">{placeholder}</option>
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
     </label>
   );
 }
@@ -87,6 +107,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Company name" value={form.name} onChange={set("name")} error={errors.name} />
         <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
         <Field label="Industry" value={form.industry} onChange={set("industry")} />
+        <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
         <Field label="Primary contact" value={form.contact} onChange={set("contact")} />
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />
         <Field label="Status" value={form.status} onChange={set("status")} />

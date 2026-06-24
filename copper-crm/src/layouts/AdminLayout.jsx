@@ -115,7 +115,7 @@ const searchablePages = [
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
 ];
 
-function getBreadcrumbs(pathname, companies = [], projects = []) {
+function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) {
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = [{ label: "Analytics", to: "/admin" }];
   let path = "";
@@ -130,7 +130,9 @@ function getBreadcrumbs(pathname, companies = [], projects = []) {
     if (!name) {
       const company = companies.find((c) => String(c.id) === seg || String(c._id) === seg);
       const project = projects.find((p) => String(p.id) === seg || String(p._id) === seg);
-      name = company?.name || project?.name || (seg.length > 8 ? seg.slice(0, 8) + "â€¦" : seg.charAt(0).toUpperCase() + seg.slice(1));
+      const contact = contacts.find((c) => String(c.id) === seg || String(c._id) === seg);
+      const contactName = contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : null;
+      name = company?.name || project?.name || contactName || (seg.length > 8 ? seg.slice(0, 8) + "â€¦" : seg.charAt(0).toUpperCase() + seg.slice(1));
     }
     crumbs.push({ label: name, to: fullPath });
   }
@@ -250,6 +252,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const auth = useAuth();
   const { records: companies } = useCrmRecords("companies");
+  const { records: contacts } = useCrmRecords("contacts");
   const { records: projects } = useCrmRecords("projects");
   const { records: tasks } = useCrmRecords("tasks");
   const { records: invoices } = useCrmRecords("invoices");
@@ -307,7 +310,7 @@ export default function AdminLayout() {
 
   const name = auth.user?.name || "Admin";
   const initials = initialsOf(name);
-  const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects);
+  const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects, contacts);
 
   useEffect(() => {
     function buildIndex() {

@@ -19,7 +19,7 @@ export function Badge({ children, color = "gray" }) {
 
 export function Card({ children, className = "" }) {
   return (
-    <div className={`bg-[#fff8f6] rounded-xl border border-[#d8c2b9] ${className}`}>
+    <div className={`bg-white rounded-xl border border-[#d8c2b9] shadow-sm shadow-[#884c2d]/5 ${className}`}>
       {children}
     </div>
   );
@@ -91,9 +91,9 @@ export function PageHeader({ title, subtitle, action }) {
 
 export function SectionCard({ title, action, children, className = "" }) {
   return (
-    <div className={`border border-[#d8c2b9] rounded-xl bg-[#fff8f6] ${className}`}>
+    <div className={`border border-[#d8c2b9] rounded-xl bg-white shadow-sm shadow-[#884c2d]/5 overflow-hidden ${className}`}>
       {(title || action) && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#f3e5e0]">
+        <div className="flex items-center justify-between px-5 py-4 bg-[#fff1ec] border-b border-[#f3e5e0]">
           {title && <p className="font-display text-sm font-bold text-[#211a17]">{title}</p>}
           {action}
         </div>

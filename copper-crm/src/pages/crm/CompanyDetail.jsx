@@ -1108,8 +1108,8 @@ export default function CompanyDetail() {
 
 function Section({ title, action, children }) {
   return (
-    <section className="rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between border-b border-[#f3f4f6] px-5 py-4">
+    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
         <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
