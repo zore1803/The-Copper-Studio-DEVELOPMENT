@@ -54,8 +54,11 @@ function loadOrder() {
       ...defaultOrder,
       ...saved,
       selectedPackageId: selectedPackageId || defaultOrder.selectedPackageId,
-      verified: { ...defaultOrder.verified, ...(saved.verified || {}) },
-      otpSent: { ...defaultOrder.otpSent, ...(saved.otpSent || {}) },
+      // Verification never survives a page refresh — always start unverified so
+      // the user must re-send and re-verify the OTP each time the tab reloads.
+      verified: { ...defaultOrder.verified },
+      otpSent: { ...defaultOrder.otpSent },
+      otpVia: {},
       coupon: saved.coupon || null
     };
   } catch {
