@@ -364,28 +364,22 @@ export default function AdminLayout() {
         style={{ width: sidebarW }}
       >
         {/* Logo */}
-        <div className={`flex items-center border-b border-[#ECECEC] ${collapsed ? "justify-center px-0 py-4" : "px-4 py-4"}`}>
-          {collapsed ? (
-            <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-9 w-9 rounded-lg object-cover" />
-          ) : (
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-[#211a17] truncate">The Copper Studio</p>
-                <p className="text-[10px] text-[#9ca3af] truncate">CRM</p>
-              </div>
-            </div>
+        <div className={`flex flex-col items-center border-b border-[#ECECEC] ${collapsed ? "px-0 py-4" : "px-4 py-5"}`}>
+          <img
+            src="/copper-studio-logo.jpeg"
+            alt="Copper Studio"
+            className={`rounded-lg object-cover ${collapsed ? "h-9 w-9" : "h-16 w-16"}`}
+          />
+          {!collapsed && (
+            <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-[#211a17] text-center">
+              The Copper Studio
+            </p>
           )}
         </div>
 
         <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
-              {!collapsed && (
-                <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af]">
-                  {section.label}
-                </p>
-              )}
               {section.items.map((item) =>
                 item.children ? (
                   <NavGroup
