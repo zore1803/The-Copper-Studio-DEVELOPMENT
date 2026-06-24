@@ -16,6 +16,11 @@ export default function SearchableSelectField({
   error = "",
   hint,
   disabled = false,
+  // When true, typing a value with no matching option keeps the typed text
+  // as the value on blur/close instead of forcing a pick from the list —
+  // for fields like city/industry where the list is a helpful shortlist,
+  // not the full set of valid values.
+  allowCustom = false,
 }) {
   const normalized = options.map((option) =>
     typeof option === "string" ? { value: option, label: option } : option
@@ -27,13 +32,14 @@ export default function SearchableSelectField({
   useEffect(() => {
     function onClickAway(event) {
       if (rootRef.current && !rootRef.current.contains(event.target)) {
+        if (allowCustom && open && query.trim()) onChange(query.trim());
         setOpen(false);
         setQuery("");
       }
     }
     document.addEventListener("mousedown", onClickAway);
     return () => document.removeEventListener("mousedown", onClickAway);
-  }, []);
+  }, [allowCustom, open, query, onChange]);
 
   const selected = normalized.find((option) => String(option.value) === String(value || ""));
   const filtered = query.trim()
@@ -53,7 +59,7 @@ export default function SearchableSelectField({
         <input
           type="text"
           disabled={disabled}
-          value={open ? query : selected?.label || ""}
+          value={open ? query : selected?.label || (allowCustom ? value || "" : "")}
           placeholder={selected ? selected.label : placeholder}
           onFocus={() => { setOpen(true); setQuery(""); }}
           onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
@@ -62,7 +68,7 @@ export default function SearchableSelectField({
             error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
           } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
         />
-        {selected && !disabled ? (
+        {(selected || (allowCustom && value)) && !disabled ? (
           <button
             type="button"
             onMouseDown={(event) => event.preventDefault()}
@@ -76,6 +82,16 @@ export default function SearchableSelectField({
         )}
         {open && !disabled && (
           <div className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-[#e5e7eb] bg-white shadow-lg">
+            {allowCustom && query.trim() && !normalized.some((o) => o.label.toLowerCase() === query.trim().toLowerCase()) && (
+              <button
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => { onChange(query.trim()); setOpen(false); setQuery(""); }}
+                className="block w-full truncate border-b border-[#f3f4f6] px-3 py-2 text-left text-sm text-[#884c2d] hover:bg-[#fff1ec]"
+              >
+                Use "{query.trim()}"
+              </button>
+            )}
             {filtered.length === 0 ? (
               <p className="px-3 py-2 text-sm text-[#9ca3af]">No matches</p>
             ) : (

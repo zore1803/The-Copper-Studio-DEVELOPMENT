@@ -157,6 +157,7 @@ export function TasksPage() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
   const { records: taskRecords, save: saveTask, remove: removeTask } = useCrmRecords("tasks");
   const { records: meetingRecords, save: saveMeeting, remove: removeMeeting } = useCrmRecords("meetings");
   const PAGE_SIZE = 10;
@@ -194,6 +195,16 @@ export function TasksPage() {
   const totalPages = Math.max(1, Math.ceil(activeRows.length / PAGE_SIZE));
   const paginated = activeRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const statusOptions = tab === "Tasks" ? TASK_STAGES : MEETING_STAGES;
+  const paginatedTaskIds = paginated.map((t) => t.id);
+  const allTasksSelected = paginatedTaskIds.length > 0 && paginatedTaskIds.every((id) => selectedTaskIds.includes(id));
+
+  function toggleSelectAllTasks() {
+    setSelectedTaskIds((prev) => (allTasksSelected ? prev.filter((id) => !paginatedTaskIds.includes(id)) : [...new Set([...prev, ...paginatedTaskIds])]));
+  }
+
+  function toggleSelectTask(id) {
+    setSelectedTaskIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   function switchTab(t) {
     setTab(t);
@@ -299,7 +310,7 @@ export function TasksPage() {
                 <table className="w-full min-w-[800px]">
                   <thead>
                     <tr className="bg-gray-50/70">
-                      <th className="w-10 px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></th>
+                      <th className="w-10 px-4 py-3"><input type="checkbox" checked={allTasksSelected} onChange={toggleSelectAllTasks} className="rounded border-gray-300" /></th>
                       {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
                         <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
                       ))}
@@ -308,7 +319,7 @@ export function TasksPage() {
                   <tbody>
                     {paginated.map((task) => (
                       <tr key={task.id} className="border-t border-gray-100 hover:bg-gray-50/60">
-                        <td className="px-4 py-3"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="px-4 py-3"><input type="checkbox" checked={selectedTaskIds.includes(task.id)} onChange={() => toggleSelectTask(task.id)} className="rounded border-gray-300" /></td>
                         <td className="px-4 py-3 text-sm font-semibold text-gray-900 max-w-[200px] truncate">{task.title}</td>
                         <td className="px-4 py-3">
                           <p className="text-sm text-gray-700">{task.relatedTo}</p>

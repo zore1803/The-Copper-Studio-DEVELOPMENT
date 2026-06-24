@@ -114,7 +114,7 @@ function DocSignedBadge({ status, onChange }) {
   );
 }
 
-function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocument }) {
+function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocument, checked, onToggleSelect }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const btnRef = useRef(null);
@@ -151,7 +151,7 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
       onClick={onClick}
     >
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-        <input type="checkbox" className="rounded border-[#d1d5db] accent-[#884c2d]" />
+        <input type="checkbox" checked={checked} onChange={onToggleSelect} className="rounded border-[#d1d5db] accent-[#884c2d]" />
       </td>
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-3">
@@ -202,7 +202,7 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
               onClick={() => { setMenuOpen(false); onOpen(company); }}
               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
             >
-              <Eye size={14} /> Open workspace
+              <Eye size={14} /> Open
             </button>
             <button
               onClick={() => { setMenuOpen(false); onEdit(company); }}
@@ -464,12 +464,15 @@ export default function Companies() {
   const [folderPage, setFolderPage] = useState(1);
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
   const { showToast } = useToast();
   const actionsRef = useRef(null);
   const sortRef = useRef(null);
+  const filtersRef = useRef(null);
   useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
+  useClickOutside(filtersRef, () => setFiltersOpen(false), filtersOpen);
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -511,6 +514,17 @@ export default function Companies() {
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const paginatedIds = paginated.map((c) => c._id || c.id);
+  const allPaginatedSelected = paginatedIds.length > 0 && paginatedIds.every((id) => selectedIds.includes(id));
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => (allPaginatedSelected ? prev.filter((id) => !paginatedIds.includes(id)) : [...new Set([...prev, ...paginatedIds])]));
+  }
+
+  function toggleSelectOne(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   // Folders shown = the managed list plus any folder a company is already
   // assigned to, so membership is never orphaned if the list is edited.
@@ -630,7 +644,7 @@ export default function Companies() {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Sub-header */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
           <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contracts</p>
@@ -685,12 +699,63 @@ export default function Companies() {
               </div>
             )}
           </div>
-          <button
-            onClick={() => setFiltersOpen((value) => !value)}
-            className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
-          >
-            <Filter size={16} />
-          </button>
+          <div className="relative" ref={filtersRef}>
+            <button
+              onClick={() => setFiltersOpen((value) => !value)}
+              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <Filter size={16} />
+            </button>
+            {filtersOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-lg">
+                <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Filters</p>
+                <div className="max-h-[60vh] space-y-3 overflow-y-auto">
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
+                    <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                      {["All", "Accepted", "Pending", "Rejected", "Active", "Prospect"].map((status) => <option key={status}>{status}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">Industry</span>
+                    <select value={industryFilter} onChange={(event) => { setIndustryFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                      {industries.map((industry) => <option key={industry}>{industry}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">City</span>
+                    <select value={cityFilter} onChange={(event) => { setCityFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                      {cities.map((city) => <option key={city}>{city}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">State</span>
+                    <select value={stateFilter} onChange={(event) => { setStateFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                      {states.map((state) => <option key={state}>{state}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">Company owner</span>
+                    <select value={ownerFilter} onChange={(event) => { setOwnerFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                      {owners.map((owner) => <option key={owner}>{owner}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-[#6b7280]">Pincode</span>
+                    <input
+                      value={pincodeFilter}
+                      onChange={(event) => { setPincodeFilter(event.target.value); setPage(1); }}
+                      placeholder="e.g. 400001"
+                      className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 flex justify-end border-t border-[#f3f4f6] pt-3">
+                  <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
+                </div>
+              </div>
+            )}
+          </div>
           {/* View toggle */}
           <button
             onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
@@ -711,53 +776,6 @@ export default function Companies() {
         </div>
       </div>
 
-      {filtersOpen && (
-        <div className="mx-6 mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">Document / Status</span>
-            <select value={statusFilter} onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-              {["All", "Accepted", "Pending", "Rejected", "Active", "Prospect"].map((status) => <option key={status}>{status}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">Industry</span>
-            <select value={industryFilter} onChange={(event) => { setIndustryFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-              {industries.map((industry) => <option key={industry}>{industry}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">City</span>
-            <select value={cityFilter} onChange={(event) => { setCityFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-              {cities.map((city) => <option key={city}>{city}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">State</span>
-            <select value={stateFilter} onChange={(event) => { setStateFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-              {states.map((state) => <option key={state}>{state}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">Company owner</span>
-            <select value={ownerFilter} onChange={(event) => { setOwnerFilter(event.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-              {owners.map((owner) => <option key={owner}>{owner}</option>)}
-            </select>
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#6b7280]">Pincode</span>
-            <input
-              value={pincodeFilter}
-              onChange={(event) => { setPincodeFilter(event.target.value); setPage(1); }}
-              placeholder="e.g. 400001"
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-            />
-          </label>
-          <div className="flex items-end gap-2 sm:col-span-3">
-            <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
-          </div>
-        </div>
-      )}
-
       {/* Body */}
       <div className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
@@ -767,7 +785,12 @@ export default function Companies() {
                 <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                   <tr>
                     <th className="px-3 py-3 w-12">
-                      <input type="checkbox" className="rounded border-[#d1d5db] accent-[#884c2d]" />
+                      <input
+                        type="checkbox"
+                        checked={allPaginatedSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-[#d1d5db] accent-[#884c2d]"
+                      />
                     </th>
                     <th className="px-3 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
@@ -828,6 +851,8 @@ export default function Companies() {
                       onOpen={openCompany}
                       onClick={() => openCompany(company)}
                       onVerifyDocument={verifyDocument}
+                      checked={selectedIds.includes(company._id || company.id)}
+                      onToggleSelect={() => toggleSelectOne(company._id || company.id)}
                     />
                   ))}
                 </tbody>

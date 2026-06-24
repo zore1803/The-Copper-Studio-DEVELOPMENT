@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
+import SearchableSelectField from "./SearchableSelect";
 import { isGstin } from "../lib/validators";
+import { INDUSTRIES, LEAD_SOURCES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
 
 const SOCIAL_DOMAINS = {
   linkedin: { domains: ["linkedin.com", "lnkd.in"], label: "a linkedin.com" },
@@ -30,9 +32,9 @@ function matchesSocialDomain(value, key) {
 
 const EMPLOYEE_RANGES = ["1–10", "11–50", "51–200", "201–500", "501–1000", "1001–5000", "5000+"];
 
-function Field({ label, value, onChange, placeholder = "", type = "text", error = "" }) {
+function Field({ label, value, onChange, placeholder = "", type = "text", error = "", span = false }) {
   return (
-    <label className="block">
+    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
@@ -68,7 +70,11 @@ function SelectField({ label, value, onChange, options, placeholder = "Select…
 }
 
 export default function CompanyFormPanel({ company, onClose, onSave }) {
-  const [form, setForm] = useState(company);
+  const [form, setForm] = useState(() => ({
+    ...company,
+    addressLine1: company.addressLine1 || company.address || "",
+    addressLine2: company.addressLine2 || "",
+  }));
   const [errors, setErrors] = useState({});
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -87,7 +93,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     }
     setErrors(next);
     if (Object.keys(next).length) return;
-    onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin });
+    onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin, address: form.addressLine1 });
   }
 
   return (
@@ -104,20 +110,26 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
       }
     >
       <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Company name" value={form.name} onChange={set("name")} error={errors.name} />
+        <Field label="Company name *" value={form.name} onChange={set("name")} error={errors.name} />
         <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
-        <Field label="Industry" value={form.industry} onChange={set("industry")} />
+        <SearchableSelectField label="Industry" value={form.industry} onChange={set("industry")} options={INDUSTRIES} allowCustom placeholder="Select or type…" />
         <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
         <Field label="Primary contact" value={form.contact} onChange={set("contact")} />
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />
         <Field label="Status" value={form.status} onChange={set("status")} />
         <Field label="Website" value={form.website} onChange={set("website")} error={errors.website} />
-        <Field label="Address" value={form.address} onChange={set("address")} />
-        <Field label="City" value={form.city} onChange={set("city")} />
-        <Field label="State" value={form.state} onChange={set("state")} />
-        <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
         <Field label="Company owner" value={form.owner} onChange={set("owner")} placeholder="Account owner" />
-        <Field label="Lead source" value={form.leadSource} onChange={set("leadSource")} />
+        <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={LEAD_SOURCES} allowCustom placeholder="Select or type…" />
+
+        <div className="sm:col-span-3 mt-1 border-t border-[#f1f1f5] pt-3">
+          <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Address</span>
+        </div>
+        <Field span label="Address line 1" value={form.addressLine1} onChange={set("addressLine1")} />
+        <Field span label="Address line 2" value={form.addressLine2} onChange={set("addressLine2")} />
+        <SearchableSelectField label="City" value={form.city} onChange={set("city")} options={INDIAN_CITIES} allowCustom placeholder="Select or type…" />
+        <SearchableSelectField label="State" value={form.state} onChange={set("state")} options={INDIAN_STATES} placeholder="Select state…" />
+        <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
+
         <div className="sm:col-span-3 mt-1 border-t border-[#f1f1f5] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social profiles</span>
         </div>

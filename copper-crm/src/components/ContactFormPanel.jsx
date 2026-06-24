@@ -213,7 +213,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       <div className="space-y-6">
         <FormSection title="Personal Information" cols={3}>
           <Select label="Salutation" value={form.salutation} onChange={set("salutation")} options={salutationOptions} placeholder="Select salutation" />
-          <Input label="First name" value={form.firstName} onChange={set("firstName")} error={errors.firstName} />
+          <Input label="First name *" value={form.firstName} onChange={set("firstName")} error={errors.firstName} hint={!errors.firstName ? "At least a first or last name is required." : undefined} />
           <Input label="Last name" value={form.lastName} onChange={set("lastName")} />
           <Input label="Designation" value={form.designation} onChange={set("designation")} />
           <Input label="Department" value={form.department} onChange={set("department")} />

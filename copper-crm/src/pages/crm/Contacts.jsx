@@ -357,8 +357,10 @@ export default function Contacts() {
   const [sortOpen, setSortOpen] = useState(false);
   const actionsRef = useRef(null);
   const sortRef = useRef(null);
+  const filtersRef = useRef(null);
   useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
+  useClickOutside(filtersRef, () => setFiltersOpen(false), filtersOpen);
 
   const [folders, setFolders] = useState(loadStoredFolders);
   const [folderSearch, setFolderSearch] = useState("");
@@ -493,7 +495,7 @@ export default function Contacts() {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
           <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
@@ -542,12 +544,42 @@ export default function Contacts() {
             </div>
 
             {/* Filters */}
-            <button
-              onClick={() => setFiltersOpen((value) => !value)}
-              className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
-            >
-              <Filter size={16} />
-            </button>
+            <div className="relative" ref={filtersRef}>
+              <button
+                onClick={() => setFiltersOpen((value) => !value)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${filtersOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              >
+                <Filter size={16} />
+              </button>
+              {filtersOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-72 rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-lg">
+                  <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Filters</p>
+                  <div className="space-y-3">
+                    <label className="block">
+                      <span className="text-xs font-semibold text-[#6b7280]">Status</span>
+                      <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                        {statuses.map((status) => <option key={status}>{status}</option>)}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-xs font-semibold text-[#6b7280]">Designation</span>
+                      <select value={designationFilter} onChange={(e) => { setDesignationFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                        {designations.map((d) => <option key={d}>{d}</option>)}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="text-xs font-semibold text-[#6b7280]">Company</span>
+                      <select value={companyFilter} onChange={(e) => { setCompanyFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+                        {companyNames.map((name) => <option key={name}>{name}</option>)}
+                      </select>
+                    </label>
+                  </div>
+                  <div className="mt-3 flex justify-end border-t border-[#f3f4f6] pt-3">
+                    <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* View toggle */}
             <button
@@ -568,32 +600,6 @@ export default function Contacts() {
             </button>
           </div>
         </div>
-
-        {filtersOpen && (
-          <div className="mx-6 mt-4 grid gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 sm:grid-cols-3">
-            <label className="block">
-              <span className="text-xs font-semibold text-[#6b7280]">Status</span>
-              <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-                {statuses.map((status) => <option key={status}>{status}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-[#6b7280]">Designation</span>
-              <select value={designationFilter} onChange={(e) => { setDesignationFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-                {designations.map((d) => <option key={d}>{d}</option>)}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-[#6b7280]">Company</span>
-              <select value={companyFilter} onChange={(e) => { setCompanyFilter(e.target.value); setPage(1); }} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-                {companyNames.map((name) => <option key={name}>{name}</option>)}
-              </select>
-            </label>
-            <div className="flex items-end sm:col-span-3">
-              <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
-            </div>
-          </div>
-        )}
 
       <main className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
