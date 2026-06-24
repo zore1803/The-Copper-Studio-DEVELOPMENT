@@ -761,7 +761,7 @@ export default function Companies() {
       {/* Body */}
       <div className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
-          <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-[#F1F1F5] shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
+          <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
                 <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
@@ -810,7 +810,7 @@ export default function Companies() {
                     <th className="px-3 py-3 w-10" />
                   </tr>
                 </thead>
-                <tbody className="bg-[#F1F1F5]">
+                <tbody className="bg-white">
                   {loading ? (
                     <tr>
                       <td colSpan={9} className="px-4 py-12 text-center text-sm text-[#6b7280]">Loading companies…</td>

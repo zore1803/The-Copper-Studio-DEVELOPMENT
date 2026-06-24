@@ -588,7 +588,7 @@ export default function Contacts() {
       <main className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
           <>
-            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-[#F1F1F5]">
+            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
               <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_auto] gap-4 border-b border-[#f3e5e0] bg-[#fff1ec] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
                 <span className="flex items-center gap-1.5"><SlidersHorizontal size={12} /> Contact</span>
                 <span>Associated Company</span><span>Email</span><span>WhatsApp</span><span>Status</span><span />
