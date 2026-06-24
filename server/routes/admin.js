@@ -60,12 +60,14 @@ router.get("/clients", async (req, res, next) => {
 
 // A CRM contact is a client. This provisions (or refreshes) their portal login
 // and emails a set-password link — the manual counterpart to the paid-order
-// invite. `skipIfActive` avoids resetting a client who already has a password.
+// invite. This is an explicit admin action (checking "send portal invite" and
+// saving), so it always sends — including to a client who already has a
+// password, so they can reset it if they want to.
 router.post("/clients/invite", async (req, res, next) => {
   try {
     const { email, name, phone, company } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required to send a portal invite." });
-    const result = await sendPortalInvite({ email, name, phone, company, skipIfActive: true });
+    const result = await sendPortalInvite({ email, name, phone, company });
     if (result.emailSkipped) {
       return res.status(503).json({
         ...result,
