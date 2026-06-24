@@ -53,7 +53,18 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
               <FolderKanban size={24} className="text-[#884c2d]" />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
+              <div className="flex min-w-0 items-center gap-2">
+                <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
+                {onEdit && (
+                  <button
+                    onClick={onEdit}
+                    title="Edit project"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#fff1ec] hover:text-[#884c2d]"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                )}
+              </div>
               <p className="mt-0.5 text-sm text-[#525866]">{company.name}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Badge color={statusColor[liveStatus] || "gray"}>{liveStatus}</Badge>
@@ -78,7 +89,6 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
             </div>
           </div>
           <div className="flex flex-wrap shrink-0 gap-3">
-            {onEdit && <Button variant="secondary" size="lg" onClick={onEdit}><Pencil size={15} /> Edit</Button>}
             <Button variant="secondary" size="lg" onClick={onShare}><Share2 size={15} /> Share Project</Button>
             <Button variant="primary" size="lg" onClick={actionLabel ? onAction : onNewTask}><ActionIcon size={15} /> {actionLabel || "New Task"}</Button>
           </div>
