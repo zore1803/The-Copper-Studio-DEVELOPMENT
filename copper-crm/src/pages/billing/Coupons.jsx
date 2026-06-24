@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { BarChart2, Copy, Plus, Save, Search, Tag, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
+import PhoneInput from "../../components/PhoneInput";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import { isEmail, isPhone, isFutureDate } from "../../lib/validators";
@@ -150,7 +151,7 @@ function CouponFormPanel({ onClose, onCreate }) {
         <CouponField label="Client name" value={coupon.clientName} onChange={setField("clientName")} placeholder="Optional" />
         <CouponField label="Company name" value={coupon.companyName} onChange={setField("companyName")} placeholder="Optional" />
         <CouponField label="Email ID" type="email" value={coupon.email} onChange={setField("email")} error={errors.email} placeholder="Optional" />
-        <CouponField label="Phone no." type="tel" inputMode="numeric" value={coupon.phone} onChange={setField("phone")} error={errors.phone} placeholder="Optional" maxLength={10} />
+        <PhoneInput label="Phone no." value={coupon.phone} onChange={setField("phone")} error={errors.phone} />
       </div>
     </SidePanel>
   );

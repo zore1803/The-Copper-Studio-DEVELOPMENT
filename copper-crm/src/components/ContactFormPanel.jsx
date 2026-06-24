@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
+import PhoneInput from "./PhoneInput";
 import { useToast } from "./useToast";
 import { useAuth } from "../auth/useAuth";
 import { apiPost } from "../lib/api";
@@ -221,15 +222,15 @@ export default function ContactFormPanel({ contact, company = null, companies = 
 
         <FormSection title="Communication">
           <Input label="Work email" type="email" value={form.email} onChange={set("email")} error={errors.email} />
-          <Input label="Phone" value={form.phone} onChange={set("phone")} error={errors.phone} />
-          <Input
+          <PhoneInput label="Phone" value={form.phone} onChange={set("phone")} error={errors.phone} />
+          <PhoneInput
             label="WhatsApp number"
             value={form.whatsapp}
             onChange={set("whatsapp")}
             error={errors.whatsapp}
             hint="Primary WhatsApp number used for project updates."
           />
-          <Input label="Alternative number" value={form.alternatePhone} onChange={set("alternatePhone")} error={errors.alternatePhone} />
+          <PhoneInput label="Alternative number" value={form.alternatePhone} onChange={set("alternatePhone")} error={errors.alternatePhone} />
         </FormSection>
 
         <FormSection title="Company Mapping">

@@ -11,6 +11,7 @@ import {
 import { Button } from "../../components/ui";
 import { useToast } from "../../components/useToast";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import PhoneInput from "../../components/PhoneInput";
 import { isEmail, isPhone, isFutureDate, isGstin, required as isRequired, isPositiveNumber } from "../../lib/validators";
 
 function Card({ children, className = "" }) {
@@ -567,7 +568,7 @@ export function ServicesPage() {
             <Field label="Client name" value={coupon.clientName} onChange={setField("clientName")} placeholder="Optional" />
             <Field label="Company name" value={coupon.companyName} onChange={setField("companyName")} placeholder="Optional" />
             <Field label="Email ID" type="email" value={coupon.email} onChange={setField("email")} error={errors.email} placeholder="Optional" />
-            <Field label="Phone no." type="tel" inputMode="numeric" value={coupon.phone} onChange={setField("phone")} error={errors.phone} placeholder="Optional" maxLength={10} />
+            <PhoneInput label="Phone no." value={coupon.phone} onChange={setField("phone")} error={errors.phone} />
           </div>
           <div className="flex justify-end gap-2 border-t border-[#EAECF0] px-5 py-4">
             <Button variant="secondary" onClick={() => copyText(previewCode, "Prefix copied")}><Copy size={14} /> Copy prefix</Button>
