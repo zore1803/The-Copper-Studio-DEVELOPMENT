@@ -12,6 +12,7 @@ import Note from "../models/Note.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 import { syncPaidOrderFinance } from "../services/finance.js";
+import { sendContactCreatedEmail } from "../services/email.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = express.Router();
@@ -132,6 +133,9 @@ router.post("/:type", createLimiter, validateType, async (req, res, next) => {
     let payload = type === "coupons" ? couponPayload(req.body) : req.body;
     payload = await withClientLink(type, payload);
     const record = await Model.create(payload);
+    if (type === "contacts") {
+      sendContactCreatedEmail({ name: record.name, email: record.email, phone: record.phone, company: record.company }).catch(() => {});
+    }
     res.status(201).json(asPublicRecord(record));
   } catch (error) {
     next(error);

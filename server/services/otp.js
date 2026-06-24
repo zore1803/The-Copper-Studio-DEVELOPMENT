@@ -54,8 +54,8 @@ export async function sendOtp({ email, channel }) {
   const result = await sendOtpEmail({ to: email, code, label: CHANNEL_LABEL[channel] || "verification" });
   const sent = !result?.skipped;
 
-  // When SMTP is not configured, surface the code only outside production so the
-  // flow remains testable locally. Never leak it in production.
+  // When SendGrid is not configured, surface the code only outside production
+  // so the flow remains testable locally. Never leak it in production.
   const devCode = !sent && process.env.NODE_ENV !== "production" ? code : undefined;
   return { sent, devCode };
 }

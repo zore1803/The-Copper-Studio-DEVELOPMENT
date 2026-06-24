@@ -675,7 +675,7 @@ export function SettingsPage() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [company, setCompany] = useState({ studioName: "The Copper Studio", legalName: "", gstin: "", billingEmail: "", website: "", billingAddress: "" });
   const [billing, setBilling] = useState({ gateway: "Razorpay", apiBase: "", invoicePrefix: "INV", defaultRole: "user", autoInviteAfterPayment: true, allowCouponAtCheckout: true });
-  const [email, setEmail] = useState({ senderName: "The Copper Studio", senderEmail: "", smtpHost: "", smtpPort: "587", onboardingPath: "/client-secure-onboarding/access-setup" });
+  const [email, setEmail] = useState({ senderName: "The Copper Studio", senderEmail: "", onboardingPath: "/client-secure-onboarding/access-setup" });
   const [notifications, setNotifications] = useState({ paymentSuccess: true, failedPayments: true, portalInviteSent: true, overdueInvoices: true });
   const [security, setSecurity] = useState({ inviteExpiry: "48 hours", otpExpiry: "10 minutes" });
   const [errors, setErrors] = useState({});
@@ -721,8 +721,6 @@ export function SettingsPage() {
     }
     if (key === "email") {
       if (email.senderEmail && !isEmail(email.senderEmail)) e.senderEmail = "Enter a valid email.";
-      const port = Number(email.smtpPort);
-      if (email.smtpPort && (!Number.isInteger(port) || port < 1 || port > 65535)) e.smtpPort = "Port must be a number 1–65535.";
     }
     return e;
   }
@@ -954,13 +952,11 @@ export function SettingsPage() {
                 <div>
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold text-[#211a17]">Email Delivery Settings</h3>
-                    <p className="mt-1 text-sm text-[#6c6355]">Set the mail sender identity and the secure onboarding route used in invite messages.</p>
+                    <p className="mt-1 text-sm text-[#6c6355]">Set the mail sender identity and the secure onboarding route used in invite messages. Delivery itself runs through SendGrid (configured via SENDGRID_API_KEY on the server).</p>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <SettingsField label="Sender Name" value={email.senderName} onChange={(value) => setEmail((prev) => ({ ...prev, senderName: value }))} />
-                    <SettingsField label="Sender Email" type="email" value={email.senderEmail} error={errors.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} />
-                    <SettingsSecretField label="SMTP Host" value={email.smtpHost} onChange={(value) => setEmail((prev) => ({ ...prev, smtpHost: value }))} hint="Hidden by default — click the eye icon to reveal." />
-                    <SettingsSecretField label="SMTP Port" value={email.smtpPort} error={errors.smtpPort} onChange={(value) => setEmail((prev) => ({ ...prev, smtpPort: value }))} />
+                    <SettingsField label="Sender Email" type="email" value={email.senderEmail} error={errors.senderEmail} onChange={(value) => setEmail((prev) => ({ ...prev, senderEmail: value }))} hint="Must be a verified sender identity in SendGrid." />
                     <div className="sm:col-span-2">
                       <SettingsField label="Secure Onboarding Path" value={email.onboardingPath} onChange={(value) => setEmail((prev) => ({ ...prev, onboardingPath: value }))} />
                     </div>

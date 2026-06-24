@@ -69,7 +69,7 @@ router.post("/clients/invite", async (req, res, next) => {
     if (result.emailSkipped) {
       return res.status(503).json({
         ...result,
-        message: "Client account was created, but SMTP is not configured so the setup email was not sent."
+        message: "Client account was created, but SendGrid is not configured so the setup email was not sent."
       });
     }
     res.status(result.alreadyActive ? 200 : 201).json(result);

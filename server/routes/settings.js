@@ -87,12 +87,12 @@ router.put("/billing", async (req, res, next) => {
 router.put("/email", async (req, res, next) => {
   try {
     const {
-      senderName = "", senderEmail = "", smtpHost = "",
-      smtpPort = "587", onboardingPath = "/client-secure-onboarding/access-setup"
+      senderName = "", senderEmail = "",
+      onboardingPath = "/client-secure-onboarding/access-setup"
     } = req.body;
     const settings = await Settings.findOneAndUpdate(
       {},
-      { $set: { email: { senderName, senderEmail, smtpHost, smtpPort, onboardingPath } } },
+      { $set: { email: { senderName, senderEmail, onboardingPath } } },
       { upsert: true, new: true }
     );
     res.json({ email: settings.email });

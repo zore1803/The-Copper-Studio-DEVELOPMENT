@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import Settings from "../models/Settings.js";
 
 function clean(value) {
@@ -14,62 +14,42 @@ async function getMailConfig() {
     // Email should still work from .env even if the settings row is unavailable.
   }
 
-  const host = clean(process.env.SMTP_HOST || settingsEmail.smtpHost);
-  const port = Number(process.env.SMTP_PORT || settingsEmail.smtpPort || 587);
-  const user = clean(process.env.SMTP_USER || settingsEmail.smtpUser);
-  const pass = clean(process.env.SMTP_PASS || settingsEmail.smtpPass);
-  const senderEmail = clean(process.env.MAIL_FROM || settingsEmail.senderEmail || user);
-  const senderName = clean(settingsEmail.senderName);
-  const from = process.env.MAIL_FROM || (senderName && senderEmail ? `${senderName} <${senderEmail}>` : senderEmail);
+  const fromEmail = clean(process.env.MAIL_FROM_EMAIL || settingsEmail.senderEmail);
+  const fromName = clean(process.env.MAIL_FROM_NAME || settingsEmail.senderName || "The Copper Studio");
+  const apiKey = clean(process.env.SENDGRID_API_KEY);
 
-  return {
-    host,
-    port,
-    secure: process.env.SMTP_SECURE === "true",
-    user,
-    pass,
-    from
-  };
-}
-
-async function getTransporter() {
-  const config = await getMailConfig();
-  if (!config.host || !config.user || !config.pass) return { transporter: null, config };
-
-  return {
-    config,
-    transporter: nodemailer.createTransport({
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
-      auth: {
-        user: config.user,
-        pass: config.pass
-      }
-    })
-  };
+  return { fromEmail, fromName, apiKey };
 }
 
 async function sendMail(message) {
-  const { transporter, config } = await getTransporter();
-  if (!transporter) {
-    const missing = [
-      !config.host && "SMTP_HOST",
-      !config.user && "SMTP_USER",
-      !config.pass && "SMTP_PASS"
-    ].filter(Boolean).join(", ");
-    console.warn(`SMTP is not configured. Email skipped: ${message.subject}. Missing: ${missing}`);
-    return { skipped: true, reason: "smtp_not_configured", missing };
+  const config = await getMailConfig();
+
+  if (!config.apiKey || !config.fromEmail) {
+    const missing = [!config.apiKey && "SENDGRID_API_KEY", !config.fromEmail && "MAIL_FROM_EMAIL"].filter(Boolean).join(", ");
+    console.warn(`SendGrid is not configured. Email skipped: ${message.subject}. Missing: ${missing}`);
+    return { skipped: true, reason: "sendgrid_not_configured", missing };
   }
 
+  sgMail.setApiKey(config.apiKey);
+  const { to, subject, html, attachments } = message;
+
   try {
-    return await transporter.sendMail({
-      from: config.from || config.user,
-      ...message
+    await sgMail.send({
+      to,
+      from: { email: config.fromEmail, name: config.fromName },
+      subject,
+      html,
+      attachments: attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        type: attachment.contentType,
+        content: Buffer.isBuffer(attachment.content) ? attachment.content.toString("base64") : attachment.content,
+        disposition: "attachment"
+      }))
     });
+    return { skipped: false, provider: "sendgrid" };
   } catch (error) {
-    console.error("Email delivery failed:", error.message);
-    const deliveryError = new Error("Email delivery failed. Check SMTP host, port, username, password, and sender settings.");
+    console.error("SendGrid delivery failed:", error.response?.body || error.message);
+    const deliveryError = new Error("Email delivery failed via SendGrid. Check SENDGRID_API_KEY and that MAIL_FROM_EMAIL is a verified sender identity.");
     deliveryError.statusCode = 502;
     throw deliveryError;
   }
@@ -131,6 +111,26 @@ export async function sendOtpEmail({ to, code, label }) {
         <p>Use this code to complete checkout on The Copper Studio:</p>
         <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${code}</p>
         <p style="font-size:13px;color:#6b7280">This code expires in 10 minutes. Ignore this email if you did not request it.</p>
+      </div>
+    `
+  });
+}
+
+export async function sendContactCreatedEmail({ name, email, phone, company }) {
+  const to = clean(process.env.CONTACT_NOTIFY_EMAIL || process.env.SUPERADMIN_EMAIL);
+  if (!to) return { skipped: true, reason: "no_notify_recipient" };
+
+  return sendMail({
+    to,
+    subject: `New contact added${company ? `: ${company}` : ""}`,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">New contact added</h2>
+        <p><strong>${name || "Unnamed contact"}</strong>${company ? ` at <strong>${company}</strong>` : ""} was just added to the CRM.</p>
+        <p style="font-size:13px;color:#6b7280">
+          ${email ? `Email: ${email}<br/>` : ""}
+          ${phone ? `Phone: ${phone}` : ""}
+        </p>
       </div>
     `
   });

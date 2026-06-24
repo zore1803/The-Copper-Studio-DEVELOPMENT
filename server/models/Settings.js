@@ -26,8 +26,6 @@ const schema = new mongoose.Schema(
     email: {
       senderName: { type: String, default: "The Copper Studio" },
       senderEmail: { type: String, default: "" },
-      smtpHost: { type: String, default: "" },
-      smtpPort: { type: String, default: "587" },
       onboardingPath: { type: String, default: "/client-secure-onboarding/access-setup" }
     },
     notifications: {
@@ -69,8 +67,6 @@ export default defineModel({
     email: {
       senderName: "The Copper Studio",
       senderEmail: "",
-      smtpHost: "",
-      smtpPort: "587",
       onboardingPath: "/client-secure-onboarding/access-setup"
     },
     notifications: {
