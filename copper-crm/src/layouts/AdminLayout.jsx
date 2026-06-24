@@ -4,9 +4,9 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell, BarChart2, Building2, ChevronDown,
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
-  FileText, FolderKanban, FolderOpen, LayoutDashboard, ClipboardList,
-  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, Tag, UserRound, Wallet, Package,
+  FileText, FolderKanban, FolderOpen, LayoutDashboard,
+  LogOut, Plus, ReceiptText, Search, Settings,
+  ShoppingCart, UserRound, Wallet, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { storeGet } from "../lib/store";
@@ -19,13 +19,6 @@ const NAV_SECTIONS = [
       { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
       { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: UserRound, to: "/admin/contacts", label: "Contacts" },
-      {
-        icon: ClipboardList, label: "Activity",
-        children: [
-          { icon: Mail, to: "/admin/communication/email-templates", label: "Email Templates" },
-          { icon: MessageCircle, to: "/admin/communication/whatsapp-templates", label: "WhatsApp Templates" },
-        ],
-      },
     ],
   },
   {
@@ -42,7 +35,6 @@ const NAV_SECTIONS = [
         icon: Package, label: "Products & Services",
         children: [
           { icon: FileSignature, to: "/admin/services/proposal-generator", label: "Proposal Generator" },
-          { icon: Tag, to: "/admin/services/coupon-generator", label: "Coupon Generator" },
           { icon: Wallet, to: "/admin/coupons", label: "Coupons" },
         ],
       },
@@ -62,12 +54,6 @@ const NAV_SECTIONS = [
           { icon: FolderOpen, to: "/admin/documents/project-folders", label: "Project Folders" },
         ],
       },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { icon: Settings, to: "/admin/settings", label: "Settings" },
     ],
   },
 ];
@@ -377,16 +363,6 @@ export default function AdminLayout() {
         className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
-        <div className={`flex h-14 items-center border-b border-[#ECECEC] ${collapsed ? "justify-center" : "justify-end px-3"}`}>
-          <button
-            onClick={() => setCollapsed((v) => !v)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#525252] hover:bg-[#f9fafb] transition-colors"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
-          </button>
-        </div>
-
         <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
@@ -419,25 +395,14 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center gap-2 py-3" : "p-3"}`}>
-          {!collapsed && (
-            <div className="mb-2 flex items-center gap-2.5 px-1">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
-                {initials}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-semibold text-[#111827]">{name}</p>
-                <p className="truncate text-[11px] text-[#6b7280]">{auth.user?.role || "Admin"}</p>
-              </div>
-            </div>
-          )}
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
-            onClick={() => { auth.logout(); navigate("/login", { replace: true }); }}
-            title="Log out"
-            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+            onClick={() => setCollapsed((v) => !v)}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
-            <LogOut size={14} />
-            {!collapsed && "Log out"}
+            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+            {!collapsed && "Collapse"}
           </button>
         </div>
       </aside>

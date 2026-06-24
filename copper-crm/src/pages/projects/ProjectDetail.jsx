@@ -608,6 +608,7 @@ export default function ProjectDetail() {
         project={project}
         activeTab="Overview"
         onShare={handleShare}
+        onEdit={() => setManaging(true)}
         actionLabel="Manage Stages"
         actionIcon={Settings2}
         onAction={() => setManaging(true)}
