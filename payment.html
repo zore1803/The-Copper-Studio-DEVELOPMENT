@@ -19,15 +19,15 @@
 
     <main class="page-shell">
       <section class="page-heading">
-        <span class="eyebrow">Razorpay</span>
-        <h1>Complete secure payment.</h1>
-        <p>Traditional corporate payment screen with UPI, card, and netbanking options.</p>
+        <span class="eyebrow">Review &amp; Pay</span>
+        <h1>Confirm your order.</h1>
+        <p>Review your package and amount, then pay securely via the Razorpay window.</p>
       </section>
 
       <section class="two-column payment-layout">
         <aside class="panel">
-          <p class="mini-label">Checkout Summary</p>
-          <div id="checkoutSummary"></div>
+          <p class="mini-label">Selected Package</p>
+          <div id="packageDetails"></div>
           <div class="summary-divider"></div>
           <div class="customer-card">
             <p class="mini-label">Customer</p>
@@ -36,66 +36,20 @@
           </div>
         </aside>
 
-        <section class="razorpay-card" aria-label="Razorpay payment screen">
-          <div class="razorpay-top">
-            <div>
-              <span class="razorpay-logo">Razorpay</span>
-              <p>Secure payment gateway</p>
-            </div>
+        <section class="panel payment-summary" aria-label="Payment summary">
+          <div class="payment-summary-head">
+            <p class="mini-label">Amount Summary</p>
             <span class="secure-badge"><span class="material-symbols-outlined">lock</span> 100% Secure</span>
           </div>
 
-          <div class="payment-amount">
-            <span>Amount payable</span>
-            <strong id="paymentAmount">-</strong>
-          </div>
-
-          <div class="payment-methods" role="tablist" aria-label="Payment method">
-            <button class="method is-active" type="button" data-method="upi"><span class="material-symbols-outlined">qr_code_2</span> UPI</button>
-            <button class="method" type="button" data-method="card"><span class="material-symbols-outlined">credit_card</span> Card</button>
-            <button class="method" type="button" data-method="netbanking"><span class="material-symbols-outlined">account_balance</span> Netbanking</button>
-          </div>
-
-          <div class="payment-panel is-active" data-payment-panel="upi">
-            <label>
-              <span>UPI ID</span>
-              <input type="text" placeholder="name@bank">
-            </label>
-            <div class="qr-box">
-              <span class="material-symbols-outlined">qr_code_2</span>
-              <p>Scan with any UPI app</p>
-            </div>
-          </div>
-
-          <div class="payment-panel" data-payment-panel="card">
-            <label>
-              <span>Card Number</span>
-              <input type="text" placeholder="4111 1111 1111 1111">
-            </label>
-            <div class="mini-fields">
-              <label><span>Expiry</span><input type="text" placeholder="MM/YY"></label>
-              <label><span>CVV</span><input type="password" placeholder="123"></label>
-            </div>
-          </div>
-
-          <div class="payment-panel" data-payment-panel="netbanking">
-            <label>
-              <span>Select Bank</span>
-              <select>
-                <option>HDFC Bank</option>
-                <option>ICICI Bank</option>
-                <option>State Bank of India</option>
-                <option>Axis Bank</option>
-              </select>
-            </label>
-          </div>
+          <div id="amountBreakdown"></div>
 
           <div class="payment-actions">
             <a class="btn btn-secondary" href="checkout.html">Back</a>
             <button class="btn btn-primary" type="button" id="payButton">Pay Securely <span class="material-symbols-outlined">arrow_forward</span></button>
           </div>
 
-          <p class="gateway-note" id="gatewayNote">Click Pay Securely to open Razorpay Checkout.</p>
+          <p class="gateway-note" id="gatewayNote">Click Pay Securely to open the Razorpay payment window.</p>
         </section>
       </section>
     </main>

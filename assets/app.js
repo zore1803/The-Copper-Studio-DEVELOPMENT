@@ -271,6 +271,50 @@ function overviewTemplate(pkg = selectedPackage()) {
   `;
 }
 
+// Left panel on the payment page: the selected package, its setup timeline,
+// what's included, and any add-ons that have been attached to the order.
+function packageDetailsTemplate(pkg = selectedPackage()) {
+  const includes = pkg.includes || [];
+  const addOns = order.addOns || pkg.addOns || [];
+  return `
+    <div class="overview-card">
+      <h3>${pkg.name}</h3>
+      <p>${pkg.label}</p>
+      <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
+      <div class="overview-row"><span>Setup timeline</span><strong>${pkg.duration}</strong></div>
+      ${includes.length ? `
+        <p class="mini-label" style="margin-top:16px">What's included</p>
+        <ul class="package-includes">${includes.map((item) => `<li>${item}</li>`).join("")}</ul>` : ""}
+      ${addOns.length ? `
+        <p class="mini-label" style="margin-top:16px">Add-ons</p>
+        <ul class="package-includes">${addOns.map((a) => `<li>${a.name || a}${a.price ? `<span>${formatCurrency(a.price)}</span>` : ""}</li>`).join("")}</ul>` : ""}
+    </div>
+  `;
+}
+
+// Right panel on the payment page: the amount breakdown with the GST split into
+// CGST + SGST, any applied coupon, and the final amount to pay.
+function amountBreakdownTemplate(pkg = selectedPackage()) {
+  const discount = order.coupon?.discount || 0;
+  const subtotal = Math.max(0, pkg.price - discount);
+  const total = packageTotal(pkg);
+  const gst = total - subtotal;
+  const cgst = Math.floor(gst / 2);
+  const sgst = gst - cgst;
+  return `
+    <div class="overview-card">
+      <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
+      ${discount ? `<div class="overview-row discount-row"><span>Coupon applied (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
+      <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
+      <div class="overview-row"><span>CGST (9%)</span><strong>${formatCurrency(cgst)}</strong></div>
+      <div class="overview-row"><span>SGST (9%)</span><strong>${formatCurrency(sgst)}</strong></div>
+      <div class="overview-row"><span>Total GST (18%)</span><strong>${formatCurrency(gst)}</strong></div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="total-row"><span>Amount to pay</span><strong>${formatCurrency(total)}</strong></div>
+  `;
+}
+
 function requirePackage() {
   if (!order.selectedPackageId) {
     window.location.href = "index.html";
@@ -530,20 +574,10 @@ function renderCheckoutPage() {
 function renderPaymentPage() {
   requireCustomer();
   const pkg = selectedPackage();
-  document.getElementById("checkoutSummary").innerHTML = overviewTemplate(pkg);
-  document.getElementById("paymentAmount").textContent = formatCurrency(packageTotal(pkg));
+  document.getElementById("packageDetails").innerHTML = packageDetailsTemplate(pkg);
+  document.getElementById("amountBreakdown").innerHTML = amountBreakdownTemplate(pkg);
   document.getElementById("summaryCustomer").textContent = order.customer.customerName;
   document.getElementById("summaryContact").textContent = `${order.customer.customerEmail} | ${customerFullPhone()}`;
-
-  document.querySelectorAll("[data-method]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const method = button.dataset.method;
-      document.querySelectorAll("[data-method]").forEach((item) => item.classList.toggle("is-active", item.dataset.method === method));
-      document.querySelectorAll("[data-payment-panel]").forEach((panel) => {
-        panel.classList.toggle("is-active", panel.dataset.paymentPanel === method);
-      });
-    });
-  });
 
   document.getElementById("payButton").addEventListener("click", async () => {
     const button = document.getElementById("payButton");
@@ -582,7 +616,7 @@ function renderPaymentPage() {
           packageName: pkg.name
         },
         theme: {
-          color: "#2563eb"
+          color: "#884c2d"
         },
         handler: async (response) => {
           button.textContent = "Verifying payment...";
