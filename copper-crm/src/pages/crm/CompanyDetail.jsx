@@ -2240,9 +2240,9 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
       </div>
       {visibleNotes.length ? (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="notes" direction="horizontal">
+          <Droppable droppableId="notes">
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="grid gap-3 sm:grid-cols-2">
+              <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
                 {visibleNotes.map((note, index) => (
                   <Draggable key={note.id || note._id} draggableId={String(note.id || note._id)} index={index} isDragDisabled={Boolean(dateFilter)}>
                     {(prov, snap) => (
