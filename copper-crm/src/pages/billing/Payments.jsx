@@ -133,7 +133,7 @@ export default function Payments() {
         <Metric label="Invoices" value={invoices.length} icon={ReceiptText} />
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#F1F1F5]">
         <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {["All", "Success", "Pending", "Failed", "Refunded"].map((item) => (
