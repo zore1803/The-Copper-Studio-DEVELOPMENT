@@ -386,7 +386,7 @@ export default function AdminLayout() {
           />
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
+        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? "flex flex-col items-center gap-2.5" : "space-y-4 px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
               {section.items.map((item) =>
