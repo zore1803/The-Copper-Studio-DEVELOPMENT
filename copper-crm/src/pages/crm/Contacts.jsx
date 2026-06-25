@@ -594,14 +594,41 @@ export default function Contacts() {
                   />
                 ))
               ) : <div className="p-5"><EmptyState onCreate={() => setEditing({ status: "Active" })} /></div>}
-            </div>
 
-            <div className="mt-4 flex items-center justify-between text-sm text-[#6b7280]">
-              <span>Showing {rows.length} of {filtered.length} contacts</span>
-              <div className="flex items-center gap-1">
-                <button disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1 disabled:opacity-40">Prev</button>
-                <span className="px-2 text-xs font-semibold">Page {page} / {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1 disabled:opacity-40">Next</button>
+              <div className="flex items-center justify-between border-t border-[#E1E4EA] px-6 py-3.5">
+                <p className="text-sm text-[#6b7280]">
+                  Showing <span className="font-semibold text-[#111827]">{rows.length}</span> of{" "}
+                  <span className="font-semibold text-[#111827]">{filtered.length}</span> Contacts
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                        p === page
+                          ? "bg-[#884c2d] text-white"
+                          : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           </>

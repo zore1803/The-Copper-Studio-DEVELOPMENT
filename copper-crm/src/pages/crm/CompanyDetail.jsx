@@ -1347,9 +1347,10 @@ function WorkspaceToggle({ options, value, onChange }) {
 
 function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onOpen, onCreate, statusFilter, packageFilter, managerFilter, timelineFilter, onStatusFilter, onPackageFilter, onManagerFilter, onTimelineFilter, packages, managers }) {
   return (
-    <Section title="Projects" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Project</Button>}>
-      <div className="mb-4 flex justify-end">
-        <div className="flex items-center gap-2">
+    <Section
+      title="Projects"
+      action={
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <FilterButton
             panelWidth={560}
             onReset={() => { onStatusFilter("All"); onPackageFilter("All"); onManagerFilter("All"); onTimelineFilter("All"); }}
@@ -1361,8 +1362,10 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
             ]}
           />
           <WorkspaceToggle options={PROJECT_VIEWS} value={view} onChange={onView} />
+          <Button size="sm" onClick={onCreate}><Plus size={14} /> Project</Button>
         </div>
-      </div>
+      }
+    >
       {!allProjects.length ? <EmptyState icon={FolderKanban} title="No projects yet." action={<Button onClick={onCreate}><Plus size={14} /> New Project</Button>} /> : null}
       {allProjects.length && !projects.length ? <EmptyState icon={Filter} title="No projects match these filters." /> : null}
       {projects.length && view === "Table" ? <ProjectsTable projects={projects} companyId={companyId} onOpen={onOpen} /> : null}
