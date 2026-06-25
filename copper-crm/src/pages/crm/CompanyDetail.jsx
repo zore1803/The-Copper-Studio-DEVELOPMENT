@@ -731,6 +731,9 @@ export default function CompanyDetail() {
     return !Number.isNaN(due.getTime()) && due < today && !["completed", "done"].includes(String(task.status || "").toLowerCase());
   }).length;
   const primaryContact = linked.contacts.find((contact) => contact.isPrimary || contact.name === company.primaryContact || contact.email === company.primaryContactEmail) || linked.contacts[0];
+  // Contacts that have actually been linked to a client-portal login — each
+  // shows as a small avatar bubble beside the Link Client Portal button.
+  const linkedClientContacts = linked.contacts.filter((contact) => contact.userId);
   const activityItems = buildActivity(linked, company);
   const projectsCompleted = linked.projects.filter((project) => String(project.status || project.currentPhase || "").toLowerCase() === "completed").length;
   const activeProjects = linked.projects.length - projectsCompleted;
@@ -994,7 +997,33 @@ export default function CompanyDetail() {
                   <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
                 </div>
               )}
-              <Button variant="secondary" onClick={openLinkClient}><LinkIcon size={14} /> Link Client Portal</Button>
+              <div className="flex items-center">
+                <button
+                  onClick={openLinkClient}
+                  title="Link Client Portal"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec]"
+                >
+                  <LinkIcon size={15} />
+                </button>
+                {linkedClientContacts.length > 0 && (
+                  <div className="flex items-center -space-x-2 pl-1.5">
+                    {linkedClientContacts.slice(0, 4).map((contact) => (
+                      <span
+                        key={contact._id || contact.id}
+                        title={`${contact.name || contact.email || "Client"} — client portal linked`}
+                        className="rounded-full ring-2 ring-white"
+                      >
+                        <Avatar name={contact.name || contact.email} size="sm" />
+                      </span>
+                    ))}
+                    {linkedClientContacts.length > 4 && (
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
+                        +{linkedClientContacts.length - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
               <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
               <div className="relative" ref={addMenuRef}>
                 <Button onClick={() => setAddMenuOpen((open) => !open)}><Plus size={14} /> Add New</Button>
@@ -1295,12 +1324,12 @@ function ProjectsTable({ projects, companyId, onOpen }) {
 
 function WorkspaceToggle({ options, value, onChange }) {
   return (
-    <div className="inline-flex rounded-lg border border-[#e5e7eb] bg-white p-1">
+    <div className="inline-flex rounded-full border border-[#e5e7eb] bg-white p-1">
       {options.map((option) => (
         <button
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-md px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
+          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
         >
           {option}
         </button>
@@ -1641,11 +1670,11 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
       title="Documents"
       action={
         <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-[#e5e7eb] bg-white p-0.5">
+          <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
             <button
               type="button"
               onClick={() => setView("Grid")}
-              className={`rounded-md p-1.5 ${view === "Grid" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+              className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="Grid view"
             >
               <LayoutGrid size={15} />
@@ -1653,7 +1682,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             <button
               type="button"
               onClick={() => setView("List")}
-              className={`rounded-md p-1.5 ${view === "List" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+              className={`rounded-full p-1.5 ${view === "List" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="List view"
             >
               <ListIcon size={15} />
@@ -2237,11 +2266,14 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   // hovered card's own rect, instead of a CSS-only popover anchored inside the
   // card — that approach clipped/overflowed off-screen for cards in the last
   // row, since it could only ever open downward relative to its own box.
+  // Default to opening *above* the hovered note so the preview sits over its own
+  // row instead of the next one down (which read like it belonged to a different
+  // note); fall back to below only when the row is too close to the top to fit.
   function showPreview(event, note) {
     if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
     const rect = event.currentTarget.getBoundingClientRect();
     const estimatedHeight = 220;
-    const openUp = rect.bottom + estimatedHeight > window.innerHeight && rect.top > estimatedHeight;
+    const openUp = rect.top > estimatedHeight;
     setPreview({
       note,
       left: rect.left,

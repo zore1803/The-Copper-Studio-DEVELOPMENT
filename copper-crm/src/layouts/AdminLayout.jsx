@@ -242,7 +242,9 @@ export default function AdminLayout() {
   const { records: projects } = useCrmRecords("projects");
   const { records: tasks } = useCrmRecords("tasks");
   const { records: invoices } = useCrmRecords("invoices");
-  const [collapsed, setCollapsed] = useState(false);
+  // Always start collapsed on every load/reload; the sidebar only expands when
+  // the user explicitly clicks the collapse/expand toggle.
+  const [collapsed, setCollapsed] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
