@@ -32,6 +32,15 @@ export const INDUSTRIES = [
   "Other",
 ];
 
+export const REGISTRATION_TYPES = [
+  "Pvt Ltd",
+  "Ltd",
+  "LLP",
+  "Partnership",
+  "Sole Proprietorship",
+  "Other",
+];
+
 export const LEAD_SOURCES = [
   "Google",
   "Email Marketing",

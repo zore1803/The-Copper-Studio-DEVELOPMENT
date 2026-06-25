@@ -1,10 +1,24 @@
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Building2, Upload, X } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
 import SearchableSelectField from "./SearchableSelect";
+import { useToast } from "./useToast";
 import { isGstin } from "../lib/validators";
-import { INDUSTRIES, LEAD_SOURCES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
+import { INDUSTRIES, LEAD_SOURCES, REGISTRATION_TYPES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
+
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+
+// Reads an image file into a base64 data URL so the logo travels with the
+// company record (same approach as document uploads elsewhere in the app).
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 const SOCIAL_DOMAINS = {
   linkedin: { domains: ["linkedin.com", "lnkd.in"], label: "a linkedin.com" },
@@ -70,6 +84,7 @@ function SelectField({ label, value, onChange, options, placeholder = "Select…
 }
 
 export default function CompanyFormPanel({ company, onClose, onSave }) {
+  const { showToast } = useToast();
   const [form, setForm] = useState(() => ({
     ...company,
     addressLine1: company.addressLine1 || company.address || "",
@@ -80,6 +95,22 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
+
+  async function handleLogoPick(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast({ type: "error", title: "Not an image", message: "Choose a PNG, JPG, or SVG file for the logo." });
+      return;
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      showToast({ type: "error", title: "Image too large", message: "Logo must be 2 MB or smaller." });
+      return;
+    }
+    const dataUrl = await readFileAsDataUrl(file);
+    set("logo")(dataUrl);
+  }
 
   function handleSubmit() {
     const next = {};
@@ -110,8 +141,37 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
       }
     >
       <div className="grid gap-4 sm:grid-cols-3">
+        <div className="sm:col-span-3 flex items-center gap-4">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
+            {form.logo ? (
+              <img src={form.logo} alt="Company logo" className="h-full w-full object-cover" />
+            ) : (
+              <Building2 size={28} className="text-[#884c2d]" />
+            )}
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[#374151]">Profile picture</span>
+            <div className="mt-1.5 flex items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
+                <Upload size={13} /> {form.logo ? "Change" : "Upload"}
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoPick} />
+              </label>
+              {form.logo && (
+                <button
+                  type="button"
+                  onClick={() => set("logo")("")}
+                  className="inline-flex items-center gap-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb]"
+                >
+                  <X size={13} /> Remove
+                </button>
+              )}
+            </div>
+            <p className="mt-1 text-[11px] text-[#9ca3af]">PNG, JPG or SVG · up to 2 MB</p>
+          </div>
+        </div>
         <Field label="Company name *" value={form.name} onChange={set("name")} error={errors.name} />
         <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
+        <SearchableSelectField label="Registration type" value={form.registrationType} onChange={set("registrationType")} options={REGISTRATION_TYPES} placeholder="Select or type…" />
         <SearchableSelectField label="Industry" value={form.industry} onChange={set("industry")} options={INDUSTRIES} allowCustom placeholder="Select or type…" />
         <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
         <Field label="Primary contact" value={form.contact} onChange={set("contact")} />

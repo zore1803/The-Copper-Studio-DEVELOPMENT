@@ -968,8 +968,12 @@ export default function CompanyDetail() {
         <div className="px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
-                <Building2 size={24} className="text-[#884c2d]" />
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
+                {company.logo ? (
+                  <img src={company.logo} alt={`${company.name} logo`} className="h-full w-full object-cover" />
+                ) : (
+                  <Building2 size={24} className="text-[#884c2d]" />
+                )}
               </div>
               <div className="min-w-0">
                 <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
