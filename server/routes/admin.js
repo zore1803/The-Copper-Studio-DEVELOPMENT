@@ -18,8 +18,12 @@ function contactDisplayName(contact) {
 }
 
 async function ensureContactClientAccounts() {
-  const contacts = await Contact.find({}).sort({ updatedAt: -1 });
-  const companies = await Company.find({}).catch(() => []);
+  // .lean() skips Mongoose document hydration, so a legacy contact with a
+  // non-ObjectId value in projectIds/userId (some old records reference
+  // projects/companies by their human-readable custom id) can't throw a
+  // CastError and take down the whole /clients listing.
+  const contacts = await Contact.find({}).sort({ updatedAt: -1 }).lean();
+  const companies = await Company.find({}).lean().catch(() => []);
   const companyMap = new Map(companies.map((company) => [String(company._id || company.id), company]));
   const byEmail = new Map();
 
@@ -50,7 +54,9 @@ async function ensureContactClientAccounts() {
 
 router.get("/clients", async (req, res, next) => {
   try {
-    await ensureContactClientAccounts();
+    // Best-effort sync: a bad legacy contact record must not prevent already-existing
+    // clients from being listed.
+    await ensureContactClientAccounts().catch((error) => console.warn("Could not sync contacts to client accounts:", error.message));
     const clients = await User.find({ role: "user" }).sort({ createdAt: -1 }).select("-passwordHash -invite -resetPassword");
     res.json(clients);
   } catch (error) {
