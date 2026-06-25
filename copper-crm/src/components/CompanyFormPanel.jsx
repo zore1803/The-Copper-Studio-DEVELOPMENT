@@ -6,6 +6,7 @@ import SearchableSelectField from "./SearchableSelect";
 import { useToast } from "./useToast";
 import { isGstin } from "../lib/validators";
 import { INDUSTRIES, LEAD_SOURCES, REGISTRATION_TYPES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
+import { loadCompanyOwners } from "../lib/companyOwners";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
@@ -45,6 +46,7 @@ function matchesSocialDomain(value, key) {
 }
 
 const EMPLOYEE_RANGES = ["1–10", "11–50", "51–200", "201–500", "501–1000", "1001–5000", "5000+"];
+const COMPANY_STATUS_OPTIONS = ["Active", "Prospect", "Inactive"];
 
 function Field({ label, value, onChange, placeholder = "", type = "text", error = "", span = false }) {
   return (
@@ -91,6 +93,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     addressLine2: company.addressLine2 || "",
   }));
   const [errors, setErrors] = useState({});
+  const companyOwners = loadCompanyOwners();
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
@@ -176,9 +179,9 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
         <Field label="Primary contact" value={form.contact} onChange={set("contact")} />
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />
-        <Field label="Status" value={form.status} onChange={set("status")} />
+        <SelectField label="Status" value={form.status} onChange={set("status")} options={COMPANY_STATUS_OPTIONS} placeholder="Select status…" />
         <Field label="Website" value={form.website} onChange={set("website")} error={errors.website} />
-        <Field label="Company owner" value={form.owner} onChange={set("owner")} placeholder="Account owner" />
+        <SearchableSelectField label="Company owner" value={form.owner} onChange={set("owner")} options={companyOwners} allowCustom placeholder="Select company owner…" />
         <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={LEAD_SOURCES} allowCustom placeholder="Select or type…" />
 
         <div className="sm:col-span-3 mt-1 border-t border-[#f1f1f5] pt-3">

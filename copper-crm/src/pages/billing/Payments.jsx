@@ -155,9 +155,9 @@ export default function Payments() {
         {filtered.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-[#fff1ec]">
-                <tr className="text-left text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
-                  {["Payment ID", "Company", "Amount", "Method", "Gateway", "Status"].map((head) => <th key={head} className="px-4 py-3">{head}</th>)}
+              <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <tr>
+                  {["Payment ID", "Company", "Amount", "Method", "Gateway", "Status"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f3f4f6]">

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Calendar, Edit3, Eye, EyeOff,
+  Building2, Calendar, Edit3, Eye, EyeOff,
   Globe2, LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
   Plus, Save, Search,
   Settings as SettingsIcon, ShieldCheck, SlidersHorizontal,
@@ -14,6 +14,7 @@ import { useAuth } from "../../auth/useAuth";
 import { apiGet, apiPost, apiPut } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import { isEmail, isGstin } from "../../lib/validators";
+import { loadCompanyOwners, persistCompanyOwners } from "../../lib/companyOwners";
 
 const URL_RE = /^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i;
 
@@ -308,11 +309,11 @@ export function TasksPage() {
             <div className="overflow-x-auto">
               {tab === "Tasks" ? (
                 <table className="w-full min-w-[800px]">
-                  <thead>
-                    <tr className="bg-gray-50/70">
+                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                    <tr>
                       <th className="w-10 px-4 py-3"><input type="checkbox" checked={allTasksSelected} onChange={toggleSelectAllTasks} className="rounded border-gray-300" /></th>
                       {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -341,10 +342,10 @@ export function TasksPage() {
                 </table>
               ) : (
                 <table className="w-full min-w-[800px]">
-                  <thead>
-                    <tr className="bg-gray-50/70">
+                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                    <tr>
                       {["Meeting", "Scheduled", "Status", "With", "Actions"].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -633,6 +634,7 @@ const GENERAL_SECTIONS = [
   { key: "profile", title: "Super Admin", description: "Super admin details and primary identity.", icon: UserPlus },
   { key: "password", title: "Password", description: "Change your account password.", icon: LockKeyhole },
   { key: "activity", title: "Activity", description: "Manage email and WhatsApp message templates.", icon: Mail },
+  { key: "companyOwners", title: "Company Owners", description: "Manage the list of company owners shown in the company form.", icon: Building2 },
 ];
 
 const SECURE_SECTIONS = [];
@@ -690,6 +692,8 @@ export function SettingsPage() {
   const [notifications, setNotifications] = useState({ paymentSuccess: true, failedPayments: true, portalInviteSent: true, overdueInvoices: true });
   const [security, setSecurity] = useState({ inviteExpiry: "48 hours", otpExpiry: "10 minutes" });
   const [errors, setErrors] = useState({});
+  const [companyOwners, setCompanyOwners] = useState(loadCompanyOwners);
+  const [newOwnerName, setNewOwnerName] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -778,6 +782,25 @@ export function SettingsPage() {
   function selectSection(key) {
     setActiveSection(key);
     setErrors({});
+  }
+
+  function addCompanyOwner() {
+    const trimmed = newOwnerName.trim();
+    if (!trimmed) return;
+    if (companyOwners.some((owner) => owner.toLowerCase() === trimmed.toLowerCase())) {
+      showToast({ type: "error", title: "Already in the list", message: `"${trimmed}" is already a company owner.` });
+      return;
+    }
+    const next = [...companyOwners, trimmed];
+    setCompanyOwners(next);
+    persistCompanyOwners(next);
+    setNewOwnerName("");
+  }
+
+  function removeCompanyOwner(name) {
+    const next = companyOwners.filter((owner) => owner !== name);
+    setCompanyOwners(next);
+    persistCompanyOwners(next);
   }
 
   const activeMeta = ALL_SECTIONS.find((s) => s.key === activeSection);
@@ -891,6 +914,38 @@ export function SettingsPage() {
                         <p className="mt-1 text-xs leading-5 text-[#6c6355]">Create and edit the WhatsApp message templates.</p>
                       </div>
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {activeSection === "companyOwners" && (
+                <div>
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-[#211a17]">Company Owners</h3>
+                    <p className="mt-1 text-sm text-[#6c6355]">Manage the names that show up in the "Company owner" dropdown on the company form.</p>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[220px]">
+                      <SettingsField
+                        label="Add owner"
+                        value={newOwnerName}
+                        placeholder="e.g. Rohit Zore"
+                        onChange={setNewOwnerName}
+                      />
+                    </div>
+                    <Button onClick={addCompanyOwner}><Plus size={14} /> Add</Button>
+                  </div>
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {companyOwners.length ? companyOwners.map((owner) => (
+                      <span key={owner} className="flex items-center gap-2 rounded-full border border-[#ead8d1] bg-[#fffdfc] px-3 py-1.5 text-sm font-semibold text-[#211a17]">
+                        {owner}
+                        <button type="button" onClick={() => removeCompanyOwner(owner)} className="text-[#9c8c80] hover:text-red-500">
+                          <Trash2 size={13} />
+                        </button>
+                      </span>
+                    )) : (
+                      <p className="text-sm text-[#6c6355]">No company owners added yet.</p>
+                    )}
                   </div>
                 </div>
               )}

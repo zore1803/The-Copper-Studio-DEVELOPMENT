@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { FolderKanban, Plus, Share2, Calendar, Clock3, AlertCircle, Pencil } from "lucide-react";
+import { FolderKanban, Plus, Share2, Calendar, Clock3, AlertCircle } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
-import { isRoadmapComplete } from "../../lib/stageProgress";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const statusColor = {
   "Requirement Gathering": "gray",
@@ -11,17 +11,6 @@ const statusColor = {
   Review: "blue",
   Completed: "green",
 };
-
-// Derive the project's status from its actual stages so the badge can never get
-// stuck on a stale stored "Completed". Falls back to the stored status only when
-// the project has no stages at all.
-function liveProjectStatus(project) {
-  const stages = Array.isArray(project.stages) ? project.stages : [];
-  if (!stages.length) return project.status || "Requirement Gathering";
-  if (isRoadmapComplete(stages)) return "Completed";
-  const anyStarted = stages.some((s) => s?.status && s.status !== "not_started");
-  return anyStarted ? "In Progress" : "Requirement Gathering";
-}
 
 const priorityPill = {
   urgent: { label: "Urgent", color: "red", icon: AlertCircle },
@@ -38,36 +27,33 @@ function tabsFor(company, project) {
   ];
 }
 
-export default function ProjectHeader({ company, project, activeTab, onShare, onEdit, onNewTask, onAction, actionLabel, actionIcon: ActionIcon = Plus }) {
+export default function ProjectHeader({ company, project, activeTab, onShare, onNewTask }) {
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
   const tabs = tabsFor(company, project);
   const team = project.team || project.assignedTeam || [];
-  const liveStatus = liveProjectStatus(project);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
       <div className="px-6 py-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <Breadcrumb
+          items={[
+            { label: "Companies", to: "/admin/companies" },
+            { label: company.name, to: `/admin/companies/${company.id || company._id}` },
+            { label: "Projects", to: `/admin/companies/${company.id || company._id}` },
+            { label: project.name, to: null },
+          ]}
+        />
+
+        <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff1ec]">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff8f6]">
               <FolderKanban size={24} className="text-[#884c2d]" />
             </div>
             <div className="min-w-0">
-              <div className="flex min-w-0 items-center gap-2">
-                <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
-                {onEdit && (
-                  <button
-                    onClick={onEdit}
-                    title="Edit project"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#fff1ec] hover:text-[#884c2d]"
-                  >
-                    <Pencil size={13} />
-                  </button>
-                )}
-              </div>
+              <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
               <p className="mt-0.5 text-sm text-[#525866]">{company.name}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <Badge color={statusColor[liveStatus] || "gray"}>{liveStatus}</Badge>
+                <Badge color={statusColor[project.status] || "gray"}>{project.status}</Badge>
                 <Badge color={pill.color}>
                   <pill.icon size={12} className="mr-1 inline" />{pill.label}
                 </Badge>
@@ -90,7 +76,7 @@ export default function ProjectHeader({ company, project, activeTab, onShare, on
           </div>
           <div className="flex flex-wrap shrink-0 gap-3">
             <Button variant="secondary" size="lg" onClick={onShare}><Share2 size={15} /> Share Project</Button>
-            <Button variant="primary" size="lg" onClick={actionLabel ? onAction : onNewTask}><ActionIcon size={15} /> {actionLabel || "New Task"}</Button>
+            <Button variant="primary" size="lg" onClick={onNewTask}><Plus size={15} /> New Task</Button>
           </div>
         </div>
       </div>

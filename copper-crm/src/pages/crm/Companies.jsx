@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, FolderOpen, FolderPlus,
   Folder as FolderIcon, Globe, Grid2x2, List, MoreVertical, Plus, Save, Search,
-  SlidersHorizontal, Trash2, X
+  Trash2, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -723,13 +723,11 @@ export default function Companies() {
                   <tr>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        <Building2 size={13} />
                         Company Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        <SlidersHorizontal size={13} />
                         Industry
                       </div>
                     </th>
@@ -740,7 +738,6 @@ export default function Companies() {
                     </th>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        <Globe size={13} />
                         Website
                       </div>
                     </th>

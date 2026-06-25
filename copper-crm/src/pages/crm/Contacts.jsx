@@ -352,12 +352,9 @@ export default function Contacts() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [designationFilter, setDesignationFilter] = useState("All");
   const [companyFilter, setCompanyFilter] = useState("All");
-  const [actionsOpen, setActionsOpen] = useState(false);
   const [sortBy, setSortBy] = useState("name_asc");
   const [sortOpen, setSortOpen] = useState(false);
-  const actionsRef = useRef(null);
   const sortRef = useRef(null);
-  useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   const [folders, setFolders] = useState(loadStoredFolders);
@@ -503,19 +500,6 @@ export default function Contacts() {
             <Search size={16} className="text-[#1F2937]/50 shrink-0" />
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50" />
           </div>
-          <div className="relative" ref={actionsRef}>
-            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
-              <MoreVertical size={16} />
-            </button>
-            {actionsOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
-                  <X size={14} /> Clear filters
-                </button>
-              </div>
-            )}
-          </div>
-
             {/* Sort */}
             <div className="relative" ref={sortRef}>
               <button

@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 
 function readFileAsDataUrl(file) {
@@ -105,14 +106,25 @@ function fileExt(filename) {
   return (filename || "").split(".").pop().toLowerCase();
 }
 
+const DOCUMENT_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+// Same fields as the company-workspace upload panel (CompanyDetail.jsx) so
+// uploading from the Documentation tab produces an identical document record.
 function UploadPanel({ folderLabel, onClose, onSave }) {
-  const [form, setForm] = useState({ name: "", fileUrl: "", fileType: "pdf", fileSize: "" });
+  const { showToast } = useToast();
+  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   async function handleBrowse(event) {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      showToast({ type: "error", title: "File too large", message: "Files must be 8 MB or smaller. Paste a hosted file URL instead for larger files." });
+      event.target.value = "";
+      return;
+    }
     const dataUrl = await readFileAsDataUrl(file);
     setForm((prev) => ({
       ...prev,
@@ -150,6 +162,37 @@ function UploadPanel({ folderLabel, onClose, onSave }) {
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File name *</span>
           <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">Category</span>
+          <select value={form.category} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+            {DOCUMENT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">File type</span>
+          <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+            {["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"].map((type) => <option key={type}>{type}</option>)}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">...or paste a file URL</span>
+          <input
+            value={fileReady ? "" : form.fileUrl}
+            onChange={(e) => set("fileUrl")(e.target.value)}
+            disabled={fileReady}
+            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f9fafb] disabled:text-[#9ca3af]"
+          />
+          <span className="mt-1 block text-[11px] text-[#9ca3af]">Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above.</span>
+        </label>
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">Notes</span>
+          <textarea
+            value={form.notes}
+            rows={3}
+            onChange={(e) => set("notes")(e.target.value)}
+            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          />
         </label>
       </div>
     </SidePanel>

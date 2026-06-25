@@ -293,10 +293,10 @@ function CrmTab({ companies, contacts }) {
           <p className="p-5 text-sm text-[#9ca3af]">No companies added yet.</p>
         ) : (
           <table className="min-w-full text-xs">
-            <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
               <tr>
                 {["Name", "Industry", "Status"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left font-semibold text-[#6b7280] uppercase tracking-wider text-[10px]">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -360,10 +360,10 @@ function InvoicesTab({ invoices }) {
         </div>
         {recentInvoices.length ? (
           <table className="min-w-full">
-            <thead className="bg-[#fafafa] border-b border-[#f3f4f6]">
+            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
               <tr>
                 {["Invoice", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -526,10 +526,10 @@ export default function Dashboard() {
                 <p className="p-5 text-sm text-[#9ca3af]">No active projects.</p>
               ) : (
                 <table className="min-w-full">
-                  <thead>
-                    <tr className="bg-[#fafafa] border-b border-[#f3f4f6]">
+                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                    <tr>
                       {["Project", "Client", "Progress", "Due", "Status"].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{h}</th>
+                        <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
                       ))}
                     </tr>
                   </thead>

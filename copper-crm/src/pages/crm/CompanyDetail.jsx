@@ -1355,15 +1355,15 @@ function ProjectsTable({ projects, companyId, onOpen }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#f3f4f6] text-left text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-            <th className="py-3 pr-4">Project</th>
-            <th className="py-3 pr-4">Package</th>
-            <th className="py-3 pr-4">Status</th>
-            <th className="py-3 pr-4">Progress</th>
-            <th className="py-3 pr-4">Due</th>
-            <th className="py-3 pr-4">Project Manager</th>
-            <th className="py-3 text-right">Budget</th>
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <tr>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Package</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Progress</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project Manager</th>
+            <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Budget</th>
           </tr>
         </thead>
         <tbody>
@@ -1542,15 +1542,15 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#f3f4f6] text-left text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-            <th className="py-3 pr-4">Contact</th>
-            <th className="py-3 pr-4">Email</th>
-            <th className="py-3 pr-4">Phone</th>
-            <th className="py-3 pr-4">WhatsApp</th>
-            <th className="py-3 pr-4">LinkedIn</th>
-            <th className="py-3 pr-4">Status</th>
-            <th className="py-3 text-right">Actions</th>
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <tr>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Contact</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Email</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Phone</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">WhatsApp</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">LinkedIn</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6]">
@@ -1592,16 +1592,16 @@ function InvoicesTable({ invoices, onView, onDownload }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#f3f4f6] text-left text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-            <th className="py-3 pr-4">Invoice ID</th>
-            <th className="py-3 pr-4">Amount</th>
-            <th className="py-3 pr-4">Date</th>
-            <th className="py-3 pr-4">Due Date</th>
-            <th className="py-3 pr-4">Status</th>
-            <th className="py-3 pr-4">Payment</th>
-            <th className="py-3 pr-4">Transaction ID</th>
-            <th className="py-3 text-right">Actions</th>
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <tr>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Invoice ID</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Amount</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Payment</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Transaction ID</th>
+            <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6]">
@@ -2066,14 +2066,14 @@ function TasksTable({ tasks, projects, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#f3f4f6] text-left text-xs font-semibold uppercase tracking-wide text-[#6b7280]">
-            <th className="py-3 pr-4">Task</th>
-            <th className="py-3 pr-4">Assigned To</th>
-            <th className="py-3 pr-4">Priority</th>
-            <th className="py-3 pr-4">Status</th>
-            <th className="py-3 pr-4">Due Date</th>
-            <th className="py-3 pr-4">Project</th>
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <tr>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Task</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Assigned To</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Priority</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
             <th className="py-3 pr-4" />
           </tr>
         </thead>
