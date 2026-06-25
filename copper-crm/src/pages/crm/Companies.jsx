@@ -892,13 +892,26 @@ export default function Companies() {
                 <div className="flex items-center justify-between px-1">
                   <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setFolderView((v) => (v === "grid" ? "list" : "grid"))}
-                      title={folderView === "grid" ? "Switch to list view" : "Switch to grid view"}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
-                    >
-                      {folderView === "grid" ? <List size={16} /> : <Grid2x2 size={16} />}
-                    </button>
+                    <div className="inline-flex h-9 items-center rounded-full border border-[#EAECF0] bg-white p-1">
+                      <button
+                        onClick={() => setFolderView("list")}
+                        title="List view"
+                        className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                          folderView === "list" ? "bg-[#C57E5B] text-white" : "text-[#525866] hover:bg-[#f9fafb]"
+                        }`}
+                      >
+                        <List size={15} />
+                      </button>
+                      <button
+                        onClick={() => setFolderView("grid")}
+                        title="Icon view"
+                        className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                          folderView === "grid" ? "bg-[#C57E5B] text-white" : "text-[#525866] hover:bg-[#f9fafb]"
+                        }`}
+                      >
+                        <Grid2x2 size={15} />
+                      </button>
+                    </div>
                     <button
                       onClick={() => setFolderPage((p) => Math.max(1, p - 1))}
                       disabled={folderPage === 1}
