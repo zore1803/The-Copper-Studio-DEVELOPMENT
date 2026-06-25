@@ -139,16 +139,29 @@ function isGroupActive(item, pathname) {
 }
 
 function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
+  // Collapsed leaves use the same fixed boxed icon as NavGroup so every item in
+  // the rail shares one consistent square covering (instead of a thinner,
+  // full-width hit area for the top-level links).
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => onNavigate(item.to)}
+        title={item.label}
+        className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+          active ? "bg-white border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
+        }`}
+      >
+        <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
+      </button>
+    );
+  }
   return (
     <button
       onClick={() => onNavigate(item.to)}
-      title={collapsed ? item.label : undefined}
-      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors ${
-        collapsed ? "justify-center px-0 py-2.5" : `py-2 ${indent ? "pl-9 pr-3" : "px-3"}`
-      } ${active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
     >
-      <item.icon size={collapsed ? 20 : 16} strokeWidth={1.8} className="shrink-0" />
-      {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+      <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
+      <span className="truncate text-sm font-medium">{item.label}</span>
     </button>
   );
 }
