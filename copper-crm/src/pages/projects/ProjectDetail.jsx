@@ -126,7 +126,7 @@ function MetaRow({ icon: Icon, label, value }) {
 
 
 
-function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
+function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete }) {
   const { showToast } = useToast();
 
   // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
@@ -233,9 +233,14 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
       subtitle="Updates are immediately visible to the client in their portal."
       onClose={onClose}
       footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSaveClick}><Save size={14} /> Save & Publish</Button>
+        <div className="flex items-center justify-between gap-2">
+          <button type="button" onClick={onDelete} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">
+            <Trash2 size={14} /> Delete Project
+          </button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleSaveClick}><Save size={14} /> Save & Publish</Button>
+          </div>
         </div>
       }
     >
@@ -412,7 +417,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
-  const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
+  const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
   const [managing, setManaging] = useState(false);
 
@@ -513,6 +518,13 @@ export default function ProjectDetail() {
     await saveProject(updatedProject);
     setManaging(false);
     showToast({ title: "Project updated", message: "Details, commercials, and client updates were saved." });
+  }
+
+  async function handleDeleteProject() {
+    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+    await removeProject(project);
+    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
+    navigate(`/admin/companies/${currentCompany.id || currentCompany._id}`);
   }
 
   return (
@@ -660,6 +672,7 @@ export default function ProjectDetail() {
           invoices={invoices}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
+          onDelete={handleDeleteProject}
         />
       )}
     </div>

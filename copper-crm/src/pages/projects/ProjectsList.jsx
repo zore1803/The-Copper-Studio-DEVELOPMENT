@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search } from "lucide-react";
+import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { buildProjectPayload } from "../../lib/projectDefaults";
@@ -61,7 +61,7 @@ export default function ProjectsList() {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const { records: projects, loading, save, update } = useCrmRecords("projects");
+  const { records: projects, loading, save, update, remove } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
   const { records: invoices } = useCrmRecords("invoices");
@@ -135,6 +135,12 @@ export default function ProjectsList() {
     showToast({ title: "Status updated", message: `${project.name} is now ${newStatus.replace("_", " ")}.` });
   }
 
+  async function handleDeleteProject(project) {
+    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+    await remove(project);
+    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
+  }
+
   const statusFilters = [
     { label: "All", value: "All" },
     { label: "Not Started", value: "not_started" },
@@ -204,12 +210,13 @@ export default function ProjectsList() {
               <th className="px-5 py-3 font-semibold">Status</th>
               <th className="px-5 py-3 font-semibold">Timeline</th>
               <th className="px-5 py-3 font-semibold text-right">Value</th>
+              <th className="px-5 py-3 w-10" />
             </tr>
           </thead>
           <tbody className="divide-y divide-[#f3e5e0] bg-white">
             {loading ? (
               <tr>
-                <td colSpan={8} className="px-5 py-10 text-center">
+                <td colSpan={9} className="px-5 py-10 text-center">
                   <div className="mx-auto flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#884c2d]"></div>
                   </div>
@@ -271,11 +278,16 @@ export default function ProjectsList() {
                   <td className="px-5 py-4 text-right font-bold text-[#111827]">
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
+                  <td className="px-5 py-4 text-right">
+                    <button onClick={() => handleDeleteProject(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
                 </tr>
               );
             }) : (
               <tr>
-                <td colSpan={8} className="px-5 py-10 text-center">
+                <td colSpan={9} className="px-5 py-10 text-center">
                   <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
                     <FolderKanban size={20} />
                   </div>

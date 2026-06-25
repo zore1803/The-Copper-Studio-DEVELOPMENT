@@ -659,7 +659,7 @@ export default function CompanyDetail() {
   const [projectManagerFilter, setProjectManagerFilter] = useState("All");
   const [projectTimelineFilter, setProjectTimelineFilter] = useState("All");
   const { records: companies, loading: companiesLoading, save: saveCompany } = useCrmRecords("companies");
-  const { records: projects, save: saveProject } = useCrmRecords("projects");
+  const { records: projects, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: tasks, save: saveTask, remove: removeTask } = useCrmRecords("tasks");
@@ -978,6 +978,12 @@ export default function CompanyDetail() {
     showToast({ title: "Task deleted", message: `${task.title || task.taskName || "Task"} removed from ${company.name}.` });
   }
 
+  async function handleDeleteProject(project) {
+    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+    await removeProject(project);
+    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed from ${company.name}.` });
+  }
+
   async function handleMarkInvoicePaid(invoice) {
     await saveInvoice({
       ...invoice,
@@ -1154,25 +1160,27 @@ export default function CompanyDetail() {
           <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} />
         </div>
 
-        <div className="flex items-center gap-1 overflow-x-auto px-6">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#1D1E22] hover:text-[#884c2d]"}`}
-            >
-              {tab}
-              {Boolean(tabCounts[tab]) && (
-                <span
-                  className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
-                    activeTab === tab ? "bg-[#C57E5B] text-white" : "bg-[#e5e7eb] text-[#374151]"
-                  }`}
-                >
-                  {tabCounts[tab]}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="overflow-x-auto px-6 pb-5">
+          <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
+            {TABS.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${activeTab === tab ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
+              >
+                {tab}
+                {Boolean(tabCounts[tab]) && (
+                  <span
+                    className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
+                      activeTab === tab ? "bg-white/20 text-white" : "bg-[#e5e7eb] text-[#374151]"
+                    }`}
+                  >
+                    {tabCounts[tab]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1186,6 +1194,7 @@ export default function CompanyDetail() {
             onView={setProjectView}
             onOpen={navigate}
             onCreate={() => setCreatingProject(true)}
+            onDelete={handleDeleteProject}
             statusFilter={projectStatusFilter}
             packageFilter={projectPackageFilter}
             managerFilter={projectManagerFilter}
@@ -1414,7 +1423,7 @@ function InfoLine({ label, value }) {
   );
 }
 
-function ProjectsTable({ projects, companyId, onOpen }) {
+function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -1427,6 +1436,7 @@ function ProjectsTable({ projects, companyId, onOpen }) {
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due</th>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project Manager</th>
             <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Budget</th>
+            <th className="py-3 pr-4 w-10" />
           </tr>
         </thead>
         <tbody>
@@ -1438,7 +1448,12 @@ function ProjectsTable({ projects, companyId, onOpen }) {
               <td className="py-3 pr-4 text-[#374151]">{Number(project.progress) || 0}%</td>
               <td className="py-3 pr-4 text-[#374151]">{project.dueDate || project.expectedEndDate || "Not set"}</td>
               <td className="py-3 pr-4 text-[#374151]">{project.projectManager || project.manager || "Unassigned"}</td>
-              <td className="py-3 text-right font-semibold text-[#111827]">{formatINR(Number(project.budget || project.value || 0))}</td>
+              <td className="py-3 pr-4 text-right font-semibold text-[#111827]">{formatINR(Number(project.budget || project.value || 0))}</td>
+              <td className="py-3 pr-4 text-right" onClick={(event) => event.stopPropagation()}>
+                <button onClick={() => onDelete(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                  <Trash2 size={14} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -1463,7 +1478,7 @@ function WorkspaceToggle({ options, value, onChange }) {
   );
 }
 
-function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onOpen, onCreate, statusFilter, packageFilter, managerFilter, timelineFilter, onStatusFilter, onPackageFilter, onManagerFilter, onTimelineFilter, packages, managers }) {
+function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onOpen, onCreate, onDelete, statusFilter, packageFilter, managerFilter, timelineFilter, onStatusFilter, onPackageFilter, onManagerFilter, onTimelineFilter, packages, managers }) {
   return (
     <Section
       title="Projects"
@@ -1486,7 +1501,7 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
     >
       {!allProjects.length ? <EmptyState icon={FolderKanban} title="No projects yet." action={<Button onClick={onCreate}><Plus size={14} /> New Project</Button>} /> : null}
       {allProjects.length && !projects.length ? <EmptyState icon={Filter} title="No projects match these filters." /> : null}
-      {projects.length && view === "Table" ? <ProjectsTable projects={projects} companyId={companyId} onOpen={onOpen} /> : null}
+      {projects.length && view === "Table" ? <ProjectsTable projects={projects} companyId={companyId} onOpen={onOpen} onDelete={onDelete} /> : null}
       {projects.length && view === "Board" ? <ProjectBoard projects={projects} companyId={companyId} onOpen={onOpen} /> : null}
       {projects.length && view === "Timeline" ? <ProjectTimeline projects={projects} /> : null}
       {projects.length && view === "Gantt" ? <ProjectGanttMini projects={projects} /> : null}
