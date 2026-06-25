@@ -292,7 +292,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
           </select>
         </div>
 
-        <div className="rounded-xl bg-[#EBE1D8] p-5 shadow-sm">
+        <div className="rounded-xl bg-[#F1F1F5] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-[#111827]">Project Stages</h3>
             <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm">
@@ -303,9 +303,9 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
           
           <div className="space-y-4">
             {form.stages.map((stage, index) => (
-              <div key={index} className="flex flex-col gap-3 rounded-2xl bg-[#F2EAE3] p-4 shadow-sm border border-[#EBE1D8]/50">
+              <div key={index} className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-[#e5e7eb]">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#3B2818] text-xs font-bold text-white shadow-sm">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#884c2d] text-xs font-bold text-white shadow-sm">
                     {index + 1}
                   </div>
                   <input 
@@ -313,52 +313,52 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Phase Name"
                     value={stage.name || ""} 
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="flex-1 rounded-xl border border-[#e5e7eb] bg-white px-4 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="w-36 rounded-xl border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>
                     <option value="review">Review</option>
                     <option value="completed">Completed</option>
                   </select>
-                  <div className="flex flex-col items-center gap-0.5 border-l border-[#DCD1C8] pl-2">
-                    <button type="button" onClick={() => moveStageUp(index)} disabled={index === 0} className="text-[#8B7C71] hover:text-[#3B2818] disabled:opacity-30">
+                  <div className="flex flex-col items-center gap-0.5 border-l border-[#e5e7eb] pl-2">
+                    <button type="button" onClick={() => moveStageUp(index)} disabled={index === 0} className="text-[#9ca3af] hover:text-[#111827] disabled:opacity-30">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
                     </button>
-                    <button type="button" onClick={() => moveStageDown(index)} disabled={index === form.stages.length - 1} className="text-[#8B7C71] hover:text-[#3B2818] disabled:opacity-30">
+                    <button type="button" onClick={() => moveStageDown(index)} disabled={index === form.stages.length - 1} className="text-[#9ca3af] hover:text-[#111827] disabled:opacity-30">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
                   </div>
-                  <button type="button" onClick={() => removeStage(index)} className="p-1.5 text-[#8B7C71] hover:text-[#E82222] transition-colors ml-1">
+                  <button type="button" onClick={() => removeStage(index)} className="p-1.5 text-[#9ca3af] hover:text-[#E82222] transition-colors ml-1">
                     <Trash2 size={16} />
                   </button>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 pl-10">
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">Start Date</label>
+                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#6b7280]">Start Date</label>
                     <input 
                       type="date" 
                       value={stage.startDate ? String(stage.startDate).slice(0, 10) : ""} 
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "startDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#5C4A3D]">End Date</label>
+                    <label className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-widest text-[#6b7280]">End Date</label>
                     <input 
                       type="date" 
                       value={stage.endDate ? String(stage.endDate).slice(0, 10) : ""} 
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "endDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
                     />
                   </div>
                 </div>
@@ -369,12 +369,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Stage notes (visible to client)..."
                     value={stage.notes || ""}
                     onChange={(e) => updateStage(index, "notes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#9ca3af]"
                   />
                 </div>
 
                 <div className="pl-10 space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-bold text-[#3B2818] cursor-pointer w-fit">
+                  <label className="flex items-center gap-2 text-sm font-bold text-[#111827] cursor-pointer w-fit">
                     <input
                       type="checkbox"
                       checked={stage.clientVisible !== false}
@@ -388,7 +388,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Internal notes (hidden from client)..."
                     value={stage.internalNotes || ""}
                     onChange={(e) => updateStage(index, "internalNotes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#9ca3af]"
                   />
                 </div>
 
@@ -396,7 +396,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
             ))}
           </div>
 
-          <button type="button" onClick={addStage} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#8B7C71] py-3 text-sm font-bold text-[#5C4A3D] hover:bg-white/40 transition-colors">
+          <button type="button" onClick={addStage} className="mt-4 flex items-center justify-center gap-2 w-full rounded-xl border border-dashed border-[#d1d5db] py-3 text-sm font-bold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">
             + Add Stage
           </button>
         </div>
