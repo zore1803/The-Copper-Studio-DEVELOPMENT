@@ -1331,7 +1331,7 @@ function ProjectsTable({ projects, companyId, onOpen }) {
 
 function WorkspaceToggle({ options, value, onChange }) {
   return (
-    <div className="inline-flex rounded-full border border-[#e5e7eb] bg-white p-1">
+    <div className="inline-flex h-11 items-center rounded-full border border-[#e5e7eb] bg-white p-1">
       {options.map((option) => (
         <button
           key={option}
@@ -1348,18 +1348,20 @@ function WorkspaceToggle({ options, value, onChange }) {
 function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onOpen, onCreate, statusFilter, packageFilter, managerFilter, timelineFilter, onStatusFilter, onPackageFilter, onManagerFilter, onTimelineFilter, packages, managers }) {
   return (
     <Section title="Projects" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Project</Button>}>
-      <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <FilterButton
-          panelWidth={560}
-          onReset={() => { onStatusFilter("All"); onPackageFilter("All"); onManagerFilter("All"); onTimelineFilter("All"); }}
-          fields={[
-            { key: "status", label: "Status", type: "select", value: statusFilter, onChange: onStatusFilter, options: ["All", ...PROJECT_STATUS] },
-            { key: "package", label: "Package", type: "select", value: packageFilter, onChange: onPackageFilter, options: packages },
-            { key: "manager", label: "Project manager", type: "select", value: managerFilter, onChange: onManagerFilter, options: managers },
-            { key: "timeline", label: "Timeline", type: "select", value: timelineFilter, onChange: onTimelineFilter, options: ["All", "Due Soon", "Overdue"] }
-          ]}
-        />
-        <WorkspaceToggle options={PROJECT_VIEWS} value={view} onChange={onView} />
+      <div className="mb-4 flex justify-end">
+        <div className="flex items-center gap-2">
+          <FilterButton
+            panelWidth={560}
+            onReset={() => { onStatusFilter("All"); onPackageFilter("All"); onManagerFilter("All"); onTimelineFilter("All"); }}
+            fields={[
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: onStatusFilter, options: ["All", ...PROJECT_STATUS] },
+              { key: "package", label: "Package", type: "select", value: packageFilter, onChange: onPackageFilter, options: packages },
+              { key: "manager", label: "Project manager", type: "select", value: managerFilter, onChange: onManagerFilter, options: managers },
+              { key: "timeline", label: "Timeline", type: "select", value: timelineFilter, onChange: onTimelineFilter, options: ["All", "Due Soon", "Overdue"] }
+            ]}
+          />
+          <WorkspaceToggle options={PROJECT_VIEWS} value={view} onChange={onView} />
+        </div>
       </div>
       {!allProjects.length ? <EmptyState icon={FolderKanban} title="No projects yet." action={<Button onClick={onCreate}><Plus size={14} /> New Project</Button>} /> : null}
       {allProjects.length && !projects.length ? <EmptyState icon={Filter} title="No projects match these filters." /> : null}
