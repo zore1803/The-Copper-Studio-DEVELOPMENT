@@ -781,25 +781,31 @@ export default function CompanyDetail() {
       showToast({ type: "error", title: "Contact name required", message: "Add at least a first name or contact name." });
       return;
     }
+    const selectedCompanyId = String(form.companyId || "");
+    const currentCompanyIds = [company.id, company._id].filter(Boolean).map(String);
+    const selectedCompany =
+      companies.find((c) => String(c.id || c._id) === selectedCompanyId) ||
+      (currentCompanyIds.includes(selectedCompanyId) ? company : null);
+    const selectedCompanyName = selectedCompany?.name || selectedCompany?.companyName || form.companyName || form.company || "";
     const savedContact = await saveContact({
       ...form,
       id: form.id || form._id || `contact-${Date.now()}`,
       name: form.name || fullName,
       phone: form.phone || form.whatsapp || form.alternatePhone,
-      companyId: company.id || company._id,
-      company: company.name,
-      companyName: company.name,
+      companyId: selectedCompanyId,
+      company: selectedCompanyName,
+      companyName: selectedCompanyName,
     });
-    if (form.isPrimary) {
+    if (form.isPrimary && selectedCompany) {
       await saveCompany({
-        ...company,
+        ...selectedCompany,
         primaryContact: savedContact.name || fullName,
         primaryContactEmail: savedContact.email,
-        contact: savedContact.name || company.contact,
+        contact: savedContact.name || selectedCompany.contact,
       });
     }
     setEditingContact(null);
-    showToast({ title: "Contact saved", message: `${fullName || form.name} is linked to ${company.name}.` });
+    showToast({ title: "Contact saved", message: `${fullName || form.name} is linked to ${selectedCompanyName || "no company"}.` });
   }
 
   async function handleDeleteContact(contact) {

@@ -121,17 +121,17 @@ function Checkbox({ label, checked, onChange, span = false }) {
 
 /**
  * @param {object|null} contact   Existing contact to edit, or null/partial for a new one.
- * @param {object|null} company   When launched from a company workspace, locks the
- *                                 associated company to this record. Omit for a free
- *                                 company picker (Contacts list / Contact detail page).
- * @param {Array}       companies Options for the company picker when `company` is absent.
+ * @param {object|null} company   When launched from a company workspace, preselects
+ *                                 that company. Existing contacts can still be
+ *                                 reassigned to another company.
+ * @param {Array}       companies Options for the company picker.
  */
 export default function ContactFormPanel({ contact, company = null, companies = [], onClose, onSave }) {
-  const lockedCompanyId = company ? String(company.id || company._id) : "";
+  const defaultCompanyId = company ? String(company.id || company._id) : "";
   const [form, setForm] = useState(() => ({
     ...BLANK_CONTACT,
     ...(contact || {}),
-    companyId: company ? lockedCompanyId : (contact?.companyId || ""),
+    companyId: contact?.companyId || defaultCompanyId,
   }));
   const [errors, setErrors] = useState({});
   const { token } = useAuth();
@@ -142,7 +142,9 @@ export default function ContactFormPanel({ contact, company = null, companies = 
   };
 
   const isEdit = Boolean(contact && (contact._id || contact.id));
-  const pickedCompany = company || companies.find((c) => String(c.id || c._id) === String(form.companyId));
+  const pickedCompany =
+    companies.find((c) => String(c.id || c._id) === String(form.companyId)) ||
+    (company && form.companyId && String(form.companyId) === defaultCompanyId ? company : null);
   const companyName = pickedCompany?.name || pickedCompany?.companyName || "";
   // Always keep the current value selectable so an existing status outside the
   // standard list isn't silently dropped on save.
@@ -186,6 +188,8 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       // Keep a flat `phone` so list views and exports have a number even when
       // only WhatsApp / alternate was filled in.
       phone: form.phone || form.whatsapp || form.alternatePhone || "",
+      company: companyName,
+      companyName,
     };
     try {
       await onSave(payload);
@@ -232,9 +236,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
         </FormSection>
 
         <FormSection title="Company Mapping">
-          {company ? (
-            <Input span label="Associated company" value={company.name} disabled />
-          ) : companies.length === 0 ? (
+          {companies.length === 0 ? (
             <label className="block sm:col-span-3">
               <span className="text-xs font-semibold text-[#374151]">Associated company</span>
               <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
