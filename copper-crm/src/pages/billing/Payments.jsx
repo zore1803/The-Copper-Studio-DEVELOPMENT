@@ -31,7 +31,7 @@ function Metric({ label, value, icon: Icon }) {
 
 function EmptyState({ title, text }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-white p-10 text-center">
+    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
       <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
         <PackageCheck size={20} />
       </div>
