@@ -142,8 +142,9 @@ function WebsiteTextLink({ href }) {
       target="_blank"
       rel="noopener noreferrer"
       title={href}
-      className="font-medium text-[#884c2d] hover:underline"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-2.5 py-1 text-xs font-semibold text-[#884c2d] shadow-sm transition-colors hover:bg-[#fff8f6]"
     >
+      <Globe size={12} className="shrink-0" />
       {label}
     </a>
   );
