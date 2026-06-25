@@ -9,6 +9,7 @@ import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import SearchableSelectField from "../../components/SearchableSelect";
 import ProjectHeader from "./ProjectHeader";
 import { roadmapProgress, isRoadmapComplete, nextPhaseForStages } from "../../lib/stageProgress";
 
@@ -272,8 +273,8 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
           <PanelField type="number" label="Discount applied" value={form.discount} onChange={set("discount")} />
           <PanelField type="number" label="Budget used" value={form.budgetUsed} onChange={set("budgetUsed")} />
           <PanelField label="Final amount" value={formatINR(finalAmount)} disabled />
-          <PanelSelect label="Linked invoice" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
-            options={invoices.map((invoice) => ({ value: String(invoice.id || invoice._id), label: invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id }))} />
+          <SearchableSelectField label="Linked invoice" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
+            options={invoices.map((invoice) => ({ value: String(invoice.id || invoice._id), label: invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id }))} placeholder="Search invoices…" />
           <PanelSelect label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
         </PanelSection>
 

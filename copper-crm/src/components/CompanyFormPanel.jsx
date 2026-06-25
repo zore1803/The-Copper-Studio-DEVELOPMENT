@@ -93,6 +93,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     addressLine2: company.addressLine2 || "",
   }));
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const companyOwners = loadCompanyOwners();
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -115,7 +116,8 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     set("logo")(dataUrl);
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (saving) return;
     const next = {};
     if (!String(form.name || "").trim()) next.name = "Company name is required.";
     if (form.gstin && !isGstin(form.gstin)) next.gstin = "Enter a valid 15-character GSTIN.";
@@ -127,7 +129,12 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     }
     setErrors(next);
     if (Object.keys(next).length) return;
-    onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin, address: form.addressLine1 });
+    setSaving(true);
+    try {
+      await onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin, address: form.addressLine1 });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -138,8 +145,8 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}><Save size={14} /> Save Company</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving}><Save size={14} /> {saving ? "Saving…" : "Save Company"}</Button>
         </div>
       }
     >

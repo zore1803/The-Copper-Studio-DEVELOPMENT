@@ -48,7 +48,18 @@ function Field({ label, value, onChange, type = "text", options }) {
 
 function InvoiceModal({ companies, onClose, onSave }) {
   const [form, setForm] = useState({ company: "", project: "", total: "", tax: "", issueDate: "", dueDate: "", status: "Draft" });
+  const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(form);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <SidePanel
@@ -57,8 +68,8 @@ function InvoiceModal({ companies, onClose, onSave }) {
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)}><Save size={14} /> Save Invoice</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? "Saving…" : "Save Invoice"}</Button>
         </div>
       }
     >

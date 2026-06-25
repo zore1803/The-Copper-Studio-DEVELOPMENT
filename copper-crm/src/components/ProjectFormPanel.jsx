@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
+import SearchableSelectField from "./SearchableSelect";
 import { generateProjectCode, generateDefaultProjectName, PROJECT_TEMPLATES } from "../lib/projectDefaults";
 
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -112,6 +113,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     tags: "",
   });
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const nameTouched = useRef(false);
   const set = (key) => (value) => {
     if (key === "name") nameTouched.current = true;
@@ -154,20 +156,26 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     return next;
   }
 
-  function handleSave() {
+  async function handleSave() {
+    if (saving) return;
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length || !resolvedCompany) return;
     const contact = scopedContacts.find((c) => String(c.id || c._id) === form.primaryContactId);
-    onSave(resolvedCompany, {
-      ...form,
-      projectCode,
-      packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
-      primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
-      finalAmount,
-      tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-      assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
-    });
+    setSaving(true);
+    try {
+      await onSave(resolvedCompany, {
+        ...form,
+        projectCode,
+        packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
+        primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
+        finalAmount,
+        tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -178,8 +186,8 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave}><Save size={14} /> Create Project</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? "Creating…" : "Create Project"}</Button>
         </div>
       }
     >
@@ -220,8 +228,8 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} error={errors.budget} />
           <Input type="number" label="Discount applied" value={form.discount} onChange={set("discount")} error={errors.discount} />
           <Input label="Final amount" value={formatINR(finalAmount)} disabled />
-          <Select label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
-            options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} />
+          <SearchableSelectField label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
+            options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} placeholder="Search invoices…" />
           <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
         </FormSection>
 

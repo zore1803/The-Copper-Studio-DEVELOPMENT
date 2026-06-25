@@ -134,6 +134,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
     companyId: contact?.companyId || defaultCompanyId,
   }));
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
   const { token } = useAuth();
   const { showToast } = useToast();
   const set = (key) => (value) => {
@@ -169,6 +170,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
   }
 
   async function handleSubmit() {
+    if (saving) return;
     const next = {};
     const composedName = `${form.salutation || ""} ${form.firstName || ""} ${form.lastName || ""}`.trim();
     if (!composedName && !String(form.name || "").trim()) next.firstName = "Enter at least a first or last name.";
@@ -191,11 +193,14 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       company: companyName,
       companyName,
     };
+    setSaving(true);
     try {
       await onSave(payload);
       if (sendPortalInvite && payload.email) await invitePortalAccess(payload);
     } catch (err) {
       showToast({ type: "error", title: "Contact not saved", message: err.message || "Could not save the contact." });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -207,8 +212,8 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}><Save size={14} /> Save Contact</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={saving}><Save size={14} /> {saving ? "Saving…" : "Save Contact"}</Button>
         </div>
       }
     >
