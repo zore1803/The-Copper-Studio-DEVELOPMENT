@@ -131,6 +131,23 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
   );
 }
 
+function WebsiteTextLink({ href }) {
+  if (!href) return null;
+  const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
+  const label = href.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={href}
+      className="font-medium text-[#884c2d] hover:underline"
+    >
+      {label}
+    </a>
+  );
+}
+
 function useClickOutside(ref, onOutside, active) {
   useEffect(() => {
     if (!active) return;
@@ -989,7 +1006,7 @@ export default function CompanyDetail() {
                 <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
                   {company.industry && <span>{company.industry}</span>}
-                  <WebsiteIconLink href={company.website} icon={Globe} label="Website" />
+                  <WebsiteTextLink href={company.website} />
                   {company.phone && <span className="inline-flex items-center gap-1"><Phone size={12} /> {company.phone}</span>}
                 </div>
               </div>
