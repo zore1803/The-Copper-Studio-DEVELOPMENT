@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  AlertTriangle, ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock3, CreditCard, Download,
+  AlertTriangle, ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe, GripVertical,
   Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
@@ -647,6 +647,7 @@ export default function CompanyDetail() {
   const [viewingFolder, setViewingFolder] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
   const [creatingTask, setCreatingTask] = useState(false);
+  const [companyDetailsOpen, setCompanyDetailsOpen] = useState(false);
   const [projectView, setProjectView] = useState("Table");
   const [taskView, setTaskView] = useState("List");
   const [projectStatusFilter, setProjectStatusFilter] = useState("All");
@@ -760,6 +761,22 @@ export default function CompanyDetail() {
   const totalSignals = linked.projects.length + linked.contacts.length + linked.invoices.length + activeTasks;
   const riskPenalty = overdueTasks * 12 + (outstanding > 0 ? 8 : 0);
   const companyHealthScore = Math.max(0, Math.min(100, 68 + Math.min(totalSignals * 3, 24) - riskPenalty));
+  const companyAddress = [company.addressLine1 || company.address, company.addressLine2, company.city, company.state, company.pincode].filter(Boolean).join(", ");
+  const extraCompanyDetails = [
+    ["Registration Type", company.registrationType],
+    ["Employees", company.employees],
+    ["Status", company.status],
+    ["Projects", company.projects],
+    ["Phone", company.phone],
+    ["Website", company.website],
+    ["Address", companyAddress],
+    ["LinkedIn", company.linkedin],
+    ["Instagram", company.instagram],
+    ["Facebook", company.facebook],
+    ["X (Twitter)", company.twitter],
+    ["Personal Website", company.personalWebsite],
+    ["Notes", company.notes],
+  ];
   const tabCounts = {
     Projects: linked.projects.length,
     Contacts: linked.contacts.length,
@@ -1085,12 +1102,30 @@ export default function CompanyDetail() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#f1f1f5] bg-[#fafafa] p-4 sm:grid-cols-3 lg:grid-cols-5">
-            <InfoLine label="GSTIN" value={company.gstin} />
-            <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
-            <InfoLine label="Primary Contact" value={primaryContact?.name || company.primaryContact} />
-            <InfoLine label="Lead Source" value={company.leadSource} />
-            <InfoLine label="Owner" value={company.owner || company.companyOwner} />
+          <div className="mt-5 rounded-xl border border-[#f1f1f5] bg-[#fafafa]">
+            <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
+              <InfoLine label="GSTIN" value={company.gstin} />
+              <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
+              <InfoLine label="Primary Contact" value={primaryContact?.name || company.primaryContact} />
+              <InfoLine label="Lead Source" value={company.leadSource} />
+              <InfoLine label="Owner" value={company.owner || company.companyOwner} />
+              <button
+                type="button"
+                onClick={() => setCompanyDetailsOpen((open) => !open)}
+                aria-expanded={companyDetailsOpen}
+                title={companyDetailsOpen ? "Hide company details" : "Show company details"}
+                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#884c2d] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
+              >
+                <ChevronDown size={18} className={`transition-transform ${companyDetailsOpen ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+            {companyDetailsOpen && (
+              <div className="grid grid-cols-2 gap-4 border-t border-[#f1f1f5] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-4">
+                {extraCompanyDetails.map(([label, value]) => (
+                  <InfoLine key={label} label={label} value={value} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1307,10 +1342,11 @@ function ActivityTimeline({ items, full = false }) {
 }
 
 function InfoLine({ label, value }) {
+  const displayValue = value === 0 ? "0" : value || "Not added";
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-      <p className="mt-0.5 text-[#374151]">{value || "Not added"}</p>
+      <p className="mt-0.5 break-words text-[#374151]">{displayValue}</p>
     </div>
   );
 }
