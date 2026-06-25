@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Save } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
 import PhoneInput from "./PhoneInput";
@@ -42,6 +42,12 @@ const BLANK_CONTACT = {
 
 const STATUS_OPTIONS = ["Active", "Inactive", "Prospect", "Lead", "Archived"];
 const SALUTATION_OPTIONS = ["Mr.", "Ms.", "Mrs.", "Dr.", "Prof.", "Mx."];
+const CONTACT_ROLE_OPTIONS = [
+  { key: "isDecisionMaker", label: "Decision maker" },
+  { key: "isPrimary", label: "Primary contact" },
+  { key: "isBillingContact", label: "Billing contact" },
+  { key: "isTechnicalContact", label: "Technical contact" },
+];
 
 function FormSection({ title, children, cols = 3 }) {
   return (
@@ -116,6 +122,52 @@ function Checkbox({ label, checked, onChange, span = false }) {
       />
       {label}
     </label>
+  );
+}
+
+function RoleDropdown({ form, setRole }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selectedRoles = CONTACT_ROLE_OPTIONS.filter((role) => form[role.key]);
+  const summary = selectedRoles.length ? selectedRoles.map((role) => role.label).join(", ") : "Select contact roles";
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function onDocumentMouseDown(event) {
+      if (ref.current && !ref.current.contains(event.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocumentMouseDown);
+    return () => document.removeEventListener("mousedown", onDocumentMouseDown);
+  }, [open]);
+
+  return (
+    <div className="relative sm:col-span-3" ref={ref}>
+      <span className="text-xs font-semibold text-[#374151]">Contact roles</span>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-[#f9fafb] focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+      >
+        <span className={selectedRoles.length ? "text-[#111827]" : "text-[#9ca3af]"}>{summary}</span>
+        <ChevronDown size={16} className={`shrink-0 text-[#6b7280] transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-lg border border-[#e5e7eb] bg-white shadow-lg">
+          {CONTACT_ROLE_OPTIONS.map((role) => (
+            <label key={role.key} className="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#374151] hover:bg-[#f9fafb]">
+              <input
+                type="checkbox"
+                checked={!!form[role.key]}
+                onChange={(event) => setRole(role.key)(event.target.checked)}
+                className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]"
+              />
+              {role.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -258,10 +310,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
               options={companies.map((c) => ({ value: String(c.id || c._id), label: c.companyName || c.name }))}
             />
           )}
-          <Checkbox span label="Decision maker" checked={form.isDecisionMaker} onChange={set("isDecisionMaker")} />
-          <Checkbox label="Primary contact" checked={form.isPrimary} onChange={set("isPrimary")} />
-          <Checkbox label="Billing contact" checked={form.isBillingContact} onChange={set("isBillingContact")} />
-          <Checkbox label="Technical contact" checked={form.isTechnicalContact} onChange={set("isTechnicalContact")} />
+          <RoleDropdown form={form} setRole={set} />
         </FormSection>
 
         <FormSection title="Client Portal Access">
