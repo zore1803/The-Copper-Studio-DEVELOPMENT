@@ -1340,7 +1340,7 @@ function Section({ title, action, flush = false, children }) {
         <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
-      <div className={flush ? "" : "p-5"}>{children}</div>
+      <div className={flush ? "bg-white" : "bg-white p-5"}>{children}</div>
     </section>
   );
 }
@@ -1441,7 +1441,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
             <th className="py-3 pl-2 pr-5 w-10" />
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bg-white">
           {projects.map((project) => (
             <tr key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="cursor-pointer border-b border-[#f9fafb] hover:bg-[#fafafa]">
               <td className="py-3 pl-5 pr-4 font-semibold text-[#111827]">{project.name || "Untitled project"}</td>
@@ -1517,7 +1517,7 @@ function ProjectBoard({ projects, companyId, onOpen }) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       {(stages.length ? stages : ["Unassigned"]).map((stage) => (
-        <div key={stage} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-3">
+        <div key={stage} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#6b7280]">{stage}</p>
           <div className="space-y-2">
             {projects.filter((project) => (project.status || project.currentPhase || "Unassigned") === stage).map((project) => (
@@ -1597,7 +1597,7 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
 
 function DetailMini({ label, value }) {
   return (
-    <div className="rounded-lg bg-[#f9fafb] p-3">
+    <div className="rounded-lg bg-white p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
       <p className="mt-1 truncate font-semibold text-[#374151]">{value || "Not added"}</p>
     </div>
@@ -1619,7 +1619,7 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
             <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f3f4f6]">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {contacts.map((contact) => {
             const name = contact.name || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.trim();
             return (
@@ -1670,7 +1670,7 @@ function InvoicesTable({ invoices, onView, onDownload }) {
             <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f3f4f6]">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {invoices.map((invoice) => (
             <tr key={invoice.id || invoice._id}>
               <td className="py-3 pl-5 pr-4 font-mono text-xs text-[#6b7280]">{invoice.invoiceId || invoice.id || invoice._id}</td>
@@ -1858,7 +1858,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenGroup(group)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenGroup(group)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#fff8f6] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#884c2d]/40"
               >
                 <button
                   type="button"
@@ -1887,7 +1887,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenFolder(category)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-left transition-colors hover:border-[#884c2d]/40 hover:bg-white"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#884c2d]/40"
               >
                 <div className="flex items-center gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#884c2d]"><FolderOpen size={17} /></div>
@@ -2014,7 +2014,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
         {TASK_BOARD_STATUSES.map((status) => {
           const columnTasks = tasks.filter((task) => (task.status || "Backlog") === status);
           return (
-            <div key={status} className="flex flex-col rounded-xl border border-[#e5e7eb] bg-[#f9fafb]">
+            <div key={status} className="flex flex-col rounded-xl border border-[#e5e7eb] bg-white">
               <p className="px-3 pt-3 pb-2 text-xs font-bold uppercase tracking-wide text-[#6b7280]">
                 {status} <span className="ml-1 text-[#9ca3af]">{columnTasks.length}</span>
               </p>
@@ -2023,7 +2023,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 space-y-2 p-2.5 transition-colors duration-200 ${snapshot.isDraggingOver ? "bg-[#fff1ec]" : ""}`}
+                    className="flex-1 space-y-2 bg-white p-2.5 transition-colors duration-200"
                     style={{ minHeight: 90 }}
                   >
                     {columnTasks.map((task, index) => (
@@ -2143,7 +2143,7 @@ function TasksTable({ tasks, projects, onDelete }) {
             <th className="py-3 pr-4" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f3f4f6]">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {tasks.map((task) => (
             <tr key={task.id || task._id}>
               <td className="py-3 pr-4 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</td>
@@ -2270,13 +2270,13 @@ function CalendarTaskView({ tasks, onCreate }) {
           </div>
           <div className="grid grid-cols-7">
             {monthCells.map((cell, index) => {
-              if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-[#fafafa]" />;
+              if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-white" />;
               const isToday = sameDay(cell.date, todayDate);
               return (
                 <button
                   key={cell.date.toISOString()}
                   onClick={() => setSelectedDay(cell.date)}
-                  className={`aspect-square border border-[#f3f4f6] p-1.5 text-left transition-colors hover:bg-[#fff1ec] ${isToday ? "bg-[#fff8f6]" : "bg-white"}`}
+                  className="aspect-square border border-[#f3f4f6] bg-white p-1.5 text-left transition-colors hover:bg-[#f9fafb]"
                 >
                   <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>
                     {cell.date.getDate()}
@@ -2304,7 +2304,7 @@ function CalendarTaskView({ tasks, onCreate }) {
               <button
                 key={date.toISOString()}
                 onClick={() => setSelectedDay(date)}
-                className={`min-h-[120px] rounded-xl border p-2 text-left transition-colors hover:border-[#884c2d]/40 ${isToday ? "border-[#884c2d]/40 bg-[#fff8f6]" : "border-[#e5e7eb] bg-white"}`}
+                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#884c2d]/40 ${isToday ? "border-[#884c2d]/40" : "border-[#e5e7eb]"}`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{WEEKDAY_LABELS[date.getDay()]}</p>
                 <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#884c2d] text-white" : "text-[#374151]"}`}>{date.getDate()}</span>
@@ -2328,7 +2328,7 @@ function CalendarTaskView({ tasks, onCreate }) {
           </div>
           <div className="mt-3 space-y-2">
             {dayTasks.length ? dayTasks.map((task) => (
-              <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-3">
+              <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
                 <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <StatusBadge status={task.status || "Backlog"} />
