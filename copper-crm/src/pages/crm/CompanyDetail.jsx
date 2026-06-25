@@ -989,14 +989,14 @@ export default function CompanyDetail() {
                 <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
                   {company.industry && <span>{company.industry}</span>}
+                  <WebsiteIconLink href={company.website} icon={Globe} label="Website" />
                   {company.phone && <span className="inline-flex items-center gap-1"><Phone size={12} /> {company.phone}</span>}
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {(company.website || company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
+              {(company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
                 <div className="flex items-center gap-1.5 pr-2">
-                  <WebsiteIconLink href={company.website} icon={Globe} label="Website" />
                   <SocialIconLink href={company.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
                   <SocialIconLink href={company.instagram} icon={InstagramGlyph} label="Instagram" />
                   <SocialIconLink href={company.facebook} icon={FacebookGlyph} label="Facebook" />
