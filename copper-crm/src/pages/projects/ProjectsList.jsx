@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search } from "lucide-react";
 import { Button } from "../../components/ui";
@@ -6,6 +6,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
+import FilterButton from "../../components/FilterButton";
 
 function formatINR(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
@@ -69,6 +70,7 @@ export default function ProjectsList() {
   const { save: saveTask } = useCrmRecords("tasks");
 
   const [statusFilter, setStatusFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -76,6 +78,18 @@ export default function ProjectsList() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const companyMap = useMemo(() => new Map(
+    companies.flatMap((company) => [
+      [String(company.id || ""), company],
+      [String(company._id || ""), company],
+    ]).filter(([id]) => id)
+  ), [companies]);
+
+  const companyNameOf = useCallback((project) => {
+    const company = companyMap.get(String(project.companyId || ""));
+    return company?.name || company?.companyName || project.companyName || project.company || project.client || "Not linked";
+  }, [companyMap]);
 
   const computedProjects = useMemo(() => {
     return projects.map((p) => {
@@ -109,16 +123,23 @@ export default function ProjectsList() {
     });
   }, [projects]);
 
+  const companyOptions = useMemo(
+    () => ["All", ...Array.from(new Set(computedProjects.map(companyNameOf).filter(Boolean))).sort((a, b) => a.localeCompare(b))],
+    [computedProjects, companyNameOf]
+  );
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return computedProjects
       .filter((project) => {
-        const matchesQuery = !query || `${project.name} ${project.client} ${project.template}`.toLowerCase().includes(query);
+        const projectCompanyName = companyNameOf(project);
+        const matchesQuery = !query || `${project.name} ${projectCompanyName} ${project.client} ${project.template}`.toLowerCase().includes(query);
         const matchesStatus = statusFilter === "All" || project.effectiveStatus === statusFilter;
-        return matchesQuery && matchesStatus;
+        const matchesCompany = companyFilter === "All" || projectCompanyName === companyFilter;
+        return matchesQuery && matchesStatus && matchesCompany;
       })
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [computedProjects, search, statusFilter]);
+  }, [computedProjects, search, statusFilter, companyFilter, companyNameOf]);
 
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
@@ -141,15 +162,6 @@ export default function ProjectsList() {
     await update(project.id || project._id, { status: newStatus });
     showToast({ title: "Status updated", message: `${project.name} is now ${newStatus.replace("_", " ")}.` });
   }
-
-  const statusFilters = [
-    { label: "All", value: "All" },
-    { label: "Not Started", value: "not_started" },
-    { label: "In Progress", value: "in_progress" },
-    { label: "Completed", value: "completed" },
-    { label: "Delayed", value: "delayed" },
-    { label: "Cancelled", value: "cancelled" },
-  ];
 
   return (
     <div className="min-h-full bg-[#F1F1F5] p-6 space-y-6">
@@ -185,19 +197,14 @@ export default function ProjectsList() {
         title="Project Portfolio"
         subtitle="Manage all active projects and workflows."
         action={
-          <div className="flex gap-1.5 overflow-x-auto">
-            {statusFilters.map((item) => (
-              <button
-                key={item.value}
-                onClick={() => setStatusFilter(item.value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#884c2d] text-white" : "bg-[#f1e7e1] text-[#6c6355] hover:bg-[#ead9d0]"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
+          <FilterButton
+            panelWidth={420}
+            onReset={() => { setStatusFilter("All"); setCompanyFilter("All"); }}
+            fields={[
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: ["All", ...PROJECT_STATUS_OPTIONS] },
+              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: setCompanyFilter, options: companyOptions },
+            ]}
+          />
         }
       >
         <table className="w-full text-left text-sm text-[#6c6355]">
@@ -227,7 +234,7 @@ export default function ProjectsList() {
                       {project.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-4 font-medium text-[#2b211c]">{project.client}</td>
+                  <td className="px-5 py-4 font-medium text-[#2b211c]">{companyNameOf(project)}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
                       {project.template || project.packageName || "Custom"}
@@ -277,7 +284,7 @@ export default function ProjectsList() {
                   <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
                     <FolderKanban size={20} />
                   </div>
-                  <p className="text-sm font-semibold text-[#2b211c]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+                  <p className="text-sm font-semibold text-[#2b211c]">{search || statusFilter !== "All" || companyFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
                   <p className="mt-1 text-sm text-[#6c6355]">Create a project and link it to a company to get started.</p>
                 </td>
               </tr>
