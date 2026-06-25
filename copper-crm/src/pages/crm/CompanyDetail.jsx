@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe, GripVertical,
-  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
+  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Loader2, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -325,10 +325,13 @@ function fileExt(filename) {
   return (filename || "").split(".").pop().toLowerCase();
 }
 
-function readFileAsDataUrl(file) {
+function readFileAsDataUrl(file, onProgress) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onprogress = (event) => {
+      if (onProgress && event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
+    };
+    reader.onload = () => { onProgress?.(100); resolve(reader.result); };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -340,6 +343,9 @@ function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" })
   const { showToast } = useToast();
   const [form, setForm] = useState({ name: "", category: defaultCategory || "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
+  const [reading, setReading] = useState(false);
+  const [readPct, setReadPct] = useState(0);
+  const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
   async function handleBrowse(event) {
@@ -350,15 +356,35 @@ function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" })
       event.target.value = "";
       return;
     }
-    const dataUrl = await readFileAsDataUrl(file);
-    setForm((prev) => ({
-      ...prev,
-      name: prev.name || file.name,
-      fileType: fileExt(file.name) || prev.fileType,
-      fileUrl: dataUrl,
-      fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-    }));
-    setFileReady(true);
+    setFileReady(false);
+    setReadPct(0);
+    setReading(true);
+    try {
+      const dataUrl = await readFileAsDataUrl(file, setReadPct);
+      setForm((prev) => ({
+        ...prev,
+        name: prev.name || file.name,
+        fileType: fileExt(file.name) || prev.fileType,
+        fileUrl: dataUrl,
+        fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+      }));
+      setFileReady(true);
+    } finally {
+      setReading(false);
+      event.target.value = "";
+    }
+  }
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(form);
+    } catch (err) {
+      showToast({ type: "error", title: "Upload failed", message: err?.message || "Could not upload the document. Please try again." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -368,22 +394,49 @@ function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" })
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => onSave(form)} disabled={!form.name.trim()}><Save size={14} /> Save Document</Button>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={!form.name.trim() || reading || saving}>
+            {saving ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : <><Save size={14} /> Save Document</>}
+          </Button>
         </div>
       }
     >
       <div className="space-y-4">
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File *</span>
-          <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
-            <input id="doc-browse" type="file" className="hidden" onChange={handleBrowse} />
-            <label htmlFor="doc-browse" className="cursor-pointer rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a]">
-              Browse…
-            </label>
-            <span className="truncate text-xs text-[#6b7280]">
-              {fileReady ? `${form.name} (${form.fileSize})` : "No file selected"}
-            </span>
+          <div className="mt-1.5 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
+            <div className="flex items-center gap-3">
+              <input id="doc-browse" type="file" className="hidden" onChange={handleBrowse} disabled={reading || saving} />
+              <label
+                htmlFor="doc-browse"
+                className={`rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+              >
+                Browse…
+              </label>
+              <span className="truncate text-xs text-[#6b7280]">
+                {fileReady ? `${form.name} (${form.fileSize})` : reading ? "Reading file…" : "No file selected"}
+              </span>
+            </div>
+            {reading && (
+              <div className="mt-2.5">
+                <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                  <span>Reading file</span><span>{readPct}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
+                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${readPct}%` }} />
+                </div>
+              </div>
+            )}
+            {saving && (
+              <div className="mt-2.5">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#884c2d]">
+                  <Loader2 size={11} className="animate-spin" /> Uploading to server…
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
+                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#884c2d]" />
+                </div>
+              </div>
+            )}
           </div>
         </label>
         <Input span label="File name *" value={form.name} onChange={set("name")} />
