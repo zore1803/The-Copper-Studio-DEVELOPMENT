@@ -82,7 +82,7 @@ export default function ProjectFiles() {
   if ((!company || !project) && projectsLoading) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
-        <p className="text-sm font-semibold text-[#6c6355]">Loading project files…</p>
+        <p className="text-sm font-semibold text-[#6b7280]">Loading project files…</p>
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function ProjectFiles() {
   if (!company || !project) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
-        <p className="text-sm font-semibold text-[#6c6355]">We couldn't find that project for this company.</p>
+        <p className="text-sm font-semibold text-[#6b7280]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
     );
@@ -188,7 +188,7 @@ export default function ProjectFiles() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-display text-lg font-semibold text-[#211a17]">Directory</h3>
-            <p className="mt-1 text-xs text-[#6c6355]">{documents.length} files across {folders.filter(f => f.count > 0).length} folders</p>
+            <p className="mt-1 text-xs text-[#6b7280]">{documents.length} files across {folders.filter(f => f.count > 0).length} folders</p>
           </div>
           {newFolderMode ? (
             <form onSubmit={handleAddFolder} className="flex items-center gap-2">
@@ -228,13 +228,13 @@ export default function ProjectFiles() {
                   <FolderIcon size={24} />
                 </div>
                 <h4 className="text-sm font-bold text-[#211a17] truncate">{folder.key}</h4>
-                <p className="mt-1 text-[11px] text-[#6c6355]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+                <p className="mt-1 text-[11px] text-[#6b7280]">{folder.count} items · {formatSizeMB(folder.size)}</p>
               </button>
             ))}
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-[#fff8f6] p-8 text-center">
-            <p className="text-sm text-[#6c6355]">No folders yet for this project.</p>
+            <p className="text-sm text-[#6b7280]">No folders yet for this project.</p>
             <button onClick={() => setNewFolderMode(true)} className="mt-2 text-xs font-bold text-[#884c2d] hover:underline">
               Create the first folder →
             </button>
@@ -264,11 +264,11 @@ export default function ProjectFiles() {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#ead8d1] bg-[#fff1ec]">
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Name</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Folder</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355] sm:table-cell">Upload Date</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355] md:table-cell">Uploaded By</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Action</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Name</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Folder</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Upload Date</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] md:table-cell">Uploaded By</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ead8d1]">
@@ -285,12 +285,12 @@ export default function ProjectFiles() {
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-[#211a17]">{doc.name}</p>
-                            <p className="text-[11px] text-[#6c6355]">{formatSizeMB(doc.sizeMB)}</p>
+                            <p className="text-[11px] text-[#6b7280]">{formatSizeMB(doc.sizeMB)}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-[#6c6355]">{doc.category}</td>
-                      <td className="hidden px-6 py-5 text-sm text-[#6c6355] sm:table-cell">{doc.date}</td>
+                      <td className="px-6 py-5 text-sm text-[#6b7280]">{doc.category}</td>
+                      <td className="hidden px-6 py-5 text-sm text-[#6b7280] sm:table-cell">{doc.date}</td>
                       <td className="hidden px-6 py-5 md:table-cell">
                         <div className="flex items-center gap-2">
                           <Avatar name={doc.uploadedBy} size="sm" />
@@ -301,7 +301,7 @@ export default function ProjectFiles() {
                         <button
                           type="button"
                           onClick={() => setDocMenu(docMenu === menuKey ? null : menuKey)}
-                          className="text-[#6c6355] transition-colors hover:text-[#884c2d]"
+                          className="text-[#6b7280] transition-colors hover:text-[#884c2d]"
                         >
                           <MoreHorizontal size={18} />
                         </button>
@@ -345,7 +345,7 @@ export default function ProjectFiles() {
             </table>
           ) : (
             <div className="p-10 text-center">
-              <p className="text-sm text-[#6c6355] mb-3">No documents in {activeFolder ? `"${activeFolder}"` : "this project"} yet.</p>
+              <p className="text-sm text-[#6b7280] mb-3">No documents in {activeFolder ? `"${activeFolder}"` : "this project"} yet.</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="text-xs font-bold text-[#884c2d] hover:underline"

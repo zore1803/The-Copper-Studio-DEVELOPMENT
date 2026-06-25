@@ -294,7 +294,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
 
         <div className="rounded-xl bg-[#EBE1D8] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[15px] font-bold text-[#2b211c]">Project Stages</h3>
+            <h3 className="text-[15px] font-bold text-[#111827]">Project Stages</h3>
             <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm">
               <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#884c2d]">i</span>
               Client Visible
@@ -313,12 +313,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Phase Name"
                     value={stage.name || ""} 
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>

@@ -19,14 +19,14 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
     danger: "bg-red-50 text-red-700",
   };
   return (
-    <div className="rounded-xl border border-[#ead9d0] bg-white px-5 py-4 shadow-sm">
+    <div className="rounded-xl border border-[#e5e7eb] bg-white px-5 py-4 shadow-sm">
       <div className="flex items-center gap-3">
         <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-[#6c6355]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#2b211c]">{value}</p>
+          <p className="truncate text-xs font-medium text-[#6b7280]">{label}</p>
+          <p className="mt-0.5 truncate text-base font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
@@ -35,11 +35,11 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
 
 function Section({ title, subtitle, action, children }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-[#ead9d0] bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#f3e9e4] bg-[#fbf3ee] px-5 py-3.5">
+    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#f3e5e0] bg-[#fff1ec] px-5 py-3.5">
         <div>
-          <h3 className="text-sm font-bold text-[#2b211c]">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-xs text-[#6c6355]">{subtitle}</p>}
+          <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
+          {subtitle && <p className="mt-0.5 text-xs text-[#6b7280]">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -145,20 +145,20 @@ export default function ProjectsList() {
   ];
 
   return (
-    <div className="min-h-full bg-[#faf6f3] p-6 space-y-6">
+    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-[#2b211c]">All Projects</h2>
-          <p className="mt-1 text-sm text-[#6c6355]">{filtered.length} of {projects.length} projects across every company</p>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-[#111827]">All Projects</h2>
+          <p className="mt-1 text-sm text-[#6b7280]">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#ead9d0] bg-white px-3 sm:w-72 shadow-sm">
-            <Search size={14} className="text-[#9b8c83]" />
+          <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-3 sm:w-72 shadow-sm">
+            <Search size={14} className="text-[#9ca3af]" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search projects or clients"
-              className="w-full bg-transparent text-sm text-[#2b211c] outline-none placeholder:text-[#9b8c83]"
+              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
             />
           </div>
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
@@ -184,7 +184,7 @@ export default function ProjectsList() {
                 key={item.value}
                 onClick={() => setStatusFilter(item.value)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#884c2d] text-white" : "bg-[#f1e7e1] text-[#6c6355] hover:bg-[#ead9d0]"
+                  statusFilter === item.value ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
                 }`}
               >
                 {item.label}
@@ -193,8 +193,8 @@ export default function ProjectsList() {
           </div>
         }
       >
-        <table className="w-full text-left text-sm text-[#6c6355]">
-          <thead className="bg-[#fbf3ee] text-xs uppercase text-[#9b8c83]">
+        <table className="w-full text-left text-sm text-[#6b7280]">
+          <thead className="bg-[#fff1ec] text-xs uppercase text-[#9ca3af]">
             <tr>
               <th className="px-5 py-3 font-semibold">Project Name</th>
               <th className="px-5 py-3 font-semibold">Company</th>
@@ -206,21 +206,21 @@ export default function ProjectsList() {
               <th className="px-5 py-3 font-semibold text-right">Value</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f3e9e4] bg-white">
+          <tbody className="divide-y divide-[#f3e5e0] bg-white">
             {loading ? (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center">
                   <div className="mx-auto flex justify-center items-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#884c2d]"></div>
                   </div>
-                  <p className="mt-4 text-sm font-semibold text-[#2b211c]">Loading projects...</p>
+                  <p className="mt-4 text-sm font-semibold text-[#111827]">Loading projects...</p>
                 </td>
               </tr>
             ) : filtered.length > 0 ? filtered.map((project) => {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
-                <tr key={project.id || project._id} className="hover:bg-[#fbf3ee] transition-colors">
+                <tr key={project.id || project._id} className="hover:bg-[#fff1ec] transition-colors">
                   <td className="px-5 py-4">
                     <Link
                       to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
@@ -229,22 +229,22 @@ export default function ProjectsList() {
                       {project.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-4 font-medium text-[#2b211c]">{project.computedCompanyName}</td>
+                  <td className="px-5 py-4 font-medium text-[#111827]">{project.computedCompanyName}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
                       {project.template || project.packageName || "Custom"}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-xs font-medium text-[#2b211c] truncate max-w-[150px]">{project.currentStage}</td>
+                  <td className="px-5 py-4 text-xs font-medium text-[#111827] truncate max-w-[150px]">{project.currentStage}</td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-16 overflow-hidden rounded-full bg-[#f1e7e1]">
+                      <div className="h-2 w-16 overflow-hidden rounded-full bg-[#f3f4f6]">
                         <div
                           className={`h-full rounded-full ${project.computedProgress === 100 ? "bg-emerald-500" : "bg-[#884c2d]"}`}
                           style={{ width: `${project.computedProgress}%` }}
                         />
                       </div>
-                      <span className="text-[11px] font-bold text-[#2b211c]">{project.computedProgress}%</span>
+                      <span className="text-[11px] font-bold text-[#111827]">{project.computedProgress}%</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -254,7 +254,7 @@ export default function ProjectsList() {
                       className={`rounded-md border-0 bg-transparent py-1 pl-1 pr-6 text-xs font-semibold focus:ring-0 ${
                         project.effectiveStatus === "completed" ? "text-emerald-700" :
                         project.effectiveStatus === "delayed" ? "text-red-700" :
-                        "text-[#2b211c]"
+                        "text-[#111827]"
                       }`}
                     >
                       {PROJECT_STATUS_OPTIONS.map((opt) => (
@@ -264,11 +264,11 @@ export default function ProjectsList() {
                   </td>
                   <td className="px-5 py-4 text-xs">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[#9b8c83]">Start: <span className="text-[#2b211c] font-medium">{start}</span></span>
-                      <span className="text-[#9b8c83]">Due: <span className="text-[#2b211c] font-medium">{deadline}</span></span>
+                      <span className="text-[#9ca3af]">Start: <span className="text-[#111827] font-medium">{start}</span></span>
+                      <span className="text-[#9ca3af]">Due: <span className="text-[#111827] font-medium">{deadline}</span></span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-right font-bold text-[#2b211c]">
+                  <td className="px-5 py-4 text-right font-bold text-[#111827]">
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                 </tr>
@@ -279,8 +279,8 @@ export default function ProjectsList() {
                   <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
                     <FolderKanban size={20} />
                   </div>
-                  <p className="text-sm font-semibold text-[#2b211c]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
-                  <p className="mt-1 text-sm text-[#6c6355]">Create a project and link it to a company to get started.</p>
+                  <p className="text-sm font-semibold text-[#111827]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+                  <p className="mt-1 text-sm text-[#6b7280]">Create a project and link it to a company to get started.</p>
                 </td>
               </tr>
             )}
