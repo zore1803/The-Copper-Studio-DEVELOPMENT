@@ -37,6 +37,12 @@ const app = express();
 const port = process.env.PORT || 5000;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const siteRoot = path.resolve(__dirname, "..");
+const requestedSupabaseBootCheckTimeoutMs = Number.parseInt(process.env.SUPABASE_BOOT_CHECK_TIMEOUT_MS || "8000", 10);
+const supabaseBootCheckTimeoutMs =
+  Number.isFinite(requestedSupabaseBootCheckTimeoutMs) && requestedSupabaseBootCheckTimeoutMs > 0
+    ? requestedSupabaseBootCheckTimeoutMs
+    : 8000;
+const strictSupabaseBootCheck = process.env.STRICT_SUPABASE_BOOT_CHECK === "true";
 const razorpay =
   process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
     ? new Razorpay({
@@ -604,39 +610,82 @@ app.use((error, _req, res, _next) => {
   res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Server error." });
 });
 
+function cleanSupabaseBootError(error) {
+  const rawMessage = error?.message || String(error);
+  if (rawMessage.includes("<!DOCTYPE") || rawMessage.includes("<html")) {
+    return "Supabase returned an HTML error page instead of JSON, usually a Cloudflare/proxy 5xx from the Supabase API.";
+  }
+  if (
+    error?.name === "AbortError" ||
+    error?.name === "TimeoutError" ||
+    rawMessage.includes("AbortError") ||
+    rawMessage.includes("TimeoutError")
+  ) {
+    return `Supabase request timed out after ${supabaseBootCheckTimeoutMs}ms.`;
+  }
+  return rawMessage.length > 500 ? `${rawMessage.slice(0, 500)}...` : rawMessage;
+}
+
+async function checkSupabaseAtStartup() {
+  try {
+    const { error: pingError } = await supabase
+      .from("users")
+      .select("id")
+      .limit(1)
+      .abortSignal(AbortSignal.timeout(supabaseBootCheckTimeoutMs));
+
+    if (pingError) {
+      throw pingError;
+    }
+
+    return true;
+  } catch (error) {
+    const message =
+      `Supabase startup check failed: ${cleanSupabaseBootError(error)} ` +
+      "Check SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY, confirm supabase/schema.sql has been applied, " +
+      "and verify the Supabase project is not paused or degraded.";
+
+    if (strictSupabaseBootCheck) {
+      throw new Error(message);
+    }
+
+    console.warn(message);
+    console.warn("Continuing startup because STRICT_SUPABASE_BOOT_CHECK is not true; database-backed routes may fail until Supabase recovers.");
+    return false;
+  }
+}
+
 async function start() {
-  // Connect to whichever backend DB_DRIVER selects (defaults to Supabase).
+  let databaseReady = true;
+
+  // Connect to whichever backend DB_DRIVER selects (defaults to MongoDB).
   if (dbDriver === "mongo") {
     if (!process.env.MONGO_URI) {
       throw new Error("DB_DRIVER=mongo but MONGO_URI is missing. Add it to .env.");
     }
     await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 20000 });
   } else {
-    // Smoke-test Supabase up front so a misconfigured key/schema fails loudly at
-    // boot instead of on the first request.
-    const { error: pingError } = await supabase.from("users").select("id").limit(1);
-    if (pingError) {
-      throw new Error(
-        `Supabase connection failed: ${pingError.message}. ` +
-          "Check SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY and that the schema has been created."
-      );
-    }
+    databaseReady = await checkSupabaseAtStartup();
   }
 
   if (process.env.SUPERADMIN_EMAIL && process.env.SUPERADMIN_PASSWORD) {
-    const bcrypt = await import("bcryptjs");
-    await User.findOneAndUpdate(
-      { email: process.env.SUPERADMIN_EMAIL.toLowerCase() },
-      {
-        $set: { role: "superadmin", status: "active" },
-        $setOnInsert: {
-          name: process.env.SUPERADMIN_NAME || "Super Admin",
-          email: process.env.SUPERADMIN_EMAIL.toLowerCase(),
-          passwordHash: await bcrypt.default.hash(process.env.SUPERADMIN_PASSWORD, 12)
-        }
-      },
-      { upsert: true }
-    );
+    if (databaseReady) {
+      const bcrypt = await import("bcryptjs");
+      await User.findOneAndUpdate(
+        { email: process.env.SUPERADMIN_EMAIL.toLowerCase() },
+        {
+          $set: { role: "superadmin", status: "active" },
+          $setOnInsert: {
+            name: process.env.SUPERADMIN_NAME || "Super Admin",
+            email: process.env.SUPERADMIN_EMAIL.toLowerCase(),
+            passwordHash: await bcrypt.default.hash(process.env.SUPERADMIN_PASSWORD, 12)
+          }
+        },
+        { upsert: true }
+      );
+    } else {
+      console.warn("Skipping superadmin seed because the database was not reachable during startup.");
+    }
   }
 
   app.listen(port, () => {

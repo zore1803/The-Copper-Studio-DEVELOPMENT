@@ -85,6 +85,9 @@ async function main() {
   if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI is required (the destination database). Add it to .env.");
   }
+  if (!supabase) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to read the Supabase source data.");
+  }
 
   console.log("Connecting to MongoDB...");
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 20000 });

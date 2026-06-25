@@ -5,15 +5,16 @@
 -- document in a `jsonb` column. `id` is `text` (defaulting to a UUID) so that a
 -- one-time migration can preserve existing MongoDB ObjectId references as-is.
 --
--- RLS is enabled with no policies. The API connects with the service-role key,
--- which bypasses RLS; the public anon/publishable key therefore cannot read or
--- write these tables directly.
+-- RLS is enabled with an explicit deny-all policy. The API connects with the
+-- service-role key, which bypasses RLS; the public anon/publishable key
+-- therefore cannot read or write these tables directly.
 
 create extension if not exists pgcrypto;
 
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at = now();
@@ -40,6 +41,10 @@ begin
        );', t);
 
     execute format('alter table public.%I enable row level security;', t);
+    execute format('drop policy if exists server_only_deny_all on public.%I;', t);
+    execute format(
+      'create policy server_only_deny_all on public.%I
+         for all using (false) with check (false);', t);
 
     -- Speeds up the common "filter by a field inside the document" lookups.
     execute format('create index if not exists %I on public.%I using gin (doc);', t || '_doc_gin', t);

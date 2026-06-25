@@ -4,13 +4,13 @@ import { createModel as createSupabaseModel } from "./model.js";
 /**
  * Storage backend switch.
  *
- * Defaults to Supabase. Set DB_DRIVER=mongo (with MONGO_URI) to run the whole
- * app on MongoDB instead — e.g. to switch back later. Every model file carries
- * BOTH a Supabase `defaults` map and a Mongoose `schema`, so flipping this one
- * env var swaps the entire data layer with no other code changes. The routes and
- * services are written against the Mongoose-style API that both backends expose.
+ * Defaults to MongoDB. Set DB_DRIVER=supabase (with SUPABASE_* env vars) to run
+ * on Supabase instead. Every model file carries BOTH a Supabase `defaults` map
+ * and a Mongoose `schema`, so flipping this one env var swaps the entire data
+ * layer with no other code changes. The routes and services are written against
+ * the Mongoose-style API that both backends expose.
  */
-export const dbDriver = (process.env.DB_DRIVER || "supabase").toLowerCase();
+export const dbDriver = (process.env.DB_DRIVER || "mongo").toLowerCase();
 
 export function defineModel({ name, table, defaults = {}, schema }) {
   if (dbDriver === "mongo") {

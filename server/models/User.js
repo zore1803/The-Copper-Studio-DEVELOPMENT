@@ -38,7 +38,7 @@ const schema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Supabase defaults (used when DB_DRIVER=supabase, the default).
+// Supabase defaults (used when DB_DRIVER=supabase).
 export default defineModel({
   name: "User",
   table: "users",

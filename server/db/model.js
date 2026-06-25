@@ -336,6 +336,10 @@ async function populateViews(views, { path, fields }) {
 }
 
 export function createModel(table, { defaults = {} } = {}) {
+  if (!supabase) {
+    throw new Error("Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, or use DB_DRIVER=mongo.");
+  }
+
   const model = {
     table,
     modelName: table,

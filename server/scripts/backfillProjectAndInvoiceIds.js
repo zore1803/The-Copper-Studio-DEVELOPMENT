@@ -14,8 +14,8 @@
  * the name field). It does not touch the description field.
  *
  * Uses the app's normal model layer, so it follows whichever DB_DRIVER is
- * active (defaults to Supabase in this project; set DB_DRIVER=mongo + MONGO_URI
- * to target Mongo instead).
+ * active (defaults to MongoDB in this project; set DB_DRIVER=supabase +
+ * SUPABASE_* env vars to target Supabase instead).
  *
  * Usage:
  *   node server/scripts/backfillProjectAndInvoiceIds.js          # dry run, prints a diff, writes nothing
