@@ -34,14 +34,14 @@ export function generateProjectCode(company, projects = [], date = new Date()) {
   return `CS-${companyCodeFromName(company.name)}-${num}-${mm}${yy}`;
 }
 
-// Default project name: <Company>-project <project # for that company>-<MMYY>, e.g. "Datacentric-project 2-0626".
+// Default project name: <Company>-Project <project # for that company>-<MMYY>, e.g. "Datacentric-Project 2-0626".
 export function generateDefaultProjectName(company, projects = [], date = new Date()) {
   if (!company) return "";
   const d = date instanceof Date ? date : new Date(date);
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
   const num = projectNumberOf(company, projects);
-  return `${company.name}-project ${num}-${mm}${yy}`;
+  return `${company.name}-Project ${num}-${mm}${yy}`;
 }
 
 function addDays(value, days) {

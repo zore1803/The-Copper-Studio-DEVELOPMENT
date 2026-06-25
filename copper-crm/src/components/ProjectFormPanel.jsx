@@ -196,7 +196,8 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           )}
           <Select label="Primary contact" value={form.primaryContactId} onChange={set("primaryContactId")}
             options={scopedContacts.map((c) => ({ value: String(c.id || c._id), label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Input span label="Project manager" value={form.projectManager} onChange={set("projectManager")} />
+          <Select span label="Project manager" value={form.projectManager} onChange={set("projectManager")}
+            options={scopedContacts.map((c) => ({ value: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email, label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
           <Select label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
           {form.packageName === "Custom" && (
             <Input label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} error={errors.customPackageName} />

@@ -4,7 +4,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell, BarChart2, Building2, ChevronDown,
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
-  FileText, FolderKanban, FolderOpen, LayoutDashboard,
+  FolderKanban, FolderOpen, LayoutDashboard,
   LogOut, Plus, ReceiptText, Search, Settings,
   ShoppingCart, UserRound, Wallet, Package,
 } from "lucide-react";
@@ -44,7 +44,6 @@ const NAV_SECTIONS = [
           { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
           { icon: LayoutDashboard, to: "/admin/kanban", label: "Kanban Board" },
           { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
-          { icon: FileText, to: "/admin/tasks", label: "Tasks" },
         ],
       },
       {

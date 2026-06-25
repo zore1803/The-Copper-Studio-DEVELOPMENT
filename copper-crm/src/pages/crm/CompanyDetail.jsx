@@ -639,7 +639,11 @@ export default function CompanyDetail() {
   const [editingContact, setEditingContact] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [contactQuery, setContactQuery] = useState("");
+  const [contactStatusFilter, setContactStatusFilter] = useState("All");
+  const [contactDesignationFilter, setContactDesignationFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [invoiceQuery, setInvoiceQuery] = useState("");
+  const [invoiceStatusFilter, setInvoiceStatusFilter] = useState("All");
   const [linkingClient, setLinkingClient] = useState(false);
   const [clientUsers, setClientUsers] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
@@ -719,10 +723,23 @@ export default function CompanyDetail() {
     ],
     [linked.documents, linked.projects]
   );
+  const contactDesignations = useMemo(
+    () => ["All", ...Array.from(new Set(linked.contacts.map((contact) => contact.designation).filter(Boolean)))],
+    [linked.contacts]
+  );
   const filteredContacts = useMemo(() => linked.contacts.filter((contact) => {
     const fullName = `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""}`;
-    return `${fullName} ${contact.email} ${contact.phone} ${contact.designation}`.toLowerCase().includes(contactQuery.toLowerCase());
-  }), [contactQuery, linked.contacts]);
+    const matchesQuery = `${fullName} ${contact.email} ${contact.phone} ${contact.designation}`.toLowerCase().includes(contactQuery.toLowerCase());
+    const matchesStatus = contactStatusFilter === "All" || (contact.status || "Active") === contactStatusFilter;
+    const matchesDesignation = contactDesignationFilter === "All" || contact.designation === contactDesignationFilter;
+    return matchesQuery && matchesStatus && matchesDesignation;
+  }), [contactQuery, contactStatusFilter, contactDesignationFilter, linked.contacts]);
+  const filteredInvoices = useMemo(() => linked.invoices.filter((invoice) => {
+    const matchesQuery = `${invoice.invoiceId || invoice.id || invoice._id || ""} ${invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || ""}`
+      .toLowerCase().includes(invoiceQuery.toLowerCase());
+    const matchesStatus = invoiceStatusFilter === "All" || (invoice.status || "Pending") === invoiceStatusFilter;
+    return matchesQuery && matchesStatus;
+  }), [invoiceQuery, invoiceStatusFilter, linked.invoices]);
 
   if (!company && companiesLoading) {
     return (
@@ -1182,14 +1199,43 @@ export default function CompanyDetail() {
           />
         )}
         {activeTab === "Contacts" && (
-          <Section title="Contacts" action={<Button size="sm" onClick={() => setEditingContact({})}><Plus size={14} /> Contact</Button>}>
-            <ContactToolbar query={contactQuery} onQuery={setContactQuery} />
+          <Section
+            title="Contacts"
+            action={
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <ModuleSearch value={contactQuery} onChange={setContactQuery} placeholder="Search contacts…" />
+                <FilterButton
+                  panelWidth={420}
+                  onReset={() => { setContactStatusFilter("All"); setContactDesignationFilter("All"); }}
+                  fields={[
+                    { key: "status", label: "Status", type: "select", value: contactStatusFilter, onChange: setContactStatusFilter, options: ["All", "Active", "Inactive"] },
+                    { key: "designation", label: "Designation", type: "select", value: contactDesignationFilter, onChange: setContactDesignationFilter, options: contactDesignations }
+                  ]}
+                />
+                <Button size="sm" onClick={() => setEditingContact({})}><Plus size={14} /> Contact</Button>
+              </div>
+            }
+          >
             {filteredContacts.length ? <ContactsTable contacts={filteredContacts} onEdit={setEditingContact} onDelete={handleDeleteContact} onView={setSelectedContact} onPrimary={handleMakePrimary} /> : <EmptyState icon={Users} title="No contacts linked." />}
           </Section>
         )}
         {activeTab === "Invoices" && (
-          <Section title="Invoices">
-            {linked.invoices.length ? <InvoicesTable invoices={linked.invoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} /> : <EmptyState icon={FileText} title="No invoices linked." />}
+          <Section
+            title="Invoices"
+            action={
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <ModuleSearch value={invoiceQuery} onChange={setInvoiceQuery} placeholder="Search invoices…" />
+                <FilterButton
+                  panelWidth={320}
+                  onReset={() => setInvoiceStatusFilter("All")}
+                  fields={[
+                    { key: "status", label: "Status", type: "select", value: invoiceStatusFilter, onChange: setInvoiceStatusFilter, options: ["All", "Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"] }
+                  ]}
+                />
+              </div>
+            }
+          >
+            {filteredInvoices.length ? <InvoicesTable invoices={filteredInvoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} /> : <EmptyState icon={FileText} title="No invoices linked." />}
           </Section>
         )}
         {activeTab === "Documents" && (
@@ -1285,6 +1331,23 @@ function Section({ title, action, children }) {
       </div>
       <div className="p-5">{children}</div>
     </section>
+  );
+}
+
+// Compact search box shared by every module header (Projects/Tasks use FilterButton
+// alone; Contacts/Invoices pair it with this) so the action row looks the same
+// across tabs instead of each module inventing its own toolbar.
+function ModuleSearch({ value, onChange, placeholder }) {
+  return (
+    <div className="flex h-11 items-center gap-2 rounded-full border border-[#e5e7eb] bg-white px-3.5">
+      <Search size={14} className="text-[#9ca3af]" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="w-44 bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
+      />
+    </div>
   );
 }
 
@@ -1519,21 +1582,6 @@ function DetailMini({ label, value }) {
     <div className="rounded-lg bg-[#f9fafb] p-3">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
       <p className="mt-1 truncate font-semibold text-[#374151]">{value || "Not added"}</p>
-    </div>
-  );
-}
-
-function ContactToolbar({ query, onQuery }) {
-  return (
-    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-      <div className="flex h-10 flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#884c2d]/20">
-        <Search size={14} className="text-[#9ca3af]" />
-        <input value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Filter contacts by name, email, phone, designation" className="w-full bg-transparent text-sm outline-none" />
-      </div>
-      <div className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 text-sm font-semibold text-[#6b7280]">
-        <Filter size={14} />
-        Filter
-      </div>
     </div>
   );
 }
