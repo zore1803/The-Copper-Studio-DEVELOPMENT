@@ -134,7 +134,8 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
 function WebsiteTextLink({ href }) {
   if (!href) return null;
   const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
-  const label = href.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+  const displayUrl = href.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  const label = /^www\./i.test(displayUrl) ? displayUrl : `www.${displayUrl}`;
   return (
     <a
       href={url}
