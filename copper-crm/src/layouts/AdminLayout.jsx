@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../auth/useAuth";
 import { storeGet } from "../lib/store";
 import { useCrmRecords } from "../hooks/useCrmRecords";
+import { useToast } from "../components/useToast";
 
 const NAV_SECTIONS = [
   {
@@ -254,6 +255,7 @@ export default function AdminLayout() {
   const { records: projects } = useCrmRecords("projects");
   const { records: tasks } = useCrmRecords("tasks");
   const { records: invoices } = useCrmRecords("invoices");
+  const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
   // Always start collapsed on every load/reload; the sidebar only expands when
   // the user explicitly clicks the collapse/expand toggle.
   const [collapsed, setCollapsed] = useState(true);
@@ -497,33 +499,44 @@ export default function AdminLayout() {
             {/* Bell */}
             <div ref={notifRef} className="relative">
               <button
-                onClick={() => setNotifOpen((v) => !v)}
+                onClick={() => { setNotifOpen((v) => !v); markAllRead(); }}
                 className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                {notifications.length > 0 && <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DF120B] text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
-                  <div className="px-4 py-3 border-b border-[#e5e7eb]">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
                     <p className="font-semibold text-sm text-[#111827]">Notifications</p>
+                    {notifHistory.length > 0 && (
+                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#9ca3af] hover:text-red-500 transition-colors">
+                        Clear all
+                      </button>
+                    )}
                   </div>
-                  <div className="max-h-80 overflow-y-auto p-3 space-y-1.5">
-                    {notifications.length ? (
-                      notifications.map((n) => (
-                        <button
-                          key={n.id}
-                          onClick={() => { setNotifOpen(false); navigate(n.to); }}
-                          className="flex w-full gap-3 p-2.5 rounded-lg bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors text-left"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-[#111827]">{n.text}</p>
-                            <p className="text-xs mt-0.5 text-[#6b7280]">{n.time}</p>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#f3f4f6]">
+                    {notifHistory.length ? (
+                      notifHistory.map((n) => {
+                        const dotColor = n.type === "error" ? "bg-red-400" : n.type === "info" ? "bg-blue-400" : "bg-emerald-400";
+                        const timeStr = n.ts ? new Date(n.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) + ", " + new Date(n.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+                        return (
+                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#fafafa] transition-colors">
+                            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-[#111827]">{n.title}</p>
+                              {n.message && <p className="mt-0.5 text-xs text-[#6b7280] leading-relaxed">{n.message}</p>}
+                              <p className="mt-1 text-[10px] text-[#9ca3af]">{timeStr}</p>
+                            </div>
                           </div>
-                        </button>
-                      ))
+                        );
+                      })
                     ) : (
-                      <p className="px-2 py-3 text-xs text-[#6b7280]">You're all caught up.</p>
+                      <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No notifications yet.</p>
                     )}
                   </div>
                 </div>
