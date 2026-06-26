@@ -5,6 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout | The Copper Studio</title>
     <link rel="stylesheet" href="assets/styles.css?v=pages-1">
+    <style>
+      .checkout-progress {
+        display: flex;
+        align-items: center;
+        margin-bottom: 22px;
+      }
+      .checkout-step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .checkout-step-num {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--line);
+        font-size: 0.75rem;
+        font-weight: 800;
+        background: var(--surface);
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+      .checkout-step.is-active .checkout-step-num {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .checkout-step.is-active {
+        color: var(--ink);
+      }
+      .checkout-step-divider {
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+        margin: 0 10px;
+        min-width: 24px;
+      }
+      .trust-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 12px 0 0;
+        border-top: 1px solid var(--line);
+        margin-top: 4px;
+      }
+      .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .trust-item .material-symbols-outlined {
+        font-size: 0.95rem;
+        color: var(--success);
+      }
+      .verify-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        background: #ecfdf5;
+        color: var(--success);
+        border: 1px solid #bbf7d0;
+      }
+      .verify-badge.pending {
+        background: #fef9ee;
+        color: #92400e;
+        border-color: #fde68a;
+      }
+      .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--surface-soft);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 9px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--accent-dark);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .form-section-block {
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        margin-bottom: 14px;
+      }
+      .form-section-block:last-of-type {
+        margin-bottom: 0;
+      }
+      .block-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .block-header h3 {
+        font-size: 0.97rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .verify-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .verify-header label {
+        display: block;
+        margin: 0;
+        gap: 0;
+      }
+      .verify-header label span {
+        margin: 0;
+      }
+      .input-hint {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.74rem;
+        color: var(--muted);
+      }
+      .form-footer-note {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.77rem;
+        color: var(--muted);
+        font-weight: 500;
+        margin-top: 14px;
+      }
+      .form-footer-note .material-symbols-outlined {
+        font-size: 0.95rem;
+        flex-shrink: 0;
+      }
+    </style>
   </head>
   <body data-page="checkout">
     <header class="shell-header">
@@ -18,137 +174,203 @@
     </header>
 
     <main class="page-shell">
-      <section class="page-heading">
-        <span class="eyebrow">Checkout Form</span>
-        <h1>Verify customer details.</h1>
-        <p>Mobile number and email must be OTP verified before Razorpay payment opens.</p>
-      </section>
 
-      <section class="two-column">
-        <form class="panel customer-form" id="customerForm">
-          <h2 class="form-section-title">Personal Details</h2>
-          <div class="field-grid">
-            <label>
-              <span>First Name</span>
-              <input id="firstName" name="firstName" type="text" placeholder="Rohit" required>
-            </label>
-            <label>
-              <span>Last Name</span>
-              <input id="lastName" name="lastName" type="text" placeholder="Sharma" required>
-            </label>
-            <label>
-              <span>Designation <em>optional</em></span>
-              <input id="designation" name="designation" type="text" placeholder="Founder, Marketing Lead, etc.">
-            </label>
-            <label>
-              <span>LinkedIn Profile URL <em>optional</em></span>
-              <input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="https://linkedin.com/in/username">
-            </label>
-            <div class="verify-field field-span-2" data-verify-card="phone">
-              <label for="customerPhone"><span>Mobile Number</span></label>
-              <div class="input-action">
-                <div class="phone-field">
-                  <div class="country-picker" data-country-picker>
-                    <button type="button" class="country-picker-trigger" data-country-trigger aria-haspopup="listbox" aria-expanded="false">
-                      <span data-country-flag>🇮🇳</span>
-                      <span data-country-dial>+91</span>
-                      <span class="country-picker-caret">▾</span>
-                    </button>
-                    <input type="hidden" name="customerCountryCode" id="customerCountryCode" value="+91">
-                    <div class="country-picker-menu" data-country-menu hidden role="listbox">
-                      <input type="text" class="country-picker-search" placeholder="Search country…" data-country-search autocomplete="off">
-                      <div class="country-picker-list" data-country-list></div>
-                    </div>
-                  </div>
-                  <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="98765 43210" required>
+      <!-- Checkout progress -->
+      <div class="checkout-progress">
+        <div class="checkout-step is-active">
+          <span class="checkout-step-num">1</span>
+          <span>Your Details</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step">
+          <span class="checkout-step-num">2</span>
+          <span>Payment</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step">
+          <span class="checkout-step-num">3</span>
+          <span>Confirmation</span>
+        </div>
+      </div>
+
+      <div class="two-column">
+
+        <!-- LEFT: Form -->
+        <form id="customerForm" novalidate>
+
+          <!-- Personal Details -->
+          <div class="form-section-block">
+            <div class="block-header">
+              <h3>Personal Details</h3>
+              <span class="section-badge">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">person</span>
+                Step 1 of 2
+              </span>
+            </div>
+            <div class="field-grid">
+              <label>
+                <span>First Name</span>
+                <input id="firstName" name="firstName" type="text" placeholder="Rohit" required autocomplete="given-name">
+              </label>
+              <label>
+                <span>Last Name</span>
+                <input id="lastName" name="lastName" type="text" placeholder="Sharma" required autocomplete="family-name">
+              </label>
+              <label>
+                <span>Designation <em>optional</em></span>
+                <input id="designation" name="designation" type="text" placeholder="Founder, Marketing Lead…" autocomplete="organization-title">
+              </label>
+              <label>
+                <span>LinkedIn Profile <em>optional</em></span>
+                <input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="https://linkedin.com/in/username">
+              </label>
+
+              <!-- Phone verify -->
+              <div class="verify-field field-span-2" data-verify-card="phone">
+                <div class="verify-header">
+                  <label for="customerPhone"><span>Mobile Number</span></label>
+                  <span class="verify-badge pending" id="phoneBadge">Unverified</span>
                 </div>
-                <button class="btn btn-secondary" type="button" data-send-otp="phone">Send OTP</button>
+                <div class="input-action">
+                  <div class="phone-field">
+                    <div class="country-picker" data-country-picker>
+                      <button type="button" class="country-picker-trigger" data-country-trigger aria-haspopup="listbox" aria-expanded="false">
+                        <span data-country-flag>🇮🇳</span>
+                        <span data-country-dial>+91</span>
+                        <span class="country-picker-caret">▾</span>
+                      </button>
+                      <input type="hidden" name="customerCountryCode" id="customerCountryCode" value="+91">
+                      <div class="country-picker-menu" data-country-menu hidden role="listbox">
+                        <input type="text" class="country-picker-search" placeholder="Search country…" data-country-search autocomplete="off">
+                        <div class="country-picker-list" data-country-list></div>
+                      </div>
+                    </div>
+                    <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="98765 43210" required autocomplete="tel-national">
+                  </div>
+                  <button class="btn btn-secondary" type="button" data-send-otp="phone">Send OTP</button>
+                </div>
+                <div class="otp-row">
+                  <input data-otp-input="phone" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
+                  <button class="btn btn-primary" type="button" data-verify="phone" disabled>Verify</button>
+                  <small id="phoneVerifyStatus">OTP not sent</small>
+                </div>
               </div>
-              <div class="otp-row">
-                <input data-otp-input="phone" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
-                <button class="btn btn-primary" type="button" data-verify="phone" disabled>Verify</button>
-                <small id="phoneVerifyStatus">OTP not sent</small>
-              </div>
-            </div>
-            <div class="verify-field field-span-2" data-verify-card="email">
-              <label for="customerEmail"><span>Email Address</span></label>
-              <div class="input-action">
-                <input id="customerEmail" name="customerEmail" type="email" placeholder="customer@example.com" required>
-                <button class="btn btn-secondary" type="button" data-send-otp="email">Send OTP</button>
-              </div>
-              <div class="otp-row">
-                <input data-otp-input="email" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
-                <button class="btn btn-primary" type="button" data-verify="email" disabled>Verify</button>
-                <small id="emailVerifyStatus">OTP not sent</small>
+
+              <!-- Email verify -->
+              <div class="verify-field field-span-2" data-verify-card="email">
+                <div class="verify-header">
+                  <label for="customerEmail"><span>Email Address</span></label>
+                  <span class="verify-badge pending" id="emailBadge">Unverified</span>
+                </div>
+                <div class="input-action">
+                  <input id="customerEmail" name="customerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
+                  <button class="btn btn-secondary" type="button" data-send-otp="email">Send OTP</button>
+                </div>
+                <div class="otp-row">
+                  <input data-otp-input="email" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
+                  <button class="btn btn-primary" type="button" data-verify="email" disabled>Verify</button>
+                  <small id="emailVerifyStatus">OTP not sent</small>
+                </div>
               </div>
             </div>
           </div>
 
-          <h2 class="form-section-title">Project &amp; Billing Details</h2>
-          <div class="field-grid">
-            <label class="field-span-2">
-              <span>Project / Brand Name</span>
-              <input id="projectName" name="projectName" type="text" placeholder="The internship portal" required>
-            </label>
-            <label>
-              <span>Company / Studio Name <em>optional</em></span>
-              <input id="customerCompany" name="customerCompany" type="text" placeholder="DataCircles Studio">
-            </label>
-            <label>
-              <span>Company Website <em>optional</em></span>
-              <input id="companyWebsite" name="companyWebsite" type="url" placeholder="https://www.example.com">
-            </label>
-            <label class="field-span-2">
-              <span>Company GSTIN <em>optional</em></span>
-              <input id="companyGstin" name="companyGstin" type="text" placeholder="27ABCDE1234F1Z5" maxlength="15">
-            </label>
-            <label class="field-span-2">
-              <span>Billing Address Line 1</span>
-              <input id="billingAddressLine1" name="billingAddressLine1" type="text" placeholder="1004, building name, colony" required>
-            </label>
-            <label class="field-span-2">
-              <span>Billing Address Line 2 <em>optional</em></span>
-              <input id="billingAddressLine2" name="billingAddressLine2" type="text" placeholder="Area, landmark">
-            </label>
-            <label>
-              <span>City</span>
-              <input id="city" name="city" type="text" placeholder="Mumbai" required>
-            </label>
-            <label>
-              <span>State</span>
-              <input id="state" name="state" type="text" placeholder="Maharashtra" required>
-            </label>
-            <label>
-              <span>Pincode / ZIP</span>
-              <input id="pincode" name="pincode" type="text" placeholder="400001" inputmode="numeric" maxlength="10" required>
-            </label>
+          <!-- Billing Details -->
+          <div class="form-section-block">
+            <div class="block-header">
+              <h3>Billing Details</h3>
+              <span class="section-badge">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">receipt_long</span>
+                Step 2 of 2
+              </span>
+            </div>
+            <div class="field-grid">
+              <label class="field-span-2">
+                <span>GSTIN <em>optional</em></span>
+                <input id="companyGstin" name="companyGstin" type="text" placeholder="27ABCDE1234F1Z5" maxlength="15" autocomplete="off">
+                <span class="input-hint">Only required if you need a GST invoice for your business.</span>
+              </label>
+              <label class="field-span-2">
+                <span>Billing Address Line 1</span>
+                <input id="billingAddressLine1" name="billingAddressLine1" type="text" placeholder="Flat / House No., Building, Street" required autocomplete="address-line1">
+              </label>
+              <label class="field-span-2">
+                <span>Address Line 2 <em>optional</em></span>
+                <input id="billingAddressLine2" name="billingAddressLine2" type="text" placeholder="Area, Landmark" autocomplete="address-line2">
+              </label>
+              <label>
+                <span>City</span>
+                <input id="city" name="city" type="text" placeholder="Mumbai" required autocomplete="address-level2">
+              </label>
+              <label>
+                <span>State</span>
+                <input id="state" name="state" type="text" placeholder="Maharashtra" required autocomplete="address-level1">
+              </label>
+              <label>
+                <span>Pincode</span>
+                <input id="pincode" name="pincode" type="text" placeholder="400001" inputmode="numeric" maxlength="10" required autocomplete="postal-code">
+              </label>
+            </div>
           </div>
 
-          <div class="form-actions">
-            <a class="btn btn-secondary" href="index.html">Back to Packages</a>
-            <button class="btn btn-primary" type="submit">Continue to Razorpay</button>
+          <!-- Actions -->
+          <div class="form-actions" style="margin-top: 18px;">
+            <a class="btn btn-secondary" href="index.html">
+              <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_back</span>
+              Back to Packages
+            </a>
+            <button class="btn btn-primary" type="submit">
+              Continue to Payment
+              <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>
+            </button>
           </div>
+          <p class="form-footer-note">
+            <span class="material-symbols-outlined">lock</span>
+            Your information is encrypted. Both mobile and email OTP verification are required before payment opens.
+          </p>
         </form>
 
+        <!-- RIGHT: Order summary -->
         <aside class="panel sticky-panel">
-          <p class="mini-label">Selected Package</p>
+          <p class="mini-label">Order Summary</p>
           <div id="selectedOverview"></div>
+
           <div class="summary-divider"></div>
+
           <div class="coupon-box">
-            <label for="couponCode"><span>Coupon code <em>optional</em></span></label>
+            <label for="couponCode">
+              <span>Coupon code <em>optional</em></span>
+            </label>
             <div class="input-action">
-              <input id="couponCode" type="text" placeholder="DATACI-XXX-XXX-XXX">
+              <input id="couponCode" type="text" placeholder="DATACI-XXX-XXX-XXX" autocomplete="off">
               <button class="btn btn-secondary" type="button" id="applyCouponButton">Apply</button>
             </div>
-            <small id="couponStatus">Apply a valid coupon before payment.</small>
+            <small id="couponStatus">Have a coupon? Apply it before payment.</small>
           </div>
+
           <div class="summary-divider"></div>
+
           <div class="total-row">
             <span>Total payable</span>
-            <strong id="overviewTotal">-</strong>
+            <strong id="overviewTotal">—</strong>
+          </div>
+
+          <div class="trust-row">
+            <span class="trust-item">
+              <span class="material-symbols-outlined">verified_user</span>
+              Secure checkout
+            </span>
+            <span class="trust-item">
+              <span class="material-symbols-outlined">payments</span>
+              Razorpay
+            </span>
+            <span class="trust-item">
+              <span class="material-symbols-outlined">receipt</span>
+              Invoice by email
+            </span>
           </div>
         </aside>
-      </section>
+      </div>
     </main>
 
     <script src="assets/app.js?v=pages-1"></script>
