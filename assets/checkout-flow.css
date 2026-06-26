@@ -1177,3 +1177,310 @@ body[data-page="checkout"] select:disabled {
     min-width: 0;
   }
 }
+
+/* ============================================================
+   PACKAGES (landing) PAGE — same design language as checkout
+   ============================================================ */
+body[data-page="packages"] {
+  background: #f7f7f7;
+  color: #111111;
+}
+
+body[data-page="packages"] .shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 74px;
+  padding: 0 clamp(24px, 5vw, 64px);
+  border-bottom: 1px solid #e8ddd8;
+  background: #fff8f6;
+  backdrop-filter: blur(14px);
+}
+
+body[data-page="packages"] .brand {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+}
+
+body[data-page="packages"] .brand-mark {
+  display: block;
+  width: 172px;
+  height: 42px;
+  border-radius: 0;
+  background: url("../copper-crm/public/copper-studio-wordmark.png") left center / contain no-repeat;
+  box-shadow: none;
+}
+
+body[data-page="packages"] .brand span:not(.brand-mark) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+body[data-page="packages"] .page-shell {
+  width: min(1160px, calc(100% - 48px));
+  padding: 46px 0 92px;
+}
+
+/* Hero */
+.packages-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 36px;
+  align-items: center;
+  padding: 42px 38px;
+  border: 1px solid #efefef;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.04);
+  margin-bottom: 40px;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #964d0a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.packages-hero h1 {
+  margin: 0 0 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: #111111;
+}
+
+.packages-hero > div > p {
+  margin: 0;
+  max-width: 520px;
+  color: #555555;
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.hero-included {
+  padding: 22px;
+  border: 1px solid #efe6dd;
+  border-radius: 12px;
+  background: #fbf7f3;
+}
+
+.hero-included-title {
+  margin: 0 0 14px;
+  color: #8a6a55;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-included ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.hero-included li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #3f3a36;
+  font-size: 0.86rem;
+}
+
+.hero-included li .material-symbols-outlined {
+  color: #964d0a;
+  font-size: 1.1rem;
+}
+
+/* Section heading */
+.packages-section-head {
+  margin-bottom: 24px;
+}
+
+.packages-section-head h2 {
+  margin: 0 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #111111;
+}
+
+.packages-section-head p {
+  margin: 0;
+  color: #646464;
+  font-size: 0.9rem;
+}
+
+/* Package cards */
+body[data-page="packages"] .package-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+body[data-page="packages"] .package-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px 26px;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.04);
+  text-align: left;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+body[data-page="packages"] .package-card:hover {
+  transform: translateY(-3px);
+  border-color: #d8c2b9;
+}
+
+body[data-page="packages"] .package-card.is-selected {
+  border-color: #964d0a;
+  box-shadow: 0 0 0 1px #964d0a inset, 0 18px 40px rgba(150, 77, 10, 0.12);
+}
+
+body[data-page="packages"] .package-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body[data-page="packages"] .package-card .mini-label {
+  margin: 0 0 6px;
+  color: #8f8f8f;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body[data-page="packages"] .package-card h3 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #111111;
+}
+
+body[data-page="packages"] .package-card header .material-symbols-outlined {
+  color: #964d0a;
+  font-size: 1.3rem;
+}
+
+body[data-page="packages"] .package-card .price {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.1rem;
+  font-weight: 500;
+  color: #111111;
+}
+
+body[data-page="packages"] .package-card > p {
+  margin: -8px 0 0;
+  color: #646464;
+  font-size: 0.84rem;
+}
+
+body[data-page="packages"] .package-card ul {
+  list-style: none;
+  display: grid;
+  gap: 11px;
+  margin: 6px 0;
+  padding: 16px 0;
+  border-top: 1px solid #f1f1f1;
+}
+
+body[data-page="packages"] .package-card li {
+  display: flex;
+  gap: 10px;
+  color: #444444;
+  font-size: 0.89rem;
+  line-height: 1.4;
+}
+
+body[data-page="packages"] .package-card li::before {
+  content: "✓";
+  color: #964d0a;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+body[data-page="packages"] .package-card .btn {
+  margin-top: auto;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body[data-page="packages"] .package-card .btn-primary {
+  border: 0;
+  background: #964d0a;
+  color: #ffffff;
+}
+
+body[data-page="packages"] .package-card .btn-primary:hover {
+  background: #7e4008;
+}
+
+body[data-page="packages"] .package-card .btn-secondary {
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  color: #111111;
+}
+
+body[data-page="packages"] .package-card .btn-secondary:hover {
+  border-color: #964d0a;
+  color: #964d0a;
+  background: #ffffff;
+}
+
+@media (max-width: 900px) {
+  .packages-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  body[data-page="packages"] .package-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  body[data-page="packages"] .shell-header {
+    min-height: 68px;
+  }
+  body[data-page="packages"] .brand-mark {
+    width: 136px;
+    height: 34px;
+  }
+  body[data-page="packages"] .page-shell {
+    width: min(100% - 24px, 1160px);
+    padding-top: 28px;
+  }
+  .packages-hero {
+    padding: 26px 22px;
+  }
+}

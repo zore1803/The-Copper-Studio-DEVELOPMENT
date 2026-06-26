@@ -5,40 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing Packages | The Copper Studio</title>
     <meta name="description" content="Choose a pricing package for The Copper Studio onboarding.">
-    <link rel="stylesheet" href="assets/styles.css?v=pages-1">
+    <link rel="stylesheet" href="assets/styles.css?v=checkout-reference-1">
+    <link rel="stylesheet" href="assets/checkout-flow.css?v=1">
   </head>
   <body data-page="packages">
     <header class="shell-header">
       <a class="brand" href="index.html">
-        <img src="copper-crm/public/copper-studio-wordmark.png" alt="The Copper Studio" style="height:40px;width:auto;display:block;" />
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>THE COPPER STUDIO</span>
       </a>
     </header>
 
     <main class="page-shell">
-      <section class="landing-hero">
+
+      <!-- Hero -->
+      <section class="packages-hero">
         <div>
-          <span class="eyebrow">Pricing Packages</span>
+          <span class="hero-eyebrow">Step 1 — Select a package</span>
           <h1>Choose a package to get started.</h1>
-          <p>Pick a package, verify customer details, complete payment with Razorpay, and receive confirmation by email.</p>
+          <p>Pick a package, verify your details, pay securely via Razorpay, and receive your invoice by email.</p>
         </div>
-        <aside class="hero-receipt">
-          <p class="mini-label">Included after payment</p>
-          <div><span class="material-symbols-outlined">mail</span> Account confirmation</div>
-          <div><span class="material-symbols-outlined">receipt_long</span> Invoice</div>
-          <div><span class="material-symbols-outlined">waving_hand</span> Welcome message</div>
+        <aside class="hero-included">
+          <p class="hero-included-title">Included after payment</p>
+          <ul>
+            <li><span class="material-symbols-outlined">verified</span> Account confirmation &amp; portal access</li>
+            <li><span class="material-symbols-outlined">receipt_long</span> GST invoice (PDF)</li>
+            <li><span class="material-symbols-outlined">waving_hand</span> Welcome &amp; onboarding steps</li>
+          </ul>
         </aside>
       </section>
 
-      <section class="content-section">
-        <div class="section-heading">
-          <span class="eyebrow">Step 1</span>
-          <h2>Pricing packages</h2>
-          <p>Select a package first. The selected package will appear in checkout and payment summary.</p>
+      <!-- Packages -->
+      <section class="packages-section">
+        <div class="packages-section-head">
+          <h2>Our packages</h2>
+          <p>Select a package — your choice carries through to checkout and the payment summary.</p>
         </div>
         <div class="package-grid" id="packageGrid"></div>
       </section>
+
+      <footer class="checkout-footer">
+        <div>
+          <strong>The Copper Studio</strong>
+          <small>© 2024 The Copper Studio. Secure checkout guaranteed.</small>
+        </div>
+        <nav aria-label="Footer links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </nav>
+      </footer>
     </main>
 
-    <script src="assets/app.js?v=pages-1"></script>
+    <script src="assets/app.js?v=checkout-reference-1"></script>
   </body>
 </html>
