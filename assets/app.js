@@ -243,6 +243,31 @@ function customerFullPhone() {
   return number ? `${code} ${number}` : "";
 }
 
+// Maharashtra state code — The Copper Studio's registered state.
+// GSTIN starts with the 2-digit state code of the buyer's state.
+const SELLER_STATE_CODE = "27";
+
+function gstType(gstin) {
+  const code = String(gstin || "").trim().replace(/\s/g, "").slice(0, 2);
+  if (code.length < 2 || !/^\d{2}$/.test(code)) return "b2c"; // no valid GSTIN → B2C
+  return code === SELLER_STATE_CODE ? "intra" : "inter";
+}
+
+function gstBreakdownHtml(gst, gstin) {
+  const type = gstType(gstin);
+  if (type === "intra") {
+    const cgst = Math.floor(gst / 2);
+    const sgst = gst - cgst;
+    return `
+      <div class="overview-row"><span>CGST (9%)</span><strong>${formatCurrency(cgst)}</strong></div>
+      <div class="overview-row"><span>SGST (9%)</span><strong>${formatCurrency(sgst)}</strong></div>`;
+  }
+  if (type === "inter") {
+    return `<div class="overview-row"><span>IGST (18%)</span><strong>${formatCurrency(gst)}</strong></div>`;
+  }
+  return `<div class="overview-row"><span>GST estimate (18%)</span><strong>${formatCurrency(gst)}</strong></div>`;
+}
+
 function packageTotal(pkg = selectedPackage()) {
   const discount = order.coupon?.discount || 0;
   return Math.round(Math.max(0, pkg.price - discount) * 1.18);
@@ -253,7 +278,7 @@ function packageGst(pkg = selectedPackage()) {
   return Math.round(Math.max(0, pkg.price - discount) * 0.18);
 }
 
-function overviewTemplate(pkg = selectedPackage()) {
+function overviewTemplate(pkg = selectedPackage(), gstin = "") {
   const discount = order.coupon?.discount || 0;
   const subtotal = Math.max(0, pkg.price - discount);
   const gst = Math.round(subtotal * 0.18);
@@ -264,7 +289,7 @@ function overviewTemplate(pkg = selectedPackage()) {
       <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
       ${discount ? `<div class="overview-row discount-row"><span>Coupon discount (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
       <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
-      <div class="overview-row"><span>GST estimate</span><strong>${formatCurrency(gst)}</strong></div>
+      ${gstBreakdownHtml(gst, gstin)}
       <div class="overview-row"><span>Setup timeline</span><strong>${pkg.duration}</strong></div>
       <div class="overview-row"><span>Confirmation</span><strong>Email after payment</strong></div>
     </div>
@@ -292,23 +317,20 @@ function packageDetailsTemplate(pkg = selectedPackage()) {
   `;
 }
 
-// Right panel on the payment page: the amount breakdown with the GST split into
-// CGST + SGST, any applied coupon, and the final amount to pay.
+// Right panel on the payment page: the amount breakdown with GST type based on
+// the buyer's GSTIN state code vs the seller's state (27 = Maharashtra).
 function amountBreakdownTemplate(pkg = selectedPackage()) {
   const discount = order.coupon?.discount || 0;
   const subtotal = Math.max(0, pkg.price - discount);
   const total = packageTotal(pkg);
   const gst = total - subtotal;
-  const cgst = Math.floor(gst / 2);
-  const sgst = gst - cgst;
+  const gstin = order.customer?.companyGstin || "";
   return `
     <div class="overview-card">
       <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
       ${discount ? `<div class="overview-row discount-row"><span>Coupon applied (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
       <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
-      <div class="overview-row"><span>CGST (9%)</span><strong>${formatCurrency(cgst)}</strong></div>
-      <div class="overview-row"><span>SGST (9%)</span><strong>${formatCurrency(sgst)}</strong></div>
-      <div class="overview-row"><span>Total GST (18%)</span><strong>${formatCurrency(gst)}</strong></div>
+      ${gstBreakdownHtml(gst, gstin)}
     </div>
     <div class="summary-divider"></div>
     <div class="total-row"><span>Amount to pay</span><strong>${formatCurrency(total)}</strong></div>
@@ -392,8 +414,17 @@ function updateVerificationUI() {
 function renderCheckoutPage() {
   requirePackage();
   const pkg = selectedPackage();
-  document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-  document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+  const gstinInput = document.getElementById("companyGstin");
+
+  function refreshSummary() {
+    const gstin = gstinInput?.value || "";
+    document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg, gstin);
+    document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+  }
+
+  refreshSummary();
+  gstinInput?.addEventListener("input", refreshSummary);
+
   const couponInput = document.getElementById("couponCode");
   const couponStatus = document.getElementById("couponStatus");
   if (couponInput && order.coupon?.code) {
@@ -423,8 +454,7 @@ function renderCheckoutPage() {
     if (!code) {
       order.coupon = null;
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = "Coupon removed.";
       couponStatus.className = "";
       return;
@@ -447,15 +477,13 @@ function renderCheckoutPage() {
         total: applied.total
       };
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = `${applied.code} applied. You saved ${formatCurrency(applied.discount)}.`;
       couponStatus.className = "coupon-success";
     } catch (error) {
       order.coupon = null;
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = error.message;
       couponStatus.className = "coupon-error";
     }
