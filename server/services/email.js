@@ -77,21 +77,25 @@ export async function sendPortalInviteEmail({ to, name, setPasswordUrl, packageN
   });
 }
 
-export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, total, html, pdfBuffer }) {
+export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, total, pdfBuffer }) {
   const amount = typeof total === "number"
     ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(total)
     : total;
 
+  // Short, friendly confirmation. The tax invoice is the PDF attachment — the
+  // invoice document is never rendered inline in the email body.
+  const invoiceLine = pdfBuffer
+    ? `Please find your tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} attached to this email as a PDF.`
+    : `Your tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} is available to download from your client portal.`;
+
   return sendMail({
     to,
-    subject: `Your tax invoice ${invoiceNumber} — The Copper Studio`,
-    html:
-      html ||
-      `
+    subject: `Payment successful — Invoice ${invoiceNumber} | The Copper Studio`,
+    html: `
       <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
-        <h2 style="margin:0 0 12px">Thank you${name ? `, ${name}` : ""}</h2>
-        <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} has been received in full.</p>
-        <p>Tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} is attached to this email as a PDF.</p>
+        <h2 style="margin:0 0 12px">Payment Successful${name ? `, ${name}` : ""} 🎉</h2>
+        <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} has been received successfully.</p>
+        <p>${invoiceLine}</p>
         <p style="font-size:13px;color:#6b7280">This is a computer-generated invoice. No further amount is due against it.</p>
       </div>
     `,

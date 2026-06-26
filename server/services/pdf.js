@@ -49,7 +49,9 @@ export async function htmlToPdfBuffer(html) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // "load" (not "networkidle0") so a slow/blocked external font request can't
+    // stall content loading and force a fallback; cap it so it never hangs.
+    await page.setContent(html, { waitUntil: "load", timeout: 20000 });
     return await page.pdf({
       format: "A4",
       printBackground: true,

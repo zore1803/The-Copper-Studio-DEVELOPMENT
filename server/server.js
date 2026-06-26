@@ -76,16 +76,17 @@ async function emailInvoiceForOrder(order, invoice) {
     try {
       pdfBuffer = await htmlToPdfBuffer(html);
     } catch (pdfError) {
-      console.warn("Invoice PDF generation failed, emailing HTML invoice only:", pdfError.message);
+      console.warn("Invoice PDF generation failed; sending confirmation email without the PDF attachment:", pdfError.message);
     }
 
+    // The email body is ALWAYS the short confirmation message. The invoice only
+    // ever travels as a PDF attachment — never dumped inline as HTML.
     await sendInvoiceEmail({
       to: customer.customerEmail,
       name: customer.customerName,
       invoiceNumber: model.invoiceNumber,
       packageName: model.items?.[0]?.name,
       total: model.totals?.total,
-      html: pdfBuffer ? undefined : html, // attach PDF when available, else inline HTML invoice
       pdfBuffer
     });
   } catch (error) {
