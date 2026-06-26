@@ -298,6 +298,7 @@
         text-transform: none;
       }
 
+      /* phone-field: NO overflow:hidden — that clips the country-picker dropdown */
       .phone-field,
       .plain-phone {
         display: grid;
@@ -305,8 +306,19 @@
         min-height: 50px;
         border: 1px solid #dedede;
         border-radius: 4px;
-        overflow: hidden;
+        overflow: visible;
         background: #f2f2f2;
+      }
+
+      /* manually clip corners on first/last children instead */
+      .phone-field .country-picker-trigger,
+      .plain-phone .plain-phone-prefix {
+        border-radius: 4px 0 0 4px;
+      }
+
+      .phone-field input,
+      .plain-phone input {
+        border-radius: 0 4px 4px 0;
       }
 
       .country-picker,
@@ -316,20 +328,92 @@
 
       .country-picker-trigger,
       .plain-phone-prefix {
+        display: flex;
+        align-items: center;
+        gap: 5px;
         min-height: 50px;
         background: #f2f2f2;
         color: #53606f;
         padding: 0 12px;
         font-size: 0.9rem;
+        white-space: nowrap;
       }
 
       .phone-field input,
       .plain-phone input {
         min-height: 48px;
         border: 0 !important;
-        border-radius: 0;
+        border-radius: 0 4px 4px 0;
         background: #f2f2f2;
         box-shadow: none !important;
+      }
+
+      /* Country picker dropdown must escape overflow */
+      .country-picker {
+        position: relative;
+      }
+
+      .country-picker-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        z-index: 100;
+        min-width: 260px;
+        max-height: 280px;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border: 1px solid #dedede;
+        border-radius: 8px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+        overflow: hidden;
+      }
+
+      .country-picker-search {
+        border: 0;
+        border-bottom: 1px solid #eeeeee;
+        border-radius: 0;
+        background: #fafafa;
+        min-height: 40px;
+        padding: 8px 14px;
+        font-size: 0.88rem;
+      }
+
+      .country-picker-list {
+        overflow-y: auto;
+        max-height: 232px;
+      }
+
+      .country-picker-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: 9px 14px;
+        font-size: 0.85rem;
+        text-align: left;
+        cursor: pointer;
+        color: #111111;
+      }
+
+      .country-picker-option:hover,
+      .country-picker-option.is-active {
+        background: #f5f0ee;
+      }
+
+      .country-picker-dial {
+        color: #888;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+      }
+
+      .country-picker-empty {
+        padding: 10px 14px;
+        font-size: 0.82rem;
+        color: #888;
       }
 
       .otp-row {
