@@ -110,12 +110,11 @@ export default function Payments() {
   }
 
   return (
-    <div className="min-h-full bg-[#f5f6fa] p-6">
-      <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">Finance</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#111827]">Payments</h1>
-          <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Payments</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
@@ -126,6 +125,7 @@ export default function Payments() {
         </div>
       </div>
 
+      <div className="p-5 xl:p-6">
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Total Revenue" value={money(revenue)} icon={WalletCards} />
         <Metric label="Pending Payments" value={money(pending)} icon={CreditCard} />
@@ -180,6 +180,7 @@ export default function Payments() {
       </section>
 
       {creating && <PaymentModal companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      </div>
     </div>
   );
 }

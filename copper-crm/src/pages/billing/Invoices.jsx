@@ -137,16 +137,16 @@ export default function Invoices() {
   }
 
   return (
-    <div className="min-h-full bg-[#f5f6fa] p-6">
-      <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">Finance</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#111827]">Invoices</h1>
-          <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">Legal billing documents, PDF generation, customer mapping, payment mapping, and activity.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Invoices</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Legal billing documents, PDF generation, customer mapping, and payment mapping.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus size={14} /> Generate Invoice</Button>
       </div>
 
+      <div className="p-5 xl:p-6">
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric label="Gross Billing" value={money(totals.gross)} icon={WalletCards} />
         <Metric label="GST / Tax" value={money(totals.tax)} icon={ReceiptText} />
@@ -201,6 +201,7 @@ export default function Invoices() {
       </section>
 
       {creating && <InvoiceModal companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      </div>
     </div>
   );
 }
