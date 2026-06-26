@@ -309,6 +309,8 @@ export default function Coupons() {
   const [copied, setCopied] = useState("");
   const [creating, setCreating] = useState(false);
   const [viewMode, setViewMode] = useState("card");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
   const [confirmDelete, setConfirmDelete] = useState(null);
   const { records: coupons, save: saveCoupon, remove: removeCoupon } = useCrmRecords("coupons");
   const { showToast } = useToast();
@@ -354,12 +356,15 @@ export default function Coupons() {
     }
   }
 
-  const filtered = useMemo(() => coupons.filter((coupon) => {
+  const filtered = useMemo(() => { setPage(1); return coupons.filter((coupon) => {
     const couponStatus = coupon.status || "Draft";
     const matchesStatus = statusFilter === "All" || couponStatus === statusFilter;
     const haystack = `${coupon.code || ""} ${coupon.assignedCompany || coupon.companyName || ""} ${coupon.assignedContact || coupon.clientName || ""} ${couponStatus}`.toLowerCase();
     return matchesStatus && haystack.includes(query.toLowerCase());
-  }), [coupons, query, statusFilter]);
+  }); }, [coupons, query, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const metrics = useMemo(() => {
     const active = coupons.filter((c) => c.status === "Active").length;
@@ -456,19 +461,53 @@ export default function Coupons() {
           )}
 
           {filtered.length ? (
-            viewMode === "card" ? (
-              <div className="grid gap-4 p-4 xl:grid-cols-2">
-                {filtered.map((coupon) => (
-                  <CouponCard key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} onDelete={setConfirmDelete} />
-                ))}
-              </div>
-            ) : (
-              <div>
-                {filtered.map((coupon) => (
-                  <CouponRow key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} onDelete={setConfirmDelete} />
-                ))}
-              </div>
-            )
+            <>
+              {viewMode === "card" ? (
+                <div className="grid gap-4 p-4 xl:grid-cols-2">
+                  {paginated.map((coupon) => (
+                    <CouponCard key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} onDelete={setConfirmDelete} />
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  {paginated.map((coupon) => (
+                    <CouponRow key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} onDelete={setConfirmDelete} />
+                  ))}
+                </div>
+              )}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-[#f3f4f6] px-4 py-3">
+                  <p className="text-xs text-[#9ca3af]">
+                    {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} coupons
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] disabled:opacity-30 hover:bg-[#f3f4f6] transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${p === page ? "bg-[#884c2d] text-white" : "border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]"}`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] disabled:opacity-30 hover:bg-[#f3f4f6] transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <div className="p-10 text-center">
               <p className="text-sm font-semibold text-[#111827]">No coupons yet.</p>
