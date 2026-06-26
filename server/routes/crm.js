@@ -13,7 +13,7 @@ import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 import User from "../models/User.js";
-import { syncPaidOrderFinance } from "../services/finance.js";
+import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
 import { sendContactCreatedEmail } from "../services/email.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
@@ -122,6 +122,7 @@ router.get("/:type", validateType, async (req, res, next) => {
     const Model = models[req.params.type];
     if (req.params.type === "coupons") await expireOldCoupons();
     if (["payments", "invoices"].includes(req.params.type)) await syncPaidOrderFinance();
+    if (req.params.type === "invoices") await syncStandaloneProjectInvoices();
     const records = await Model.find({}).sort({ updatedAt: -1 });
     res.json(records.map(asPublicRecord));
   } catch (error) {

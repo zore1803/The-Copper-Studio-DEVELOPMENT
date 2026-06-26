@@ -482,6 +482,7 @@ export function AnalyticsPage() {
 
   const { records: orders } = useCrmRecords("orders");
   const { records: payments } = useCrmRecords("payments");
+  const { records: invoices } = useCrmRecords("invoices");
   const { records: projects } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
@@ -510,7 +511,7 @@ export function AnalyticsPage() {
     }
 
     const isWithinRange = (item, isCreated = false) => {
-      const stamp = isCreated ? (item.createdAt || item.date) : (item.paidAt || item.payment?.paidAt || item.date || item.generatedAt || item.createdAt);
+      const stamp = isCreated ? (item.createdAt || item.date) : (item.paidAt || item.payment?.paidAt || item.date || item.issueDate || item.generatedAt || item.createdAt);
       if (!stamp) return true;
       const t = new Date(stamp).getTime();
       return t >= startDate && t <= endDate;
@@ -518,6 +519,7 @@ export function AnalyticsPage() {
 
     const filteredOrders = orders.filter(i => isWithinRange(i, false));
     const filteredPayments = payments.filter(i => isWithinRange(i, false));
+    const filteredInvoices = invoices.filter(i => isWithinRange(i, false));
     const filteredProjects = projects.filter(i => isWithinRange(i, true));
     const filteredCompanies = companies.filter(i => isWithinRange(i, true));
     const filteredContacts = contacts.filter(i => isWithinRange(i, true));
@@ -551,23 +553,43 @@ export function AnalyticsPage() {
       filteredPayments.filter(p => !isPaidStatus(p.status) && !p.orderId && !p.sourceOrderId).length;
 
     // Calculate revenue (Paid items)
+    const paidInvoices = filteredInvoices.filter(invoice => isPaidStatus(invoice.status || invoice.paymentStatus));
     const paidPayments = filteredPayments.filter(p => isPaidStatus(p.status));
-    const paymentOrderKeys = new Set(
-      paidPayments
-        .map((p) => recordKey(p.sourceOrderId, p.orderId))
+    const invoiceOrderKeys = new Set(
+      paidInvoices
+        .flatMap((invoice) => [
+          recordKey(invoice.sourceOrderId),
+          recordKey(invoice.orderId),
+          recordKey(invoice.razorpayOrderId)
+        ])
         .filter(Boolean)
     );
+    const invoicePaymentKeys = new Set(
+      paidInvoices
+        .flatMap((invoice) => [
+          recordKey(invoice.paymentId),
+          recordKey(invoice.razorpayPaymentId)
+        ])
+        .filter(Boolean)
+    );
+    const paymentOrderKeys = new Set(
+      paidPayments
+        .flatMap((p) => [recordKey(p.sourceOrderId, p.orderId), recordKey(p.razorpayOrderId)])
+        .filter(Boolean)
+    );
+    const paidPaymentsWithoutInvoice = paidPayments.filter((payment) => {
+      const orderKeys = [recordKey(payment.sourceOrderId), recordKey(payment.orderId), recordKey(payment.razorpayOrderId)].filter(Boolean);
+      const paymentKeys = [recordKey(payment.paymentId), recordKey(payment.razorpayPaymentId)].filter(Boolean);
+      return !orderKeys.some((key) => invoiceOrderKeys.has(key)) && !paymentKeys.some((key) => invoicePaymentKeys.has(key));
+    });
     const paidOrdersWithoutPayment = paidOrders.filter((order) => {
       const orderKeys = [recordKey(order._id), recordKey(order.id), recordKey(order.payment?.razorpayOrderId)].filter(Boolean);
-      return !orderKeys.some((key) => paymentOrderKeys.has(key));
+      return !orderKeys.some((key) => paymentOrderKeys.has(key) || invoiceOrderKeys.has(key));
     });
-    const revenueFromPayments = paidPayments.reduce((sum, item) => sum + amountFor(item), 0);
+    const revenueFromInvoices = paidInvoices.reduce((sum, item) => sum + amountFor(item), 0);
+    const revenueFromPayments = paidPaymentsWithoutInvoice.reduce((sum, item) => sum + amountFor(item), 0);
     const revenueFromOrders = paidOrdersWithoutPayment.reduce((sum, item) => sum + amountFor(item), 0);
-    
-    // Only add revenue from projects that are PAID and STANDALONE (no invoice, no order)
-    const paidProjects = standaloneProjects.filter(p => isPaidStatus(p.paymentStatus));
-    const revenueFromProjects = paidProjects.reduce((sum, p) => sum + amountFor(p), 0);
-    const revenue = revenueFromPayments + revenueFromOrders + revenueFromProjects;
+    const revenue = revenueFromInvoices + revenueFromPayments + revenueFromOrders;
     const paymentRate = Math.round((paidOrders.length / Math.max(filteredOrders.length, 1)) * 100);
     
     // KPI: Average Project Value
@@ -670,48 +692,75 @@ export function AnalyticsPage() {
     ].filter((item) => item.value > 0);
     const statusTotal = statusData.reduce((sum, item) => sum + item.value, 0) || 1;
 
-    const packageRevenueMap = paidOrders.reduce((acc, order) => {
-      const name = packageNameFor(order);
+    const packageRevenueMap = paidInvoices.reduce((acc, invoice) => {
+      const name = packageNameFor(invoice);
       acc[name] = acc[name] || { name, revenue: 0, count: 0 };
-      acc[name].revenue += amountFor(order);
+      acc[name].revenue += amountFor(invoice);
       acc[name].count += 1;
       return acc;
     }, {});
 
     const packageOrderKeys = new Set(
-      paidOrders.flatMap((order) => [
-        recordKey(order._id),
-        recordKey(order.id),
-        recordKey(order.payment?.razorpayOrderId)
+      paidInvoices.flatMap((invoice) => [
+        recordKey(invoice.sourceOrderId),
+        recordKey(invoice.orderId),
+        recordKey(invoice.razorpayOrderId)
       ]).filter(Boolean)
     );
 
-    paidPayments
-      .filter((payment) => {
-        const keys = [recordKey(payment.sourceOrderId), recordKey(payment.orderId), recordKey(payment.razorpayOrderId)].filter(Boolean);
-        return !keys.some((key) => packageOrderKeys.has(key));
-      })
+    paidPaymentsWithoutInvoice
       .forEach((payment) => {
         const name = packageNameFor(payment);
         packageRevenueMap[name] = packageRevenueMap[name] || { name, revenue: 0, count: 0 };
         packageRevenueMap[name].revenue += amountFor(payment);
         packageRevenueMap[name].count += 1;
       });
-    
-    filteredProjects.filter(p => !p.linkedInvoiceId && !p.orderId).forEach(p => {
-      const name = packageNameFor(p);
+
+    paidOrdersWithoutPayment.forEach((order) => {
+      const keys = [recordKey(order._id), recordKey(order.id), recordKey(order.payment?.razorpayOrderId)].filter(Boolean);
+      if (keys.some((key) => packageOrderKeys.has(key))) return;
+      const name = packageNameFor(order);
       packageRevenueMap[name] = packageRevenueMap[name] || { name, revenue: 0, count: 0 };
-      packageRevenueMap[name].revenue += amountFor(p);
+      packageRevenueMap[name].revenue += amountFor(order);
       packageRevenueMap[name].count += 1;
     });
     
     const packageRevenue = Object.values(packageRevenueMap).sort((a, b) => b.revenue - a.revenue);
+    const packagePurchases = [
+      ...paidInvoices.map((invoice) => ({
+        id: invoice._id || invoice.id || invoice.invoiceNumber,
+        packageName: packageNameFor(invoice),
+        clientName: invoice.client || invoice.customerName || "Unknown Client",
+        companyName: invoice.company || invoice.companyName || invoice.customerEmail || "Unknown Company",
+        amount: amountFor(invoice),
+        date: invoice.paidAt || invoice.date || invoice.issueDate || invoice.createdAt,
+        source: "invoice"
+      })),
+      ...paidPaymentsWithoutInvoice.map((payment) => ({
+        id: payment._id || payment.id || payment.paymentId,
+        packageName: packageNameFor(payment),
+        clientName: payment.client || payment.clientName || "Unknown Client",
+        companyName: payment.company || payment.companyName || payment.customerEmail || "Unknown Company",
+        amount: amountFor(payment),
+        date: payment.paidAt || payment.date || payment.createdAt,
+        source: "payment"
+      })),
+      ...paidOrdersWithoutPayment.map((order) => ({
+        id: order._id || order.id || order.payment?.razorpayOrderId,
+        packageName: packageNameFor(order),
+        clientName: order.customer?.customerName || order.client || "Unknown Client",
+        companyName: order.customer?.customerCompany || order.company || order.companyName || "Unknown Company",
+        amount: amountFor(order),
+        date: order.payment?.paidAt || order.paidAt || order.createdAt || order.date,
+        source: "order"
+      }))
+    ].sort((a, b) => new Date(b.date || now) - new Date(a.date || now));
 
     const formatKey = (created) => created.toISOString().slice(0, 10);
     const formatDay = (created) => created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
 
-    const revenueGraph = Object.values([...paidOrdersWithoutPayment, ...paidPayments, ...paidProjects].reduce((acc, item) => {
-      const stamp = item.paidAt || item.payment?.paidAt || item.date || item.generatedAt || item.createdAt;
+    const revenueGraph = Object.values([...paidInvoices, ...paidPaymentsWithoutInvoice, ...paidOrdersWithoutPayment].reduce((acc, item) => {
+      const stamp = item.paidAt || item.payment?.paidAt || item.date || item.issueDate || item.generatedAt || item.createdAt;
       const created = stamp ? new Date(stamp) : new Date(now);
       const key = formatKey(created);
       acc[key] = acc[key] || { key, day: formatDay(created), value: 0 };
@@ -860,8 +909,10 @@ export function AnalyticsPage() {
     return { 
       revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, 
       statusData, statusTotal, packageRevenue, pendingPaymentsCount, finalChartData, allActivities,
+      packagePurchases,
       filteredOrders,
       filteredPayments,
+      filteredInvoices,
       filteredCompanies,
       filteredProjects,
       filteredContacts,
@@ -881,7 +932,7 @@ export function AnalyticsPage() {
       clientRepeatRate,
       currentBottleneck
     };
-  }, [orders, payments, projects, companies, contacts, now, metricFilter, filterType, filterYear, filterMonth, filterBiMonth, filterQuarter, customStartDate, customEndDate, selectedChartDate]);
+  }, [orders, payments, invoices, projects, companies, contacts, now, metricFilter, filterType, filterYear, filterMonth, filterBiMonth, filterQuarter, customStartDate, customEndDate, selectedChartDate]);
 
   const topMetrics = [
     { label: "Total Revenue", value: formatMoney(data.revenue), icon: WalletCards, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", tooltip: "Total revenue from paid orders and payments." },
@@ -1128,7 +1179,7 @@ export function AnalyticsPage() {
 
         <div className="flex flex-col gap-5">
           <EarningsCard 
-            records={[...data.filteredPayments.filter(p => isPaidStatus(p.status)), ...data.filteredProjects.filter(p => isPaidStatus(p.paymentStatus) && !p.linkedInvoiceId && !p.orderId)]} 
+            records={[...data.filteredInvoices.filter((invoice) => isPaidStatus(invoice.status || invoice.paymentStatus)), ...data.filteredPayments.filter(p => isPaidStatus(p.status) && !p.sourceOrderId && !p.orderId)]} 
             filterType={filterType}
             filterYear={filterYear}
             filterMonth={filterMonth}
@@ -1179,23 +1230,29 @@ export function AnalyticsPage() {
             </div>
             <div className="flex-1 overflow-y-auto p-5 bg-[#F5F7FA]/50">
               <div className="space-y-3">
-                {data.filteredOrders
-                  .filter(o => (o.package?.name || o.packageName || o.projectType || "Unassigned") === selectedPackage)
-                  .sort((a, b) => new Date(b.createdAt || b.date || now) - new Date(a.createdAt || a.date || now))
-                  .map((o, i) => (
-                  <div key={o._id || i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-4 shadow-sm transition-shadow hover:shadow">
+                {data.packagePurchases
+                  .filter((purchase) => purchase.packageName === selectedPackage)
+                  .map((purchase, i) => (
+                  <div key={purchase.id || i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-4 shadow-sm transition-shadow hover:shadow">
                     <div>
-                      <p className="text-sm font-bold text-[#1F2937]">{o.customer?.customerName || o.client || 'Unknown Client'}</p>
-                      <p className="mt-1 text-xs font-medium text-[#6B7280]">{o.customer?.customerCompany || o.company || 'Unknown Company'}</p>
+                      <p className="text-sm font-bold text-[#1F2937]">{purchase.clientName}</p>
+                      <p className="mt-1 text-xs font-medium text-[#6B7280]">{purchase.companyName}</p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">{purchase.source}</p>
                     </div>
                     <div className="sm:text-right">
-                      <p className="text-sm font-bold text-emerald-600">{formatMoney(o.amount ?? o.value ?? o.package?.total ?? o.total)}</p>
+                      <p className="text-sm font-bold text-emerald-600">{formatMoney(purchase.amount)}</p>
                       <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                        {new Date(o.createdAt || o.date || now).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(purchase.date || now).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                   </div>
                 ))}
+                {!data.packagePurchases.some((purchase) => purchase.packageName === selectedPackage) && (
+                  <div className="rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-6 text-center">
+                    <p className="text-sm font-bold text-[#1F2937]">No paid clients found</p>
+                    <p className="mt-1 text-xs text-[#6B7280]">Draft invoices are not counted in this paid package list.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
