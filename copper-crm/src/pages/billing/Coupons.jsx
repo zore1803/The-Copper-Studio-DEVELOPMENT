@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart2, ChevronLeft, ChevronRight, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
+import { BarChart2, ChevronLeft, ChevronRight, Clock, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
 import PhoneInput from "../../components/PhoneInput";
@@ -175,16 +175,17 @@ function CouponFormPanel({ onClose, onCreate }) {
 
         {/* Start date/time */}
         <div>
-          <label className="block">
-            <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
+          <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
+          <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${errors.validFrom ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#884c2d] focus-within:ring-[#884c2d]/20"}`}>
+            <span className="pl-3 text-[#9ca3af]"><Clock size={14} /></span>
             <input
               type="datetime-local"
               value={coupon.validFrom}
               onChange={(e) => { setField("validFrom")(e.target.value); setErrors((prev) => ({ ...prev, validFrom: "" })); }}
-              className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validFrom ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"}`}
+              className="w-full bg-transparent px-2 py-2 text-sm outline-none"
             />
-            {errors.validFrom && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validFrom}</span>}
-          </label>
+          </div>
+          {errors.validFrom && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validFrom}</span>}
         </div>
 
         {/* Validity dropdown */}
