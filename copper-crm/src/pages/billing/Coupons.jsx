@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { BarChart2, Copy, Plus, Save, Search, Tag, TrendingUp } from "lucide-react";
+import { BarChart2, Copy, Grid2x2, List, Plus, Save, Search, Tag, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
 import PhoneInput from "../../components/PhoneInput";
@@ -11,7 +11,13 @@ function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
 }
 
-function toDateTimeLocal(date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)) {
+function hoursFromNow(h) {
+  const d = new Date(Date.now() + h * 60 * 60 * 1000);
+  const zoned = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return zoned.toISOString().slice(0, 16);
+}
+
+function toDateTimeLocal(date = new Date(Date.now() + 24 * 60 * 60 * 1000)) {
   const zoned = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return zoned.toISOString().slice(0, 16);
 }
@@ -24,7 +30,6 @@ function formatDateTime(value) {
 }
 
 const COUPON_DEFAULTS = {
-  prefix: "COP-STU",
   discount: "",
   packageName: "",
   validity: toDateTimeLocal(),
@@ -33,14 +38,13 @@ const COUPON_DEFAULTS = {
   companyName: "",
   email: "",
   phone: "",
+  usageLimit: "1",
 };
+
+const VALIDITY_PRESETS = [24, 48, 72, 96, 120, 144, 168];
 
 function validateCoupon(coupon) {
   const errors = {};
-  const prefix = String(coupon.prefix || "").trim();
-  if (!prefix) errors.prefix = "Prefix is required.";
-  else if (!/^[A-Za-z0-9-]{2,10}$/.test(prefix)) errors.prefix = "2–10 letters, numbers or hyphens.";
-
   const amount = Number(coupon.discount);
   if (String(coupon.discount).trim() === "" || Number.isNaN(amount)) errors.discount = "Enter a discount amount.";
   else if (amount <= 0) errors.discount = "Must be greater than 0.";
@@ -50,15 +54,17 @@ function validateCoupon(coupon) {
   if (!isFutureDate(coupon.validity)) errors.validity = "Validity must be a future date.";
   if (coupon.email && !isEmail(coupon.email)) errors.email = "Enter a valid email.";
   if (coupon.phone && !isPhone(coupon.phone)) errors.phone = "Enter a valid 10-digit mobile.";
+
+  const limit = Number(coupon.usageLimit);
+  if (!coupon.usageLimit || Number.isNaN(limit) || limit < 1 || !Number.isInteger(limit)) errors.usageLimit = "Enter a whole number ≥ 1.";
+
   return errors;
 }
 
-function nineDigitCode() {
+function randomCode() {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 9 }, (_, index) => {
-    const char = alphabet[Math.floor(Math.random() * alphabet.length)];
-    return index === 3 || index === 6 ? `-${char}` : char;
-  }).join("");
+  const seg = (n) => Array.from({ length: n }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join("");
+  return `${seg(3)}-${seg(4)}-${seg(3)}`;
 }
 
 function CouponField({ label, value, onChange, error = "", required = false, type = "text", placeholder = "", maxLength, inputMode }) {
@@ -90,8 +96,7 @@ function CouponFormPanel({ onClose, onCreate }) {
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
 
-  const previewCode = `${(coupon.prefix || "COP").slice(0, 6).toUpperCase()}-XXX-XXXX`;
-  const discountLabel = coupon.amountType === "percentage" ? `${coupon.discount || 0}%` : `Rs ${coupon.discount || 0}`;
+  const discountLabel = coupon.amountType === "percentage" ? `${coupon.discount || 0}% off` : `Rs ${coupon.discount || 0} off`;
 
   async function submit() {
     if (creating) return;
@@ -118,15 +123,16 @@ function CouponFormPanel({ onClose, onCreate }) {
         </div>
       }
     >
+      {/* Preview banner */}
       <div className="mb-4 rounded-xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-4 text-center">
         <Tag size={20} className="mx-auto text-[#884c2d]" />
-        <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">{previewCode}</p>
-        <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">{discountLabel} off on {coupon.packageName || "selected package"}</p>
-        <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {formatDateTime(coupon.validity)}</p>
+        <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">XXX-XXXX-XXX</p>
+        <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">{discountLabel} · {coupon.packageName || "selected package"}</p>
+        <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {formatDateTime(coupon.validity) || "—"}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <CouponField label="Prefix" required value={coupon.prefix} onChange={setField("prefix")} error={errors.prefix} maxLength={10} placeholder="COP-STU" />
+        {/* Discount + type */}
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <CouponField label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
           <label className="block">
@@ -137,17 +143,38 @@ function CouponFormPanel({ onClose, onCreate }) {
             </select>
           </label>
         </div>
+
+        {/* Usage limit */}
+        <CouponField label="Usage limit" required type="number" inputMode="numeric" value={coupon.usageLimit} onChange={setField("usageLimit")} error={errors.usageLimit} placeholder="e.g. 1" />
+
+        {/* Package */}
         <CouponField label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Valid until</span>
+
+        {/* Validity with quick presets */}
+        <div className="sm:col-span-1">
+          <span className="text-xs font-semibold text-[#374151]">Valid until <span className="text-red-500">*</span></span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5 mb-2">
+            {VALIDITY_PRESETS.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => setField("validity")(hoursFromNow(h))}
+                className="rounded-md border border-[#e5e7eb] px-2 py-0.5 text-[11px] font-semibold text-[#6b7280] hover:border-[#884c2d] hover:text-[#884c2d] transition-colors"
+              >
+                {h}h
+              </button>
+            ))}
+          </div>
           <input
             type="datetime-local"
             value={coupon.validity}
             onChange={(e) => setField("validity")(e.target.value)}
-            className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"}`}
+            className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"}`}
           />
           {errors.validity && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validity}</span>}
-        </label>
+        </div>
+
+        {/* Contact info */}
         <CouponField label="Client name" value={coupon.clientName} onChange={setField("clientName")} placeholder="Optional" />
         <CouponField label="Company name" value={coupon.companyName} onChange={setField("companyName")} placeholder="Optional" />
         <CouponField label="Email ID" type="email" value={coupon.email} onChange={setField("email")} error={errors.email} placeholder="Optional" />
@@ -171,16 +198,82 @@ function Metric({ label, value, icon: Icon }) {
   );
 }
 
+function Detail({ label, value }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-0.5 text-sm text-[#374151]">{value || <span className="text-[#c4c9d4]">—</span>}</p>
+    </div>
+  );
+}
+
+function Status({ value }) {
+  const tone = value === "Active" ? "bg-emerald-50 text-emerald-700" : value === "Redeemed" ? "bg-blue-50 text-blue-700" : /expired|cancel|revoked/i.test(value) ? "bg-red-50 text-red-600" : "bg-[#f3f4f6] text-[#6b7280]";
+  return <span className={`h-fit rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
+}
+
+function CouponCard({ coupon, copied, onCopy }) {
+  const displayAmount = coupon.amount || (coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`);
+  return (
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-4 flex flex-col gap-3">
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <p className="font-mono text-sm font-bold text-[#111827]">{coupon.code || "NO-CODE"}</p>
+            <button onClick={() => onCopy(coupon.code)} className="text-[#9ca3af] hover:text-[#884c2d]"><Copy size={13} /></button>
+            {copied === coupon.code && <span className="text-xs font-semibold text-emerald-600">Copied</span>}
+          </div>
+          <p className="mt-0.5 text-xs text-[#6b7280]">{displayAmount} off · {coupon.packageName || "—"}</p>
+        </div>
+        <Status value={coupon.status || "Draft"} />
+      </div>
+      {/* Detail grid */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+        <Detail label="Company" value={coupon.assignedCompany || coupon.companyName} />
+        <Detail label="Contact" value={coupon.assignedContact || coupon.clientName} />
+        <Detail label="Phone" value={coupon.phone} />
+        <Detail label="Email" value={coupon.email} />
+        <Detail label="Validity" value={coupon.validUntil ? formatDateTime(coupon.validUntil) : coupon.validity} />
+        <Detail label="Usage" value={`${coupon.usageCount || 0} / ${coupon.usageLimit ?? "—"}`} />
+        <Detail label="Revenue Generated" value={money(coupon.revenueGenerated)} />
+        <Detail label="Package" value={coupon.packageName} />
+      </div>
+    </div>
+  );
+}
+
+function CouponRow({ coupon, copied, onCopy }) {
+  const displayAmount = coupon.amount || (coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`);
+  return (
+    <div className="flex items-center gap-4 border-b border-[#f3f4f6] px-4 py-3 last:border-0 hover:bg-[#fafafa]">
+      <div className="min-w-0 flex-1 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 items-center text-sm">
+        <div className="flex items-center gap-2">
+          <p className="font-mono font-bold text-[#111827] truncate">{coupon.code || "NO-CODE"}</p>
+          <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#9ca3af] hover:text-[#884c2d]"><Copy size={12} /></button>
+          {copied === coupon.code && <span className="text-[11px] font-semibold text-emerald-600">Copied</span>}
+        </div>
+        <span className="text-[#374151] truncate">{coupon.assignedCompany || coupon.companyName || <span className="text-[#c4c9d4]">—</span>}</span>
+        <span className="text-[#374151] truncate">{coupon.assignedContact || coupon.clientName || <span className="text-[#c4c9d4]">—</span>}</span>
+        <span className="text-[#374151]">{displayAmount} off</span>
+        <span className="text-[#374151] truncate">{coupon.validUntil ? formatDateTime(coupon.validUntil) : (coupon.validity || <span className="text-[#c4c9d4]">—</span>)}</span>
+        <Status value={coupon.status || "Draft"} />
+      </div>
+    </div>
+  );
+}
+
 export default function Coupons() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [copied, setCopied] = useState("");
   const [creating, setCreating] = useState(false);
+  const [viewMode, setViewMode] = useState("card");
   const { records: coupons, save: saveCoupon } = useCrmRecords("coupons");
   const { showToast } = useToast();
 
   async function createCoupon(coupon) {
-    const code = `${coupon.prefix.slice(0, 6).toUpperCase()}-${nineDigitCode()}`;
+    const code = randomCode();
     const validUntil = coupon.validity ? new Date(coupon.validity).toISOString() : null;
     try {
       const created = await saveCoupon({
@@ -190,12 +283,15 @@ export default function Coupons() {
         validUntil,
         amountType: coupon.amountType,
         amount: coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`,
+        discount: coupon.discount,
         status: "Not used",
         clientName: coupon.clientName.trim(),
         companyName: coupon.companyName.trim(),
         email: coupon.email.trim(),
         phone: coupon.phone.trim(),
         packageName: coupon.packageName.trim(),
+        usageLimit: Number(coupon.usageLimit),
+        usageCount: 0,
       });
       setCreating(false);
       showToast({ title: "Coupon created", message: `${created?.code || code} stored successfully.` });
@@ -212,10 +308,10 @@ export default function Coupons() {
   }), [coupons, query, status]);
 
   const metrics = useMemo(() => ({
-    active: coupons.filter((coupon) => coupon.status === "Active").length,
-    redeemed: coupons.filter((coupon) => coupon.status === "Redeemed").length,
-    expired: coupons.filter((coupon) => coupon.status === "Expired").length,
-    revenue: coupons.reduce((sum, coupon) => sum + Number(coupon.revenueGenerated || 0), 0),
+    active: coupons.filter((c) => c.status === "Active").length,
+    redeemed: coupons.filter((c) => c.status === "Redeemed").length,
+    expired: coupons.filter((c) => c.status === "Expired").length,
+    revenue: coupons.reduce((sum, c) => sum + Number(c.revenueGenerated || 0), 0),
   }), [coupons]);
 
   async function copy(code) {
@@ -227,6 +323,7 @@ export default function Coupons() {
 
   return (
     <div className="flex flex-col min-h-full bg-[#f5f6fa]">
+      {/* Strip header */}
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
@@ -234,79 +331,69 @@ export default function Coupons() {
         </div>
         <Button onClick={() => setCreating(true)}><Plus size={14} /> Create Coupon</Button>
       </div>
+
       <div className="p-6">
-
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <Metric label="Active Coupons" value={metrics.active} icon={Tag} />
-        <Metric label="Redeemed" value={metrics.redeemed} icon={TrendingUp} />
-        <Metric label="Expired" value={metrics.expired} icon={Tag} />
-        <Metric label="Revenue Influenced" value={money(metrics.revenue)} icon={BarChart2} />
-        <Metric label="Conversion Rate" value="0%" icon={TrendingUp} />
-      </div>
-
-      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
-        <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {["All", "Draft", "Active", "Redeemed", "Expired", "Cancelled", "Revoked"].map((item) => (
-              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
-            ))}
-          </div>
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-            <Search size={14} className="text-[#9ca3af]" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search coupons" className="w-64 bg-transparent text-sm outline-none" />
-          </div>
+        {/* Metrics */}
+        <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <Metric label="Active Coupons" value={metrics.active} icon={Tag} />
+          <Metric label="Redeemed" value={metrics.redeemed} icon={TrendingUp} />
+          <Metric label="Expired" value={metrics.expired} icon={Tag} />
+          <Metric label="Revenue Influenced" value={money(metrics.revenue)} icon={BarChart2} />
+          <Metric label="Conversion Rate" value="0%" icon={TrendingUp} />
         </div>
 
-        {filtered.length ? (
-          <div className="grid gap-4 p-4 xl:grid-cols-2">
-            {filtered.map((coupon) => (
-              <div key={coupon._id || coupon.id || coupon.code} className="rounded-xl border border-[#e5e7eb] bg-[#ffffff] p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-mono text-sm font-bold text-[#111827]">{coupon.code || "NO-CODE"}</p>
-                      <button onClick={() => copy(coupon.code)} className="text-[#9ca3af] hover:text-[#884c2d]"><Copy size={13} /></button>
-                      {copied === coupon.code && <span className="text-xs font-semibold text-emerald-600">Copied</span>}
-                    </div>
-                    <p className="mt-1 text-xs text-[#6b7280]">{coupon.type || coupon.amountType || "Discount"} · {coupon.value || coupon.amount || "Value not set"}</p>
-                  </div>
-                  <Status value={coupon.status || "Draft"} />
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <Detail label="Company" value={coupon.assignedCompany || coupon.companyName} />
-                  <Detail label="Contact" value={coupon.assignedContact || coupon.clientName} />
-                  <Detail label="Validity" value={coupon.validUntil || coupon.validity} />
-                  <Detail label="Usage" value={`${coupon.usageCount || 0} / ${coupon.usageLimit || "Unlimited"}`} />
-                  <Detail label="Orders Generated" value={coupon.ordersGenerated || 0} />
-                  <Detail label="Revenue Generated" value={money(coupon.revenueGenerated)} />
-                </div>
+        <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
+          {/* Toolbar */}
+          <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-2">
+              {["All", "Draft", "Active", "Redeemed", "Expired", "Cancelled", "Revoked"].map((item) => (
+                <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+                <Search size={14} className="text-[#9ca3af]" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search coupons" className="w-52 bg-transparent text-sm outline-none" />
               </div>
-            ))}
+              {/* View switcher */}
+              <div className="flex items-center rounded-lg border border-[#e5e7eb] overflow-hidden">
+                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#884c2d] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><Grid2x2 size={15} /></button>
+                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#884c2d] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><List size={15} /></button>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="p-10 text-center">
-            <p className="text-sm font-semibold text-[#111827]">No coupons yet.</p>
-            <p className="mt-1 text-sm text-[#6b7280]">Coupons should be assigned to a company, contact, lead, or deal and tracked through order conversion.</p>
-          </div>
-        )}
-      </section>
 
-      {creating && <CouponFormPanel onClose={() => setCreating(false)} onCreate={createCoupon} />}
+          {/* List header (list mode only) */}
+          {viewMode === "list" && filtered.length > 0 && (
+            <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-[#f3f4f6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+              <span>Code</span><span>Company</span><span>Contact</span><span>Amount</span><span>Validity</span><span>Status</span>
+            </div>
+          )}
+
+          {filtered.length ? (
+            viewMode === "card" ? (
+              <div className="grid gap-4 p-4 xl:grid-cols-2">
+                {filtered.map((coupon) => (
+                  <CouponCard key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} />
+                ))}
+              </div>
+            ) : (
+              <div>
+                {filtered.map((coupon) => (
+                  <CouponRow key={coupon._id || coupon.id || coupon.code} coupon={coupon} copied={copied} onCopy={copy} />
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="p-10 text-center">
+              <p className="text-sm font-semibold text-[#111827]">No coupons yet.</p>
+              <p className="mt-1 text-sm text-[#6b7280]">Create a coupon to assign to a company, contact, or deal and track order conversion.</p>
+            </div>
+          )}
+        </section>
+
+        {creating && <CouponFormPanel onClose={() => setCreating(false)} onCreate={createCoupon} />}
       </div>
     </div>
   );
-}
-
-function Detail({ label, value }) {
-  return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-      <p className="mt-1 text-[#374151]">{value || "Not added"}</p>
-    </div>
-  );
-}
-
-function Status({ value }) {
-  const tone = value === "Active" ? "bg-emerald-50 text-emerald-700" : value === "Redeemed" ? "bg-blue-50 text-blue-700" : /expired|cancel|revoked/i.test(value) ? "bg-red-50 text-red-600" : "bg-[#f3f4f6] text-[#6b7280]";
-  return <span className={`h-fit rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
 }
