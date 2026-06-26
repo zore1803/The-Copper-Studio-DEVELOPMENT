@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart2, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
@@ -356,12 +356,14 @@ export default function Coupons() {
     }
   }
 
-  const filtered = useMemo(() => { setPage(1); return coupons.filter((coupon) => {
+  const filtered = useMemo(() => coupons.filter((coupon) => {
     const couponStatus = coupon.status || "Draft";
     const matchesStatus = statusFilter === "All" || couponStatus === statusFilter;
     const haystack = `${coupon.code || ""} ${coupon.assignedCompany || coupon.companyName || ""} ${coupon.assignedContact || coupon.clientName || ""} ${couponStatus}`.toLowerCase();
     return matchesStatus && haystack.includes(query.toLowerCase());
-  }); }, [coupons, query, statusFilter]);
+  }), [coupons, query, statusFilter]);
+
+  useEffect(() => { setPage(1); }, [query, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -475,8 +477,7 @@ export default function Coupons() {
                   ))}
                 </div>
               )}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-[#f3f4f6] px-4 py-3">
+              <div className="flex items-center justify-between border-t border-[#f3f4f6] px-4 py-3">
                   <p className="text-xs text-[#9ca3af]">
                     {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} coupons
                   </p>
@@ -506,7 +507,6 @@ export default function Coupons() {
                     </button>
                   </div>
                 </div>
-              )}
             </>
           ) : (
             <div className="p-10 text-center">
