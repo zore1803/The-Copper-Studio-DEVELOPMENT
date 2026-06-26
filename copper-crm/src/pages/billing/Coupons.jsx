@@ -361,12 +361,24 @@ export default function Coupons() {
     return matchesStatus && haystack.includes(query.toLowerCase());
   }), [coupons, query, statusFilter]);
 
-  const metrics = useMemo(() => ({
-    active: coupons.filter((c) => c.status === "Active").length,
-    redeemed: coupons.filter((c) => c.status === "Redeemed").length,
-    expired: coupons.filter((c) => c.status === "Expired").length,
-    revenue: coupons.reduce((sum, c) => sum + Number(c.revenueGenerated || 0), 0),
-  }), [coupons]);
+  const metrics = useMemo(() => {
+    const active = coupons.filter((c) => c.status === "Active").length;
+    const redeemed = coupons.filter((c) => c.status === "Redeemed").length;
+    const expired = coupons.filter((c) => c.status === "Expired").length;
+    const total = coupons.length;
+    const conversionRate = total > 0 ? Math.round((redeemed / total) * 100) : 0;
+
+    // Revenue influenced = sum of fixed discounts given on used (Redeemed) coupons only.
+    // Percentage-based coupons are excluded since order value is unknown.
+    const revenue = coupons
+      .filter((c) => c.status === "Redeemed" && (c.amountType === "fixed" || String(c.amount || "").startsWith("Rs")))
+      .reduce((sum, c) => {
+        const raw = c.discount || String(c.amount || "").replace(/[^0-9.]/g, "");
+        return sum + (Number(raw) || 0);
+      }, 0);
+
+    return { active, redeemed, expired, revenue, conversionRate };
+  }, [coupons]);
 
   async function copy(code) {
     if (!code) return;
@@ -393,7 +405,7 @@ export default function Coupons() {
           <Metric label="Redeemed" value={metrics.redeemed} icon={TrendingUp} />
           <Metric label="Expired" value={metrics.expired} icon={Tag} />
           <Metric label="Revenue Influenced" value={money(metrics.revenue)} icon={BarChart2} />
-          <Metric label="Conversion Rate" value="0%" icon={TrendingUp} />
+          <Metric label="Conversion Rate" value={`${metrics.conversionRate}%`} icon={TrendingUp} />
         </div>
 
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
