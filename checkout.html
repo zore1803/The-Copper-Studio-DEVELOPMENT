@@ -37,9 +37,7 @@
         border-color: var(--accent);
         color: #fff;
       }
-      .checkout-step.is-active {
-        color: var(--ink);
-      }
+      .checkout-step.is-active { color: var(--ink); }
       .checkout-step-divider {
         flex: 1;
         height: 1px;
@@ -105,12 +103,9 @@
         padding: 22px;
         border: 1px solid var(--line);
         border-radius: 12px;
-        background: var(--surface);
+        background: #ffffff;
         box-shadow: var(--shadow);
         margin-bottom: 14px;
-      }
-      .form-section-block:last-of-type {
-        margin-bottom: 0;
       }
       .block-header {
         display: flex;
@@ -133,14 +128,8 @@
         gap: 12px;
         margin-bottom: 8px;
       }
-      .verify-header label {
-        display: block;
-        margin: 0;
-        gap: 0;
-      }
-      .verify-header label span {
-        margin: 0;
-      }
+      .verify-header label { display: block; margin: 0; gap: 0; }
+      .verify-header label span { margin: 0; }
       .input-hint {
         display: block;
         margin-top: 4px;
@@ -160,10 +149,49 @@
         font-size: 0.95rem;
         flex-shrink: 0;
       }
-      /* Force white background on both the form panels and the summary card */
-      .form-section-block,
-      .sticky-panel {
-        background: #ffffff !important;
+      .sticky-panel { background: #ffffff !important; }
+      /* Salutation + name row: narrow select + two equal inputs */
+      .name-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 1fr;
+        gap: 12px;
+      }
+      /* Simple phone row without OTP (alt / whatsapp) */
+      .plain-phone {
+        display: grid;
+        grid-template-columns: auto minmax(0,1fr);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--surface);
+        transition: border-color 160ms ease, box-shadow 160ms ease;
+      }
+      .plain-phone:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(136,76,45,0.16);
+      }
+      .plain-phone input {
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        min-width: 0;
+      }
+      .plain-phone input:focus { border-color: transparent; box-shadow: none; }
+      .plain-phone-prefix {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        background: var(--surface-soft);
+        border-right: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 600;
+        white-space: nowrap;
+        user-select: none;
+      }
+      @media (max-width: 600px) {
+        .name-row { grid-template-columns: 1fr 1fr; }
+        .name-row label:first-child { grid-column: 1 / -1; }
       }
     </style>
   </head>
@@ -180,7 +208,7 @@
 
     <main class="page-shell">
 
-      <!-- Checkout progress -->
+      <!-- Progress -->
       <div class="checkout-progress">
         <div class="checkout-step is-active">
           <span class="checkout-step-num">1</span>
@@ -203,37 +231,78 @@
         <!-- LEFT: Form -->
         <form id="customerForm" novalidate>
 
-          <!-- Personal Details -->
+          <!-- 1. Personal Information -->
           <div class="form-section-block">
             <div class="block-header">
-              <h3>Personal Details</h3>
+              <h3>Personal Information</h3>
               <span class="section-badge">
                 <span class="material-symbols-outlined" style="font-size:0.85rem;">person</span>
-                Step 1 of 2
+                Step 1 of 3
               </span>
             </div>
-            <div class="field-grid">
+            <div style="display:grid;gap:16px;">
+              <!-- Salutation + First + Last -->
+              <div class="name-row">
+                <label>
+                  <span>Salutation</span>
+                  <select id="salutation" name="salutation" autocomplete="honorific-prefix">
+                    <option value="">—</option>
+                    <option value="Mr.">Mr.</option>
+                    <option value="Mrs.">Mrs.</option>
+                    <option value="Ms.">Ms.</option>
+                    <option value="Dr.">Dr.</option>
+                    <option value="Prof.">Prof.</option>
+                  </select>
+                </label>
+                <label>
+                  <span>First Name</span>
+                  <input id="firstName" name="firstName" type="text" placeholder="Rohit" required autocomplete="given-name">
+                </label>
+                <label>
+                  <span>Last Name</span>
+                  <input id="lastName" name="lastName" type="text" placeholder="Sharma" required autocomplete="family-name">
+                </label>
+              </div>
+              <!-- Designation -->
               <label>
-                <span>First Name</span>
-                <input id="firstName" name="firstName" type="text" placeholder="Rohit" required autocomplete="given-name">
+                <span>Designation</span>
+                <input id="designation" name="designation" type="text" placeholder="Founder, Marketing Head, Creative Director…" autocomplete="organization-title">
               </label>
-              <label>
-                <span>Last Name</span>
-                <input id="lastName" name="lastName" type="text" placeholder="Sharma" required autocomplete="family-name">
-              </label>
-              <label>
-                <span>Designation <em>optional</em></span>
-                <input id="designation" name="designation" type="text" placeholder="Founder, Marketing Lead…" autocomplete="organization-title">
-              </label>
-              <label>
-                <span>LinkedIn Profile <em>optional</em></span>
-                <input id="linkedinUrl" name="linkedinUrl" type="url" placeholder="https://linkedin.com/in/username">
-              </label>
+            </div>
+          </div>
 
-              <!-- Phone verify -->
-              <div class="verify-field field-span-2" data-verify-card="phone">
+          <!-- 2. Communication -->
+          <div class="form-section-block">
+            <div class="block-header">
+              <h3>Communication Details</h3>
+              <span class="section-badge">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">contact_mail</span>
+                Step 2 of 3
+              </span>
+            </div>
+            <div style="display:grid;gap:16px;">
+
+              <!-- Work Email + OTP -->
+              <div class="verify-field" data-verify-card="email">
                 <div class="verify-header">
-                  <label for="customerPhone"><span>Mobile Number</span></label>
+                  <label for="customerEmail"><span>Work Email</span></label>
+                  <span class="verify-badge pending" id="emailBadge">Unverified</span>
+                </div>
+                <div class="input-action">
+                  <input id="customerEmail" name="customerEmail" type="email" placeholder="you@company.com" required autocomplete="email">
+                  <button class="btn btn-secondary" type="button" data-send-otp="email">Send OTP</button>
+                </div>
+                <div class="otp-row">
+                  <input data-otp-input="email" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
+                  <button class="btn btn-primary" type="button" data-verify="email" disabled>Verify</button>
+                  <small id="emailVerifyStatus">OTP not sent</small>
+                </div>
+              </div>
+
+              <!-- Phone + OTP -->
+              <div class="verify-field" data-verify-card="phone">
+                <div class="verify-header">
+                  <label for="customerPhone"><span>Phone Number</span></label>
                   <span class="verify-badge pending" id="phoneBadge">Unverified</span>
                 </div>
                 <div class="input-action">
@@ -261,43 +330,55 @@
                 </div>
               </div>
 
-              <!-- Email verify -->
-              <div class="verify-field field-span-2" data-verify-card="email">
-                <div class="verify-header">
-                  <label for="customerEmail"><span>Email Address</span></label>
-                  <span class="verify-badge pending" id="emailBadge">Unverified</span>
+              <!-- Alternative Number (no OTP) -->
+              <label>
+                <span>Alternative Number <em>optional</em></span>
+                <div class="plain-phone">
+                  <span class="plain-phone-prefix">+91</span>
+                  <input id="alternativePhone" name="alternativePhone" type="tel" inputmode="numeric" maxlength="10" placeholder="98765 43210" autocomplete="tel">
                 </div>
-                <div class="input-action">
-                  <input id="customerEmail" name="customerEmail" type="email" placeholder="you@example.com" required autocomplete="email">
-                  <button class="btn btn-secondary" type="button" data-send-otp="email">Send OTP</button>
+              </label>
+
+              <!-- WhatsApp Number -->
+              <label>
+                <span>WhatsApp Number</span>
+                <div class="plain-phone">
+                  <span class="plain-phone-prefix">
+                    <span class="material-symbols-outlined" style="font-size:1rem;margin-right:4px;color:var(--accent);">chat</span>
+                    +91
+                  </span>
+                  <input id="whatsappNumber" name="whatsappNumber" type="tel" inputmode="numeric" maxlength="10" placeholder="98765 43210" required autocomplete="tel">
                 </div>
-                <div class="otp-row">
-                  <input data-otp-input="email" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>
-                  <button class="btn btn-primary" type="button" data-verify="email" disabled>Verify</button>
-                  <small id="emailVerifyStatus">OTP not sent</small>
-                </div>
-              </div>
+                <span class="input-hint">We'll send order updates and onboarding info here.</span>
+              </label>
+
+              <!-- Company Website -->
+              <label>
+                <span>Company / Brand Website <em>optional</em></span>
+                <input id="companyWebsite" name="companyWebsite" type="url" placeholder="https://www.yourcompany.com" autocomplete="url">
+              </label>
+
             </div>
           </div>
 
-          <!-- Billing Details -->
+          <!-- 3. Billing Details -->
           <div class="form-section-block">
             <div class="block-header">
               <h3>Billing Details</h3>
               <span class="section-badge">
                 <span class="material-symbols-outlined" style="font-size:0.85rem;">receipt_long</span>
-                Step 2 of 2
+                Step 3 of 3
               </span>
             </div>
             <div class="field-grid">
               <label class="field-span-2">
                 <span>GSTIN <em>optional</em></span>
-                <input id="companyGstin" name="companyGstin" type="text" placeholder="27ABCDE1234F1Z5" maxlength="15" autocomplete="off">
-                <span class="input-hint">Only required if you need a GST invoice for your business.</span>
+                <input id="companyGstin" name="companyGstin" type="text" placeholder="27ABCDE1234F1Z5" maxlength="15" autocomplete="off" style="text-transform:uppercase;">
+                <span class="input-hint">Only required if you need a GST invoice for your business. The GST breakdown in the summary updates as you type.</span>
               </label>
               <label class="field-span-2">
-                <span>Billing Address Line 1</span>
-                <input id="billingAddressLine1" name="billingAddressLine1" type="text" placeholder="Flat / House No., Building, Street" required autocomplete="address-line1">
+                <span>Address Line 1</span>
+                <input id="billingAddressLine1" name="billingAddressLine1" type="text" placeholder="Flat / House No., Building Name, Street" required autocomplete="address-line1">
               </label>
               <label class="field-span-2">
                 <span>Address Line 2 <em>optional</em></span>
@@ -309,17 +390,55 @@
               </label>
               <label>
                 <span>State</span>
-                <input id="state" name="state" type="text" placeholder="Maharashtra" required autocomplete="address-level1">
+                <select id="state" name="state" required autocomplete="address-level1">
+                  <option value="">Select state…</option>
+                  <option>Andhra Pradesh</option>
+                  <option>Arunachal Pradesh</option>
+                  <option>Assam</option>
+                  <option>Bihar</option>
+                  <option>Chhattisgarh</option>
+                  <option>Goa</option>
+                  <option>Gujarat</option>
+                  <option>Haryana</option>
+                  <option>Himachal Pradesh</option>
+                  <option>Jharkhand</option>
+                  <option>Karnataka</option>
+                  <option>Kerala</option>
+                  <option>Madhya Pradesh</option>
+                  <option>Maharashtra</option>
+                  <option>Manipur</option>
+                  <option>Meghalaya</option>
+                  <option>Mizoram</option>
+                  <option>Nagaland</option>
+                  <option>Odisha</option>
+                  <option>Punjab</option>
+                  <option>Rajasthan</option>
+                  <option>Sikkim</option>
+                  <option>Tamil Nadu</option>
+                  <option>Telangana</option>
+                  <option>Tripura</option>
+                  <option>Uttar Pradesh</option>
+                  <option>Uttarakhand</option>
+                  <option>West Bengal</option>
+                  <option>Andaman and Nicobar Islands</option>
+                  <option>Chandigarh</option>
+                  <option>Dadra and Nagar Haveli and Daman and Diu</option>
+                  <option>Delhi</option>
+                  <option>Jammu and Kashmir</option>
+                  <option>Ladakh</option>
+                  <option>Lakshadweep</option>
+                  <option>Puducherry</option>
+                </select>
               </label>
               <label>
                 <span>Pincode</span>
-                <input id="pincode" name="pincode" type="text" placeholder="400001" inputmode="numeric" maxlength="10" required autocomplete="postal-code">
+                <input id="pincode" name="pincode" type="text" placeholder="400001" inputmode="numeric" maxlength="6" required autocomplete="postal-code">
               </label>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="form-actions" style="margin-top: 18px;">
+          <div class="form-actions" style="margin-top:18px;">
             <a class="btn btn-secondary" href="index.html">
               <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_back</span>
               Back to Packages
@@ -331,7 +450,7 @@
           </div>
           <p class="form-footer-note">
             <span class="material-symbols-outlined">lock</span>
-            Your information is encrypted. Both mobile and email OTP verification are required before payment opens.
+            Your information is encrypted. Mobile and email OTP verification are required before payment opens.
           </p>
         </form>
 
