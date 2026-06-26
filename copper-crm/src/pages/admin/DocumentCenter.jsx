@@ -381,28 +381,7 @@ export default function DocumentCenter({ mode = "company" }) {
         </div>
       </section>
 
-      <aside className="hidden w-80 shrink-0 border-l border-[#e5e7eb] bg-white p-5 xl:block">
-        <p className="text-sm font-bold text-[#111827]">File Details</p>
-        {selected ? (
-          <div className="mt-4 space-y-4 text-sm">
-            <Detail label="Name" value={selected.fileName || selected.name} />
-            <Detail label="Owner" value={selected.uploadedBy || selected.owner} />
-            <Detail label="Folder" value={selected.folderPath || selected.category} />
-            <Detail label="Version" value={selected.version || "v1"} />
-            <Detail label="Shared Status" value={(VISIBILITY[selected.visibility]?.label) || "Private"} />
-            <Detail label="Created" value={selected.createdAt || selected.date} />
-            {selected.fileUrl && (
-              <a href={selected.fileUrl} target="_blank" rel="noreferrer" className="block w-full rounded-lg bg-[#884c2d] px-3 py-2 text-center text-xs font-bold text-white hover:bg-[#6f381a]">
-                Open File
-              </a>
-            )}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-[#6b7280]">Select a file to inspect owner, version, created date, size, and sharing status.</p>
-        )}
-      </aside>
-
-      {uploading && (
+{uploading && (
         <UploadPanel folderLabel={selectedFolderLabel} onClose={() => setUploading(false)} onSave={handleUpload} />
       )}
     </div>
