@@ -328,15 +328,13 @@ export default function DocumentCenter({ mode = "company" }) {
   }
 
   return (
-    <div className="flex min-h-full bg-[#F1F1F5]">
-      <section className="min-w-0 flex-1 p-6">
-        <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">Document Center</p>
-            <h1 className="mt-1 text-2xl font-bold text-[#111827]">{page.title}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">{page.subtitle}</p>
-          </div>
-          <div className="flex items-center gap-2">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+        <div>
+          <h1 className="text-base font-medium text-[#0E121B]">{page.title}</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{page.subtitle}</p>
+        </div>
+        <div className="flex items-center gap-2">
             <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
               <Search size={14} className="text-[#9ca3af]" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-52 bg-transparent text-sm outline-none" />
@@ -347,6 +345,7 @@ export default function DocumentCenter({ mode = "company" }) {
           </div>
         </div>
 
+      <section className="min-w-0 flex-1 p-5 xl:p-6">
         {view === "grid" && (
           <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {page.folders.map((folder) => (
