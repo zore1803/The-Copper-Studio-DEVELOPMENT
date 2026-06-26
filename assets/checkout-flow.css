@@ -1,0 +1,861 @@
+/* Shared visual language for the checkout flow pages:
+   checkout.html (Your Details) and payment.html (Payment).
+   Page-specific selectors target BOTH [data-page="checkout"] and
+   [data-page="payment"] so the two screens stay perfectly in sync. */
+
+body[data-page="checkout"],
+body[data-page="payment"] {
+  background: #f7f7f7;
+  color: #111111;
+}
+
+body[data-page="checkout"] .shell-header,
+body[data-page="payment"] .shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 74px;
+  padding: 0 clamp(24px, 5vw, 64px);
+  border-bottom: 1px solid #e8ddd8;
+  background: #fff8f6;
+  backdrop-filter: blur(14px);
+}
+
+body[data-page="checkout"] .brand,
+body[data-page="payment"] .brand {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+}
+
+body[data-page="checkout"] .brand-mark,
+body[data-page="payment"] .brand-mark {
+  display: block;
+  width: 172px;
+  height: 42px;
+  border-radius: 0;
+  background: url("../copper-crm/public/copper-studio-wordmark.png") left center / contain no-repeat;
+  box-shadow: none;
+}
+
+body[data-page="checkout"] .brand span:not(.brand-mark),
+body[data-page="payment"] .brand span:not(.brand-mark) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+body[data-page="checkout"] .top-nav,
+body[data-page="payment"] .top-nav {
+  justify-self: center;
+  gap: 0;
+  display: inline-flex;
+  align-items: center;
+  background: #e8d5cb;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+body[data-page="checkout"] .top-nav a,
+body[data-page="payment"] .top-nav a {
+  min-height: 32px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  color: #6b4c3b;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+body[data-page="checkout"] .top-nav a:hover,
+body[data-page="payment"] .top-nav a:hover {
+  color: #3d1f0e;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+body[data-page="checkout"] .top-nav a.is-active,
+body[data-page="payment"] .top-nav a.is-active {
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+body[data-page="checkout"] .page-shell,
+body[data-page="payment"] .page-shell {
+  width: min(1160px, calc(100% - 48px));
+  padding: 46px 0 92px;
+}
+
+body[data-page="checkout"] .two-column,
+body[data-page="payment"] .two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 348px;
+  gap: 48px;
+  align-items: start;
+}
+
+.checkout-progress {
+  display: grid;
+  grid-template-columns: 1fr 110px 1fr 110px 1fr;
+  align-items: center;
+  max-width: 780px;
+  margin: 0 auto 42px;
+}
+
+.checkout-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #a8a8a8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.checkout-step-num {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  border: 0;
+  color: #ffffff;
+  background: #dddddd;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+
+.checkout-step.is-active {
+  color: #111111;
+}
+
+.checkout-step.is-active .checkout-step-num {
+  background: #964d0a;
+}
+
+/* Completed step (left of the active one) */
+.checkout-step.is-done {
+  color: #53606f;
+}
+
+.checkout-step.is-done .checkout-step-num {
+  background: #2f7d32;
+}
+
+.checkout-step-divider {
+  height: 1px;
+  min-width: 0;
+  margin: 0;
+  background: #e5e5e5;
+}
+
+#customerForm {
+  display: grid;
+  gap: 32px;
+}
+
+.form-section-block,
+.sticky-panel {
+  border: 1px solid #efefef;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.04);
+}
+
+.form-section-block {
+  padding: 34px 32px;
+}
+
+.block-header {
+  display: block;
+  margin: 0 0 30px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.block-header h3 {
+  margin: 0;
+  color: #111111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.section-badge {
+  display: none;
+}
+
+label,
+.verify-field {
+  display: grid;
+  gap: 9px;
+}
+
+label span,
+.verify-header label span {
+  margin: 0;
+  color: #111111;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+label em {
+  color: #8f8f8f;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.section-grid,
+.field-grid,
+.name-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.field-span-2 {
+  grid-column: 1 / -1;
+}
+
+body[data-page="checkout"] input,
+body[data-page="checkout"] select,
+body[data-page="payment"] input,
+body[data-page="payment"] select {
+  min-height: 50px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  background: #f2f2f2;
+  color: #111111;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  box-shadow: none;
+}
+
+body[data-page="checkout"] input::placeholder,
+body[data-page="payment"] input::placeholder {
+  color: #6b7280;
+}
+
+body[data-page="checkout"] input:focus,
+body[data-page="checkout"] select:focus,
+body[data-page="payment"] input:focus,
+body[data-page="payment"] select:focus,
+.phone-field:focus-within,
+.plain-phone:focus-within {
+  border-color: #964d0a;
+  box-shadow: 0 0 0 3px rgba(150, 77, 10, 0.12);
+}
+
+.verify-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.verify-header label {
+  display: block;
+  margin: 0;
+}
+
+.verify-badge {
+  color: #a33b22;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.verify-badge::before {
+  content: "ⓘ ";
+}
+
+.verify-field.is-verified .verify-badge {
+  color: #53606f;
+}
+
+.verify-field.is-verified .verify-badge::before {
+  content: "◎ ";
+}
+
+.input-action {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 0;
+}
+
+.input-action > input,
+.input-action > .phone-field {
+  border-radius: 12px 0 0 12px;
+}
+
+.input-action .btn,
+.otp-row .btn {
+  min-height: 50px;
+  border: 0;
+  border-radius: 0 12px 12px 0;
+  background: #111111;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+/* phone-field: NO overflow:hidden — that clips the country-picker dropdown */
+.phone-field,
+.plain-phone {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 50px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+  overflow: visible;
+  background: #f2f2f2;
+}
+
+.phone-field .country-picker-trigger,
+.plain-phone .plain-phone-prefix {
+  border-radius: 12px 0 0 12px;
+}
+
+.phone-field input,
+.plain-phone input {
+  min-height: 48px;
+  border: 0 !important;
+  border-radius: 0 12px 12px 0;
+  background: #f2f2f2;
+  box-shadow: none !important;
+}
+
+.country-picker,
+.plain-phone-prefix {
+  border-right: 1px solid #dedede;
+}
+
+.country-picker-trigger,
+.plain-phone-prefix {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 50px;
+  background: #f2f2f2;
+  color: #53606f;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.country-picker {
+  position: relative;
+}
+
+.country-picker-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  min-width: 260px;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+}
+
+.phone-combo {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  align-items: end;
+}
+
+.phone-combo select {
+  width: 100%;
+}
+
+.otp-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 0;
+  max-width: 340px;
+  margin-top: 8px;
+}
+
+.otp-row input {
+  min-height: 42px !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+.otp-row .btn {
+  min-height: 42px;
+  border-radius: 0 12px 12px 0;
+}
+
+.otp-row small {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  color: #8f8f8f;
+  font-size: 0.72rem;
+}
+
+.input-hint {
+  display: block;
+  margin-top: 2px;
+  color: #8f8f8f;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: 14px !important;
+}
+
+.form-actions .btn-secondary {
+  min-height: 54px;
+  border: 0;
+  background: transparent;
+  color: #646464;
+}
+
+.form-actions .btn-primary {
+  min-width: 310px;
+  min-height: 58px;
+  border: 0;
+  border-radius: 12px;
+  background: #964d0a;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.form-actions .btn-primary:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.form-footer-note {
+  display: none;
+}
+
+.sticky-panel {
+  position: sticky;
+  top: 96px;
+  padding: 34px 32px;
+}
+
+.sticky-panel .mini-label {
+  margin: 0 0 24px;
+  color: #111111;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.overview-card {
+  gap: 12px;
+}
+
+.summary-package {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 26px;
+}
+
+.summary-thumb {
+  width: 78px;
+  aspect-ratio: 1;
+  border: 1px solid #dedede;
+  background:
+    linear-gradient(135deg, rgba(150, 77, 10, 0.08), rgba(17, 17, 17, 0.08)),
+    url("copper-studio-logo.jpeg") center / cover no-repeat;
+}
+
+.overview-card h3 {
+  color: #111111;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.overview-card p {
+  margin: 3px 0 5px;
+  color: #646464;
+  font-size: 0.78rem;
+}
+
+.summary-price {
+  display: block;
+  color: #111111;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.overview-row,
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  color: #646464;
+  font-size: 0.92rem;
+  padding: 8px 0;
+}
+
+.overview-row strong,
+.total-row strong {
+  color: #111111;
+  font-weight: 500;
+}
+
+.total-row strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.summary-divider {
+  height: 1px;
+  margin: 22px 0;
+  background: #eeeeee;
+}
+
+.coupon-box {
+  gap: 10px;
+}
+
+.coupon-box .input-action {
+  grid-template-columns: minmax(0, 1fr) 94px;
+  gap: 12px;
+}
+
+.coupon-box .input-action input,
+.coupon-box .input-action .btn {
+  border-radius: 12px;
+}
+
+.coupon-box .input-action .btn {
+  border: 1px solid #dedede;
+  background: #ffffff;
+  color: #111111;
+}
+
+.trust-row {
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid #eeeeee;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #eeeeee;
+  border-radius: 12px;
+  background: #fafafa;
+  color: #444444;
+  padding: 12px 14px;
+  font-size: 0.74rem;
+}
+
+.trust-item .material-symbols-outlined {
+  color: #964d0a;
+  font-size: 1rem;
+}
+
+.checkout-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 88px;
+  padding-top: 48px;
+  border-top: 1px solid #eeeeee;
+}
+
+.checkout-footer strong {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.checkout-footer small,
+.checkout-footer a {
+  color: #646464;
+  font-size: 0.78rem;
+}
+
+.checkout-footer nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* ============================================================
+   PAYMENT PAGE — specific blocks
+   ============================================================ */
+
+/* Review rows: read-only customer summary */
+.review-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.review-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.review-row .review-label {
+  color: #8f8f8f;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding-top: 1px;
+}
+
+.review-row .review-value {
+  color: #111111;
+  font-size: 0.92rem;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.review-row .review-value .verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  color: #2f7d32;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #964d0a;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.edit-link:hover {
+  text-decoration: underline;
+}
+
+/* Razorpay payment-method panel */
+.pay-method {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid #e9e2da;
+  border-radius: 12px;
+  background: #fbf7f3;
+}
+
+.pay-method .pay-logo {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #0b1f4d;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.pay-method .pay-copy strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #111111;
+}
+
+.pay-method .pay-copy span {
+  display: block;
+  margin-top: 2px;
+  color: #6b6b6b;
+  font-size: 0.8rem;
+}
+
+.pay-methods-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pay-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid #ececec;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #555555;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.pay-chip .material-symbols-outlined {
+  font-size: 0.95rem;
+  color: #964d0a;
+}
+
+.gateway-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f6f6;
+  color: #6b6b6b;
+  font-size: 0.8rem;
+}
+
+.gateway-note .material-symbols-outlined {
+  font-size: 1rem;
+  color: #964d0a;
+}
+
+/* Inline spinner shown while verifying payment */
+.pay-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: paySpin 0.7s linear infinite;
+  display: inline-block;
+  vertical-align: -2px;
+}
+
+@keyframes paySpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  body[data-page="checkout"] .two-column,
+  body[data-page="payment"] .two-column {
+    grid-template-columns: 1fr;
+  }
+
+  .sticky-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 680px) {
+  body[data-page="checkout"] .shell-header,
+  body[data-page="payment"] .shell-header {
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    min-height: 68px;
+  }
+
+  body[data-page="checkout"] .top-nav,
+  body[data-page="payment"] .top-nav {
+    justify-self: end;
+    gap: 16px;
+  }
+
+  body[data-page="checkout"] .brand-mark,
+  body[data-page="payment"] .brand-mark {
+    width: 136px;
+    height: 34px;
+  }
+
+  body[data-page="checkout"] .page-shell,
+  body[data-page="payment"] .page-shell {
+    width: min(100% - 24px, 1160px);
+    padding-top: 28px;
+  }
+
+  .checkout-progress,
+  .section-grid,
+  .field-grid,
+  .name-row,
+  .input-action,
+  .otp-row,
+  .coupon-box .input-action,
+  .review-row {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-progress {
+    gap: 12px;
+  }
+
+  .checkout-step-divider {
+    display: none;
+  }
+
+  .form-section-block,
+  .sticky-panel {
+    padding: 24px;
+  }
+
+  .input-action > input,
+  .input-action > .phone-field,
+  .input-action .btn,
+  .otp-row input,
+  .otp-row .btn {
+    border-radius: 12px !important;
+  }
+
+  .form-actions,
+  .checkout-footer {
+    flex-direction: column;
+  }
+
+  .form-actions .btn,
+  .form-actions .btn-primary {
+    width: 100%;
+    min-width: 0;
+  }
+}

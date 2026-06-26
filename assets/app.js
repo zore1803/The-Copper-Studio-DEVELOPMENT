@@ -638,20 +638,56 @@ function renderCheckoutPage() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Read-only review of the customer's submitted details, shown on the payment page.
+function customerReviewTemplate() {
+  const c = order.customer || {};
+  const name = [c.salutation, c.firstName, c.lastName].filter(Boolean).join(" ").trim() || c.customerName || "—";
+  const phone = customerFullPhone() || "—";
+  const altPhone = c.alternativePhone ? `${c.alternativeCountryCode || "+91"} ${c.alternativePhone}` : "";
+  const whatsapp = c.whatsappNumber ? `${c.whatsappCountryCode || "+91"} ${c.whatsappNumber}` : "";
+  const addressParts = [c.billingAddressLine1, c.billingAddressLine2, [c.city, c.state].filter(Boolean).join(", "), c.pincode].filter(Boolean);
+  const address = addressParts.length ? addressParts.join(", ") : "—";
+  const verified = '<span class="verified-chip"><span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span>Verified</span>';
+
+  const rows = [
+    ["Contact", `${escapeHtml(name)}${c.designation ? ` &middot; ${escapeHtml(c.designation)}` : ""}`],
+    ["Email", `${escapeHtml(c.customerEmail || "—")}${order.verified?.email ? verified : ""}`],
+    ["Phone", `${escapeHtml(phone)}${order.verified?.phone ? verified : ""}`],
+    whatsapp ? ["WhatsApp", escapeHtml(whatsapp)] : null,
+    altPhone ? ["Alt. Number", escapeHtml(altPhone)] : null,
+    c.companyWebsite ? ["Website", escapeHtml(c.companyWebsite)] : null,
+    c.companyGstin ? ["GSTIN", escapeHtml(c.companyGstin)] : null,
+    ["Billing Address", escapeHtml(address)],
+  ].filter(Boolean);
+
+  return rows.map(([label, value]) => `
+    <div class="review-row">
+      <span class="review-label">${label}</span>
+      <span class="review-value">${value}</span>
+    </div>`).join("");
+}
+
 function renderPaymentPage() {
   requireCustomer();
   const pkg = selectedPackage();
-  document.getElementById("packageDetails").innerHTML = packageDetailsTemplate(pkg);
-  document.getElementById("amountBreakdown").innerHTML = amountBreakdownTemplate(pkg);
-  document.getElementById("summaryCustomer").textContent = order.customer.customerName;
-  document.getElementById("summaryContact").textContent = `${order.customer.customerEmail} | ${customerFullPhone()}`;
+  const gstin = order.customer?.companyGstin || "";
+  document.getElementById("reviewDetails").innerHTML = customerReviewTemplate();
+  document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg, gstin);
+  document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+
+  const idleLabel = 'Pay Securely <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>';
 
   document.getElementById("payButton").addEventListener("click", async () => {
     const button = document.getElementById("payButton");
     const gatewayNote = document.getElementById("gatewayNote");
     button.disabled = true;
-    button.textContent = "Opening Razorpay...";
-    if (gatewayNote) gatewayNote.textContent = "Creating secure Razorpay order...";
+    button.innerHTML = '<span class="pay-spinner"></span> Opening Razorpay…';
+    if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">lock</span> Creating secure Razorpay order…';
 
     try {
       if (!window.Razorpay) {
@@ -686,8 +722,9 @@ function renderPaymentPage() {
           color: "#884c2d"
         },
         handler: async (response) => {
-          button.textContent = "Verifying payment...";
-          if (gatewayNote) gatewayNote.textContent = "Verifying payment with Razorpay...";
+          button.disabled = true;
+          button.innerHTML = '<span class="pay-spinner"></span> Verifying payment…';
+          if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying payment & generating your invoice…';
 
           const savedOrder = await apiRequest("/razorpay/verify", {
             method: "POST",
@@ -712,8 +749,8 @@ function renderPaymentPage() {
         modal: {
           ondismiss: () => {
             button.disabled = false;
-            button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
-            if (gatewayNote) gatewayNote.textContent = "Payment was cancelled. You can try again.";
+            button.innerHTML = idleLabel;
+            if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">info</span> Payment was cancelled. You can try again.';
           }
         }
       };
@@ -721,17 +758,17 @@ function renderPaymentPage() {
       const checkout = new window.Razorpay(options);
       checkout.on("payment.failed", (response) => {
         button.disabled = false;
-        button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
+        button.innerHTML = idleLabel;
         if (gatewayNote) {
-          gatewayNote.textContent = response.error?.description || "Payment failed. Please try again.";
+          gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> ${escapeHtml(response.error?.description || "Payment failed. Please try again.")}`;
         }
       });
       checkout.open();
     } catch (error) {
       console.error(error);
       button.disabled = false;
-      button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
-      if (gatewayNote) gatewayNote.textContent = error.message;
+      button.innerHTML = idleLabel;
+      if (gatewayNote) gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> ${escapeHtml(error.message)}`;
       showToast(error.message);
     }
   });
