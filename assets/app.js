@@ -799,29 +799,42 @@ function renderPaymentPage() {
           color: "#884c2d"
         },
         handler: async (response) => {
+          // Razorpay calls this after a successful charge. Wrap it so a failing
+          // verify request resets the button instead of hanging on "Verifying…".
           button.disabled = true;
           button.innerHTML = '<span class="pay-spinner"></span> Verifying payment…';
           if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying payment & generating your invoice…';
 
-          const savedOrder = await apiRequest("/razorpay/verify", {
-            method: "POST",
-            body: JSON.stringify({
-              ...response,
-              selectedPackageId: order.selectedPackageId,
-              couponCode: order.coupon?.code || "",
-              customer: order.customer,
-              verified: order.verified
-            })
-          });
+          try {
+            const savedOrder = await apiRequest("/razorpay/verify", {
+              method: "POST",
+              body: JSON.stringify({
+                ...response,
+                selectedPackageId: order.selectedPackageId,
+                couponCode: order.coupon?.code || "",
+                customer: order.customer,
+                verified: order.verified
+              })
+            });
 
-          order.paymentStatus = "paid";
-          order.paidAt = savedOrder.payment.paidAt;
-          order.invoiceId = savedOrder.payment.invoiceId;
-          order.razorpayOrderId = savedOrder.payment.razorpayOrderId;
-          order.razorpayPaymentId = savedOrder.payment.razorpayPaymentId;
-          order.mongoOrderId = savedOrder._id;
-          saveOrder(order);
-          window.location.href = "success.html";
+            const payment = savedOrder?.payment || {};
+            order.paymentStatus = "paid";
+            order.paidAt = payment.paidAt || new Date().toISOString();
+            order.invoiceId = payment.invoiceId || "";
+            order.razorpayOrderId = payment.razorpayOrderId || response.razorpay_order_id || "";
+            order.razorpayPaymentId = payment.razorpayPaymentId || response.razorpay_payment_id || "";
+            order.mongoOrderId = savedOrder?._id || "";
+            saveOrder(order);
+            window.location.href = "success.html";
+          } catch (error) {
+            console.error("Payment verification failed:", error);
+            button.disabled = false;
+            button.innerHTML = idleLabel;
+            if (gatewayNote) {
+              gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> Payment captured but verification failed: ${escapeHtml(error.message)}. Please contact support with your payment ID — do not pay again.`;
+            }
+            showToast("Payment verification failed. Please contact support before retrying.");
+          }
         },
         modal: {
           ondismiss: () => {
@@ -859,8 +872,20 @@ function renderSuccessPage() {
   }
 
   const pkg = selectedPackage();
-  document.getElementById("successMessage").textContent =
-    `Payment for ${pkg.name} is confirmed. Invoice ${order.invoiceId} is generated, and a mail has been sent to ${order.customer.customerEmail} for the next process. Please open that email to set up your portal password and continue onboarding.`;
+  const gstin = order.customer?.companyGstin || "";
+
+  const message = document.getElementById("successMessage");
+  if (message) {
+    message.textContent =
+      `Payment for ${pkg.name} is confirmed${order.invoiceId ? `, and invoice ${order.invoiceId} has been generated` : ""}. A confirmation email has been sent to ${order.customer.customerEmail}. Please open it to set up your portal password and continue onboarding.`;
+  }
+
+  const overview = document.getElementById("selectedOverview");
+  if (overview) overview.innerHTML = overviewTemplate(pkg, gstin);
+  const total = document.getElementById("overviewTotal");
+  if (total) total.textContent = formatCurrency(packageTotal(pkg));
+  const invoiceEl = document.getElementById("successInvoiceId");
+  if (invoiceEl) invoiceEl.textContent = order.invoiceId || "Emailed shortly";
 
   const downloadBtn = document.getElementById("downloadInvoice");
   if (downloadBtn) {
