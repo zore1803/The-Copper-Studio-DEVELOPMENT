@@ -605,7 +605,7 @@ export default function Coupons() {
               {/* Filter */}
               <FilterButton
                 panelWidth={220}
-                buttonClassName="h-9 w-9 rounded-lg"
+                buttonClassName="h-9 w-9"
                 onReset={() => setStatusFilter("All")}
                 fields={[
                   {
