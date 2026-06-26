@@ -8,6 +8,7 @@ import SidePanel from "../../components/SidePanel";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
 
 const INVOICE_STATUSES = ["Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"];
+const DRAFT_STATUS_ACTIONS = ["Draft", "Paid"];
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -265,7 +266,7 @@ function StatusSelect({ value, onChange }) {
       className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#884c2d]/30 ${statusTone(value)}`}
       aria-label="Invoice status"
     >
-      {INVOICE_STATUSES.map((status) => (
+      {DRAFT_STATUS_ACTIONS.map((status) => (
         <option key={status} value={status}>{status}</option>
       ))}
     </select>
