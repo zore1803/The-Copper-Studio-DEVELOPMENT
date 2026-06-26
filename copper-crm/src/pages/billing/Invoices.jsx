@@ -217,7 +217,7 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
-                    <td className="px-4 py-3"><StatusSelect value={invoice.status || "Draft"} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
+                    <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
                     <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
                   </tr>
                 ))}
@@ -238,20 +238,31 @@ export default function Invoices() {
   );
 }
 
-function StatusSelect({ value, onChange }) {
-  const tone = value === "Paid"
+function statusTone(value) {
+  return value === "Paid"
     ? "bg-emerald-50 text-emerald-700"
     : value === "Overdue"
       ? "bg-red-50 text-red-600"
       : value === "Sent"
         ? "bg-blue-50 text-blue-700"
         : "bg-[#f3f4f6] text-[#6b7280]";
+}
 
+function InvoiceStatus({ invoice, onChange }) {
+  const value = invoice.status || "Draft";
+  if (value !== "Draft") {
+    return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusTone(value)}`}>{value}</span>;
+  }
+
+  return <StatusSelect value={value} onChange={onChange} />;
+}
+
+function StatusSelect({ value, onChange }) {
   return (
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#884c2d]/30 ${tone}`}
+      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#884c2d]/30 ${statusTone(value)}`}
       aria-label="Invoice status"
     >
       {INVOICE_STATUSES.map((status) => (
