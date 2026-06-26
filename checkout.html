@@ -20,8 +20,9 @@
         align-items: center;
         min-height: 74px;
         padding: 0 clamp(24px, 5vw, 64px);
-        border-bottom: 1px solid #eeeeee;
-        background: #ffffff;
+        border-bottom: 1px solid #e8ddd8;
+        background: #fff8f6;
+        backdrop-filter: blur(14px);
       }
 
       body[data-page="checkout"] .brand {
@@ -50,18 +51,36 @@
 
       body[data-page="checkout"] .top-nav {
         justify-self: center;
-        gap: 32px;
+        gap: 0;
+        display: inline-flex;
+        align-items: center;
+        background: #e8d5cb;
+        border-radius: 999px;
+        padding: 4px;
       }
 
       body[data-page="checkout"] .top-nav a {
-        min-height: auto;
-        padding: 0;
-        border-radius: 0;
-        color: #111111;
+        min-height: 32px;
+        padding: 6px 18px;
+        border-radius: 999px;
+        color: #6b4c3b;
         background: transparent;
-        font-size: 0.82rem;
-        font-weight: 500;
-        letter-spacing: 0.12em;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: background 140ms ease, color 140ms ease;
+      }
+
+      body[data-page="checkout"] .top-nav a:hover {
+        color: #3d1f0e;
+        background: rgba(255,255,255,0.5);
+      }
+
+      body[data-page="checkout"] .top-nav a.is-active {
+        background: #ffffff;
+        color: #111111;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.12);
       }
 
       body[data-page="checkout"] .page-shell {
@@ -611,7 +630,7 @@
       </a>
       <nav class="top-nav" aria-label="Main navigation">
         <a href="index.html">Pricing</a>
-        <a href="index.html#packages">Packages</a>
+        <a href="index.html#packages" class="is-active">Packages</a>
       </nav>
     </header>
 
@@ -682,15 +701,11 @@
           <div class="form-section-block">
             <div class="block-header">
               <h3>2. Communication Details</h3>
-              <span class="section-badge">
-                <span class="material-symbols-outlined" style="font-size:0.85rem;">contact_mail</span>
-                Step 2 of 3
-              </span>
             </div>
-            <div class="section-grid">
+            <div style="display:grid;gap:32px;">
 
               <!-- Work Email + OTP -->
-              <div class="verify-field field-span-2" data-verify-card="email">
+              <div class="verify-field" data-verify-card="email">
                 <div class="verify-header">
                   <label for="customerEmail"><span>Work Email</span></label>
                   <span class="verify-badge pending" id="emailBadge">Unverified</span>
@@ -726,7 +741,7 @@
                         <div class="country-picker-list" data-country-list></div>
                       </div>
                     </div>
-                    <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="+91 00000 00000" required autocomplete="tel-national">
+                    <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="00000 00000" required autocomplete="tel-national">
                   </div>
                   <button class="btn btn-secondary" type="button" data-send-otp="phone">Send OTP</button>
                 </div>
@@ -737,33 +752,35 @@
                 </div>
               </div>
 
-              <!-- Alternative Number (no OTP) -->
-              <label>
-                <span>Alternative Number <em>optional</em></span>
-                <div class="plain-phone">
-                  <span class="plain-phone-prefix">+91</span>
-                  <input id="alternativePhone" name="alternativePhone" type="tel" inputmode="numeric" maxlength="10" placeholder="Backup phone number" autocomplete="tel">
-                </div>
-              </label>
-
-              <!-- WhatsApp Number -->
-              <label>
-                <span>WhatsApp Number</span>
-                <div class="plain-phone">
-                  <span class="plain-phone-prefix">
-                    <span class="material-symbols-outlined" style="font-size:1rem;margin-right:4px;color:var(--accent);">chat</span>
+              <!-- Alt + WhatsApp side by side -->
+              <div class="section-grid">
+                <label>
+                  <span>Alternative Number <em>optional</em></span>
+                  <div class="plain-phone">
+                    <span class="plain-phone-prefix">+91</span>
+                    <input id="alternativePhone" name="alternativePhone" type="tel" inputmode="numeric" maxlength="10" placeholder="Backup number" autocomplete="tel">
+                  </div>
+                </label>
+                <label>
+                  <span>WhatsApp Number</span>
+                  <div class="plain-phone">
+                    <span class="plain-phone-prefix" style="gap:4px;">
+                      <span class="material-symbols-outlined" style="font-size:0.95rem;color:#25D366;">chat</span>
                       +91
                     </span>
-                  <input id="whatsappNumber" name="whatsappNumber" type="tel" inputmode="numeric" maxlength="10" placeholder="Active WhatsApp number" required autocomplete="tel">
-                </div>
-                <span class="input-hint">Receive real-time order updates and project milestones via WhatsApp.</span>
-              </label>
+                    <input id="whatsappNumber" name="whatsappNumber" type="tel" inputmode="numeric" maxlength="10" placeholder="Active WhatsApp" required autocomplete="tel">
+                  </div>
+                  <span class="input-hint">Order updates &amp; onboarding sent here.</span>
+                </label>
+              </div>
 
-              <!-- Company Website -->
-              <label>
-                <span>Company / Brand Website <em>optional</em></span>
-                <input id="companyWebsite" name="companyWebsite" type="url" placeholder="https://www.yourcompany.com" autocomplete="url">
-              </label>
+              <!-- Company Website — half width -->
+              <div class="section-grid">
+                <label>
+                  <span>Company / Brand Website <em>optional</em></span>
+                  <input id="companyWebsite" name="companyWebsite" type="url" placeholder="https://www.yourcompany.com" autocomplete="url">
+                </label>
+              </div>
 
             </div>
           </div>
