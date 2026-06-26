@@ -75,8 +75,9 @@ export default function App() {
               <Route path="services/coupon-generator" element={<Navigate to="/admin/coupons" replace />} />
               <Route path="services/proposal-generator" element={<ProposalGeneratorPage />} />
               <Route path="services/communications" element={<Navigate to="/admin/communication/email-templates" replace />} />
-              <Route path="documents/company-folders" element={<DocumentCenter mode="company" />} />
-              <Route path="documents/project-folders" element={<DocumentCenter mode="project" />} />
+              <Route path="documents" element={<DocumentCenter />} />
+              <Route path="documents/company-folders" element={<Navigate to="/admin/documents" replace />} />
+              <Route path="documents/project-folders" element={<Navigate to="/admin/documents" replace />} />
               <Route path="communication/email-templates" element={<CommunicationCenter mode="email" />} />
               <Route path="communication/whatsapp-templates" element={<CommunicationCenter mode="whatsapp" />} />
               <Route path="proposal-generator" element={<Navigate to="/admin/services/proposal-generator" replace />} />

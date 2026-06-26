@@ -47,13 +47,7 @@ const NAV_SECTIONS = [
           { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
         ],
       },
-      {
-        icon: FolderOpen, label: "Documents",
-        children: [
-          { icon: Building2, to: "/admin/documents/company-folders", label: "Company Folders" },
-          { icon: FolderOpen, to: "/admin/documents/project-folders", label: "Project Folders" },
-        ],
-      },
+      { icon: FolderOpen, label: "Documents", to: "/admin/documents" },
     ],
   },
 ];
@@ -75,8 +69,7 @@ const pageNames = {
   "/admin/services/communications": "Communication",
   "/admin/communication/email-templates": "Email Templates",
   "/admin/communication/whatsapp-templates": "WhatsApp Templates",
-  "/admin/documents/company-folders": "Company Folders",
-  "/admin/documents/project-folders": "Project Folders",
+  "/admin/documents": "Documents",
   "/admin/database": "Database",
   "/admin/settings": "Settings",
 };
@@ -94,8 +87,7 @@ const searchablePages = [
   { label: "Coupons", to: "/admin/coupons", keywords: "coupons discount codes finance" },
   { label: "Coupon Generator", to: "/admin/services/coupon-generator", keywords: "coupon code discount" },
   { label: "Proposal Generator", to: "/admin/services/proposal-generator", keywords: "proposal pdf client" },
-  { label: "Company Folders", to: "/admin/documents/company-folders", keywords: "documents company folders files" },
-  { label: "Project Folders", to: "/admin/documents/project-folders", keywords: "documents project folders files" },
+  { label: "Documents", to: "/admin/documents", keywords: "documents company project folders files" },
   { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
   { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
@@ -326,7 +318,7 @@ export default function AdminLayout() {
         ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
         ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
         ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
-        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
+        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents" })),
       ].filter((item) => item.label));
     }
     buildIndex();
