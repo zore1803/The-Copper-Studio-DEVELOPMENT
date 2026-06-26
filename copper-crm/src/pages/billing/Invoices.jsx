@@ -15,6 +15,13 @@ function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
 }
 
+function formatDate(value) {
+  if (!value) return "Not set";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not set";
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
@@ -183,8 +190,8 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
-                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.issueDate || invoice.date || "Not set"}</td>
-                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.dueDate || "Not set"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
                     <td className="px-4 py-3"><Status value={invoice.status || "Draft"} /></td>
                     <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
                   </tr>
