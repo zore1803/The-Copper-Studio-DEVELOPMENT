@@ -26,14 +26,26 @@
 
       body[data-page="checkout"] .brand {
         justify-self: start;
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 2rem;
-        font-weight: 500;
-        letter-spacing: -0.06em;
+        display: inline-flex;
+        align-items: center;
       }
 
       body[data-page="checkout"] .brand-mark {
-        display: none;
+        display: block;
+        width: 172px;
+        height: 42px;
+        border-radius: 0;
+        background: url("copper-crm/public/copper-studio-wordmark.png") left center / contain no-repeat;
+        box-shadow: none;
+      }
+
+      body[data-page="checkout"] .brand span:not(.brand-mark) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
       }
 
       body[data-page="checkout"] .top-nav {
@@ -50,12 +62,6 @@
         font-size: 0.82rem;
         font-weight: 500;
         letter-spacing: 0.12em;
-      }
-
-      .checkout-lock {
-        justify-self: end;
-        color: #8c3f0b;
-        font-size: 1.05rem;
       }
 
       body[data-page="checkout"] .page-shell {
@@ -542,6 +548,11 @@
           gap: 16px;
         }
 
+        body[data-page="checkout"] .brand-mark {
+          width: 136px;
+          height: 34px;
+        }
+
         body[data-page="checkout"] .page-shell {
           width: min(100% - 24px, 1160px);
           padding-top: 28px;
@@ -595,13 +606,13 @@
     <header class="shell-header">
       <a class="brand" href="index.html">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>TCS</span>
+        <span>THE COPPER STUDIO
+        </span>
       </a>
       <nav class="top-nav" aria-label="Main navigation">
         <a href="index.html">Pricing</a>
         <a href="index.html#packages">Packages</a>
       </nav>
-      <span class="material-symbols-outlined checkout-lock" aria-hidden="true">lock</span>
     </header>
 
     <main class="page-shell">
