@@ -44,6 +44,7 @@ const VALIDITY_OPTIONS = [
 const COUPON_DEFAULTS = {
   discount: "",
   packageName: "",
+  validFrom: toDateTimeLocal(new Date()),
   validityHours: 24,
   customValidity: toDateTimeLocal(),
   amountType: "percentage",
@@ -62,6 +63,8 @@ function validateCoupon(coupon) {
   else if (coupon.amountType === "percentage" && amount > 100) errors.discount = "Percentage can't exceed 100.";
 
   if (!String(coupon.packageName || "").trim()) errors.packageName = "Package is required.";
+
+  if (!coupon.validFrom) errors.validFrom = "Start date & time is required.";
 
   if (coupon.validityHours === "custom") {
     if (!isFutureDate(coupon.customValidity)) errors.validity = "Validity must be a future date.";
@@ -147,7 +150,8 @@ function CouponFormPanel({ onClose, onCreate }) {
         <Tag size={20} className="mx-auto text-[#884c2d]" />
         <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">XXX-XXXX-XXX</p>
         <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">{discountLabel} · {coupon.packageName || "selected package"}</p>
-        <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {validityDisplay}</p>
+        <p className="mt-1 text-[11px] font-semibold text-[#6B7280]">Active from {formatDateTime(coupon.validFrom) || "—"}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-[#884c2d]">Valid till {validityDisplay}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -168,6 +172,20 @@ function CouponFormPanel({ onClose, onCreate }) {
 
         {/* Package */}
         <CouponField label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
+
+        {/* Start date/time */}
+        <div>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
+            <input
+              type="datetime-local"
+              value={coupon.validFrom}
+              onChange={(e) => { setField("validFrom")(e.target.value); setErrors((prev) => ({ ...prev, validFrom: "" })); }}
+              className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validFrom ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"}`}
+            />
+            {errors.validFrom && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validFrom}</span>}
+          </label>
+        </div>
 
         {/* Validity dropdown */}
         <div>
@@ -267,7 +285,8 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
         <Detail label="Contact" value={coupon.assignedContact || coupon.clientName} />
         <Detail label="Phone" value={coupon.phone} />
         <Detail label="Email" value={coupon.email} />
-        <Detail label="Validity" value={coupon.validUntil ? formatDateTime(coupon.validUntil) : coupon.validity} />
+        <Detail label="Active from" value={coupon.validFrom ? formatDateTime(coupon.validFrom) : "—"} />
+        <Detail label="Valid till" value={coupon.validUntil ? formatDateTime(coupon.validUntil) : coupon.validity} />
         <Detail label="Usage" value={`${coupon.usageCount || 0} / ${coupon.usageLimit ?? "—"}`} />
         <Detail label="Revenue Generated" value={money(coupon.revenueGenerated)} />
         <Detail label="Package" value={coupon.packageName} />
@@ -337,6 +356,7 @@ export default function Coupons() {
         packageName: coupon.packageName.trim(),
         usageLimit: Number(coupon.usageLimit),
         usageCount: 0,
+        validFrom: coupon.validFrom ? new Date(coupon.validFrom).toISOString() : null,
       });
       setCreating(false);
       showToast({ title: "Coupon created", message: `${created?.code || code} stored successfully.` });

@@ -245,8 +245,16 @@ async function validateCouponForPackage(code, selectedPackage) {
     throw error;
   }
 
+  const now = new Date();
+
+  if (coupon.validFrom && new Date(coupon.validFrom) > now) {
+    const error = new Error(`Coupon is not active yet. It starts on ${new Date(coupon.validFrom).toLocaleString("en-IN")}.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
   const expiryDate = couponExpiryDate(coupon);
-  if (expiryDate && expiryDate <= new Date() && ["Active", "Applied", "Not used"].includes(coupon.status)) {
+  if (expiryDate && expiryDate <= now && ["Active", "Applied", "Not used"].includes(coupon.status)) {
     coupon.status = "Expired";
     await coupon.save();
   }
