@@ -11,6 +11,7 @@ import Meeting from "../models/Meeting.js";
 import Note from "../models/Note.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
+import User from "../models/User.js";
 import { syncPaidOrderFinance } from "../services/finance.js";
 import { sendContactCreatedEmail } from "../services/email.js";
 import { rateLimit } from "../middleware/rateLimit.js";
@@ -159,11 +160,91 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
   }
 });
 
+// The Supabase shim has no deleteMany/$pull, so we find() then delete each by id,
+// and unlink array references by loading/modifying/saving the parent record.
+async function deleteEachById(Model, records) {
+  await Promise.all(
+    records.map((r) =>
+      Model.findByIdAndDelete(r._id).catch((err) =>
+        console.warn(`Cascade delete failed for ${Model.modelName || Model.table}/${r._id}:`, err.message)
+      )
+    )
+  );
+}
+
+// Remove a (now-deleted) portal user from every company's userIds/userId links.
+async function unlinkUserFromCompanies(userId) {
+  if (!userId) return;
+  const uid = String(userId);
+  const companies = await Company.find({}).catch(() => []);
+  for (const company of companies) {
+    const ids = (company.userIds || []).map(String);
+    const isMember = ids.includes(uid);
+    const isPrimary = company.userId && String(company.userId) === uid;
+    if (!isMember && !isPrimary) continue;
+    company.userIds = ids.filter((id) => id !== uid);
+    if (isPrimary) company.userId = company.userIds[0] || null;
+    await company.save().catch((err) => console.warn(`Failed to unlink user ${uid} from company ${company._id}:`, err.message));
+  }
+}
+
+// When a record is deleted from the admin side, also remove the records that
+// only exist because of it — most importantly the provisioned client-portal
+// login — so nothing is left orphaned in the database.
+async function cascadeDelete(type, record) {
+  if (type === "contacts") {
+    // A contact IS a client: drop its portal login and unlink it everywhere.
+    if (record.userId) {
+      await User.findByIdAndDelete(record.userId).catch(() => {});
+      await unlinkUserFromCompanies(record.userId);
+    }
+    return;
+  }
+
+  if (type === "companies") {
+    const companyId = String(record._id);
+    const contacts = await Contact.find({ $or: [{ companyId }, { company: record.name }] }).catch(() => []);
+
+    // Delete every portal login linked to the company (its own + its contacts').
+    const userIds = [
+      ...(record.userIds || []),
+      ...(record.userId ? [record.userId] : []),
+      ...contacts.map((c) => c.userId).filter(Boolean)
+    ];
+    await Promise.all(
+      [...new Set(userIds.map(String))].map((uid) => User.findByIdAndDelete(uid).catch(() => {}))
+    );
+
+    // Delete the contacts and every company-scoped record.
+    await deleteEachById(Contact, contacts);
+    for (const Model of [Project, Document, Meeting, Note]) {
+      const linked = await Model.find({ companyId }).catch(() => []);
+      await deleteEachById(Model, linked);
+    }
+    return;
+  }
+
+  if (type === "projects") {
+    const projectId = String(record._id);
+    const [tasks, docs] = await Promise.all([
+      Task.find({ project: record.name }).catch(() => []),
+      Document.find({ projectId }).catch(() => [])
+    ]);
+    await deleteEachById(Task, tasks);
+    await deleteEachById(Document, docs);
+    return;
+  }
+}
+
 router.delete("/:type/:id", validateType, async (req, res, next) => {
   try {
     const Model = models[req.params.type];
     const record = await Model.findByIdAndDelete(req.params.id);
     if (!record) return res.status(404).json({ message: "CRM record not found." });
+    // Cascade cleanup never blocks the delete response; failures are logged.
+    await cascadeDelete(req.params.type, record).catch((err) =>
+      console.warn(`Cascade cleanup error for ${req.params.type}/${req.params.id}:`, err.message)
+    );
     res.json({ ok: true });
   } catch (error) {
     next(error);
