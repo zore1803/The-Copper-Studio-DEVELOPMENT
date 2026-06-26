@@ -105,6 +105,57 @@ function CouponField({ label, value, onChange, error = "", required = false, typ
   );
 }
 
+function ValidFromField({ value, onChange, error }) {
+  const timeRef = useRef(null);
+
+  function handleTimeChange(e) {
+    const time = e.target.value; // "HH:MM"
+    if (!time) return;
+    const datePart = value ? value.slice(0, 10) : new Date().toISOString().slice(0, 10);
+    onChange(`${datePart}T${time}`);
+  }
+
+  function openTimePicker() {
+    if (timeRef.current) {
+      try { timeRef.current.showPicker(); } catch { timeRef.current.focus(); }
+    }
+  }
+
+  const currentTime = value ? value.slice(11, 16) : "";
+
+  return (
+    <div>
+      <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
+      <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#884c2d] focus-within:ring-[#884c2d]/20"}`}>
+        <input
+          type="datetime-local"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none"
+        />
+        {/* Clock button triggers a hidden time input */}
+        <button
+          type="button"
+          onClick={openTimePicker}
+          title="Set time"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-r-lg border-l border-[#e5e7eb] text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#884c2d] transition-colors"
+        >
+          <Clock size={14} />
+        </button>
+        <input
+          ref={timeRef}
+          type="time"
+          value={currentTime}
+          onChange={handleTimeChange}
+          className="sr-only"
+          tabIndex={-1}
+        />
+      </div>
+      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+    </div>
+  );
+}
+
 function CouponFormPanel({ onClose, onCreate }) {
   const [coupon, setCoupon] = useState(COUPON_DEFAULTS);
   const [errors, setErrors] = useState({});
@@ -174,19 +225,11 @@ function CouponFormPanel({ onClose, onCreate }) {
         <CouponField label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
 
         {/* Start date/time */}
-        <div>
-          <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
-          <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${errors.validFrom ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#884c2d] focus-within:ring-[#884c2d]/20"}`}>
-            <span className="pl-3 text-[#9ca3af]"><Clock size={14} /></span>
-            <input
-              type="datetime-local"
-              value={coupon.validFrom}
-              onChange={(e) => { setField("validFrom")(e.target.value); setErrors((prev) => ({ ...prev, validFrom: "" })); }}
-              className="w-full bg-transparent px-2 py-2 text-sm outline-none"
-            />
-          </div>
-          {errors.validFrom && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validFrom}</span>}
-        </div>
+        <ValidFromField
+          value={coupon.validFrom}
+          onChange={(v) => { setField("validFrom")(v); setErrors((prev) => ({ ...prev, validFrom: "" })); }}
+          error={errors.validFrom}
+        />
 
         {/* Validity dropdown */}
         <div>
