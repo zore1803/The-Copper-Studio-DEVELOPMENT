@@ -159,14 +159,14 @@ export default function ProjectsList() {
   ];
 
   return (
-    <div className="min-h-full bg-[#F1F1F5] p-6 space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-[#111827]">All Projects</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">{filtered.length} of {projects.length} projects across every company</p>
+          <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-3 sm:w-72 shadow-sm">
+          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#9ca3af]" />
             <input
               value={search}
@@ -178,6 +178,7 @@ export default function ProjectsList() {
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
         </div>
       </div>
+      <div className="p-5 xl:p-6 space-y-6">
 
       {!loading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -317,6 +318,7 @@ export default function ProjectsList() {
           onSave={handleCreate}
         />
       )}
+      </div>
     </div>
   );
 }

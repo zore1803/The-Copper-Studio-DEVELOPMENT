@@ -273,14 +273,11 @@ export default function KanbanBoard() {
 
 
   return (
-    <div className="flex h-full flex-col p-5 xl:p-6">
-      <div className="mb-5 flex shrink-0 flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex h-full flex-col">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-gray-400">Delivery pipeline</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-950">Kanban Board</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            {totals.done}/{totals.total} completed - {totals.high} high priority tasks need attention
-          </p>
+          <h1 className="text-base font-medium text-[#0E121B]">Kanban Board</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{totals.done}/{totals.total} completed · {totals.high} high priority tasks</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Toggle buttons */}
@@ -314,6 +311,7 @@ export default function KanbanBoard() {
         </div>
       </div>
 
+      <div className="flex flex-1 flex-col overflow-hidden p-5 xl:p-6">
       {mode === "stages" && (
         <div className="mb-5 relative z-10 w-full max-w-sm">
           <div className="relative">
@@ -525,6 +523,7 @@ export default function KanbanBoard() {
           onDelete={() => handleDeleteStage(stageEditor.card)}
         />
       )}
+      </div>
     </div>
   );
 }
