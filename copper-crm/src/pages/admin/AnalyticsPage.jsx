@@ -915,28 +915,22 @@ export function AnalyticsPage() {
             
             <div id="kpi-scroll-container" className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               {topMetrics.map((item) => (
-                <Card 
-                  key={item.label} 
+                <div
+                  key={item.label}
                   onClick={() => setSelectedKpiDrillDown(item.label)}
-                  className={`p-4 border-l-4 ${item.border} flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] snap-start cursor-pointer hover:shadow-md transition-all relative group/card`}
+                  className="flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] snap-start cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-4 transition-colors hover:bg-[#fafafa]"
                 >
-                  <div className="flex justify-between items-start">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
                       <item.icon size={17} />
                     </div>
-                    {item.tooltip && (
-                      <div className="relative">
-                        <Info size={14} className="text-gray-300 hover:text-[#6B7280] transition-colors" />
-                        <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] leading-tight rounded shadow-lg opacity-0 pointer-events-none group-hover/card:opacity-100 transition-opacity z-20">
-                          {item.tooltip}
-                        </div>
-                      </div>
-                    )}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
+                      <p className="mt-0.5 text-lg font-bold text-[#111827]">{item.value}</p>
+                    </div>
                   </div>
-                  <p className="mt-3 text-2xl font-bold text-[#1F2937]">{item.value}</p>
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#9CA3AF]">{item.label}</p>
-                  {item.subtext && <p className="text-[10px] text-[#6B7280] mt-1 font-medium">{item.subtext}</p>}
-                </Card>
+                  {item.subtext && <p className="mt-2 text-[11px] text-[#6B7280]">{item.subtext}</p>}
+                </div>
               ))}
             </div>
 
