@@ -29,6 +29,17 @@ function isPaidInvoice(invoice) {
   return String(invoice.status || invoice.paymentStatus || "").toLowerCase() === "paid";
 }
 
+function normalizedStatus(value, fallback = "Draft") {
+  const status = String(value || "").trim();
+  if (!status) return fallback;
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
+
+function isDraftLikeStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+  return !status || status === "draft" || status === "pending";
+}
+
 function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
@@ -250,8 +261,9 @@ function statusTone(value) {
 }
 
 function InvoiceStatus({ invoice, onChange }) {
-  const value = invoice.status || "Draft";
-  if (value !== "Draft") {
+  const rawValue = invoice.status || invoice.paymentStatus || "";
+  const value = isDraftLikeStatus(rawValue) ? "Draft" : normalizedStatus(rawValue);
+  if (!isDraftLikeStatus(rawValue)) {
     return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusTone(value)}`}>{value}</span>;
   }
 
