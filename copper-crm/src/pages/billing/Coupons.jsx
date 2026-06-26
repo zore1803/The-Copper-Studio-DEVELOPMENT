@@ -105,7 +105,9 @@ function CouponField({ label, value, onChange, error = "", required = false, typ
   );
 }
 
-const ITEM_H = 40;
+const ITEM_H = 32;
+const DRUM_H = 96; // shows 3 rows
+const DRUM_PAD = (DRUM_H - ITEM_H) / 2;
 
 function DrumColumn({ items, selected, onSelect }) {
   const idx = items.indexOf(selected);
@@ -123,19 +125,19 @@ function DrumColumn({ items, selected, onSelect }) {
   return (
     <div className="relative flex-1">
       {/* selection highlight */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 rounded-xl bg-[#884c2d]/10 border border-[#884c2d]/20 z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-lg bg-[#884c2d]/10 border border-[#884c2d]/20 z-10" style={{ height: ITEM_H }} />
       {/* fade top */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white to-transparent z-10" />
       {/* fade bottom */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent z-10" />
       <div
         ref={ref}
         onScroll={onScroll}
-        className="h-[200px] overflow-y-scroll scrollbar-hide"
-        style={{ scrollSnapType: "y mandatory" }}
+        className="overflow-y-scroll scrollbar-hide"
+        style={{ height: DRUM_H, scrollSnapType: "y mandatory" }}
       >
         {/* padding items */}
-        <div style={{ height: 80 }} />
+        <div style={{ height: DRUM_PAD }} />
         {items.map((item) => (
           <div
             key={item}
@@ -144,12 +146,12 @@ function DrumColumn({ items, selected, onSelect }) {
               if (ref.current) ref.current.scrollTop = items.indexOf(item) * ITEM_H;
             }}
             style={{ height: ITEM_H, scrollSnapAlign: "center" }}
-            className={`flex cursor-pointer items-center justify-center text-[15px] font-semibold transition-colors select-none ${item === selected ? "text-[#884c2d]" : "text-[#9ca3af]"}`}
+            className={`flex cursor-pointer items-center justify-center text-sm font-semibold transition-colors select-none ${item === selected ? "text-[#884c2d]" : "text-[#9ca3af]"}`}
           >
             {item}
           </div>
         ))}
-        <div style={{ height: 80 }} />
+        <div style={{ height: DRUM_PAD }} />
       </div>
     </div>
   );
@@ -186,27 +188,27 @@ function ClockPicker({ value, onChange, onClose }) {
   }
 
   return (
-    <div className="absolute right-0 top-full z-50 mt-1 w-56 overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-2xl shadow-black/15">
+    <div className="absolute right-0 bottom-full z-50 mb-1 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-2xl shadow-black/15">
       {/* Header */}
-      <div className="bg-[#884c2d] px-4 py-3 text-center">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#e2c4b4] mb-1">Select Time</p>
-        <p className="text-3xl font-bold text-white tracking-wide">
+      <div className="bg-[#884c2d] px-3 py-2 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#e2c4b4]">Select Time</p>
+        <p className="text-2xl font-bold text-white tracking-wide">
           {h12str}<span className="text-[#e2c4b4]">:</span>{minStr}
-          <span className="ml-2 text-lg font-semibold text-[#e2c4b4]">{merStr}</span>
+          <span className="ml-1.5 text-base font-semibold text-[#e2c4b4]">{merStr}</span>
         </p>
       </div>
 
       {/* Drum scrollers */}
       <div className="flex items-center gap-0 px-2 pt-1">
         <DrumColumn items={hours12} selected={h12str} onSelect={onHourSelect} />
-        <span className="text-xl font-bold text-[#884c2d] pb-1">:</span>
+        <span className="text-lg font-bold text-[#884c2d]">:</span>
         <DrumColumn items={minutes} selected={minStr} onSelect={onMinuteSelect} />
         <DrumColumn items={meridiem} selected={merStr} onSelect={onMerSelect} />
       </div>
 
-      <div className="flex gap-2 px-3 pb-3">
-        <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-2 text-sm font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
-        <button onClick={apply} className="flex-1 rounded-lg bg-[#884c2d] py-2 text-sm font-semibold text-white hover:bg-[#7a4228] transition-colors">Set</button>
+      <div className="flex gap-2 px-2 pb-2 pt-1">
+        <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
+        <button onClick={apply} className="flex-1 rounded-lg bg-[#884c2d] py-1.5 text-xs font-semibold text-white hover:bg-[#7a4228] transition-colors">Set</button>
       </div>
     </div>
   );
