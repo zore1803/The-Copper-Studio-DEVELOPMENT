@@ -905,41 +905,25 @@ export function AnalyticsPage() {
     >
       <div className="grid gap-5 2xl:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-5">
-          <div className="relative group">
-            <button 
-              onClick={() => { document.getElementById('kpi-scroll-container').scrollBy({ left: -300, behavior: 'smooth' }) }} 
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-[#ffffff] border border-[#E1E4EA] rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f9fafb] hidden md:block"
-            >
-              <ChevronLeft size={18} className="text-[#525866]" />
-            </button>
-            
-            <div id="kpi-scroll-container" className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {topMetrics.map((item) => (
-                <div
-                  key={item.label}
-                  onClick={() => setSelectedKpiDrillDown(item.label)}
-                  className="flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] snap-start cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-4 transition-colors hover:bg-[#fafafa]"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
-                      <item.icon size={17} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
-                      <p className="mt-0.5 text-lg font-bold text-[#111827]">{item.value}</p>
-                    </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {topMetrics.map((item) => (
+              <div
+                key={item.label}
+                onClick={() => setSelectedKpiDrillDown(item.label)}
+                className="cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-4 transition-colors hover:bg-[#fafafa]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
+                    <item.icon size={17} />
                   </div>
-                  {item.subtext && <p className="mt-2 text-[11px] text-[#6B7280]">{item.subtext}</p>}
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
+                    <p className="mt-0.5 text-lg font-bold text-[#111827]">{item.value}</p>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            <button 
-              onClick={() => { document.getElementById('kpi-scroll-container').scrollBy({ left: 300, behavior: 'smooth' }) }} 
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-[#ffffff] border border-[#E1E4EA] rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f9fafb] hidden md:block"
-            >
-              <ChevronRight size={18} className="text-[#525866]" />
-            </button>
+                {item.subtext && <p className="mt-2 text-[11px] text-[#6B7280]">{item.subtext}</p>}
+              </div>
+            ))}
           </div>
 
           <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
