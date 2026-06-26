@@ -763,13 +763,10 @@
           <div class="form-section-block">
             <div class="block-header">
               <h3>1. Personal Information</h3>
-              <span class="section-badge">
-                <span class="material-symbols-outlined" style="font-size:0.85rem;">person</span>
-                Step 1 of 3
-              </span>
             </div>
-            <div class="section-grid">
-              <div>
+            <div style="display:grid;gap:24px;">
+              <!-- Row 1: Salutation (narrow) + First Name + Last Name -->
+              <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:16px;">
                 <label>
                   <span>Salutation</span>
                   <select id="salutation" name="salutation" autocomplete="honorific-prefix">
@@ -781,18 +778,19 @@
                     <option value="Prof.">Prof.</option>
                   </select>
                 </label>
+                <label>
+                  <span>First Name</span>
+                  <input id="firstName" name="firstName" type="text" placeholder="Enter first name" required autocomplete="given-name">
+                </label>
+                <label>
+                  <span>Last Name</span>
+                  <input id="lastName" name="lastName" type="text" placeholder="Enter last name" required autocomplete="family-name">
+                </label>
               </div>
+              <!-- Row 2: Designation full width -->
               <label>
                 <span>Designation</span>
-                <input id="designation" name="designation" type="text" placeholder="e.g. Creative Director" autocomplete="organization-title">
-              </label>
-              <label>
-                <span>First Name</span>
-                <input id="firstName" name="firstName" type="text" placeholder="Enter first name" required autocomplete="given-name">
-              </label>
-              <label>
-                <span>Last Name</span>
-                <input id="lastName" name="lastName" type="text" placeholder="Enter last name" required autocomplete="family-name">
+                <input id="designation" name="designation" type="text" placeholder="e.g. Founder, Creative Director" autocomplete="organization-title">
               </label>
             </div>
           </div>
@@ -851,7 +849,7 @@
               </div>
 
               <!-- Alt + WhatsApp side by side -->
-              <div class="section-grid" style="align-items:end;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
                 <label>
                   <span>Alternative Number <em>optional</em></span>
                   <div class="plain-phone">
