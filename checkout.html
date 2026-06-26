@@ -416,6 +416,22 @@
         color: #888;
       }
 
+      /* Phone combo: country select + number input in one row */
+      .phone-combo {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 12px;
+        align-items: end;
+      }
+
+      .phone-combo select {
+        width: 100%;
+      }
+
+      @media (max-width: 560px) {
+        .phone-combo { grid-template-columns: 1fr; }
+      }
+
       .otp-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 92px;
@@ -808,26 +824,24 @@
               <!-- Phone + OTP -->
               <div class="verify-field" data-verify-card="phone">
                 <div class="verify-header">
-                  <label for="customerPhone"><span>Phone Number</span></label>
+                  <label><span>Phone Number</span></label>
                   <span class="verify-badge pending" id="phoneBadge">Unverified</span>
                 </div>
-                <div class="input-action">
-                  <div class="phone-field">
-                    <div class="country-picker" data-country-picker>
-                      <button type="button" class="country-picker-trigger" data-country-trigger aria-haspopup="listbox" aria-expanded="false">
-                        <span data-country-flag>🇮🇳</span>
-                        <span data-country-dial>+91</span>
-                        <span class="country-picker-caret">▾</span>
-                      </button>
-                      <input type="hidden" name="customerCountryCode" id="customerCountryCode" value="+91">
-                      <div class="country-picker-menu" data-country-menu hidden role="listbox">
-                        <input type="text" class="country-picker-search" placeholder="Search country…" data-country-search autocomplete="off">
-                        <div class="country-picker-list" data-country-list></div>
-                      </div>
+                <!-- country select + number input side by side -->
+                <div class="phone-combo">
+                  <label style="margin:0;">
+                    <span style="font-size:0.68rem;">Country Code</span>
+                    <select id="customerCountryCode" name="customerCountryCode" autocomplete="tel-country-code">
+                      <!-- populated by JS -->
+                    </select>
+                  </label>
+                  <label style="margin:0;flex:1;">
+                    <span style="font-size:0.68rem;">Number</span>
+                    <div class="input-action" style="gap:0;">
+                      <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" maxlength="15" placeholder="00000 00000" required autocomplete="tel-national" style="border-radius:4px 0 0 4px;">
+                      <button class="btn btn-secondary" type="button" data-send-otp="phone" style="border-radius:0 4px 4px 0;white-space:nowrap;">Send OTP</button>
                     </div>
-                    <input id="customerPhone" name="customerPhone" type="tel" inputmode="numeric" pattern="\d{10}" maxlength="10" placeholder="00000 00000" required autocomplete="tel-national">
-                  </div>
-                  <button class="btn btn-secondary" type="button" data-send-otp="phone">Send OTP</button>
+                  </label>
                 </div>
                 <div class="otp-row">
                   <input data-otp-input="phone" inputmode="numeric" maxlength="6" placeholder="Enter 6-digit OTP" disabled>

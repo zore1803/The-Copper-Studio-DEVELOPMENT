@@ -160,6 +160,14 @@ const COUNTRY_DIAL_CODES = [
   flag: String.fromCodePoint(...[...iso].map((c) => 127397 + c.charCodeAt(0)))
 }));
 
+function setupCountrySelect() {
+  const sel = document.getElementById("customerCountryCode");
+  if (!sel || sel.tagName !== "SELECT") return;
+  sel.innerHTML = COUNTRY_DIAL_CODES.map((c) =>
+    `<option value="${c.dial}"${c.dial === "+91" ? " selected" : ""}>${c.flag} ${c.name} (${c.dial})</option>`
+  ).join("");
+}
+
 function setupCountryPicker() {
   const picker = document.querySelector("[data-country-picker]");
   if (!picker) return;
@@ -442,7 +450,7 @@ function renderCheckoutPage() {
     if (input) input.value = value;
   });
 
-  setupCountryPicker();
+  setupCountrySelect();
 
   const phoneInput = document.getElementById("customerPhone");
   if (phoneInput) {
