@@ -784,11 +784,51 @@ body[data-page="checkout"] select:disabled {
   color: #964d0a;
 }
 
+/* Full-width Pay button inside the order-summary card */
+.pay-button-block {
+  width: 100%;
+  margin-top: 22px;
+  min-height: 58px;
+  border: 0;
+  border-radius: 12px;
+  background: #964d0a;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pay-button-block:hover {
+  background: #7e4008;
+}
+
+.pay-button-block:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 14px;
+  color: #646464;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  color: #111111;
+}
+
 .gateway-note {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 14px;
   padding: 12px 14px;
   border-radius: 12px;
   background: #f6f6f6;

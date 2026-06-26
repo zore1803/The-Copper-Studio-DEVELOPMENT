@@ -41,7 +41,7 @@
 
       <div class="two-column">
 
-        <!-- LEFT: review + payment method -->
+        <!-- LEFT: review details -->
         <div style="display:grid;gap:32px;">
 
           <!-- Review your details -->
@@ -55,47 +55,9 @@
             </div>
             <div class="review-grid" id="reviewDetails"></div>
           </div>
-
-          <!-- Payment method -->
-          <div class="form-section-block">
-            <div class="block-header">
-              <h3>Payment Method</h3>
-            </div>
-
-            <div class="pay-method">
-              <span class="pay-logo">Pay</span>
-              <span class="pay-copy">
-                <strong>Razorpay Secure Gateway</strong>
-                <span>UPI, Cards, Net Banking &amp; Wallets — encrypted &amp; PCI-DSS compliant.</span>
-              </span>
-            </div>
-
-            <div class="pay-methods-strip">
-              <span class="pay-chip"><span class="material-symbols-outlined">account_balance</span> UPI</span>
-              <span class="pay-chip"><span class="material-symbols-outlined">credit_card</span> Cards</span>
-              <span class="pay-chip"><span class="material-symbols-outlined">account_balance_wallet</span> Wallets</span>
-              <span class="pay-chip"><span class="material-symbols-outlined">savings</span> Net Banking</span>
-            </div>
-
-            <div class="form-actions">
-              <a class="btn btn-secondary" href="checkout.html">
-                <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_back</span>
-                Back
-              </a>
-              <button class="btn btn-primary" type="button" id="payButton">
-                Pay Securely
-                <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>
-              </button>
-            </div>
-
-            <p class="gateway-note" id="gatewayNote">
-              <span class="material-symbols-outlined">lock</span>
-              Click “Pay Securely” to open the Razorpay window. Your invoice is emailed automatically after payment.
-            </p>
-          </div>
         </div>
 
-        <!-- RIGHT: order summary -->
+        <!-- RIGHT: order summary + pay -->
         <aside class="panel sticky-panel">
           <p class="mini-label">Order Summary</p>
           <div id="selectedOverview"></div>
@@ -106,6 +68,21 @@
             <span>Total payable</span>
             <strong id="overviewTotal">—</strong>
           </div>
+
+          <button class="btn btn-primary pay-button-block" type="button" id="payButton">
+            Pay Securely
+            <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>
+          </button>
+
+          <p class="gateway-note" id="gatewayNote">
+            <span class="material-symbols-outlined">lock</span>
+            Opens the Razorpay window. Your invoice is emailed automatically after payment.
+          </p>
+
+          <a class="back-link" href="checkout.html">
+            <span class="material-symbols-outlined" style="font-size:0.95rem;">arrow_back</span>
+            Back to details
+          </a>
 
           <div class="trust-row">
             <span class="trust-item">
