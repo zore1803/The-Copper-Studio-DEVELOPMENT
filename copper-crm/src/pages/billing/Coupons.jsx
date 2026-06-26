@@ -239,13 +239,13 @@ function ValidFromField({ value, onChange, error }) {
           type="datetime-local"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none"
+          className="min-w-0 flex-1 bg-transparent pl-3 pr-0 py-2 text-sm outline-none"
         />
         <button
           type="button"
           onClick={() => setClockOpen((v) => !v)}
           title="Pick time with clock"
-          className={`mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#884c2d]" : "text-[#c4c9d4] hover:text-[#884c2d]"}`}
+          className={`-ml-1 mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#884c2d]" : "text-[#c4c9d4] hover:text-[#884c2d]"}`}
         >
           <Clock size={14} />
         </button>
