@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart2, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
+import { BarChart2, ChevronLeft, ChevronRight, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
 import PhoneInput from "../../components/PhoneInput";
@@ -477,23 +477,24 @@ export default function Coupons() {
                   ))}
                 </div>
               )}
-              <div className="flex items-center justify-between border-t border-[#f3f4f6] px-4 py-3">
-                  <p className="text-xs text-[#9ca3af]">
-                    {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} coupons
+              <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+                  <p className="text-sm text-[#6b7280]">
+                    Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
+                    <span className="font-semibold text-[#111827]">{filtered.length}</span> Coupons
                   </p>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] disabled:opacity-30 hover:bg-[#f3f4f6] transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                      <ChevronLeft size={14} />
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors ${p === page ? "bg-[#884c2d] text-white" : "border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f3f4f6]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#884c2d] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
@@ -501,9 +502,9 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] disabled:opacity-30 hover:bg-[#f3f4f6] transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                      <ChevronRight size={14} />
                     </button>
                   </div>
                 </div>
