@@ -260,11 +260,13 @@ export default function AdminLayout() {
   const searchRef = useRef(null);
   const quickAddRef = useRef(null);
   const notifRef = useRef(null);
+  const avatarRef = useRef(null);
 
   useEffect(() => {
     function onOutside(e) {
       if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
     }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
@@ -560,7 +562,7 @@ export default function AdminLayout() {
             </div>
 
             {/* Avatar */}
-            <div className="relative">
+            <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#884c2d]/20 transition-all"
