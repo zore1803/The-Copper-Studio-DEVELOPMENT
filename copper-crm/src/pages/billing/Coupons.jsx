@@ -408,6 +408,8 @@ export default function Coupons() {
             <div className="flex items-center gap-2">
               {/* Filter */}
               <FilterButton
+                panelWidth={220}
+                buttonClassName="h-9 w-9 rounded-lg"
                 onReset={() => setStatusFilter("All")}
                 fields={[
                   {

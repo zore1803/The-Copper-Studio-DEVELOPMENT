@@ -10,7 +10,7 @@ import { Button } from "./ui";
  * change after Apply is clicked, which keeps dropdown browsing from instantly
  * changing the underlying list.
  */
-export default function FilterButton({ fields, onReset, panelWidth = 640, panelClassName = "" }) {
+export default function FilterButton({ fields, onReset, panelWidth = 640, panelClassName = "", buttonClassName = "" }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(() => fieldsToDraft(fields));
   const [panelStyle, setPanelStyle] = useState({});
@@ -103,7 +103,7 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       <button
         ref={buttonRef}
         onClick={() => setOpen((value) => !value)}
-        className={`relative flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${open ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+        className={`relative flex items-center justify-center rounded-lg border transition-colors ${open ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-11 w-11 rounded-full"}`}
       >
         <Filter size={16} />
         {activeCount > 0 && (
