@@ -589,10 +589,29 @@ function renderCheckoutPage() {
   document.getElementById("customerForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    if (!form.reportValidity()) return;
 
-    if (!order.verified.phone || !order.verified.email) {
-      showToast("Please verify both mobile number and email OTP before continuing to Razorpay.");
+    // Find the first empty/invalid required field, scroll to it, and report it
+    // by name so a field scrolled off-screen doesn't fail silently.
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstInvalid.focus({ preventScroll: true });
+      const label = firstInvalid.closest("label")?.querySelector("span")?.textContent?.trim()
+        || firstInvalid.previousElementSibling?.querySelector("span")?.textContent?.trim()
+        || "a required field";
+      showToast(`Please fill in ${label.replace(/\s*optional\s*$/i, "")}.`);
+      form.reportValidity();
+      return;
+    }
+
+    if (!order.verified.email) {
+      document.querySelector('[data-verify-card="email"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("Please verify your email with OTP before continuing.");
+      return;
+    }
+    if (!order.verified.phone) {
+      document.querySelector('[data-verify-card="phone"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("Please verify your phone number with OTP before continuing.");
       return;
     }
 
