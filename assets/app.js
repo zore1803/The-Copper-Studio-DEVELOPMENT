@@ -284,14 +284,18 @@ function overviewTemplate(pkg = selectedPackage(), gstin = "") {
   const gst = Math.round(subtotal * 0.18);
   return `
     <div class="overview-card">
-      <h3>${pkg.name}</h3>
-      <p>${pkg.label}</p>
-      <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
+      <div class="summary-package">
+        <div class="summary-thumb" aria-hidden="true"></div>
+        <div>
+          <h3>${pkg.name}</h3>
+          <p>${pkg.label}</p>
+          <strong class="summary-price">${formatCurrency(pkg.price)}</strong>
+        </div>
+      </div>
+      <div class="overview-row"><span>Subtotal</span><strong>${formatCurrency(pkg.price)}</strong></div>
       ${discount ? `<div class="overview-row discount-row"><span>Coupon discount (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
-      <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
+      ${discount ? `<div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>` : ""}
       ${gstBreakdownHtml(gst, gstin)}
-      <div class="overview-row"><span>Setup timeline</span><strong>${pkg.duration}</strong></div>
-      <div class="overview-row"><span>Confirmation</span><strong>Email after payment</strong></div>
     </div>
   `;
 }
