@@ -1226,7 +1226,26 @@ body[data-page="packages"] .brand span:not(.brand-mark) {
 
 body[data-page="packages"] .page-shell {
   width: min(1160px, calc(100% - 48px));
-  padding: 46px 0 92px;
+  padding: 40px 0 92px;
+}
+
+/* On-page brand logo (replaces the navbar) */
+.page-logo {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 36px;
+}
+
+.page-logo img {
+  height: 72px;
+  width: auto;
+  display: block;
+}
+
+@media (max-width: 680px) {
+  .page-logo img {
+    height: 52px;
+  }
 }
 
 /* Hero */
