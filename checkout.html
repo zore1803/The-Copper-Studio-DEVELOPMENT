@@ -850,24 +850,21 @@
 
               <!-- Alt + WhatsApp side by side -->
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
-                <label>
-                  <span>Alternative Number <em>optional</em></span>
-                  <div class="plain-phone">
-                    <span class="plain-phone-prefix">+91</span>
-                    <input id="alternativePhone" name="alternativePhone" type="tel" inputmode="numeric" maxlength="10" placeholder="Backup number" autocomplete="tel">
+                <div style="display:grid;gap:8px;">
+                  <label style="margin:0;"><span>Alternative Number <em>optional</em></span></label>
+                  <div class="phone-combo" style="grid-template-columns:140px 1fr;gap:8px;">
+                    <select id="alternativeCountryCode" name="alternativeCountryCode" autocomplete="tel-country-code"><!-- populated by JS --></select>
+                    <input id="alternativePhone" name="alternativePhone" type="tel" inputmode="numeric" maxlength="15" placeholder="Number" autocomplete="tel">
                   </div>
-                </label>
-                <label>
-                  <span>WhatsApp Number</span>
-                  <div class="plain-phone">
-                    <span class="plain-phone-prefix" style="gap:4px;">
-                      <span class="material-symbols-outlined" style="font-size:0.95rem;color:#25D366;">chat</span>
-                      +91
-                    </span>
-                    <input id="whatsappNumber" name="whatsappNumber" type="tel" inputmode="numeric" maxlength="10" placeholder="Active WhatsApp" required autocomplete="tel">
+                </div>
+                <div style="display:grid;gap:8px;">
+                  <label style="margin:0;"><span>WhatsApp Number</span></label>
+                  <div class="phone-combo" style="grid-template-columns:140px 1fr;gap:8px;">
+                    <select id="whatsappCountryCode" name="whatsappCountryCode" autocomplete="tel-country-code"><!-- populated by JS --></select>
+                    <input id="whatsappNumber" name="whatsappNumber" type="tel" inputmode="numeric" maxlength="15" placeholder="Number" required autocomplete="tel">
                   </div>
                   <span class="input-hint">Order updates &amp; onboarding sent here.</span>
-                </label>
+                </div>
               </div>
 
               <!-- Company Website — half width -->

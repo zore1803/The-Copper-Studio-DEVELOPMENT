@@ -160,12 +160,18 @@ const COUNTRY_DIAL_CODES = [
   flag: String.fromCodePoint(...[...iso].map((c) => 127397 + c.charCodeAt(0)))
 }));
 
-function setupCountrySelect() {
-  const sel = document.getElementById("customerCountryCode");
+function populateCountrySelect(id, defaultDial = "+91") {
+  const sel = document.getElementById(id);
   if (!sel || sel.tagName !== "SELECT") return;
   sel.innerHTML = COUNTRY_DIAL_CODES.map((c) =>
-    `<option value="${c.dial}"${c.dial === "+91" ? " selected" : ""}>${c.flag} ${c.name} (${c.dial})</option>`
+    `<option value="${c.dial}"${c.dial === defaultDial ? " selected" : ""}>${c.flag} ${c.name} (${c.dial})</option>`
   ).join("");
+}
+
+function setupCountrySelect() {
+  populateCountrySelect("customerCountryCode");
+  populateCountrySelect("alternativeCountryCode");
+  populateCountrySelect("whatsappCountryCode");
 }
 
 function setupCountryPicker() {
