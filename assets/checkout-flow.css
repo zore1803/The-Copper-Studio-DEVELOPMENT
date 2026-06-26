@@ -289,11 +289,49 @@ body[data-page="payment"] select:focus,
 }
 
 .verify-field.is-verified .verify-badge {
-  color: #53606f;
+  color: #2f7d32;
 }
 
 .verify-field.is-verified .verify-badge::before {
   content: "◎ ";
+}
+
+.verify-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.change-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  color: #964d0a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+}
+
+.change-link:hover {
+  text-decoration: underline;
+}
+
+/* Once a channel is verified, hide its OTP row and lock the input visually */
+.verify-field.is-verified .otp-row {
+  display: none;
+}
+
+body[data-page="checkout"] input[readonly],
+body[data-page="checkout"] select:disabled {
+  background: #eef5ef;
+  border-color: #cfe6d2;
+  color: #2c3e2e;
+  cursor: not-allowed;
 }
 
 .input-action {

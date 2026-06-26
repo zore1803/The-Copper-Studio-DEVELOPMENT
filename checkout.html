@@ -720,6 +720,7 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="assets/checkout-flow.css?v=1">
   </head>
   <body data-page="checkout">
     <header class="shell-header">
@@ -806,7 +807,12 @@
               <div class="verify-field" data-verify-card="email">
                 <div class="verify-header">
                   <label for="customerEmail"><span>Work Email</span></label>
-                  <span class="verify-badge pending" id="emailBadge">Unverified</span>
+                  <span class="verify-head-actions">
+                    <button type="button" class="change-link" data-change="email" hidden>
+                      <span class="material-symbols-outlined" style="font-size:0.85rem;">edit</span> Change
+                    </button>
+                    <span class="verify-badge pending" id="emailBadge">Unverified</span>
+                  </span>
                 </div>
                 <div class="input-action">
                   <input id="customerEmail" name="customerEmail" type="email" placeholder="you@company.com" required autocomplete="email">
@@ -823,7 +829,12 @@
               <div class="verify-field" data-verify-card="phone">
                 <div class="verify-header">
                   <label><span>Phone Number</span></label>
-                  <span class="verify-badge pending" id="phoneBadge">Unverified</span>
+                  <span class="verify-head-actions">
+                    <button type="button" class="change-link" data-change="phone" hidden>
+                      <span class="material-symbols-outlined" style="font-size:0.85rem;">edit</span> Change
+                    </button>
+                    <span class="verify-badge pending" id="phoneBadge">Unverified</span>
+                  </span>
                 </div>
                 <!-- country select + number input side by side -->
                 <div class="phone-combo">

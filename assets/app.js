@@ -37,6 +37,10 @@ const defaultOrder = {
   selectedPackageId: "growth",
   customer: {},
   verified: { phone: false, email: false },
+  // The exact email / full phone string that was OTP-verified. Used to keep a
+  // channel "verified" across the Edit round-trip, and to detect when the user
+  // changes the value (which must invalidate the verification).
+  verifiedValues: { phone: "", email: "" },
   otpSent: { phone: false, email: false },
   coupon: null,
   paymentStatus: "pending",
@@ -54,9 +58,12 @@ function loadOrder() {
       ...defaultOrder,
       ...saved,
       selectedPackageId: selectedPackageId || defaultOrder.selectedPackageId,
-      // Verification never survives a page refresh — always start unverified so
-      // the user must re-send and re-verify the OTP each time the tab reloads.
-      verified: { ...defaultOrder.verified },
+      // Verification PERSISTS so editing details on the payment page doesn't force
+      // a re-verify — but it's only honoured when the field value still matches
+      // verifiedValues (reconciled on render). otpSent is reset so a fresh OTP is
+      // required whenever the user actually changes a value.
+      verified: { ...defaultOrder.verified, ...(saved.verified || {}) },
+      verifiedValues: { ...defaultOrder.verifiedValues, ...(saved.verifiedValues || {}) },
       otpSent: { ...defaultOrder.otpSent },
       otpVia: {},
       coupon: saved.coupon || null
@@ -409,25 +416,77 @@ function renderPackagesPage() {
   });
 }
 
+// Full phone string used as the verified identity for the phone channel.
+function currentPhoneValue() {
+  const cc = document.getElementById("customerCountryCode")?.value || order.customer?.customerCountryCode || "+91";
+  const num = document.getElementById("customerPhone")?.value?.trim() || order.customer?.customerPhone || "";
+  return num ? `${cc} ${num}` : "";
+}
+
+// Lock (readonly) the underlying field(s) for a verified channel. The country
+// SELECT is never `disabled` (that would drop it from FormData) — instead a
+// change to it while verified invalidates the verification via clearVerification.
+function lockChannel(type, locked) {
+  if (type === "email") {
+    const email = document.getElementById("customerEmail");
+    if (email) email.readOnly = locked;
+  } else {
+    const phone = document.getElementById("customerPhone");
+    if (phone) phone.readOnly = locked;
+  }
+}
+
+// Drop verification for a channel (used by the "Change" button and when the
+// user edits a previously-verified value), unlocking the field for re-entry.
+function clearVerification(type, { focus = true } = {}) {
+  order.verified[type] = false;
+  order.verifiedValues[type] = "";
+  if (order.otpSent) order.otpSent[type] = false;
+  saveOrder(order);
+  updateVerificationUI();
+  if (focus) {
+    document.getElementById(type === "email" ? "customerEmail" : "customerPhone")?.focus();
+  }
+}
+
+// On load, only honour persisted verification if the current field value still
+// matches the value that was actually verified.
+function reconcileVerification() {
+  if (order.verified.email && order.verifiedValues.email
+    && document.getElementById("customerEmail")?.value.trim() !== order.verifiedValues.email) {
+    order.verified.email = false;
+  }
+  if (order.verified.phone && order.verifiedValues.phone
+    && currentPhoneValue() !== order.verifiedValues.phone) {
+    order.verified.phone = false;
+  }
+  saveOrder(order);
+}
+
 function updateVerificationUI() {
-  Object.entries(order.verified).forEach(([type, verified]) => {
+  ["email", "phone"].forEach((type) => {
+    const verified = !!order.verified?.[type];
+    const sent = order.otpSent?.[type];
+    const via = order.otpVia?.[type] === "sms" ? "Check your SMS inbox." : "Check your email.";
     const status = document.getElementById(`${type}VerifyStatus`);
     const card = document.querySelector(`[data-verify-card="${type}"]`);
     const button = document.querySelector(`[data-verify="${type}"]`);
     const sendButton = document.querySelector(`[data-send-otp="${type}"]`);
     const input = document.querySelector(`[data-otp-input="${type}"]`);
-    const sent = order.otpSent?.[type];
-    const via = order.otpVia?.[type] === "sms" ? "Check your SMS inbox." : "Check your email.";
+    const badge = document.getElementById(`${type}Badge`);
+    const changeBtn = document.querySelector(`[data-change="${type}"]`);
 
-    if (!status || !card || !button || !sendButton || !input) return;
+    if (!card) return;
 
-    status.textContent = verified ? "Verified" : sent ? `OTP sent. ${via}` : "OTP not sent";
-    button.textContent = verified ? "Verified" : "Verify";
-    button.disabled = !sent || verified;
-    sendButton.disabled = verified;
-    input.disabled = !sent || verified;
+    if (status) status.textContent = verified ? "Verified" : sent ? `OTP sent. ${via}` : "OTP not sent";
+    if (button) { button.textContent = verified ? "Verified" : "Verify"; button.disabled = !sent || verified; }
+    if (sendButton) sendButton.disabled = verified;
+    if (input) input.disabled = !sent || verified;
+    if (badge) { badge.textContent = verified ? "Verified" : "Unverified"; badge.classList.toggle("pending", !verified); }
+    if (changeBtn) changeBtn.hidden = !verified;
     card.classList.toggle("is-sent", sent && !verified);
     card.classList.toggle("is-verified", verified);
+    lockChannel(type, verified);
   });
 }
 
@@ -453,21 +512,36 @@ function renderCheckoutPage() {
     couponStatus.className = "coupon-success";
   }
 
+  // Populate the country selects BEFORE restoring values so the saved
+  // country code can actually be applied to the now-populated options.
+  setupCountrySelect();
+
   Object.entries(order.customer || {}).forEach(([key, value]) => {
     const input = document.querySelector(`[name="${key}"]`);
     if (input) input.value = value;
   });
 
-  setupCountrySelect();
-
   const phoneInput = document.getElementById("customerPhone");
   if (phoneInput) {
     phoneInput.addEventListener("input", () => {
-      phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+      phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 15);
     });
   }
 
+  // Restore verification across the Edit round-trip, then reflect it in the UI
+  // (verified fields render locked with a "Change" affordance).
+  reconcileVerification();
   updateVerificationUI();
+
+  // "Change" unlocks a verified channel and clears its verification.
+  document.querySelectorAll("[data-change]").forEach((btn) => {
+    btn.addEventListener("click", () => clearVerification(btn.dataset.change));
+  });
+
+  // Changing the country code on an already-verified phone invalidates it.
+  document.getElementById("customerCountryCode")?.addEventListener("change", () => {
+    if (order.verified.phone) clearVerification("phone", { focus: false });
+  });
 
   document.getElementById("applyCouponButton")?.addEventListener("click", async () => {
     const code = couponInput.value.trim().toUpperCase();
@@ -574,6 +648,9 @@ function renderCheckoutPage() {
           body: JSON.stringify({ email: emailField.value.trim(), channel: type, code })
         });
         order.verified[type] = true;
+        // Remember exactly what was verified so it stays verified across the Edit
+        // round-trip and so any later change is detected and invalidates it.
+        order.verifiedValues[type] = type === "email" ? emailField.value.trim() : currentPhoneValue();
         saveOrder(order);
         updateVerificationUI();
         showToast(`${type === "phone" ? "Mobile number" : "Email"} verified.`, "success");
