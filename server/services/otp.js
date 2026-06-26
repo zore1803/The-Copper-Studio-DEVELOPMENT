@@ -12,8 +12,9 @@ import { sendSmsOtp, supportsSms } from "./sms.js";
  * falls back to email for any other country code or if Fast2SMS isn't configured.
  */
 
-const store = new Map(); // `${email}:${channel}` -> { codeHash, expiresAt, attempts, verified }
-const TTL_MS = 10 * 60 * 1000; // 10 minutes
+const store = new Map(); // `${email}:${channel}` -> { codeHash, expiresAt, attempts, verified, verifiedExpiresAt }
+const TTL_MS = 10 * 60 * 1000; // 10 minutes to enter the code after it's sent
+const VERIFIED_TTL_MS = 60 * 60 * 1000; // verified status stays valid 60 min so a slow checkout doesn't expire it
 const MAX_ATTEMPTS = 5;
 const SWEEP_INTERVAL_MS = 5 * 60 * 1000;
 let lastSweep = Date.now();
@@ -30,7 +31,11 @@ function sweep() {
   const now = Date.now();
   if (now - lastSweep < SWEEP_INTERVAL_MS) return;
   for (const [k, entry] of store) {
-    if (entry.expiresAt <= now) store.delete(k);
+    // Keep verified entries alive until their verified window expires, even
+    // after the code-entry window (expiresAt) has passed.
+    const codeDead = entry.expiresAt <= now;
+    const verifyDead = !entry.verifiedExpiresAt || entry.verifiedExpiresAt <= now;
+    if (codeDead && verifyDead) store.delete(k);
   }
   lastSweep = now;
 }
@@ -91,13 +96,16 @@ export function verifyOtp({ email, channel, code }) {
     return { ok: false, message: "Incorrect code. Please check the email and try again." };
   }
   entry.verified = true;
+  // Verified status gets its own, longer window independent of the code TTL so
+  // a slow checkout (filling billing, opening Razorpay, paying) doesn't lose it.
+  entry.verifiedExpiresAt = Date.now() + VERIFIED_TTL_MS;
   return { ok: true };
 }
 
-/** Whether (email, channel) has a still-valid, verified code. */
+/** Whether (email, channel) has a still-valid, verified status. */
 export function isVerified({ email, channel }) {
   const entry = store.get(keyFor(email, channel));
-  return Boolean(entry && entry.verified && entry.expiresAt > Date.now());
+  return Boolean(entry && entry.verified && (entry.verifiedExpiresAt || 0) > Date.now());
 }
 
 export default { sendOtp, verifyOtp, isVerified };
