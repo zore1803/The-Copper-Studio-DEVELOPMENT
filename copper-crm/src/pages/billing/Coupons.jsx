@@ -105,26 +105,94 @@ function CouponField({ label, value, onChange, error = "", required = false, typ
   );
 }
 
-function ValidFromField({ value, onChange, error }) {
-  const timeRef = useRef(null);
+function ClockPicker({ value, onChange, onClose }) {
+  const parsed = value ? value.split(":") : ["12", "00"];
+  const [hour, setHour] = useState(Number(parsed[0]));
+  const [minute, setMinute] = useState(Number(parsed[1]));
 
-  function handleTimeChange(e) {
-    const time = e.target.value; // "HH:MM"
-    if (!time) return;
+  function apply() {
+    onChange(`${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`);
+    onClose();
+  }
+
+  const hourDeg = ((hour % 12) / 12) * 360 + (minute / 60) * 30;
+  const minDeg = (minute / 60) * 360;
+
+  return (
+    <div className="absolute right-0 top-full z-50 mt-1 w-64 rounded-2xl border border-[#e5e7eb] bg-white p-4 shadow-2xl shadow-black/10">
+      {/* Analog clock face */}
+      <div className="relative mx-auto mb-4 h-40 w-40">
+        <svg viewBox="0 0 160 160" className="h-full w-full">
+          {/* Face */}
+          <circle cx="80" cy="80" r="78" fill="#fff1ec" stroke="#e2c4b4" strokeWidth="1.5" />
+          {/* Hour marks */}
+          {Array.from({ length: 12 }, (_, i) => {
+            const a = (i / 12) * 2 * Math.PI - Math.PI / 2;
+            const x1 = 80 + 66 * Math.cos(a);
+            const y1 = 80 + 66 * Math.sin(a);
+            const x2 = 80 + 72 * Math.cos(a);
+            const y2 = 80 + 72 * Math.sin(a);
+            return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#884c2d" strokeWidth="2" strokeLinecap="round" />;
+          })}
+          {/* Hour numbers */}
+          {[12,1,2,3,4,5,6,7,8,9,10,11].map((n, i) => {
+            const a = (i / 12) * 2 * Math.PI - Math.PI / 2;
+            return (
+              <text key={n} x={80 + 54 * Math.cos(a)} y={80 + 54 * Math.sin(a)} textAnchor="middle" dominantBaseline="central" fontSize="10" fontWeight="600" fill="#884c2d">{n}</text>
+            );
+          })}
+          {/* Minute hand */}
+          <line x1="80" y1="80" x2={80 + 58 * Math.cos((minDeg - 90) * Math.PI / 180)} y2={80 + 58 * Math.sin((minDeg - 90) * Math.PI / 180)} stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
+          {/* Hour hand */}
+          <line x1="80" y1="80" x2={80 + 38 * Math.cos((hourDeg - 90) * Math.PI / 180)} y2={80 + 38 * Math.sin((hourDeg - 90) * Math.PI / 180)} stroke="#884c2d" strokeWidth="2.5" strokeLinecap="round" />
+          {/* Center dot */}
+          <circle cx="80" cy="80" r="3" fill="#884c2d" />
+        </svg>
+      </div>
+
+      {/* Digital controls */}
+      <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-col items-center">
+          <button onClick={() => setHour((h) => (h + 1) % 24)} className="rounded px-2 py-0.5 text-lg text-[#6b7280] hover:text-[#884c2d]">▲</button>
+          <span className="w-10 rounded-lg bg-[#fff1ec] py-1.5 text-center text-xl font-bold text-[#884c2d]">{String(hour).padStart(2, "0")}</span>
+          <button onClick={() => setHour((h) => (h - 1 + 24) % 24)} className="rounded px-2 py-0.5 text-lg text-[#6b7280] hover:text-[#884c2d]">▼</button>
+        </div>
+        <span className="text-2xl font-bold text-[#884c2d]">:</span>
+        <div className="flex flex-col items-center">
+          <button onClick={() => setMinute((m) => (m + 1) % 60)} className="rounded px-2 py-0.5 text-lg text-[#6b7280] hover:text-[#884c2d]">▲</button>
+          <span className="w-10 rounded-lg bg-[#fff1ec] py-1.5 text-center text-xl font-bold text-[#884c2d]">{String(minute).padStart(2, "0")}</span>
+          <button onClick={() => setMinute((m) => (m - 1 + 60) % 60)} className="rounded px-2 py-0.5 text-lg text-[#6b7280] hover:text-[#884c2d]">▼</button>
+        </div>
+      </div>
+
+      <button onClick={apply} className="mt-3 w-full rounded-lg bg-[#884c2d] py-1.5 text-sm font-semibold text-white hover:bg-[#7a4228] transition-colors">
+        Set time
+      </button>
+    </div>
+  );
+}
+
+function ValidFromField({ value, onChange, error }) {
+  const [clockOpen, setClockOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const currentTime = value ? value.slice(11, 16) : "00:00";
+
+  useEffect(() => {
+    if (!clockOpen) return;
+    function onOutside(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setClockOpen(false);
+    }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [clockOpen]);
+
+  function handleTimeSet(time) {
     const datePart = value ? value.slice(0, 10) : new Date().toISOString().slice(0, 10);
     onChange(`${datePart}T${time}`);
   }
 
-  function openTimePicker() {
-    if (timeRef.current) {
-      try { timeRef.current.showPicker(); } catch { timeRef.current.focus(); }
-    }
-  }
-
-  const currentTime = value ? value.slice(11, 16) : "";
-
   return (
-    <div>
+    <div ref={wrapRef} className="relative">
       <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
       <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#884c2d] focus-within:ring-[#884c2d]/20"}`}>
         <input
@@ -133,25 +201,19 @@ function ValidFromField({ value, onChange, error }) {
           onChange={(e) => onChange(e.target.value)}
           className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm outline-none"
         />
-        {/* Clock button triggers a hidden time input */}
         <button
           type="button"
-          onClick={openTimePicker}
-          title="Set time"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-r-lg border-l border-[#e5e7eb] text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#884c2d] transition-colors"
+          onClick={() => setClockOpen((v) => !v)}
+          title="Set time with clock"
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-r-lg border-l border-[#e5e7eb] transition-colors ${clockOpen ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#884c2d]"}`}
         >
           <Clock size={14} />
         </button>
-        <input
-          ref={timeRef}
-          type="time"
-          value={currentTime}
-          onChange={handleTimeChange}
-          className="sr-only"
-          tabIndex={-1}
-        />
       </div>
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+      {clockOpen && (
+        <ClockPicker value={currentTime} onChange={handleTimeSet} onClose={() => setClockOpen(false)} />
+      )}
     </div>
   );
 }
@@ -169,7 +231,10 @@ function CouponFormPanel({ onClose, onCreate }) {
   const discountLabel = coupon.amountType === "percentage" ? `${coupon.discount || 0}% off` : `Rs ${coupon.discount || 0} off`;
   const validityDisplay = isCustom
     ? formatDateTime(coupon.customValidity) || "—"
-    : formatDateTime(hoursFromNow(Number(coupon.validityHours)));
+    : (() => {
+        const base = coupon.validFrom ? new Date(coupon.validFrom) : new Date();
+        return formatDateTime(new Date(base.getTime() + Number(coupon.validityHours) * 60 * 60 * 1000).toISOString());
+      })();
 
   async function submit() {
     if (creating) return;
@@ -380,9 +445,10 @@ export default function Coupons() {
 
   async function createCoupon(coupon) {
     const code = randomCode();
+    const base = coupon.validFrom ? new Date(coupon.validFrom) : new Date();
     const validUntil = coupon.validityHours === "custom"
       ? new Date(coupon.customValidity).toISOString()
-      : new Date(Date.now() + Number(coupon.validityHours) * 60 * 60 * 1000).toISOString();
+      : new Date(base.getTime() + Number(coupon.validityHours) * 60 * 60 * 1000).toISOString();
     try {
       const created = await saveCoupon({
         code,
