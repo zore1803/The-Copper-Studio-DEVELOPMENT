@@ -17,16 +17,32 @@ import { fileURLToPath } from "node:url";
 // Embed the brand logo as a data URI so it renders inside the Puppeteer-generated
 // PDF (the invoice HTML is loaded via setContent, so relative/served URLs won't
 // resolve). Falls back to the text brand mark if the file can't be read.
-function loadLogoDataUri() {
-  if (process.env.SELLER_LOGO_URL) return process.env.SELLER_LOGO_URL;
+function assetDataUri(relativeFromAssets, mime) {
   try {
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const logoPath = path.resolve(here, "../../assets/copper-studio-logo.jpeg");
-    const base64 = fs.readFileSync(logoPath).toString("base64");
-    return `data:image/jpeg;base64,${base64}`;
+    const filePath = path.resolve(here, "../../assets/", relativeFromAssets);
+    const base64 = fs.readFileSync(filePath).toString("base64");
+    return `data:${mime};base64,${base64}`;
   } catch {
     return "";
   }
+}
+
+function loadLogoDataUri() {
+  if (process.env.SELLER_LOGO_URL) return process.env.SELLER_LOGO_URL;
+  return assetDataUri("copper-studio-logo.jpeg", "image/jpeg");
+}
+
+// Authorized-signatory signature image. Drop the file in as assets/signature.png
+// (or .jpg/.jpeg). A white background is handled at render time via
+// mix-blend-mode: multiply, so it disappears against the white invoice/email.
+function loadSignatureDataUri() {
+  if (process.env.SELLER_SIGNATURE_URL) return process.env.SELLER_SIGNATURE_URL;
+  return (
+    assetDataUri("signature.png", "image/png") ||
+    assetDataUri("signature.jpg", "image/jpeg") ||
+    assetDataUri("signature.jpeg", "image/jpeg")
+  );
 }
 
 export const seller = {
@@ -49,6 +65,13 @@ export const seller = {
   website: process.env.SELLER_WEBSITE || "thecopperstudio.com",
   // Logo: absolute URL or data URI. Leave empty to print the text brand mark only.
   logoUrl: loadLogoDataUri()
+};
+
+export const signatory = {
+  name: process.env.SELLER_SIGNATORY_NAME || "Mukesh Mishra",
+  title: process.env.SELLER_SIGNATORY_TITLE || "",
+  // Data URI of the signature image (empty until assets/signature.* exists).
+  image: loadSignatureDataUri()
 };
 
 export const bank = {
@@ -148,4 +171,4 @@ export const invoiceSettings = {
   ]
 };
 
-export default { seller, bank, invoiceSettings };
+export default { seller, bank, signatory, invoiceSettings };

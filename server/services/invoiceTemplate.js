@@ -1,4 +1,4 @@
-import { seller, bank, invoiceSettings } from "../data/sellerConfig.js";
+import { seller, bank, signatory, invoiceSettings } from "../data/sellerConfig.js";
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -291,7 +291,8 @@ export function renderInvoiceHtml(input) {
   .bank-box .row span:first-child { color:var(--muted); display:inline-block; min-width:74px; }
   .bank-box .row span:last-child { font-family:"Courier New",monospace; font-weight:600; }
   .sign { text-align:right; }
-  .sign .for { font-weight:700; margin-bottom:46px; }
+  .sign .for { font-weight:700; margin-bottom:6px; }
+  .sign .sign-img { display:block; margin-left:auto; max-height:54px; max-width:180px; object-fit:contain; mix-blend-mode:multiply; }
   .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:170px; }
 
   .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
@@ -395,7 +396,8 @@ export function renderInvoiceHtml(input) {
       </div>
       <div class="sign">
         <div class="for">For ${esc(s.legalName)}</div>
-        <div class="line">Authorized Signatory</div>
+        ${signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
+        <div class="line">${signatory.name ? `${esc(signatory.name)}<br/>` : ""}Authorized Signatory</div>
       </div>
     </div>
 
