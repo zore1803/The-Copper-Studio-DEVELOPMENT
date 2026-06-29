@@ -20,16 +20,15 @@ function Card({ children, className = "" }) {
 
 function PageShell({ title, subtitle, action, children }) {
   return (
-    <div className="min-h-full bg-[#F1F1F5] p-5 xl:p-6">
-      <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9CA3AF]">Admin</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1F2937]">{title}</h1>
-          <p className="mt-1 text-sm text-[#6B7280]">{subtitle}</p>
+          <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{subtitle}</p>
         </div>
         {action}
       </div>
-      {children}
+      <div className="p-5 xl:p-6">{children}</div>
     </div>
   );
 }
@@ -79,6 +78,18 @@ function isPaidStatus(status) {
 
 function isDoneStatus(status) {
   return ["completed", "delivered"].includes(String(status || "").toLowerCase());
+}
+
+function recordKey(...values) {
+  return values.find((value) => value !== null && value !== undefined && String(value).trim())?.toString() || "";
+}
+
+function packageNameFor(record) {
+  return record.package?.name || record.packageName || record.package || record.projectType || record.template || "Unassigned";
+}
+
+function amountFor(record) {
+  return moneyValue(record.amount ?? record.value ?? record.package?.total ?? record.total ?? record.finalAmount ?? record.budget);
 }
 
 function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMonth, filterQuarter }) {
@@ -305,143 +316,139 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
   );
 }
 
+function KpiFormula({ formula, result }) {
+  return (
+    <div className="rounded-xl border border-[#E1E4EA] bg-white p-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9CA3AF]">Calculation</p>
+      <p className="mt-2 text-sm font-semibold text-[#1F2937]">{formula}</p>
+      <p className="mt-2 text-xs text-[#6B7280]">{result}</p>
+    </div>
+  );
+}
+
+function KpiRow({ title, subtitle, value, tone = "text-[#1F2937]" }) {
+  return (
+    <div className="rounded-xl border border-[#E1E4EA] bg-white p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-[#1F2937]">{title}</p>
+          {subtitle && <p className="mt-1 text-xs text-[#6B7280]">{subtitle}</p>}
+        </div>
+        {value !== undefined && <p className={`shrink-0 text-sm font-bold ${tone}`}>{value}</p>}
+      </div>
+    </div>
+  );
+}
+
+function EmptyKpiRows({ text }) {
+  return <div className="rounded-xl border border-dashed border-[#D1D5DB] bg-white p-6 text-center text-sm text-[#6B7280]">{text}</div>;
+}
+
 function KpiDrillDownPanel({ kpi, data, onClose }) {
-  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   if (!kpi) return null;
 
-  let content;
+  let formula = "";
+  let result = "";
+  let rows = null;
 
-  if (kpi === "Pending Dues") {
-    const pendingOrders = (data.filteredOrders || []).filter(o => !isPaidStatus(o.status));
-    const pendingPayments = (data.filteredPayments || []).filter(p => !isPaidStatus(p.status));
+  if (kpi === "Total Revenue") {
+    const purchases = data.packagePurchases || [];
+    formula = "Sum of paid invoice revenue, plus paid payment/order fallbacks that do not already have invoices.";
+    result = `${formatMoney(data.revenue)} from ${purchases.length} paid purchase record${purchases.length === 1 ? "" : "s"}.`;
+    rows = purchases.length ? purchases.map((item, i) => (
+      <KpiRow
+        key={item.id || i}
+        title={item.companyName || item.clientName || "Unknown client"}
+        subtitle={`${item.packageName || "Package"} · ${item.source || "record"}`}
+        value={formatMoney(item.amount)}
+        tone="text-emerald-600"
+      />
+    )) : <EmptyKpiRows text="No paid revenue records in this period." />;
+  } else if (kpi === "Avg Revenue") {
+    const projectCount = Math.max(data.filteredProjectsLength || 0, 1);
+    formula = "Total Revenue ÷ Total Projects.";
+    result = `${formatMoney(data.revenue)} ÷ ${projectCount} = ${formatMoney(data.avgProjectValue)}.`;
+    rows = (data.filteredProjects || []).length ? (data.filteredProjects || []).map((project, i) => (
+      <KpiRow
+        key={project._id || project.id || i}
+        title={String(project.name || project.projectName || "Project")}
+        subtitle={String(project.companyName || project.client || "Unknown company")}
+        value={formatMoney(moneyValue(project.finalAmount ?? project.budget ?? project.packageValue))}
+      />
+    )) : <EmptyKpiRows text="No projects in this period." />;
+  } else if (kpi === "Pending Dues") {
+    const pendingOrders = (data.filteredOrders || []).filter(o => !isPaidStatus(o.payment?.status || o.status));
+    const pendingPayments = (data.filteredPayments || []).filter(p => !isPaidStatus(p.status) && !p.orderId && !p.sourceOrderId);
     const pendingProjects = (data.filteredProjects || []).filter(p => !isPaidStatus(p.paymentStatus) && !p.linkedInvoiceId && moneyValue(p.finalAmount ?? p.budget) > 0);
-    
-    if (pendingOrders.length === 0 && pendingPayments.length === 0 && pendingProjects.length === 0) {
-      content = <div className="text-center py-10 text-[#6B7280]">No pending dues for this period.</div>;
-    } else {
-      content = (
-        <div className="flex flex-col gap-2">
-          {pendingOrders.map((o, i) => (
-            <div key={`o-${o._id || i}`} className="p-3 border border-[#E1E4EA] rounded-lg bg-[#ffffff]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-[#1F2937]">{String(o.customer?.customerCompany || o.company || "Unknown Company")}</p>
-                  <p className="text-xs text-[#6B7280]">{String(o.customer?.customerName || o.client || "Unknown Contact")}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-red-600">Rs {moneyValue(o.amount ?? o.package?.total ?? o.total).toLocaleString("en-IN")}</p>
-                  <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">{String(o.status)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-          {pendingPayments.map((p, i) => (
-            <div key={`p-${p._id || i}`} className="p-3 border border-[#E1E4EA] rounded-lg bg-[#ffffff]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-[#1F2937]">{String(p.companyName || p.client || "Unknown Company")}</p>
-                  <p className="text-xs text-[#6B7280]">{String(p.clientName || "Unknown Contact")}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-red-600">Rs {moneyValue(p.amount ?? p.value).toLocaleString("en-IN")}</p>
-                  <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">{String(p.status)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-          {pendingProjects.map((p, i) => (
-            <div key={`proj-${p._id || i}`} className="p-3 border border-[#E1E4EA] rounded-lg bg-[#ffffff]">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-bold text-[#1F2937]">{String(p.companyName || p.clientName || "Unknown Company")}</p>
-                  <p className="text-xs text-[#6B7280]">{String(p.name || p.projectName || "Project")}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-red-600">Rs {moneyValue(p.finalAmount ?? p.budget).toLocaleString("en-IN")}</p>
-                  <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">{String(p.paymentStatus || "Pending")}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
+    formula = "Unpaid orders + unpaid standalone payments + uninvoiced unpaid project amounts.";
+    result = `${formatMoney(data.pendingDues)} across ${pendingOrders.length + pendingPayments.length + pendingProjects.length} pending record${pendingOrders.length + pendingPayments.length + pendingProjects.length === 1 ? "" : "s"}.`;
+    rows = pendingOrders.length + pendingPayments.length + pendingProjects.length ? (
+      <>
+        {pendingOrders.map((o, i) => <KpiRow key={`o-${o._id || i}`} title={String(o.customer?.customerCompany || o.company || "Unknown Company")} subtitle={String(o.customer?.customerName || o.client || "Order")} value={formatMoney(moneyValue(o.amount ?? o.package?.total ?? o.total))} tone="text-red-600" />)}
+        {pendingPayments.map((p, i) => <KpiRow key={`p-${p._id || i}`} title={String(p.companyName || p.client || "Unknown Company")} subtitle={String(p.clientName || "Payment")} value={formatMoney(moneyValue(p.amount ?? p.value))} tone="text-red-600" />)}
+        {pendingProjects.map((p, i) => <KpiRow key={`proj-${p._id || i}`} title={String(p.companyName || p.clientName || "Unknown Company")} subtitle={String(p.name || p.projectName || "Project")} value={formatMoney(moneyValue(p.finalAmount ?? p.budget))} tone="text-red-600" />)}
+      </>
+    ) : <EmptyKpiRows text="No pending dues for this period." />;
+  } else if (kpi === "Active Clients") {
+    formula = "Count of company records in the selected period.";
+    result = `${data.filteredCompaniesLength} active client${data.filteredCompaniesLength === 1 ? "" : "s"}.`;
+    rows = (data.filteredCompanies || []).length ? data.filteredCompanies.map((company, i) => (
+      <KpiRow key={company._id || company.id || i} title={String(company.name || company.company || "Unnamed company")} subtitle={String(company.industry || company.status || "Company")} />
+    )) : <EmptyKpiRows text="No clients in this period." />;
+  } else if (kpi === "Total Projects") {
+    formula = "Count of project records created in the selected period.";
+    result = `${data.filteredProjectsLength} project${data.filteredProjectsLength === 1 ? "" : "s"}.`;
+    rows = (data.filteredProjects || []).length ? data.filteredProjects.map((project, i) => (
+      <KpiRow key={project._id || project.id || i} title={String(project.name || project.projectName || "Project")} subtitle={String(project.companyName || project.client || project.status || "Project")} />
+    )) : <EmptyKpiRows text="No projects in this period." />;
   } else if (kpi === "Avg Completion Time") {
     const completedList = data.completedProjectsList || [];
-    if (completedList.length === 0) {
-      content = <div className="text-center py-10 text-[#6B7280]">No completed projects found.</div>;
-    } else {
-      content = (
-        <div className="flex flex-col gap-2">
-          {completedList.map((p, i) => {
-            const start = new Date(p.startDate || p.createdAt || now);
-            const end = new Date(p.actualEndDate || p.expectedEndDate || p.updatedAt || now);
-            const diffDays = Math.max(Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)), 0);
-            return (
-              <div key={`cp-${p._id || i}`} className="p-3 border border-[#E1E4EA] rounded-lg bg-[#ffffff]">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-sm font-bold text-[#1F2937]">{String(p.name || p.projectName || "Unknown Project")}</p>
-                    <p className="text-xs text-[#6B7280]">{String(p.companyName || p.clientName || "Unknown Company")}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-[#1F2937]">{diffDays} Days</p>
-                  </div>
-                </div>
-                <div className="mt-2 text-[10px] text-[#9CA3AF] flex justify-between">
-                  <span>Start: {start.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
-                  <span>End: {end.toLocaleDateString("en-IN", { month: "short", day: "numeric" })}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
+    formula = "Average days from project start date to actual/expected completion date for completed projects.";
+    result = `${data.avgCompletionTime} day average from ${completedList.length} completed project${completedList.length === 1 ? "" : "s"}.`;
+    rows = completedList.length ? completedList.map((p, i) => {
+      const start = new Date(p.startDate || p.createdAt || now);
+      const end = new Date(p.actualEndDate || p.expectedEndDate || p.updatedAt || now);
+      const diffDays = Math.max(Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)), 0);
+      return <KpiRow key={`cp-${p._id || i}`} title={String(p.name || p.projectName || "Unknown Project")} subtitle={`${start.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} to ${end.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`} value={`${diffDays} days`} />;
+    }) : <EmptyKpiRows text="No completed projects found." />;
+  } else if (kpi === "Total Contacts") {
+    formula = "Count of contact records in the selected period.";
+    result = `${data.filteredContactsLength} contact${data.filteredContactsLength === 1 ? "" : "s"} · ${data.contactsPerClient} contacts per client.`;
+    rows = (data.filteredContacts || []).length ? data.filteredContacts.map((contact, i) => (
+      <KpiRow key={contact._id || contact.id || i} title={String(contact.name || contact.email || "Unnamed contact")} subtitle={String(contact.company || contact.designation || "Contact")} />
+    )) : <EmptyKpiRows text="No contacts in this period." />;
   } else if (kpi === "On-Time Delivery %") {
     const completedList = data.completedProjectsList || [];
     const onTimeProjects = [];
-    const delayedProjects = [];
-    completedList.forEach(p => {
-      const end = new Date(p.updatedAt || p.date || now).getTime();
-      const expected = new Date(p.expectedCompletion || p.dueDate || p.updatedAt || now).getTime();
-      if (end <= expected) onTimeProjects.push(p);
-      else delayedProjects.push(p);
+    const lateProjects = [];
+    completedList.forEach((project) => {
+      const end = new Date(project.actualEndDate || project.expectedEndDate || project.updatedAt || now).getTime();
+      const start = new Date(project.startDate || project.createdAt || now).getTime();
+      const expectedDateStr = project.expectedEndDate || project.expectedCompletion || project.dueDate;
+      const expected = expectedDateStr ? new Date(expectedDateStr).getTime() : start + 45 * 24 * 60 * 60 * 1000;
+      if (end <= expected) onTimeProjects.push(project);
+      else lateProjects.push(project);
     });
-
-    content = (
-      <div className="flex flex-col gap-5">
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-green-600 mb-2">Delivered On Time ({onTimeProjects.length})</h4>
-          <div className="flex flex-col gap-2">
-            {onTimeProjects.length === 0 ? <p className="text-xs text-[#9CA3AF]">None</p> : onTimeProjects.map((p, i) => (
-              <div key={`on-${p._id || i}`} className="p-2 border border-green-100 bg-green-50 rounded-lg text-sm font-medium text-[#1F2937]">
-                {String(p.name || p.projectName || "Unknown Project")}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-red-600 mb-2">Delayed ({delayedProjects.length})</h4>
-          <div className="flex flex-col gap-2">
-            {delayedProjects.length === 0 ? <p className="text-xs text-[#9CA3AF]">None</p> : delayedProjects.map((p, i) => (
-              <div key={`dl-${p._id || i}`} className="p-2 border border-red-100 bg-red-50 rounded-lg text-sm font-medium text-[#1F2937]">
-                {String(p.name || p.projectName || "Unknown Project")}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
+    formula = "Projects delivered on or before expected date ÷ completed projects × 100.";
+    result = `${onTimeProjects.length} on time ÷ ${Math.max(completedList.length, 1)} completed = ${data.onTimeDeliveryPercent}%.`;
+    rows = completedList.length ? (
+      <>
+        {onTimeProjects.map((p, i) => <KpiRow key={`on-${p._id || i}`} title={String(p.name || p.projectName || "Project")} subtitle="Delivered on time" value="On time" tone="text-emerald-600" />)}
+        {lateProjects.map((p, i) => <KpiRow key={`late-${p._id || i}`} title={String(p.name || p.projectName || "Project")} subtitle="Delivered after expected date" value="Late" tone="text-red-600" />)}
+      </>
+    ) : <EmptyKpiRows text="No completed projects found." />;
   } else {
-    content = <div className="text-center py-10 text-[#6B7280]">Drill down not available for this metric.</div>;
+    formula = "No calculation configured.";
+    result = "This KPI does not have a detail view yet.";
+    rows = <EmptyKpiRows text="No detailed records available." />;
   }
 
   return (
-    <SidePanel title={`${kpi} Drill Down`} onClose={onClose}>
-      <div className="p-5 bg-[#F5F7FA] min-h-full">
-        {content}
+    <SidePanel title={`${kpi} Details`} subtitle="Formula, result, and source records." onClose={onClose}>
+      <div className="min-h-full space-y-4 bg-[#F5F7FA] p-5">
+        <KpiFormula formula={formula} result={result} />
+        <div className="space-y-2">{rows}</div>
       </div>
     </SidePanel>
   );
@@ -471,6 +478,7 @@ export function AnalyticsPage() {
 
   const { records: orders } = useCrmRecords("orders");
   const { records: payments } = useCrmRecords("payments");
+  const { records: invoices } = useCrmRecords("invoices");
   const { records: projects } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
@@ -499,7 +507,7 @@ export function AnalyticsPage() {
     }
 
     const isWithinRange = (item, isCreated = false) => {
-      const stamp = isCreated ? (item.createdAt || item.date) : (item.paidAt || item.date || item.generatedAt || item.createdAt);
+      const stamp = isCreated ? (item.createdAt || item.date) : (item.paidAt || item.payment?.paidAt || item.date || item.issueDate || item.generatedAt || item.createdAt);
       if (!stamp) return true;
       const t = new Date(stamp).getTime();
       return t >= startDate && t <= endDate;
@@ -507,6 +515,7 @@ export function AnalyticsPage() {
 
     const filteredOrders = orders.filter(i => isWithinRange(i, false));
     const filteredPayments = payments.filter(i => isWithinRange(i, false));
+    const filteredInvoices = invoices.filter(i => isWithinRange(i, false));
     const filteredProjects = projects.filter(i => isWithinRange(i, true));
     const filteredCompanies = companies.filter(i => isWithinRange(i, true));
     const filteredContacts = contacts.filter(i => isWithinRange(i, true));
@@ -540,13 +549,43 @@ export function AnalyticsPage() {
       filteredPayments.filter(p => !isPaidStatus(p.status) && !p.orderId && !p.sourceOrderId).length;
 
     // Calculate revenue (Paid items)
+    const paidInvoices = filteredInvoices.filter(invoice => isPaidStatus(invoice.status || invoice.paymentStatus));
     const paidPayments = filteredPayments.filter(p => isPaidStatus(p.status));
-    const revenueFromPayments = paidPayments.reduce((sum, item) => sum + moneyValue(item.amount ?? item.value ?? item.package?.total ?? item.total), 0);
-    
-    // Only add revenue from projects that are PAID and STANDALONE (no invoice, no order)
-    const paidProjects = standaloneProjects.filter(p => isPaidStatus(p.paymentStatus));
-    const revenueFromProjects = paidProjects.reduce((sum, p) => sum + moneyValue(p.finalAmount ?? p.budget), 0);
-    const revenue = revenueFromPayments + revenueFromProjects;
+    const invoiceOrderKeys = new Set(
+      paidInvoices
+        .flatMap((invoice) => [
+          recordKey(invoice.sourceOrderId),
+          recordKey(invoice.orderId),
+          recordKey(invoice.razorpayOrderId)
+        ])
+        .filter(Boolean)
+    );
+    const invoicePaymentKeys = new Set(
+      paidInvoices
+        .flatMap((invoice) => [
+          recordKey(invoice.paymentId),
+          recordKey(invoice.razorpayPaymentId)
+        ])
+        .filter(Boolean)
+    );
+    const paymentOrderKeys = new Set(
+      paidPayments
+        .flatMap((p) => [recordKey(p.sourceOrderId, p.orderId), recordKey(p.razorpayOrderId)])
+        .filter(Boolean)
+    );
+    const paidPaymentsWithoutInvoice = paidPayments.filter((payment) => {
+      const orderKeys = [recordKey(payment.sourceOrderId), recordKey(payment.orderId), recordKey(payment.razorpayOrderId)].filter(Boolean);
+      const paymentKeys = [recordKey(payment.paymentId), recordKey(payment.razorpayPaymentId)].filter(Boolean);
+      return !orderKeys.some((key) => invoiceOrderKeys.has(key)) && !paymentKeys.some((key) => invoicePaymentKeys.has(key));
+    });
+    const paidOrdersWithoutPayment = paidOrders.filter((order) => {
+      const orderKeys = [recordKey(order._id), recordKey(order.id), recordKey(order.payment?.razorpayOrderId)].filter(Boolean);
+      return !orderKeys.some((key) => paymentOrderKeys.has(key) || invoiceOrderKeys.has(key));
+    });
+    const revenueFromInvoices = paidInvoices.reduce((sum, item) => sum + amountFor(item), 0);
+    const revenueFromPayments = paidPaymentsWithoutInvoice.reduce((sum, item) => sum + amountFor(item), 0);
+    const revenueFromOrders = paidOrdersWithoutPayment.reduce((sum, item) => sum + amountFor(item), 0);
+    const revenue = revenueFromInvoices + revenueFromPayments + revenueFromOrders;
     const paymentRate = Math.round((paidOrders.length / Math.max(filteredOrders.length, 1)) * 100);
     
     // KPI: Average Project Value
@@ -649,74 +688,79 @@ export function AnalyticsPage() {
     ].filter((item) => item.value > 0);
     const statusTotal = statusData.reduce((sum, item) => sum + item.value, 0) || 1;
 
-    const packageOrdersList = [];
-    const packageRevenueMap = paidOrders.reduce((acc, order) => {
-      const name = order.package?.name || order.packageName || order.projectType || "Unassigned";
+    const packageRevenueMap = paidInvoices.reduce((acc, invoice) => {
+      const name = packageNameFor(invoice);
       acc[name] = acc[name] || { name, revenue: 0, count: 0 };
-      acc[name].revenue += moneyValue(order.amount ?? order.value ?? order.package?.total ?? order.total);
+      acc[name].revenue += amountFor(invoice);
       acc[name].count += 1;
-      
-      packageOrdersList.push({
-        id: order._id || order.id || Math.random().toString(),
-        packageName: name,
-        clientName: order.customer?.customerName || order.client || 'Unknown Client',
-        companyName: order.customer?.customerCompany || order.company || 'Unknown Company',
-        amount: moneyValue(order.amount ?? order.value ?? order.package?.total ?? order.total),
-        date: order.createdAt || order.date || now,
-        type: 'Order'
-      });
       return acc;
     }, {});
-    
-    paidProjects.forEach(p => {
-      const name = p.packageName || p.template || "Unassigned";
-      packageRevenueMap[name] = packageRevenueMap[name] || { name, revenue: 0, count: 0 };
-      packageRevenueMap[name].revenue += moneyValue(p.finalAmount ?? p.budget);
-      packageRevenueMap[name].count += 1;
 
-      packageOrdersList.push({
-        id: p._id || p.id || Math.random().toString(),
-        packageName: name,
-        clientName: p.name || 'Unknown Project',
-        companyName: p.client || p.companyName || p.company || p.clientCompany || 'Unknown Company',
-        amount: moneyValue(p.finalAmount ?? p.budget),
-        date: p.createdAt || p.date || now,
-        type: 'Project'
-      });
-    });
+    const packageOrderKeys = new Set(
+      paidInvoices.flatMap((invoice) => [
+        recordKey(invoice.sourceOrderId),
+        recordKey(invoice.orderId),
+        recordKey(invoice.razorpayOrderId)
+      ]).filter(Boolean)
+    );
 
-    const paidOrderIds = new Set(paidOrders.map(o => String(o._id || o.id)));
-    paidPayments.forEach(p => {
-      const oId = String(p.orderId || p.sourceOrderId);
-      if ((!p.orderId && !p.sourceOrderId) || !paidOrderIds.has(oId)) {
-        const name = p.package?.name || p.packageName || p.package || "Unassigned";
+    paidPaymentsWithoutInvoice
+      .forEach((payment) => {
+        const name = packageNameFor(payment);
         packageRevenueMap[name] = packageRevenueMap[name] || { name, revenue: 0, count: 0 };
-        packageRevenueMap[name].revenue += moneyValue(p.amount ?? p.value ?? p.total);
+        packageRevenueMap[name].revenue += amountFor(payment);
         packageRevenueMap[name].count += 1;
+      });
 
-        packageOrdersList.push({
-          id: p._id || p.id || Math.random().toString(),
-          packageName: name,
-          clientName: p.clientName || p.client || p.customerName || p.contactName || 'Unknown Client',
-          companyName: p.companyName || p.company || 'Unknown Company',
-          amount: moneyValue(p.amount ?? p.value ?? p.total),
-          date: p.date || p.createdAt || now,
-          type: 'Payment'
-        });
-      }
+    paidOrdersWithoutPayment.forEach((order) => {
+      const keys = [recordKey(order._id), recordKey(order.id), recordKey(order.payment?.razorpayOrderId)].filter(Boolean);
+      if (keys.some((key) => packageOrderKeys.has(key))) return;
+      const name = packageNameFor(order);
+      packageRevenueMap[name] = packageRevenueMap[name] || { name, revenue: 0, count: 0 };
+      packageRevenueMap[name].revenue += amountFor(order);
+      packageRevenueMap[name].count += 1;
     });
     
     const packageRevenue = Object.values(packageRevenueMap).sort((a, b) => b.revenue - a.revenue);
+    const packagePurchases = [
+      ...paidInvoices.map((invoice) => ({
+        id: invoice._id || invoice.id || invoice.invoiceNumber,
+        packageName: packageNameFor(invoice),
+        clientName: invoice.client || invoice.customerName || "Unknown Client",
+        companyName: invoice.company || invoice.companyName || invoice.customerEmail || "Unknown Company",
+        amount: amountFor(invoice),
+        date: invoice.paidAt || invoice.date || invoice.issueDate || invoice.createdAt,
+        source: "invoice"
+      })),
+      ...paidPaymentsWithoutInvoice.map((payment) => ({
+        id: payment._id || payment.id || payment.paymentId,
+        packageName: packageNameFor(payment),
+        clientName: payment.client || payment.clientName || "Unknown Client",
+        companyName: payment.company || payment.companyName || payment.customerEmail || "Unknown Company",
+        amount: amountFor(payment),
+        date: payment.paidAt || payment.date || payment.createdAt,
+        source: "payment"
+      })),
+      ...paidOrdersWithoutPayment.map((order) => ({
+        id: order._id || order.id || order.payment?.razorpayOrderId,
+        packageName: packageNameFor(order),
+        clientName: order.customer?.customerName || order.client || "Unknown Client",
+        companyName: order.customer?.customerCompany || order.company || order.companyName || "Unknown Company",
+        amount: amountFor(order),
+        date: order.payment?.paidAt || order.paidAt || order.createdAt || order.date,
+        source: "order"
+      }))
+    ].sort((a, b) => new Date(b.date || now) - new Date(a.date || now));
 
     const formatKey = (created) => created.toISOString().slice(0, 10);
     const formatDay = (created) => created.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
 
-    const revenueGraph = Object.values([...paidOrders, ...paidPayments, ...paidProjects].reduce((acc, item) => {
-      const stamp = item.paidAt || item.date || item.generatedAt || item.createdAt;
+    const revenueGraph = Object.values([...paidInvoices, ...paidPaymentsWithoutInvoice, ...paidOrdersWithoutPayment].reduce((acc, item) => {
+      const stamp = item.paidAt || item.payment?.paidAt || item.date || item.issueDate || item.generatedAt || item.createdAt;
       const created = stamp ? new Date(stamp) : new Date(now);
       const key = formatKey(created);
       acc[key] = acc[key] || { key, day: formatDay(created), value: 0 };
-      acc[key].value += moneyValue(item.amount ?? item.value ?? item.package?.total ?? item.total ?? item.finalAmount ?? item.budget);
+      acc[key].value += amountFor(item);
       return acc;
     }, {})).sort((a, b) => a.key.localeCompare(b.key));
 
@@ -861,9 +905,10 @@ export function AnalyticsPage() {
     return { 
       revenue, paymentRate, avgProjectValue, completedProjects, delayedProjects, onTrack, 
       statusData, statusTotal, packageRevenue, pendingPaymentsCount, finalChartData, allActivities,
-      packageOrdersList,
+      packagePurchases,
       filteredOrders,
       filteredPayments,
+      filteredInvoices,
       filteredCompanies,
       filteredProjects,
       filteredContacts,
@@ -883,17 +928,14 @@ export function AnalyticsPage() {
       clientRepeatRate,
       currentBottleneck
     };
-  }, [orders, payments, projects, companies, contacts, now, metricFilter, filterType, filterYear, filterMonth, filterBiMonth, filterQuarter, customStartDate, customEndDate, selectedChartDate]);
+  }, [orders, payments, invoices, projects, companies, contacts, now, metricFilter, filterType, filterYear, filterMonth, filterBiMonth, filterQuarter, customStartDate, customEndDate, selectedChartDate]);
 
   const topMetrics = [
     { label: "Total Revenue", value: formatMoney(data.revenue), icon: WalletCards, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", tooltip: "Total revenue from paid orders and payments." },
     { label: "Avg Revenue", value: formatMoney(data.avgProjectValue), icon: Tag, color: "text-cyan-600", bg: "bg-cyan-50", border: "border-cyan-100", tooltip: "Calculated as: Total Revenue ÷ Total Projects." },
     { label: "Pending Dues", value: formatMoney(data.pendingDues), icon: ReceiptText, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100", tooltip: "Sum of all pending and overdue payments." },
     { label: "Active Clients", value: data.filteredCompaniesLength, icon: Users, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", tooltip: "Total number of unique companies." },
-    { label: "Client Repeat Rate", value: `${data.clientRepeatRate}%`, icon: RefreshCcw, color: "text-pink-600", bg: "bg-pink-50", border: "border-pink-100", tooltip: "Percentage of clients with more than one project or order." },
     { label: "Total Projects", value: data.filteredProjectsLength, icon: PackageCheck, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100", tooltip: "Total number of created projects." },
-    { label: "Current Bottleneck", value: data.currentBottleneck, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-100", tooltip: "Phase where most active projects are currently stuck." },
-    { label: "Delayed Projects %", value: `${data.delayedProjectsPercent}%`, icon: Clock3, color: "text-red-600", bg: "bg-red-50", border: "border-red-100", tooltip: "Percentage of total projects that have missed their deadline and are currently delayed." },
     { label: "Avg Completion Time", value: `${data.avgCompletionTime} Days`, icon: Clock3, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", tooltip: "Average days from start to completion for delivered projects." },
     { label: "Total Contacts", value: data.filteredContactsLength, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", tooltip: "Count of all contact persons.", subtext: `${data.contactsPerClient} Contacts per Client` },
     { label: "On-Time Delivery %", value: `${data.onTimeDeliveryPercent}%`, icon: CalendarDays, color: "text-teal-600", bg: "bg-teal-50", border: "border-teal-100", tooltip: "(Projects Delivered On Time ÷ Total Completed Projects) × 100" }
@@ -947,53 +989,31 @@ export function AnalyticsPage() {
         </div>
       }
     >
-      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_320px] w-full">
-        <div className="flex flex-col gap-5 min-w-0">
-          <div className="relative group w-full min-w-0">
-            <button 
-              onClick={() => { document.getElementById('kpi-scroll-container').scrollBy({ left: -300, behavior: 'smooth' }) }} 
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-[#ffffff] border border-[#E1E4EA] rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f9fafb] hidden md:block"
-            >
-              <ChevronLeft size={18} className="text-[#525866]" />
-            </button>
-            
-            <div id="kpi-scroll-container" className="flex w-full overflow-x-auto snap-x snap-mandatory gap-4 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {topMetrics.map((item) => (
-                <Card 
-                  key={item.label} 
-                  onClick={() => setSelectedKpiDrillDown(item.label)}
-                  className={`p-4 border-l-4 ${item.border} flex-shrink-0 w-[85vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] snap-start cursor-pointer hover:shadow-md transition-all relative group/card`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
-                      <item.icon size={17} />
-                    </div>
-                    {item.tooltip && (
-                      <div className="relative">
-                        <Info size={14} className="text-gray-300 hover:text-[#6B7280] transition-colors" />
-                        <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] leading-tight rounded shadow-lg opacity-0 pointer-events-none group-hover/card:opacity-100 transition-opacity z-20">
-                          {item.tooltip}
-                        </div>
-                      </div>
-                    )}
+      <div className="grid gap-5 2xl:grid-cols-[1fr_320px]">
+        <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {topMetrics.map((item) => (
+              <div
+                key={item.label}
+                onClick={() => setSelectedKpiDrillDown(item.label)}
+                className="cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-4 transition-colors hover:bg-[#fafafa]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
+                    <item.icon size={17} />
                   </div>
-                  <p className="mt-3 text-2xl font-bold text-[#1F2937]">{item.value}</p>
-                  <p className="text-xs font-bold uppercase tracking-wider text-[#9CA3AF]">{item.label}</p>
-                  {item.subtext && <p className="text-[10px] text-[#6B7280] mt-1 font-medium">{item.subtext}</p>}
-                </Card>
-              ))}
-            </div>
-
-            <button 
-              onClick={() => { document.getElementById('kpi-scroll-container').scrollBy({ left: 300, behavior: 'smooth' }) }} 
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-[#ffffff] border border-[#E1E4EA] rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[#f9fafb] hidden md:block"
-            >
-              <ChevronRight size={18} className="text-[#525866]" />
-            </button>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
+                    <p className="mt-0.5 text-lg font-bold text-[#111827]">{item.value}</p>
+                  </div>
+                </div>
+                {item.subtext && <p className="mt-2 text-[11px] text-[#6B7280]">{item.subtext}</p>}
+              </div>
+            ))}
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-            <Card className="min-w-0">
+          <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+            <Card>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#EAECF0] px-5 py-4 gap-3">
                 <div>
                   <h3 className="text-sm font-bold text-[#1F2937]">{metricFilter} over time</h3>
@@ -1053,7 +1073,7 @@ export function AnalyticsPage() {
               </div>
             </Card>
 
-            <Card className="min-w-0">
+            <Card>
               <div className="border-b border-[#EAECF0] px-5 py-4">
                 <h3 className="text-sm font-bold text-[#1F2937]">Project status</h3>
               </div>
@@ -1154,7 +1174,7 @@ export function AnalyticsPage() {
 
         <div className="flex flex-col gap-5">
           <EarningsCard 
-            records={[...data.filteredPayments.filter(p => isPaidStatus(p.status)), ...data.filteredProjects.filter(p => isPaidStatus(p.paymentStatus) && !p.linkedInvoiceId && !p.orderId)]} 
+            records={[...data.filteredInvoices.filter((invoice) => isPaidStatus(invoice.status || invoice.paymentStatus)), ...data.filteredPayments.filter(p => isPaidStatus(p.status) && !p.sourceOrderId && !p.orderId)]} 
             filterType={filterType}
             filterYear={filterYear}
             filterMonth={filterMonth}
@@ -1205,26 +1225,29 @@ export function AnalyticsPage() {
             </div>
             <div className="flex-1 overflow-y-auto p-5 bg-[#F5F7FA]/50">
               <div className="space-y-3">
-                {data.packageOrdersList
-                  .filter(o => o.packageName === selectedPackage)
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .map((o) => (
-                  <div key={o.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-4 shadow-sm transition-shadow hover:shadow">
+                {data.packagePurchases
+                  .filter((purchase) => purchase.packageName === selectedPackage)
+                  .map((purchase, i) => (
+                  <div key={purchase.id || i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-4 shadow-sm transition-shadow hover:shadow">
                     <div>
-                      <p className="text-sm font-bold text-[#1F2937]">
-                        {o.clientName}
-                        <span className="ml-2 text-[10px] font-bold text-[#9CA3AF] bg-[#F1F1F5] px-2 py-0.5 rounded uppercase tracking-wider">{o.type}</span>
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-[#6B7280]">{o.companyName}</p>
+                      <p className="text-sm font-bold text-[#1F2937]">{purchase.clientName}</p>
+                      <p className="mt-1 text-xs font-medium text-[#6B7280]">{purchase.companyName}</p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">{purchase.source}</p>
                     </div>
                     <div className="sm:text-right">
-                      <p className="text-sm font-bold text-emerald-600">{formatMoney(o.amount)}</p>
+                      <p className="text-sm font-bold text-emerald-600">{formatMoney(purchase.amount)}</p>
                       <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                        {new Date(o.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(purchase.date || now).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                   </div>
                 ))}
+                {!data.packagePurchases.some((purchase) => purchase.packageName === selectedPackage) && (
+                  <div className="rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-6 text-center">
+                    <p className="text-sm font-bold text-[#1F2937]">No paid clients found</p>
+                    <p className="mt-1 text-xs text-[#6B7280]">Draft invoices are not counted in this paid package list.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1514,4 +1537,3 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
     </Card>
   );
 }
-

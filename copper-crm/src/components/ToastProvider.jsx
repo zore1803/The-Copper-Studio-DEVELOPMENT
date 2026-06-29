@@ -23,12 +23,23 @@ const styles = {
   },
 };
 
+const MAX_HISTORY = 50;
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const [notifHistory, setNotifHistory] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const showToast = useCallback(({ title, message = "", type = "success" }) => {
     const id = crypto.randomUUID();
+    const ts = new Date();
     setToasts((current) => [...current, { id, title, message, type }]);
+    setNotifHistory((current) => {
+      const entry = { id, title, message, type, ts };
+      const next = [entry, ...current].slice(0, MAX_HISTORY);
+      return next;
+    });
+    setUnreadCount((n) => n + 1);
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
     }, 3200);
@@ -38,8 +49,15 @@ export function ToastProvider({ children }) {
     setToasts((current) => current.filter((toast) => toast.id !== id));
   };
 
+  const markAllRead = useCallback(() => setUnreadCount(0), []);
+
+  const clearHistory = useCallback(() => {
+    setNotifHistory([]);
+    setUnreadCount(0);
+  }, []);
+
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, notifHistory, unreadCount, markAllRead, clearHistory }}>
       {children}
       <div className="fixed right-4 top-4 z-[80] flex w-[min(360px,calc(100vw-32px))] flex-col gap-2">
         {toasts.map((toast) => {

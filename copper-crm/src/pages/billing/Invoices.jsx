@@ -6,6 +6,10 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
+import { generateDefaultProjectName, generateProjectCode } from "../../lib/projectDefaults";
+
+const INVOICE_STATUSES = ["Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"];
+const UNPAID_STATUS_ACTIONS = ["Draft", "Generated", "Paid"];
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -13,6 +17,28 @@ function parseMoney(value) {
 
 function money(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(value) || 0);
+}
+
+function formatDate(value) {
+  if (!value) return "Not set";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not set";
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function isPaidInvoice(invoice) {
+  return String(invoice.status || invoice.paymentStatus || "").toLowerCase() === "paid";
+}
+
+function normalizedStatus(value, fallback = "Draft") {
+  const status = String(value || "").trim();
+  if (!status) return fallback;
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+}
+
+function isDraftLikeStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+  return !status || status === "draft" || status === "pending" || status === "generated";
 }
 
 function Metric({ label, value, icon: Icon }) {
@@ -31,26 +57,31 @@ function Metric({ label, value, icon: Icon }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", options }) {
+function Field({ label, value, onChange, type = "text", options, disabled = false, hint = "" }) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
-          {options.map((opt) => typeof opt === "string" ? <option key={opt} value={opt}>{opt}</option> : <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] disabled:bg-[#f3f4f6] disabled:text-[#6b7280]">
+          {options.map((opt) => (
+            typeof opt === "string"
+              ? <option key={opt} value={opt}>{opt}</option>
+              : <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#6b7280]" />
       )}
+      {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
   );
 }
 
-function InvoiceModal({ companies, onClose, onSave }) {
+function InvoiceModal({ companies, projects, onClose, onSave }) {
   const [mode, setMode] = useState("existing");
-  const [form, setForm] = useState({ 
-    companyId: "", 
-    companyName: "", 
+  const [form, setForm] = useState({
+    companyId: "",
+    companyName: "",
     customerEmail: "",
     customerPhone: "",
     customerName: "",
@@ -60,30 +91,52 @@ function InvoiceModal({ companies, onClose, onSave }) {
     state: "",
     pincode: "",
     companyGstin: "",
-    projectName: "", 
+    companyWebsite: "",
+    projectName: "",
     packageName: "",
     amount: ""
   });
-  
   const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const companyOptions = [
+    { value: "", label: "Select company" },
+    ...companies.map((company) => ({
+      value: company._id || company.id,
+      label: company.name || company.companyName || "Unnamed company"
+    }))
+  ];
+  const selectedCompany = useMemo(
+    () => companies.find((company) => String(company._id || company.id) === String(form.companyId)),
+    [companies, form.companyId]
+  );
+  const normalizedSelectedCompany = useMemo(
+    () => selectedCompany ? { ...selectedCompany, name: selectedCompany.name || selectedCompany.companyName || "Company" } : null,
+    [selectedCompany]
+  );
+  const generatedProjectName = useMemo(
+    () => normalizedSelectedCompany ? generateDefaultProjectName(normalizedSelectedCompany, projects) : "",
+    [normalizedSelectedCompany, projects]
+  );
+  const generatedProjectCode = useMemo(
+    () => normalizedSelectedCompany ? generateProjectCode(normalizedSelectedCompany, projects) : "",
+    [normalizedSelectedCompany, projects]
+  );
+
+  useEffect(() => {
+    if (mode !== "existing") return;
+    setForm((prev) => ({ ...prev, projectName: generatedProjectName }));
+  }, [mode, generatedProjectName]);
 
   async function handleSave() {
     if (saving) return;
     setSaving(true);
     try {
-      const base = import.meta.env.VITE_API_BASE_URL || "";
-      const res = await fetch(`${base}/api/invoices/manual`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to generate invoice");
-      
-      await onSave(data.invoice);
-    } catch (err) {
-      alert(err.message);
+      const payload = mode === "existing"
+        ? { ...form, companyName: "", projectName: generatedProjectName }
+        : { ...form, companyId: "" };
+      await onSave(payload);
+    } catch (error) {
+      alert(error.message || "Could not generate invoice.");
     } finally {
       setSaving(false);
     }
@@ -91,8 +144,8 @@ function InvoiceModal({ companies, onClose, onSave }) {
 
   return (
     <SidePanel
-      title="Generate Invoice (Manual Payment)"
-      subtitle="Create an invoice linked to a company and project. A new project will be auto-generated."
+      title="Generate Invoice"
+      subtitle="Create a paid manual invoice and link it to a company and project."
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
@@ -101,23 +154,36 @@ function InvoiceModal({ companies, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
-        <button onClick={() => setMode("existing")} className={`flex-1 rounded-md py-1.5 text-sm font-semibold ${mode === "existing" ? "bg-white shadow" : "text-gray-500"}`}>Existing Company</button>
-        <button onClick={() => setMode("new")} className={`flex-1 rounded-md py-1.5 text-sm font-semibold ${mode === "new" ? "bg-white shadow" : "text-gray-500"}`}>New Company</button>
+      <div className="mb-6 grid grid-cols-2 rounded-lg bg-[#f3f4f6] p-1">
+        <button
+          type="button"
+          onClick={() => setMode("existing")}
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "existing" ? "bg-white text-[#111827] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
+        >
+          Existing Company
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("new")}
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "new" ? "bg-white text-[#111827] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
+        >
+          New Company
+        </button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {mode === "existing" ? (
           <div className="sm:col-span-2">
-            <Field label="Select Company" value={form.companyId} onChange={set("companyId")} options={[{ id: "", name: "-- Select Company --" }, ...companies].map(c => c.name ? { value: c._id || c.id, label: c.name } : null).filter(Boolean)} />
+            <Field label="Select Company" value={form.companyId} onChange={set("companyId")} options={companyOptions} />
           </div>
         ) : (
           <>
             <div className="sm:col-span-2"><Field label="Company Name" value={form.companyName} onChange={set("companyName")} /></div>
             <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
-            <Field label="Customer Email" value={form.customerEmail} onChange={set("customerEmail")} />
+            <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
             <Field label="Customer Phone" value={form.customerPhone} onChange={set("customerPhone")} />
-            <Field label="GSTIN (Optional)" value={form.companyGstin} onChange={set("companyGstin")} />
+            <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} />
+            <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} />
             <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
             <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} /></div>
             <Field label="City" value={form.city} onChange={set("city")} />
@@ -126,11 +192,22 @@ function InvoiceModal({ companies, onClose, onSave }) {
           </>
         )}
 
-        <div className="sm:col-span-2 mt-4 border-t pt-4">
-          <h4 className="mb-3 text-sm font-bold text-gray-800">Project & Invoice Details</h4>
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Project & Invoice Details</p>
         </div>
-        
-        <div className="sm:col-span-2"><Field label="Project Name" value={form.projectName} onChange={set("projectName")} /></div>
+        <div className="sm:col-span-2">
+          {mode === "existing" ? (
+            <Field
+              label="Project Name"
+              value={generatedProjectName || "Select a company to generate"}
+              onChange={() => {}}
+              disabled
+              hint={generatedProjectCode ? `Project ID: ${generatedProjectCode}` : "Auto-generated after company selection and locked for manual invoices."}
+            />
+          ) : (
+            <Field label="Project Name" value={form.projectName} onChange={set("projectName")} />
+          )}
+        </div>
         <Field label="Package / Service Name" value={form.packageName} onChange={set("packageName")} />
         <Field label="Amount (INR)" type="number" value={form.amount} onChange={set("amount")} />
       </div>
@@ -146,6 +223,7 @@ export default function Invoices() {
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
+  const { records: projects } = useCrmRecords("projects");
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -162,18 +240,51 @@ export default function Invoices() {
     return matchesStatus && haystack.includes(query.toLowerCase());
   }), [invoices, query, status]);
 
-  const totals = useMemo(() => ({
-    gross: invoices.reduce((sum, invoice) => sum + parseMoney(invoice.total || invoice.amount), 0),
-    tax: invoices.reduce((sum, invoice) => sum + parseMoney(invoice.tax || invoice.gst), 0),
-    paid: invoices.filter((invoice) => invoice.status === "Paid").length,
-    overdue: invoices.filter((invoice) => invoice.status === "Overdue").length,
-  }), [invoices]);
+  const totals = useMemo(() => {
+    const paidInvoices = invoices.filter(isPaidInvoice);
+    return {
+      paidRevenue: paidInvoices.reduce((sum, invoice) => sum + parseMoney(invoice.total || invoice.amount), 0),
+      paidTax: paidInvoices.reduce((sum, invoice) => sum + parseMoney(invoice.tax || invoice.gst), 0),
+      paid: paidInvoices.length,
+      overdue: invoices.filter((invoice) => invoice.status === "Overdue").length,
+    };
+  }, [invoices]);
 
   async function handleCreate(form) {
-    const invoiceNumber = generateInvoiceNumber(invoices, form.issueDate || new Date());
-    const created = await saveInvoice({ ...form, id: `invoice-${Date.now()}`, invoiceNumber, createdAt: new Date().toISOString() });
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    const response = await fetch(`${base}/api/invoices/manual`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || "Could not generate invoice.");
+    const created = data.invoice
+      ? await saveInvoice(data.invoice)
+      : await saveInvoice({
+          ...form,
+          id: `invoice-${Date.now()}`,
+          invoiceNumber: generateInvoiceNumber(invoices, new Date()),
+          createdAt: new Date().toISOString()
+        });
     setCreating(false);
-    showToast({ title: "Invoice generated", message: `${created.invoiceNumber || invoiceNumber} saved.` });
+    showToast({ title: "Invoice generated", message: `${created.invoiceNumber || created.id || "Invoice"} saved.` });
+  }
+
+  async function handleStatusChange(invoice, nextStatus) {
+    const now = new Date().toISOString();
+    const updated = {
+      ...invoice,
+      status: nextStatus,
+      paymentStatus: nextStatus,
+      paidAt: nextStatus === "Paid" ? (invoice.paidAt || now) : null,
+      updatedAt: now
+    };
+    await saveInvoice(updated);
+    showToast({
+      title: "Invoice updated",
+      message: `${invoice.invoiceNumber || invoice.id || "Invoice"} marked ${nextStatus}.`
+    });
   }
 
   function downloadInvoice(invoice) {
@@ -189,19 +300,19 @@ export default function Invoices() {
   }
 
   return (
-    <div className="min-h-full bg-[#f5f6fa] p-6">
-      <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">Finance</p>
-          <h1 className="mt-1 text-2xl font-bold text-[#111827]">Invoices</h1>
-          <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">Legal billing documents, PDF generation, customer mapping, payment mapping, and activity.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Invoices</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Legal billing documents, PDF generation, customer mapping, and payment mapping.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus size={14} /> Generate Invoice</Button>
       </div>
 
+      <div className="p-5 xl:p-6">
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="Gross Billing" value={money(totals.gross)} icon={WalletCards} />
-        <Metric label="GST / Tax" value={money(totals.tax)} icon={ReceiptText} />
+        <Metric label="Paid Revenue" value={money(totals.paidRevenue)} icon={WalletCards} />
+        <Metric label="Paid GST / Tax" value={money(totals.paidTax)} icon={ReceiptText} />
         <Metric label="Paid" value={totals.paid} icon={FileText} />
         <Metric label="Overdue" value={totals.overdue} icon={Send} />
       </div>
@@ -209,7 +320,7 @@ export default function Invoices() {
       <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
-            {["All", "Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"].map((item) => (
+            {["All", ...INVOICE_STATUSES].map((item) => (
               <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
             ))}
           </div>
@@ -235,9 +346,9 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
-                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.issueDate || invoice.date || "Not set"}</td>
-                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.dueDate || "Not set"}</td>
-                    <td className="px-4 py-3"><Status value={invoice.status || "Draft"} /></td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
+                    <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
                     <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
                   </tr>
                 ))}
@@ -252,12 +363,43 @@ export default function Invoices() {
         )}
       </section>
 
-      {creating && <InvoiceModal companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {creating && <InvoiceModal companies={companies} projects={projects} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      </div>
     </div>
   );
 }
 
-function Status({ value }) {
-  const tone = value === "Paid" ? "bg-emerald-50 text-emerald-700" : value === "Overdue" ? "bg-red-50 text-red-600" : value === "Sent" ? "bg-blue-50 text-blue-700" : "bg-[#f3f4f6] text-[#6b7280]";
-  return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
+function statusTone(value) {
+  return value === "Paid"
+    ? "bg-emerald-50 text-emerald-700"
+    : value === "Overdue"
+      ? "bg-red-50 text-red-600"
+      : value === "Sent"
+        ? "bg-blue-50 text-blue-700"
+        : "bg-[#f3f4f6] text-[#6b7280]";
+}
+
+function InvoiceStatus({ invoice, onChange }) {
+  const rawValue = invoice.status || invoice.paymentStatus || "";
+  const value = isDraftLikeStatus(rawValue) ? normalizedStatus(rawValue, "Draft") : normalizedStatus(rawValue);
+  if (!isDraftLikeStatus(rawValue)) {
+    return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${statusTone(value)}`}>{value}</span>;
+  }
+
+  return <StatusSelect value={value} onChange={onChange} />;
+}
+
+function StatusSelect({ value, onChange }) {
+  return (
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#884c2d]/30 ${statusTone(value)}`}
+      aria-label="Invoice status"
+    >
+      {UNPAID_STATUS_ACTIONS.map((status) => (
+        <option key={status} value={status}>{status}</option>
+      ))}
+    </select>
+  );
 }

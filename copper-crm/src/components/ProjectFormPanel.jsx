@@ -132,7 +132,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
   );
   useEffect(() => {
     if (!resolvedCompany || nameTouched.current) return;
-    setForm((prev) => (prev.name ? prev : { ...prev, name: generateDefaultProjectName(resolvedCompany, projects) }));
+    setForm((prev) => ({ ...prev, name: generateDefaultProjectName(resolvedCompany, projects) }));
   }, [resolvedCompany, projects]);
   const scopedContacts = useMemo(
     () => (company ? contacts : contacts.filter((c) => String(c.companyId) === companyId)),

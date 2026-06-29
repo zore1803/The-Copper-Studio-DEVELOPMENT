@@ -49,15 +49,82 @@ export const invoiceSettings = {
   defaultSac: process.env.INVOICE_DEFAULT_SAC || "998314",
   // Invoice is for a service already rendered + paid, so due == issue date.
   dueOnIssue: true,
-  notes:
-    process.env.INVOICE_NOTES ||
-    "This is a computer-generated tax invoice for services rendered by The Copper Studio. Payment has been received in full via the online payment gateway; no further amount is due against this invoice.",
+  // Numbered notes printed under the "Notes" heading.
+  notes: [
+    "This invoice has been raised upon receipt of 100% advance payment as per our payment policy.",
+    "GST has been charged based on the Place of Supply as per the GST Act, 2017.",
+    "TDS deductions, if applicable, must be made under Section 194J (Professional / Technical Services) and Form 16A must be furnished within 15 days of quarterly filing.",
+    "Ownership and intellectual property rights of all deliverables shall vest with the client only upon receipt of complete payment.",
+    "The scope of this invoice is limited to the services described herein. Any additional requirements will be scoped and billed separately.",
+    "For any invoice-related queries, please contact: accounts@thecopperstudio.com"
+  ],
+  // Terms & Conditions printed as numbered sections, each with sub-points.
   terms: [
-    "Payment received in full at the time of order via the online payment gateway.",
-    "This invoice is issued against a digital service package and is non-transferable.",
-    "Service delivery timelines begin from the date of successful payment as per the agreed package scope.",
-    "Any additional scope requested beyond the purchased package may be billed separately.",
-    "Any disputes shall be subject to the jurisdiction of the courts at the seller's registered location."
+    {
+      title: "Payment Terms",
+      points: [
+        "100% advance payment is required prior to commencement of any work or delivery of services.",
+        "Invoice is raised only upon receipt of advance payment confirmation.",
+        "Payments to be made via NEFT/RTGS/UPI to the bank details mentioned on this invoice."
+      ]
+    },
+    {
+      title: "Scope of Services",
+      points: [
+        "This invoice covers only the services/deliverables explicitly described herein.",
+        "Any additional scope of work will be billed separately under a new invoice."
+      ]
+    },
+    {
+      title: "Taxation",
+      points: [
+        "All prices are exclusive of GST unless stated otherwise.",
+        "GST is charged as per prevailing rates under the GST Act, 2017.",
+        "The Place of Supply is as indicated on this invoice.",
+        "Clients eligible for TDS deduction must deduct under Section 194J at applicable rates and furnish Form 16A within 15 days of quarterly filing."
+      ]
+    },
+    {
+      title: "Intellectual Property",
+      points: [
+        "Full ownership and intellectual property rights of deliverables shall be transferred to the client only upon receipt of complete payment.",
+        "DataCircles Technology retains the right to showcase completed work in its portfolio unless restricted by a signed NDA."
+      ]
+    },
+    {
+      title: "Refund & Cancellation",
+      points: [
+        "Services once rendered are non-refundable.",
+        "In case of project cancellation by the client, payment for work completed till the date of cancellation will be due and payable.",
+        "Any advance paid is non-refundable in the event of client-side cancellation."
+      ]
+    },
+    {
+      title: "Dispute Resolution",
+      points: [
+        "Any disputes arising from this invoice shall first be resolved through mutual discussion within 15 days of raising the dispute.",
+        "If unresolved, disputes shall be subject to arbitration under the Arbitration and Conciliation Act, 1996.",
+        "Jurisdiction: Courts of Thane, Maharashtra shall have exclusive jurisdiction over all matters."
+      ]
+    },
+    {
+      title: "Governing Law",
+      points: [
+        "This invoice and all related engagements shall be governed by the laws of India."
+      ]
+    },
+    {
+      title: "Limitation of Liability",
+      points: [
+        "DataCircles Technology's liability shall not exceed the total value of the invoice in question under any circumstance."
+      ]
+    },
+    {
+      title: "Acceptance",
+      points: [
+        "Payment of this invoice constitutes acceptance of all terms and conditions mentioned herein."
+      ]
+    }
   ]
 };
 

@@ -1,4 +1,4 @@
-import "dotenv/config"; // Reloaded with local DB config
+import "dotenv/config";
 import cors from "cors";
 import crypto from "node:crypto";
 import dns from "node:dns";
@@ -74,24 +74,56 @@ async function emailInvoiceForOrder(order, invoice) {
 
     let pdfBuffer = null;
     try {
-      const pdfPromise = htmlToPdfBuffer(html);
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("PDF generation timed out")), 15000));
-      pdfBuffer = await Promise.race([pdfPromise, timeoutPromise]);
+      pdfBuffer = await htmlToPdfBuffer(html);
     } catch (pdfError) {
-      console.warn("Invoice PDF generation failed, emailing HTML invoice only:", pdfError.message);
+      console.warn("Invoice PDF generation failed; sending confirmation email without the PDF attachment:", pdfError.message);
     }
 
+    // The email body is ALWAYS the short confirmation message. The invoice only
+    // ever travels as a PDF attachment — never dumped inline as HTML.
     await sendInvoiceEmail({
       to: customer.customerEmail,
       name: customer.customerName,
       invoiceNumber: model.invoiceNumber,
       packageName: model.items?.[0]?.name,
       total: model.totals?.total,
-      html: pdfBuffer ? undefined : html, // attach PDF when available, else inline HTML invoice
       pdfBuffer
     });
   } catch (error) {
     console.error("Failed to email invoice:", error.message);
+  }
+}
+
+// Drops a link to the paid order's invoice PDF into the project's Files tab,
+// using the same project.documents shape ProjectFiles.jsx's manual uploads use.
+async function attachInvoiceToProjectFiles(order, invoice) {
+  try {
+    if (!order || order.payment?.status !== "paid") return;
+    const project = await Project.findOne({ orderId: order._id });
+    if (!project) return;
+
+    const docId = `inv-${order._id}`;
+    if ((project.documents || []).some((doc) => doc._id === docId)) return;
+
+    const invoiceNumber = invoice?.invoiceNumber || order.payment?.invoiceId || String(order._id);
+    const base = process.env.RENDER_EXTERNAL_URL || process.env.API_PUBLIC_URL || "";
+    const fileUrl = `${base}/api/invoices/by-order/${order._id}/pdf`;
+
+    const newDoc = {
+      _id: docId,
+      name: `Tax Invoice - ${invoiceNumber}.pdf`,
+      category: "Invoices",
+      type: "pdf",
+      sizeMB: 0,
+      date: new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+      uploadedBy: "System",
+      fileUrl
+    };
+
+    project.documents = [newDoc, ...(project.documents || [])];
+    await project.save();
+  } catch (error) {
+    console.error("Failed to attach invoice to project files:", error.message);
   }
 }
 
@@ -130,12 +162,24 @@ function companyCodeFromName(name) {
   return code.padEnd(4, "X");
 }
 
-// Structured project code: CS-<4 letters>-<company #>-<MMYY>, e.g. CS-DATC-02-0626.
-function buildProjectCode(companyName, companyNumber, date = new Date()) {
+// Structured project code: CS-<4 letters>-<project #>-<MMYY>, e.g. CS-DATC-02-0626.
+function buildProjectCode(companyName, projectNumber, date = new Date()) {
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const yy = String(date.getFullYear()).slice(-2);
-  const num = String(companyNumber || 1).padStart(2, "0");
+  const num = String(projectNumber || 1).padStart(2, "0");
   return `CS-${companyCodeFromName(companyName)}-${num}-${mm}${yy}`;
+}
+
+function buildDefaultProjectName(companyName, projectNumber, date = new Date()) {
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yy = String(date.getFullYear()).slice(-2);
+  return `${companyName}-Project ${projectNumber || 1}-${mm}${yy}`;
+}
+
+async function nextProjectNumberForCompany(companyId) {
+  if (!companyId) return 1;
+  const count = await Project.countDocuments({ companyId }).catch(() => 0);
+  return count + 1;
 }
 
 // Finds the checkout customer's company by name, creating it if it doesn't
@@ -199,19 +243,12 @@ async function ensureProjectForOrder(order, clientId, company) {
   const customer = order.customer || {};
   const companyName = company?.name || customer.customerCompany || "";
 
-  // Company number = its 1-based creation-order rank among all companies (or the
-  // next number if this company isn't a saved record yet).
-  let companyNumber = 1;
-  if (companyName) {
-    const companies = await Company.find({}).catch(() => []);
-    const ordered = [...companies].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-    const index = ordered.findIndex((c) => String(c.name || "").trim().toLowerCase() === companyName.trim().toLowerCase());
-    companyNumber = (index >= 0 ? index : ordered.length) + 1;
-  }
+  const projectNumber = await nextProjectNumberForCompany(company?._id);
+  const generatedProjectName = companyName ? buildDefaultProjectName(companyName, projectNumber, new Date()) : "";
 
   return Project.create({
-    name: customer.projectName || `${order.package?.name || "New"} project`,
-    projectId: companyName ? buildProjectCode(companyName, companyNumber, new Date()) : "",
+    name: customer.projectName || generatedProjectName || `${order.package?.name || "New"} project`,
+    projectId: companyName ? buildProjectCode(companyName, projectNumber, new Date()) : "",
     clientId: clientId || null,
     companyId: company?._id || null,
     orderId,
@@ -247,8 +284,16 @@ async function validateCouponForPackage(code, selectedPackage) {
     throw error;
   }
 
+  const now = new Date();
+
+  if (coupon.validFrom && new Date(coupon.validFrom) > now) {
+    const error = new Error(`Coupon is not active yet. It starts on ${new Date(coupon.validFrom).toLocaleString("en-IN")}.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
   const expiryDate = couponExpiryDate(coupon);
-  if (expiryDate && expiryDate <= new Date() && ["Active", "Applied", "Not used"].includes(coupon.status)) {
+  if (expiryDate && expiryDate <= now && ["Active", "Applied", "Not used"].includes(coupon.status)) {
     coupon.status = "Expired";
     await coupon.save();
   }
@@ -433,10 +478,6 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       return res.status(400).json({ message: "Invalid Razorpay payment signature." });
     }
 
-    if (!isVerified({ email: customer.customerEmail, channel: "phone" }) || !isVerified({ email: customer.customerEmail, channel: "email" })) {
-      return res.status(400).json({ message: "Phone or Email is not verified. Please verify OTP first." });
-    }
-
     const selectedPackage = packages.find((item) => item.id === selectedPackageId);
     if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
 
@@ -469,6 +510,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
     if (couponResult.coupon) {
       couponResult.coupon.status = "Redeemed";
       couponResult.coupon.redeemedAt = new Date();
+      couponResult.coupon.discountAmount = couponResult.discount;
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);
@@ -476,11 +518,12 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
     await ensureContactForOrder(order, company);
     await ensureProjectForOrder(order, invite?.userId, company);
     const finance = await syncFinanceForOrder(order);
-    
-    // Send email without blocking the HTTP response indefinitely.
-    emailInvoiceForOrder(order, finance?.invoice).catch(err => {
-      console.error("Background invoice email failed:", err);
-    });
+
+    // PDF generation (headless Chromium) can be slow/flaky on the free-tier host —
+    // never let it block or risk the payment-success response. Both helpers already
+    // catch and log their own failures internally.
+    emailInvoiceForOrder(order, finance?.invoice);
+    attachInvoiceToProjectFiles(order, finance?.invoice);
 
     res.status(201).json(order);
   } catch (error) {
@@ -508,68 +551,71 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       amount
     } = req.body;
 
-    if (!amount || (!companyId && !companyName)) {
-      return res.status(400).json({ message: "Amount and Company details are required." });
+    const total = Number(amount);
+    if (!total || total <= 0) {
+      return res.status(400).json({ message: "A valid invoice amount is required." });
+    }
+    if (!companyId && !String(companyName || "").trim()) {
+      return res.status(400).json({ message: "Select an existing company or enter a company name." });
     }
 
-    let resolvedCompanyId = companyId;
-    let finalCompanyName = companyName;
-    let companyDoc = null;
+    let company = null;
+    let resolvedCompanyName = String(companyName || "").trim();
 
     if (companyId) {
-      companyDoc = await Company.findById(companyId);
-      if (!companyDoc) return res.status(404).json({ message: "Selected company not found." });
-      finalCompanyName = companyDoc.name;
+      company = await Company.findById(companyId).catch(() => null);
+      if (!company) return res.status(404).json({ message: "Selected company not found." });
+      resolvedCompanyName = company.name;
     }
+    const lockedProjectName = company
+      ? buildDefaultProjectName(resolvedCompanyName, await nextProjectNumberForCompany(company._id), new Date())
+      : "";
 
-    // Mock an order object that the helper functions expect
-    const mockedOrder = new Order({
+    const order = await Order.create({
       package: {
         id: "manual",
         name: packageName || "Custom Package",
-        price: Number(amount),
-        total: Number(amount)
+        price: total,
+        total
       },
       customer: {
         customerName: customerName || "Admin Created",
-        customerEmail: customerEmail || (companyDoc && companyDoc.email) || "manual@example.com",
-        customerPhone: customerPhone || (companyDoc && companyDoc.phone) || "0000000000",
-        customerCompany: finalCompanyName,
-        projectName: projectName || "Custom Project",
-        companyWebsite: companyWebsite || (companyDoc && companyDoc.website) || "",
-        companyGstin: companyGstin || (companyDoc && companyDoc.gstin) || "",
-        billingAddressLine1: billingAddressLine1 || (companyDoc && companyDoc.address) || "",
+        customerEmail: customerEmail || company?.email || "manual@example.com",
+        customerPhone: customerPhone || company?.phone || "0000000000",
+        customerCompany: resolvedCompanyName,
+        projectName: lockedProjectName || projectName || "Custom Project",
+        companyWebsite: companyWebsite || company?.website || "",
+        companyGstin: companyGstin || company?.gstin || "",
+        billingAddressLine1: billingAddressLine1 || company?.address || "",
         billingAddressLine2: billingAddressLine2 || "",
-        city: city || (companyDoc && companyDoc.city) || "",
-        state: state || (companyDoc && companyDoc.state) || "",
-        pincode: pincode || (companyDoc && companyDoc.pincode) || ""
+        city: city || company?.city || "",
+        state: state || company?.state || "",
+        pincode: pincode || company?.pincode || ""
+      },
+      verification: {
+        phoneVerified: true,
+        emailVerified: true
       },
       payment: {
         status: "paid",
         provider: "manual",
-        invoiceId: `INV-${Date.now()}`,
+        invoiceId: `INV-${Date.now().toString().slice(-6)}`,
         paidAt: new Date()
       }
     });
 
-    await mockedOrder.save();
+    if (!company) company = await ensureCompanyForOrder(order);
+    await ensureContactForOrder(order, company);
 
-    let company = companyDoc;
-    if (!company) {
-      company = await ensureCompanyForOrder(mockedOrder);
-    }
-    await ensureContactForOrder(mockedOrder, company);
-    
-    // Pass the company's primary client user ID if one is already registered/linked
     const primaryClientId = company?.userIds?.[0] || company?.userId || null;
-    const project = await ensureProjectForOrder(mockedOrder, primaryClientId, company);
-    const finance = await syncFinanceForOrder(mockedOrder);
-    
-    emailInvoiceForOrder(mockedOrder, finance?.invoice).catch(err => {
-      console.error("Background invoice email failed:", err);
+    const project = await ensureProjectForOrder(order, primaryClientId, company);
+    const finance = await syncFinanceForOrder(order);
+
+    emailInvoiceForOrder(order, finance?.invoice).catch((error) => {
+      console.error("Background invoice email failed:", error.message);
     });
 
-    res.status(201).json({ order: mockedOrder, invoice: finance?.invoice, project, company });
+    res.status(201).json({ order, company, project, invoice: finance?.invoice, payment: finance?.payment });
   } catch (error) {
     next(error);
   }
@@ -611,6 +657,7 @@ app.post("/api/orders", async (req, res, next) => {
     if (couponResult.coupon && order.payment.status === "paid") {
       couponResult.coupon.status = "Redeemed";
       couponResult.coupon.redeemedAt = new Date();
+      couponResult.coupon.discountAmount = couponResult.discount;
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);
@@ -657,7 +704,7 @@ app.post("/api/leads", async (req, res, next) => {
     if (companyGstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z][Z][0-9A-Z]$/i.test(companyGstin)) {
       return res.status(400).json({ message: "Company GSTIN is not a valid format." });
     }
-    if (!isVerified({ email: customer.customerEmail, channel: "phone" }) || !isVerified({ email: customer.customerEmail, channel: "email" })) {
+    if (!isVerified({ email: customerEmail, channel: "phone" }) || !isVerified({ email: customerEmail, channel: "email" })) {
       return res.status(400).json({ message: "Mobile and email must be OTP-verified before continuing." });
     }
 
@@ -704,8 +751,7 @@ app.get("/payment", (_req, res) => {
 
 app.use((error, _req, res, _next) => {
   console.error(error);
-  const message = error.error?.description || error.message || "Server error.";
-  res.status(error.statusCode || 500).json({ message });
+  res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Server error." });
 });
 
 function cleanSupabaseBootError(error) {

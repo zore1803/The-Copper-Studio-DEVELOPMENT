@@ -66,6 +66,16 @@ function esc(value) {
     .replace(/"/g, "&quot;");
 }
 
+function isPaidStatus(value) {
+  return ["paid", "completed", "success", "received"].includes(String(value || "").toLowerCase());
+}
+
+function invoicePaymentStatus(inv, payment) {
+  if (isPaidStatus(payment?.status)) return "Paid";
+  if (isPaidStatus(inv?.paymentStatus || inv?.status)) return "Paid";
+  return "Pending";
+}
+
 /* ----------------------------------------------------- model normalization */
 
 /**
@@ -97,6 +107,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
 
   const invoiceNumber = inv?.invoiceNumber || payment.invoiceId || `INV-${String(src?._id || "").slice(-6).toUpperCase()}`;
   const issueDate = inv?.issueDate || inv?.date || payment.paidAt || src?.createdAt || new Date();
+  const transactionStatus = invoicePaymentStatus(inv, payment);
 
   const includes = Array.isArray(pkg.includes) ? pkg.includes : [];
 
@@ -122,7 +133,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
       paymentId: payment.razorpayPaymentId || inv?.razorpayPaymentId || "",
       orderRef: payment.razorpayOrderId || inv?.razorpayOrderId || "",
       method: payment.method || "Online",
-      status: payment.status === "paid" ? "Paid" : (inv?.paymentStatus || "Paid"),
+      status: transactionStatus,
       paidAt: payment.paidAt || inv?.paidAt || issueDate
     },
     items: [
@@ -157,6 +168,7 @@ export function renderInvoiceHtml(input) {
   const m = input?.totals ? input : buildInvoiceModel(input);
   const { seller: s, bank: b, settings: cfg, client, transaction: tx, items, totals } = m;
   const sym = cfg.currencySymbol;
+  const isPaid = tx.status === "Paid";
 
   const itemRows = items
     .map(
@@ -246,7 +258,9 @@ export function renderInvoiceHtml(input) {
   .paid-banner { margin-top:16px; display:flex; justify-content:flex-end; }
   .paid-banner .box { text-align:right; }
   .paid-banner .label { display:flex; justify-content:flex-end; align-items:center; gap:6px; font-weight:700; color:#15803d; }
+  .paid-banner.pending .label { color:#92400e; }
   .paid-banner .tick { display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; background:#16a34a; color:#fff; font-size:9px; }
+  .paid-banner.pending .tick { background:#f59e0b; }
   .paid-banner .meta { color:var(--muted); margin-top:2px; }
   .paid-banner .txn { font-family:"Courier New",monospace; font-size:10px; color:var(--muted); margin-top:2px; }
 
@@ -261,6 +275,10 @@ export function renderInvoiceHtml(input) {
   .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
   .notes h4 { color:var(--ink); margin:0 0 4px; font-size:11px; }
   .notes ol { margin:4px 0 0; padding-left:18px; }
+  .notes ol > li { margin-bottom:5px; }
+  .notes .term-title { color:var(--ink); font-weight:600; }
+  .notes ol ul { list-style:disc; margin:3px 0 2px; padding-left:16px; }
+  .notes ol ul li { margin-bottom:2px; }
   .foot { margin-top:18px; text-align:center; color:var(--muted); font-size:10px; border-top:1px solid var(--line); padding-top:10px; }
 
   @media print { html, body { background:#fff; } .sheet { margin:0; padding:26px 30px; width:auto; min-height:auto; } @page { size:A4; margin:12mm; } }
@@ -333,11 +351,11 @@ export function renderInvoiceHtml(input) {
       <div class="words">Total amount (in words): <strong>${esc(totals.amountInWords)}</strong></div>
     </div>
 
-    <div class="paid-banner">
+    <div class="paid-banner${isPaid ? "" : " pending"}">
       <div class="box">
-        <div class="label"><span class="tick">&#10003;</span> Amount Paid</div>
-        <div class="meta">${sym}${money(totals.total)} Paid via ${esc(tx.provider)} (${esc(tx.method)}) on ${formatDate(tx.paidAt)}</div>
-        ${txnLine ? `<div class="txn">${txnLine}</div>` : ""}
+        <div class="label"><span class="tick">${isPaid ? "&#10003;" : "!"}</span> ${isPaid ? "Amount Paid" : "Payment Pending"}</div>
+        <div class="meta">${sym}${money(totals.total)} ${isPaid ? `Paid via ${esc(tx.provider)} (${esc(tx.method)}) on ${formatDate(tx.paidAt)}` : `Pending as of ${formatDate(m.issueDate)}`}</div>
+        ${isPaid && txnLine ? `<div class="txn">${txnLine}</div>` : ""}
       </div>
     </div>
 
@@ -357,10 +375,22 @@ export function renderInvoiceHtml(input) {
     </div>
 
     <div class="notes">
-      <h4>Notes:</h4>
-      <div>${esc(cfg.notes)}</div>
-      <h4 style="margin-top:12px">Terms and Conditions:</h4>
-      <ol>${cfg.terms.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>
+      <h4>Terms &amp; Conditions:</h4>
+      <ol>${cfg.terms
+        .map((t) =>
+          typeof t === "string"
+            ? `<li>${esc(t)}</li>`
+            : `<li><span class="term-title">${esc(t.title)}</span>${
+                (t.points || []).length
+                  ? `<ul>${t.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`
+                  : ""
+              }</li>`
+        )
+        .join("")}</ol>
+      <h4 style="margin-top:12px">Notes:</h4>
+      ${Array.isArray(cfg.notes)
+        ? `<ol>${cfg.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`
+        : `<div>${esc(cfg.notes)}</div>`}
     </div>
 
     <div class="foot">This is a digitally generated invoice and does not require a physical signature. &nbsp;•&nbsp; ${esc(s.website)}</div>

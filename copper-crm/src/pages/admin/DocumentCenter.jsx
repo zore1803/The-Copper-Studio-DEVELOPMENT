@@ -80,7 +80,7 @@ function DocumentRow({ doc, selected, onSelect }) {
   const Icon = TYPE_ICON[type] || FileText;
   const visibility = VISIBILITY[doc.visibility] || VISIBILITY.private;
   const VisibilityIcon = visibility.icon;
-  
+
   const dateStr = doc.createdAt || doc.date || doc.updatedAt;
   const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString(undefined, {
     year: 'numeric', month: 'short', day: 'numeric'
@@ -267,7 +267,7 @@ export default function DocumentCenter() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCompanyId = searchParams.get("company");
   const selectedProjectId = searchParams.get("project");
-  
+
   const [query, setQuery] = useState("");
   const [view, setView] = useState("grid");
   const [selected, setSelected] = useState(null);
@@ -364,7 +364,6 @@ export default function DocumentCenter() {
   let displayFiles = [];
   let viewTitle = "";
   let viewSubtitle = "";
-  let breadcrumbs = [];
   let showFolders = true;
   let showFiles = false;
 
@@ -386,7 +385,6 @@ export default function DocumentCenter() {
     }
     viewTitle = "Company Folders";
     viewSubtitle = "A folder-first view of all company documents, proposals, contracts, invoices, projects, and shared files.";
-    breadcrumbs = [{ label: "Document Center", onClick: () => { setSearchParams({}); setQuery(""); } }];
     showFolders = true;
     showFiles = false;
   } else if (!selectedProjectId) {
@@ -403,26 +401,17 @@ export default function DocumentCenter() {
        displayFolders = displayFolders.filter(f => f.title.toLowerCase().includes(normalizedQuery));
     }
     displayFiles = companyDocs.filter(d => String(d.companyId) === String(selectedCompanyId)).filter(filterDoc);
-    
+
     viewTitle = currentCompany?.companyName || currentCompany?.name || "Company";
     viewSubtitle = `Projects and documents for ${viewTitle}`;
-    breadcrumbs = [
-      { label: "Document Center", onClick: () => { setSearchParams({}); setQuery(""); } },
-      { label: viewTitle, onClick: () => { setSearchParams({ company: selectedCompanyId }); setQuery(""); } }
-    ];
     showFolders = true;
     showFiles = false;
   } else {
     // Project level
     displayFiles = projectDocs.filter(d => String(d.projectId) === String(selectedProjectId)).filter(filterDoc);
-    
+
     viewTitle = currentProject?.name || currentProject?.projectName || "Project";
     viewSubtitle = `Documents for project ${viewTitle}`;
-    breadcrumbs = [
-      { label: "Document Center", onClick: () => { setSearchParams({}); setQuery(""); } },
-      { label: currentCompany?.companyName || currentCompany?.name || "Company", onClick: () => { setSearchParams({ company: selectedCompanyId }); setQuery(""); } },
-      { label: viewTitle, onClick: () => {} }
-    ];
     showFolders = false;
     showFiles = true;
   }
@@ -445,32 +434,24 @@ export default function DocumentCenter() {
   }
 
   return (
-    <div className="flex min-h-full bg-white">
-      <section className="min-w-0 flex-1 p-6">
-        <div className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#9ca3af]">
-              {breadcrumbs.map((crumb, idx) => (
-                <span key={idx} className="flex items-center gap-2">
-                  <button onClick={crumb.onClick} className={`${idx < breadcrumbs.length - 1 ? "hover:text-[#111827] transition-colors" : "text-[#111827]"}`}>{crumb.label}</button>
-                  {idx < breadcrumbs.length - 1 && <span>/</span>}
-                </span>
-              ))}
-            </div>
-            <h1 className="text-2xl font-bold text-[#111827]">{viewTitle}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-[#6b7280]">{viewSubtitle}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
-              <Search size={14} className="text-[#9ca3af]" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-52 bg-transparent text-sm outline-none" />
-            </div>
-            <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-            <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
-            <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
-          </div>
+    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+        <div className="min-w-0">
+          <h1 className="text-base font-medium text-[#0E121B]">{viewTitle}</h1>
+          <p className="mt-0.5 max-w-3xl truncate text-xs text-[#525866]">{viewSubtitle}</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
+            <Search size={14} className="text-[#9ca3af]" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
+          </div>
+          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
+        </div>
+      </div>
 
+      <section className="min-w-0 flex-1 p-5 xl:p-6">
         {showFolders && displayFolders.length > 0 && (
           <div className="mb-8">
             <h2 className="text-lg font-bold text-[#111827] mb-4">{!selectedCompanyId ? "Companies" : "Projects"}</h2>
@@ -542,4 +523,3 @@ export default function DocumentCenter() {
     </div>
   );
 }
-

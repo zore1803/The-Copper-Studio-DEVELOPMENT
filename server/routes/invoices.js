@@ -72,7 +72,7 @@ async function respond(res, data, format) {
 
 router.get("/by-order/:orderId/html", async (req, res, next) => {
   try {
-    respond(res, await loadByOrderId(req.params.orderId), "html");
+    await respond(res, await loadByOrderId(req.params.orderId), "html");
   } catch (error) {
     next(error);
   }
@@ -88,7 +88,7 @@ router.get("/by-order/:orderId/pdf", async (req, res, next) => {
 
 router.get("/:invoiceId/html", async (req, res, next) => {
   try {
-    respond(res, await loadByInvoiceId(req.params.invoiceId), "html");
+    await respond(res, await loadByInvoiceId(req.params.invoiceId), "html");
   } catch (error) {
     next(error);
   }

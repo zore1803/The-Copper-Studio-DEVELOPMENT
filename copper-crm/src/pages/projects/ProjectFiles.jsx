@@ -2,12 +2,13 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FolderPlus, FilePlus2, FileText, FileType, Image, Frame,
-  Folder as FolderIcon, MoreHorizontal, Trash2, X, Check,
+  MoreHorizontal, Trash2, X, Check,
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import ProjectHeader from "./ProjectHeader";
+import customFolderSvg from "../../assets/Folder.svg";
 
 const TYPE_META = {
   pdf: { icon: FileText, className: "bg-red-50 text-red-600" },
@@ -52,8 +53,6 @@ export default function ProjectFiles() {
   const [docMenu, setDocMenu] = useState(null);
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
-  const { records: allDocuments } = useCrmRecords("documents");
-  const { records: allInvoices } = useCrmRecords("invoices");
 
   const company = useMemo(
     () => companies.find((c) => String(c.id) === companyId || String(c._id) === companyId),
@@ -64,44 +63,7 @@ export default function ProjectFiles() {
     [allProjects, projectId]
   );
 
-  const documents = useMemo(() => {
-    // 1. Embedded documents from project
-    const embedded = project?.documents || [];
-
-    // 2. Documents from the documents collection matching this projectId
-    const collectionDocs = allDocuments
-      .filter((doc) => String(doc.projectId) === String(projectId))
-      .map((doc) => ({
-        _id: doc._id || doc.id,
-        name: doc.fileName || doc.name,
-        category: doc.category || "Files",
-        type: doc.fileType || "doc",
-        sizeMB: parseFloat(doc.fileSize) || 0.1,
-        date: doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—",
-        uploadedBy: doc.uploadedByName || "Admin",
-        fileUrl: doc.fileUrl,
-      }));
-
-    // 3. Invoice PDFs matching this project
-    const projectInvoices = allInvoices
-      .filter(
-        (inv) =>
-          (inv.projectId && String(inv.projectId) === String(project._id || project.id)) ||
-          (inv.sourceOrderId && project?.orderId && String(inv.sourceOrderId) === String(project.orderId))
-      )
-      .map((inv) => ({
-        _id: inv._id || inv.id,
-        name: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
-        category: "Invoices",
-        type: "pdf",
-        sizeMB: 0.1,
-        date: inv.createdAt ? new Date(inv.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—",
-        uploadedBy: "The Copper Studio",
-        fileUrl: `/api/invoices/${inv._id || inv.id || inv.invoiceNumber}/pdf`,
-      }));
-
-    return [...collectionDocs, ...embedded, ...projectInvoices];
-  }, [project, allDocuments, allInvoices, projectId]);
+  const documents = useMemo(() => project?.documents || [], [project]);
   const customFolders = useMemo(() => (project?.customFolders || []).filter((name) => typeof name === "string"), [project]);
   const allFolderDefs = useMemo(() => {
     const docCategories = [...new Set(documents.map((doc) => doc.category).filter(Boolean))];
@@ -198,7 +160,7 @@ export default function ProjectFiles() {
         onAction={() => fileInputRef.current?.click()}
       />
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 space-y-5 p-6">
       {/* Upload folder selector */}
       <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <FilePlus2 size={15} className="text-[#884c2d] shrink-0" />
@@ -254,21 +216,19 @@ export default function ProjectFiles() {
         </div>
 
         {folders.length ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {folders.map(folder => (
               <button
                 key={folder.key}
                 type="button"
                 onClick={() => setActiveFolder(activeFolder === folder.key ? null : folder.key)}
-                className={`group cursor-pointer rounded-xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
-                  activeFolder === folder.key ? "border-[#884c2d] bg-white shadow-md" : "border-[#d8c2b9] bg-[#fff1ec] hover:bg-white"
+                className={`group flex flex-col items-center justify-start rounded-xl p-3 text-center transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-105 hover:-translate-y-1 will-change-transform ${
+                  activeFolder === folder.key ? "bg-black/10 ring-1 ring-black/5" : "bg-transparent"
                 }`}
               >
-                <div className={`mb-4 grid h-12 w-12 place-items-center rounded-lg ${folder.className}`}>
-                  <FolderIcon size={24} />
-                </div>
-                <h4 className="text-sm font-bold text-[#211a17] truncate">{folder.key}</h4>
-                <p className="mt-1 text-[11px] text-[#6b7280]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+                <img src={customFolderSvg} alt="Folder" className="mb-3 h-[96px] w-auto object-contain drop-shadow-sm" />
+                <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#374151]">{folder.key}</p>
+                <p className="mt-0.5 w-full text-[11px] text-[#9ca3af]">{folder.count} items · {formatSizeMB(folder.size)}</p>
               </button>
             ))}
           </div>

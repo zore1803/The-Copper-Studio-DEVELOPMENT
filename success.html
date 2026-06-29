@@ -3,51 +3,136 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful | The Copper Studio</title>
-    <link rel="stylesheet" href="assets/styles.css?v=pages-1">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <title>Payment Confirmed | The Copper Studio</title>
+    <link rel="stylesheet" href="assets/styles.css?v=checkout-reference-1">
+    <link rel="stylesheet" href="assets/checkout-flow.css?v=1">
   </head>
   <body data-page="success">
     <header class="shell-header">
       <a class="brand" href="index.html">
-        <span class="brand-mark">TCS</span>
-        <span>The Copper Studio</span>
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>THE COPPER STUDIO</span>
       </a>
       <nav class="top-nav" aria-label="Main navigation">
-        <a href="index.html">Pricing Packages</a>
+        <a href="index.html">Pricing</a>
+        <a href="index.html#packages">Packages</a>
       </nav>
     </header>
 
     <main class="page-shell">
-      <section class="success-page">
-        <div class="confetti" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span><span></span>
+
+      <!-- Progress: steps 1 & 2 done, step 3 active -->
+      <div class="checkout-progress">
+        <div class="checkout-step is-done">
+          <span class="checkout-step-num">✓</span>
+          <span>Your Details</span>
         </div>
-        <div class="success-icon">
-          <span class="material-symbols-outlined">check</span>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step is-done">
+          <span class="checkout-step-num">✓</span>
+          <span>Payment</span>
         </div>
-        <p class="mini-label">Payment Successful</p>
-        <h1>Thank you for choosing The Copper Studio.</h1>
-        <p id="successMessage">Your payment is confirmed. Invoice and welcome message will be emailed shortly.</p>
-        <div class="email-stack success-email">
-          <p class="mini-label">Automatic email includes</p>
-          <div><span class="material-symbols-outlined">mail</span> Account confirmation</div>
-          <div><span class="material-symbols-outlined">receipt_long</span> Invoice</div>
-          <div><span class="material-symbols-outlined">waving_hand</span> Welcome message</div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step is-active">
+          <span class="checkout-step-num">3</span>
+          <span>Confirmation</span>
         </div>
-        <div class="support-box">
-          <span class="material-symbols-outlined">support_agent</span>
-          <div>
-            <strong>Need help?</strong>
-            <p>Our support team will assist with login, invoice, and onboarding queries.</p>
+      </div>
+
+      <div class="two-column">
+
+        <!-- LEFT: confirmation -->
+        <div style="display:grid;gap:32px;">
+          <div class="form-section-block">
+            <div class="success-hero">
+              <span class="success-badge">
+                <span class="success-tick"><span class="material-symbols-outlined">check</span></span>
+                Payment Successful
+              </span>
+              <h1>Thank you for choosing The Copper Studio.</h1>
+              <p id="successMessage">Your payment is confirmed. Your invoice and welcome message will be emailed shortly.</p>
+            </div>
+
+            <div class="block-header" style="border-top:1px solid #eee;border-bottom:0;padding:18px 0 0;margin:0 0 18px;">
+              <h3 style="font-size:1rem;">A confirmation email includes</h3>
+            </div>
+            <ul class="emailed-list">
+              <li><span class="material-symbols-outlined">verified</span> Account confirmation &amp; portal access link</li>
+              <li><span class="material-symbols-outlined">receipt_long</span> GST invoice for your records</li>
+              <li><span class="material-symbols-outlined">waving_hand</span> Welcome &amp; onboarding next steps</li>
+            </ul>
+
+            <div class="support-callout">
+              <span class="material-symbols-outlined">support_agent</span>
+              <div>
+                <strong>Need help?</strong>
+                <p>Our team assists with login, invoice, and onboarding queries. Reply to your confirmation email anytime.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="completion-actions">
-          <button class="btn btn-primary" type="button" id="downloadInvoice">Download Invoice <span class="material-symbols-outlined">download</span></button>
-          <a class="btn btn-secondary" href="index.html">New Order</a>
+
+        <!-- RIGHT: order summary + actions -->
+        <aside class="panel sticky-panel">
+          <p class="mini-label">Order Summary</p>
+          <div id="selectedOverview"></div>
+
+          <div class="summary-divider"></div>
+
+          <div class="invoice-line">
+            <span>Invoice No.</span>
+            <strong id="successInvoiceId">—</strong>
+          </div>
+          <div class="invoice-line">
+            <span>Status</span>
+            <span class="success-paid-pill"><span class="material-symbols-outlined" style="font-size:0.9rem;">check_circle</span> Paid</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="total-row">
+            <span>Total paid</span>
+            <strong id="overviewTotal">—</strong>
+          </div>
+
+          <button class="btn btn-primary pay-button-block" type="button" id="downloadInvoice">
+            Download Invoice
+            <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">download</span>
+          </button>
+
+          <a class="back-link" href="index.html">
+            <span class="material-symbols-outlined" style="font-size:0.95rem;">add</span>
+            Start a new order
+          </a>
+
+          <div class="trust-row">
+            <span class="trust-item">
+              <span class="material-symbols-outlined">mark_email_read</span>
+              Confirmation sent to your email
+            </span>
+            <span class="trust-item">
+              <span class="material-symbols-outlined">lock</span>
+              Payment secured by Razorpay
+            </span>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="checkout-footer">
+        <div>
+          <strong>The Copper Studio</strong>
+          <small>© 2024 The Copper Studio. Secure checkout guaranteed.</small>
         </div>
-      </section>
+        <nav aria-label="Footer links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </nav>
+      </footer>
     </main>
 
-    <script src="assets/app.js?v=pages-1"></script>
+    <script src="assets/app.js?v=checkout-reference-1"></script>
   </body>
 </html>

@@ -3,58 +3,120 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Razorpay Payment | The Copper Studio</title>
-    <link rel="stylesheet" href="assets/styles.css?v=pages-1">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <title>Payment | The Copper Studio</title>
+    <link rel="stylesheet" href="assets/styles.css?v=checkout-reference-1">
+    <link rel="stylesheet" href="assets/checkout-flow.css?v=1">
   </head>
   <body data-page="payment">
     <header class="shell-header">
       <a class="brand" href="index.html">
-        <span class="brand-mark">TCS</span>
-        <span>The Copper Studio</span>
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>THE COPPER STUDIO</span>
       </a>
       <nav class="top-nav" aria-label="Main navigation">
-        <a href="index.html">Pricing Packages</a>
+        <a href="index.html">Pricing</a>
+        <a href="index.html#packages">Packages</a>
       </nav>
     </header>
 
     <main class="page-shell">
-      <section class="page-heading">
-        <span class="eyebrow">Review &amp; Pay</span>
-        <h1>Confirm your order.</h1>
-        <p>Review your package and amount, then pay securely via the Razorpay window.</p>
-      </section>
 
-      <section class="two-column payment-layout">
-        <aside class="panel">
-          <p class="mini-label">Selected Package</p>
-          <div id="packageDetails"></div>
+      <!-- Progress: step 1 done, step 2 active -->
+      <div class="checkout-progress">
+        <div class="checkout-step is-done">
+          <span class="checkout-step-num">✓</span>
+          <span>Your Details</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step is-active">
+          <span class="checkout-step-num">2</span>
+          <span>Payment</span>
+        </div>
+        <div class="checkout-step-divider"></div>
+        <div class="checkout-step">
+          <span class="checkout-step-num">3</span>
+          <span>Confirmation</span>
+        </div>
+      </div>
+
+      <div class="two-column">
+
+        <!-- LEFT: review details -->
+        <div style="display:grid;gap:32px;">
+
+          <!-- Review your details -->
+          <div class="form-section-block">
+            <div class="block-header" style="display:flex;align-items:center;justify-content:space-between;">
+              <h3>Review Your Details</h3>
+              <a class="edit-link" href="checkout.html">
+                <span class="material-symbols-outlined" style="font-size:0.9rem;">edit</span>
+                Edit
+              </a>
+            </div>
+            <div class="review-grid" id="reviewDetails"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: order summary + pay -->
+        <aside class="panel sticky-panel">
+          <p class="mini-label">Order Summary</p>
+          <div id="selectedOverview"></div>
+
           <div class="summary-divider"></div>
-          <div class="customer-card">
-            <p class="mini-label">Customer</p>
-            <strong id="summaryCustomer">-</strong>
-            <span id="summaryContact">-</span>
+
+          <div class="total-row">
+            <span>Total payable</span>
+            <strong id="overviewTotal">—</strong>
+          </div>
+
+          <button class="btn btn-primary pay-button-block" type="button" id="payButton">
+            Pay Securely
+            <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>
+          </button>
+
+          <p class="gateway-note" id="gatewayNote">
+            <span class="material-symbols-outlined">lock</span>
+            Opens the Razorpay window. Your invoice is emailed automatically after payment.
+          </p>
+
+          <a class="back-link" href="checkout.html">
+            <span class="material-symbols-outlined" style="font-size:0.95rem;">arrow_back</span>
+            Back to details
+          </a>
+
+          <div class="trust-row">
+            <span class="trust-item">
+              <span class="material-symbols-outlined">verified_user</span>
+              256-bit secure checkout
+            </span>
+            <span class="trust-item">
+              <span class="material-symbols-outlined">payments</span>
+              Powered by Razorpay
+            </span>
+            <span class="trust-item">
+              <span class="material-symbols-outlined">receipt</span>
+              GST invoice emailed instantly
+            </span>
           </div>
         </aside>
+      </div>
 
-        <section class="panel payment-summary" aria-label="Payment summary">
-          <div class="payment-summary-head">
-            <p class="mini-label">Amount Summary</p>
-            <span class="secure-badge"><span class="material-symbols-outlined">lock</span> 100% Secure</span>
-          </div>
-
-          <div id="amountBreakdown"></div>
-
-          <div class="payment-actions">
-            <a class="btn btn-secondary" href="checkout.html">Back</a>
-            <button class="btn btn-primary" type="button" id="payButton">Pay Securely <span class="material-symbols-outlined">arrow_forward</span></button>
-          </div>
-
-          <p class="gateway-note" id="gatewayNote">Click Pay Securely to open the Razorpay payment window.</p>
-        </section>
-      </section>
+      <footer class="checkout-footer">
+        <div>
+          <strong>The Copper Studio</strong>
+          <small>© 2024 The Copper Studio. Secure checkout guaranteed.</small>
+        </div>
+        <nav aria-label="Checkout footer links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Support</a>
+        </nav>
+      </footer>
     </main>
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="assets/app.js?v=pages-1"></script>
+    <script src="assets/app.js?v=checkout-reference-1"></script>
   </body>
 </html>

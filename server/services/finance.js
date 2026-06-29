@@ -2,8 +2,8 @@ import Company from "../models/Company.js";
 import Invoice from "../models/Invoice.js";
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
-import User from "../models/User.js";
 import Project from "../models/Project.js";
+import User from "../models/User.js";
 import { nextInvoiceNumber } from "./invoiceNumber.js";
 
 const BACKFILL_INTERVAL_MS = 5 * 60 * 1000;
@@ -26,6 +26,21 @@ async function invoiceNumberFor(order, paidAt) {
 
 function paymentIdFor(order) {
   return order.payment?.razorpayPaymentId || `PAY-${String(order._id).slice(-8).toUpperCase()}`;
+}
+
+function isPaidStatus(status) {
+  return ["paid", "completed", "success", "received"].includes(String(status || "").toLowerCase());
+}
+
+function projectAmount(project) {
+  return Number(project.finalAmount ?? project.packageValue ?? project.budget ?? 0) || 0;
+}
+
+function projectInvoiceStatus(project) {
+  if (isPaidStatus(project.paymentStatus)) return { status: "Paid", paymentStatus: "Paid" };
+  const raw = String(project.paymentStatus || "").trim();
+  if (["Generated", "Sent", "Overdue", "Cancelled"].includes(raw)) return { status: raw, paymentStatus: raw };
+  return { status: "Draft", paymentStatus: "Draft" };
 }
 
 async function findLinkedCompany(order, clientId) {
@@ -58,20 +73,18 @@ export async function syncFinanceForOrder(orderInput) {
   const total = Number(pkg.total || pkg.price || 0);
   const taxableBase = total ? Math.round(total / 1.18) : 0;
   const gst = total ? total - taxableBase : 0;
-  
-  // Find project linked to this order
-  const projectDoc = await Project.findOne({ orderId: order._id }).select("_id name").catch(() => null);
+  const project = await Project.findOne({ orderId: order._id }).select("_id name projectName").catch(() => null);
 
   const shared = {
     sourceOrderId: order._id,
     orderId: String(order._id),
-    projectId: projectDoc?._id || null,
-    project: projectDoc?.name || "",
+    projectId: project?._id || null,
     companyId: company?._id || null,
     clientId: client?._id || company?.userId || null,
     company: company?.name || customer.customerCompany || "",
     client: customer.customerName || client?.name || "",
     customerEmail: customer.customerEmail || "",
+    project: project?.name || project?.projectName || customer.projectName || "",
     package: pkg.name || "",
     amount: total,
     currency: "INR",
@@ -155,4 +168,83 @@ export async function syncPaidOrderFinance() {
   } finally {
     backfillInFlight = null;
   }
+}
+
+export async function syncStandaloneProjectInvoices() {
+  const projects = await Project.find({
+    $or: [{ orderId: { $exists: false } }, { orderId: null }],
+    $and: [{
+      $or: [
+        { finalAmount: { $gt: 0 } },
+        { packageValue: { $gt: 0 } },
+        { budget: { $gt: 0 } }
+      ]
+    }]
+  })
+    .sort({ createdAt: 1 })
+    .limit(100)
+    .catch(() => []);
+
+  let synced = 0;
+  for (const project of projects) {
+    const amount = projectAmount(project);
+    if (!amount) continue;
+
+    const existingByProject = await Invoice.findOne({ projectId: project._id }).catch(() => null);
+    const existingByLink = project.linkedInvoiceId
+      ? await Invoice.findById(project.linkedInvoiceId).catch(() => null)
+      : null;
+    const existing = existingByProject || existingByLink;
+
+    const company = project.companyId
+      ? await Company.findById(project.companyId).select("_id name userId").catch(() => null)
+      : null;
+    const issuedAt = asDate(project.startDate) || asDate(project.createdAt) || new Date();
+    const gst = amount ? amount - Math.round(amount / 1.18) : 0;
+    const status = existing
+      ? (isPaidStatus(project.paymentStatus)
+          ? { status: "Paid", paymentStatus: "Paid" }
+          : { status: existing.status || "Draft", paymentStatus: existing.paymentStatus || existing.status || "Draft" })
+      : projectInvoiceStatus(project);
+    const invoiceFields = {
+      projectId: project._id,
+      companyId: company?._id || project.companyId || null,
+      clientId: project.clientId || company?.userId || null,
+      company: company?.name || project.companyName || project.client || "",
+      client: project.primaryContact || project.clientName || "",
+      project: project.name || project.projectName || "",
+      package: project.packageName || project.packagePurchased || project.template || "Unassigned",
+      total: amount,
+      amount,
+      tax: gst,
+      gst,
+      issueDate: issuedAt,
+      date: issuedAt,
+      dueDate: asDate(project.expectedEndDate) || issuedAt,
+      provider: project.paymentProvider || "",
+      ...status,
+      paidAt: status.status === "Paid" ? (asDate(project.paidAt) || issuedAt) : null
+    };
+
+    if (existing) {
+      await Invoice.findByIdAndUpdate(existing._id, { $set: invoiceFields }).catch(() => {});
+      if (!project.linkedInvoiceId || String(project.linkedInvoiceId) !== String(existing._id)) {
+        await Project.findByIdAndUpdate(project._id, { linkedInvoiceId: existing._id }).catch(() => {});
+      }
+      synced += 1;
+      continue;
+    }
+
+    const invoiceNumber = await nextInvoiceNumber(issuedAt);
+    const invoice = await Invoice.create({
+      id: `invoice-${project._id}`,
+      invoiceNumber,
+      invoiceId: invoiceNumber,
+      ...invoiceFields
+    });
+
+    await Project.findByIdAndUpdate(project._id, { linkedInvoiceId: invoice._id }).catch(() => {});
+    synced += 1;
+  }
+  return synced;
 }

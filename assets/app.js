@@ -37,6 +37,10 @@ const defaultOrder = {
   selectedPackageId: "growth",
   customer: {},
   verified: { phone: false, email: false },
+  // The exact email / full phone string that was OTP-verified. Used to keep a
+  // channel "verified" across the Edit round-trip, and to detect when the user
+  // changes the value (which must invalidate the verification).
+  verifiedValues: { phone: "", email: "" },
   otpSent: { phone: false, email: false },
   coupon: null,
   paymentStatus: "pending",
@@ -54,10 +58,14 @@ function loadOrder() {
       ...defaultOrder,
       ...saved,
       selectedPackageId: selectedPackageId || defaultOrder.selectedPackageId,
-      // Preserve verification state so navigation to payment.html works.
-      verified: saved.verified || { ...defaultOrder.verified },
-      otpSent: saved.otpSent || { ...defaultOrder.otpSent },
-      otpVia: saved.otpVia || {},
+      // Verification PERSISTS so editing details on the payment page doesn't force
+      // a re-verify — but it's only honoured when the field value still matches
+      // verifiedValues (reconciled on render). otpSent is reset so a fresh OTP is
+      // required whenever the user actually changes a value.
+      verified: { ...defaultOrder.verified, ...(saved.verified || {}) },
+      verifiedValues: { ...defaultOrder.verifiedValues, ...(saved.verifiedValues || {}) },
+      otpSent: { ...defaultOrder.otpSent },
+      otpVia: {},
       coupon: saved.coupon || null
     };
   } catch {
@@ -159,6 +167,20 @@ const COUNTRY_DIAL_CODES = [
   flag: String.fromCodePoint(...[...iso].map((c) => 127397 + c.charCodeAt(0)))
 }));
 
+function populateCountrySelect(id, defaultDial = "+91") {
+  const sel = document.getElementById(id);
+  if (!sel || sel.tagName !== "SELECT") return;
+  sel.innerHTML = COUNTRY_DIAL_CODES.map((c) =>
+    `<option value="${c.dial}"${c.dial === defaultDial ? " selected" : ""}>${c.flag} ${c.name} (${c.dial})</option>`
+  ).join("");
+}
+
+function setupCountrySelect() {
+  populateCountrySelect("customerCountryCode");
+  populateCountrySelect("alternativeCountryCode");
+  populateCountrySelect("whatsappCountryCode");
+}
+
 function setupCountryPicker() {
   const picker = document.querySelector("[data-country-picker]");
   if (!picker) return;
@@ -242,6 +264,31 @@ function customerFullPhone() {
   return number ? `${code} ${number}` : "";
 }
 
+// Maharashtra state code — The Copper Studio's registered state.
+// GSTIN starts with the 2-digit state code of the buyer's state.
+const SELLER_STATE_CODE = "27";
+
+function gstType(gstin) {
+  const code = String(gstin || "").trim().replace(/\s/g, "").slice(0, 2);
+  if (code.length < 2 || !/^\d{2}$/.test(code)) return "b2c"; // no valid GSTIN → B2C
+  return code === SELLER_STATE_CODE ? "intra" : "inter";
+}
+
+function gstBreakdownHtml(gst, gstin) {
+  const type = gstType(gstin);
+  if (type === "intra") {
+    const cgst = Math.floor(gst / 2);
+    const sgst = gst - cgst;
+    return `
+      <div class="overview-row"><span>CGST (9%)</span><strong>${formatCurrency(cgst)}</strong></div>
+      <div class="overview-row"><span>SGST (9%)</span><strong>${formatCurrency(sgst)}</strong></div>`;
+  }
+  if (type === "inter") {
+    return `<div class="overview-row"><span>IGST (18%)</span><strong>${formatCurrency(gst)}</strong></div>`;
+  }
+  return `<div class="overview-row"><span>GST estimate (18%)</span><strong>${formatCurrency(gst)}</strong></div>`;
+}
+
 function packageTotal(pkg = selectedPackage()) {
   const discount = order.coupon?.discount || 0;
   return Math.round(Math.max(0, pkg.price - discount) * 1.18);
@@ -252,20 +299,24 @@ function packageGst(pkg = selectedPackage()) {
   return Math.round(Math.max(0, pkg.price - discount) * 0.18);
 }
 
-function overviewTemplate(pkg = selectedPackage()) {
+function overviewTemplate(pkg = selectedPackage(), gstin = "") {
   const discount = order.coupon?.discount || 0;
   const subtotal = Math.max(0, pkg.price - discount);
   const gst = Math.round(subtotal * 0.18);
   return `
     <div class="overview-card">
-      <h3>${pkg.name}</h3>
-      <p>${pkg.label}</p>
-      <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
+      <div class="summary-package">
+        <div class="summary-thumb" aria-hidden="true"></div>
+        <div>
+          <h3>${pkg.name}</h3>
+          <p>${pkg.label}</p>
+          <strong class="summary-price">${formatCurrency(pkg.price)}</strong>
+        </div>
+      </div>
+      <div class="overview-row"><span>Subtotal</span><strong>${formatCurrency(pkg.price)}</strong></div>
       ${discount ? `<div class="overview-row discount-row"><span>Coupon discount (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
-      <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
-      <div class="overview-row"><span>GST estimate</span><strong>${formatCurrency(gst)}</strong></div>
-      <div class="overview-row"><span>Setup timeline</span><strong>${pkg.duration}</strong></div>
-      <div class="overview-row"><span>Confirmation</span><strong>Email after payment</strong></div>
+      ${discount ? `<div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>` : ""}
+      ${gstBreakdownHtml(gst, gstin)}
     </div>
   `;
 }
@@ -291,23 +342,20 @@ function packageDetailsTemplate(pkg = selectedPackage()) {
   `;
 }
 
-// Right panel on the payment page: the amount breakdown with the GST split into
-// CGST + SGST, any applied coupon, and the final amount to pay.
+// Right panel on the payment page: the amount breakdown with GST type based on
+// the buyer's GSTIN state code vs the seller's state (27 = Maharashtra).
 function amountBreakdownTemplate(pkg = selectedPackage()) {
   const discount = order.coupon?.discount || 0;
   const subtotal = Math.max(0, pkg.price - discount);
   const total = packageTotal(pkg);
   const gst = total - subtotal;
-  const cgst = Math.floor(gst / 2);
-  const sgst = gst - cgst;
+  const gstin = order.customer?.companyGstin || "";
   return `
     <div class="overview-card">
       <div class="overview-row"><span>Package amount</span><strong>${formatCurrency(pkg.price)}</strong></div>
       ${discount ? `<div class="overview-row discount-row"><span>Coupon applied (${order.coupon.code})</span><strong>- ${formatCurrency(discount)}</strong></div>` : ""}
       <div class="overview-row"><span>Taxable subtotal</span><strong>${formatCurrency(subtotal)}</strong></div>
-      <div class="overview-row"><span>CGST (9%)</span><strong>${formatCurrency(cgst)}</strong></div>
-      <div class="overview-row"><span>SGST (9%)</span><strong>${formatCurrency(sgst)}</strong></div>
-      <div class="overview-row"><span>Total GST (18%)</span><strong>${formatCurrency(gst)}</strong></div>
+      ${gstBreakdownHtml(gst, gstin)}
     </div>
     <div class="summary-divider"></div>
     <div class="total-row"><span>Amount to pay</span><strong>${formatCurrency(total)}</strong></div>
@@ -322,7 +370,9 @@ function requirePackage() {
 
 function requireCustomer() {
   requirePackage();
-  if (!order.customer.firstName || !order.verified.phone || !order.verified.email) {
+  // verified flags are reset on every page load (security), so only check
+  // that customer data exists — it is only saved after OTP verification passes.
+  if (!order.customer.firstName || !order.customer.customerEmail || !order.customer.customerPhone) {
     window.location.href = "checkout.html";
   }
 }
@@ -366,33 +416,94 @@ function renderPackagesPage() {
   });
 }
 
+// Full phone string used as the verified identity for the phone channel.
+function currentPhoneValue() {
+  const cc = document.getElementById("customerCountryCode")?.value || order.customer?.customerCountryCode || "+91";
+  const num = document.getElementById("customerPhone")?.value?.trim() || order.customer?.customerPhone || "";
+  return num ? `${cc} ${num}` : "";
+}
+
+// Lock (readonly) the underlying field(s) for a verified channel. The country
+// SELECT is never `disabled` (that would drop it from FormData) — instead a
+// change to it while verified invalidates the verification via clearVerification.
+function lockChannel(type, locked) {
+  if (type === "email") {
+    const email = document.getElementById("customerEmail");
+    if (email) email.readOnly = locked;
+  } else {
+    const phone = document.getElementById("customerPhone");
+    if (phone) phone.readOnly = locked;
+  }
+}
+
+// Drop verification for a channel (used by the "Change" button and when the
+// user edits a previously-verified value), unlocking the field for re-entry.
+function clearVerification(type, { focus = true } = {}) {
+  order.verified[type] = false;
+  order.verifiedValues[type] = "";
+  if (order.otpSent) order.otpSent[type] = false;
+  saveOrder(order);
+  updateVerificationUI();
+  if (focus) {
+    document.getElementById(type === "email" ? "customerEmail" : "customerPhone")?.focus();
+  }
+}
+
+// On load, only honour persisted verification if the current field value still
+// matches the value that was actually verified.
+function reconcileVerification() {
+  if (order.verified.email && order.verifiedValues.email
+    && document.getElementById("customerEmail")?.value.trim() !== order.verifiedValues.email) {
+    order.verified.email = false;
+  }
+  if (order.verified.phone && order.verifiedValues.phone
+    && currentPhoneValue() !== order.verifiedValues.phone) {
+    order.verified.phone = false;
+  }
+  saveOrder(order);
+}
+
 function updateVerificationUI() {
-  Object.entries(order.verified).forEach(([type, verified]) => {
+  ["email", "phone"].forEach((type) => {
+    const verified = !!order.verified?.[type];
+    const sent = order.otpSent?.[type];
+    const via = order.otpVia?.[type] === "sms" ? "Check your SMS inbox." : "Check your email.";
     const status = document.getElementById(`${type}VerifyStatus`);
     const card = document.querySelector(`[data-verify-card="${type}"]`);
     const button = document.querySelector(`[data-verify="${type}"]`);
     const sendButton = document.querySelector(`[data-send-otp="${type}"]`);
     const input = document.querySelector(`[data-otp-input="${type}"]`);
-    const sent = order.otpSent?.[type];
-    const via = order.otpVia?.[type] === "sms" ? "Check your SMS inbox." : "Check your email.";
+    const badge = document.getElementById(`${type}Badge`);
+    const changeBtn = document.querySelector(`[data-change="${type}"]`);
 
-    if (!status || !card || !button || !sendButton || !input) return;
+    if (!card) return;
 
-    status.textContent = verified ? "Verified" : sent ? `OTP sent. ${via}` : "OTP not sent";
-    button.textContent = verified ? "Verified" : "Verify";
-    button.disabled = !sent || verified;
-    sendButton.disabled = verified;
-    input.disabled = !sent || verified;
+    if (status) status.textContent = verified ? "Verified" : sent ? `OTP sent. ${via}` : "OTP not sent";
+    if (button) { button.textContent = verified ? "Verified" : "Verify"; button.disabled = !sent || verified; }
+    if (sendButton) sendButton.disabled = verified;
+    if (input) input.disabled = !sent || verified;
+    if (badge) { badge.textContent = verified ? "Verified" : "Unverified"; badge.classList.toggle("pending", !verified); }
+    if (changeBtn) changeBtn.hidden = !verified;
     card.classList.toggle("is-sent", sent && !verified);
     card.classList.toggle("is-verified", verified);
+    lockChannel(type, verified);
   });
 }
 
 function renderCheckoutPage() {
   requirePackage();
   const pkg = selectedPackage();
-  document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-  document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+  const gstinInput = document.getElementById("companyGstin");
+
+  function refreshSummary() {
+    const gstin = gstinInput?.value || "";
+    document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg, gstin);
+    document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+  }
+
+  refreshSummary();
+  gstinInput?.addEventListener("input", refreshSummary);
+
   const couponInput = document.getElementById("couponCode");
   const couponStatus = document.getElementById("couponStatus");
   if (couponInput && order.coupon?.code) {
@@ -401,29 +512,43 @@ function renderCheckoutPage() {
     couponStatus.className = "coupon-success";
   }
 
+  // Populate the country selects BEFORE restoring values so the saved
+  // country code can actually be applied to the now-populated options.
+  setupCountrySelect();
+
   Object.entries(order.customer || {}).forEach(([key, value]) => {
     const input = document.querySelector(`[name="${key}"]`);
     if (input) input.value = value;
   });
 
-  setupCountryPicker();
-
   const phoneInput = document.getElementById("customerPhone");
   if (phoneInput) {
     phoneInput.addEventListener("input", () => {
-      phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+      phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 15);
     });
   }
 
+  // Restore verification across the Edit round-trip, then reflect it in the UI
+  // (verified fields render locked with a "Change" affordance).
+  reconcileVerification();
   updateVerificationUI();
+
+  // "Change" unlocks a verified channel and clears its verification.
+  document.querySelectorAll("[data-change]").forEach((btn) => {
+    btn.addEventListener("click", () => clearVerification(btn.dataset.change));
+  });
+
+  // Changing the country code on an already-verified phone invalidates it.
+  document.getElementById("customerCountryCode")?.addEventListener("change", () => {
+    if (order.verified.phone) clearVerification("phone", { focus: false });
+  });
 
   document.getElementById("applyCouponButton")?.addEventListener("click", async () => {
     const code = couponInput.value.trim().toUpperCase();
     if (!code) {
       order.coupon = null;
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = "Coupon removed.";
       couponStatus.className = "";
       return;
@@ -446,15 +571,13 @@ function renderCheckoutPage() {
         total: applied.total
       };
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = `${applied.code} applied. You saved ${formatCurrency(applied.discount)}.`;
       couponStatus.className = "coupon-success";
     } catch (error) {
       order.coupon = null;
       saveOrder(order);
-      document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg);
-      document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+      refreshSummary();
       couponStatus.textContent = error.message;
       couponStatus.className = "coupon-error";
     }
@@ -525,6 +648,9 @@ function renderCheckoutPage() {
           body: JSON.stringify({ email: emailField.value.trim(), channel: type, code })
         });
         order.verified[type] = true;
+        // Remember exactly what was verified so it stays verified across the Edit
+        // round-trip and so any later change is detected and invalidates it.
+        order.verifiedValues[type] = type === "email" ? emailField.value.trim() : currentPhoneValue();
         saveOrder(order);
         updateVerificationUI();
         showToast(`${type === "phone" ? "Mobile number" : "Email"} verified.`, "success");
@@ -540,10 +666,29 @@ function renderCheckoutPage() {
   document.getElementById("customerForm").addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
-    if (!form.reportValidity()) return;
 
-    if (!order.verified.phone || !order.verified.email) {
-      showToast("Please verify both mobile number and email OTP before continuing to Razorpay.");
+    // Find the first empty/invalid required field, scroll to it, and report it
+    // by name so a field scrolled off-screen doesn't fail silently.
+    const firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid) {
+      firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstInvalid.focus({ preventScroll: true });
+      const label = firstInvalid.closest("label")?.querySelector("span")?.textContent?.trim()
+        || firstInvalid.previousElementSibling?.querySelector("span")?.textContent?.trim()
+        || "a required field";
+      showToast(`Please fill in ${label.replace(/\s*optional\s*$/i, "")}.`);
+      form.reportValidity();
+      return;
+    }
+
+    if (!order.verified.email) {
+      document.querySelector('[data-verify-card="email"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("Please verify your email with OTP before continuing.");
+      return;
+    }
+    if (!order.verified.phone) {
+      document.querySelector('[data-verify-card="phone"]')?.scrollIntoView({ behavior: "smooth", block: "center" });
+      showToast("Please verify your phone number with OTP before continuing.");
       return;
     }
 
@@ -570,20 +715,57 @@ function renderCheckoutPage() {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+}
+
+// Read-only review of the customer's submitted details, shown on the payment page.
+function customerReviewTemplate() {
+  const c = order.customer || {};
+  const name = [c.salutation, c.firstName, c.lastName].filter(Boolean).join(" ").trim() || c.customerName || "—";
+  const phone = customerFullPhone() || "—";
+  const altPhone = c.alternativePhone ? `${c.alternativeCountryCode || "+91"} ${c.alternativePhone}` : "";
+  const whatsapp = c.whatsappNumber ? `${c.whatsappCountryCode || "+91"} ${c.whatsappNumber}` : "";
+  const addressParts = [c.billingAddressLine1, c.billingAddressLine2, [c.city, c.state].filter(Boolean).join(", "), c.pincode].filter(Boolean);
+  const address = addressParts.length ? addressParts.join(", ") : "—";
+  const verified = '<span class="verified-chip"><span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span>Verified</span>';
+
+  const rows = [
+    c.projectName ? ["Project", escapeHtml(c.projectName)] : null,
+    ["Contact", `${escapeHtml(name)}${c.designation ? ` &middot; ${escapeHtml(c.designation)}` : ""}`],
+    ["Email", `${escapeHtml(c.customerEmail || "—")}${order.verified?.email ? verified : ""}`],
+    ["Phone", `${escapeHtml(phone)}${order.verified?.phone ? verified : ""}`],
+    whatsapp ? ["WhatsApp", escapeHtml(whatsapp)] : null,
+    altPhone ? ["Alt. Number", escapeHtml(altPhone)] : null,
+    c.companyWebsite ? ["Website", escapeHtml(c.companyWebsite)] : null,
+    c.companyGstin ? ["GSTIN", escapeHtml(c.companyGstin)] : null,
+    ["Billing Address", escapeHtml(address)],
+  ].filter(Boolean);
+
+  return rows.map(([label, value]) => `
+    <div class="review-row">
+      <span class="review-label">${label}</span>
+      <span class="review-value">${value}</span>
+    </div>`).join("");
+}
+
 function renderPaymentPage() {
   requireCustomer();
   const pkg = selectedPackage();
-  document.getElementById("packageDetails").innerHTML = packageDetailsTemplate(pkg);
-  document.getElementById("amountBreakdown").innerHTML = amountBreakdownTemplate(pkg);
-  document.getElementById("summaryCustomer").textContent = order.customer.customerName;
-  document.getElementById("summaryContact").textContent = `${order.customer.customerEmail} | ${customerFullPhone()}`;
+  const gstin = order.customer?.companyGstin || "";
+  document.getElementById("reviewDetails").innerHTML = customerReviewTemplate();
+  document.getElementById("selectedOverview").innerHTML = overviewTemplate(pkg, gstin);
+  document.getElementById("overviewTotal").textContent = formatCurrency(packageTotal(pkg));
+
+  const idleLabel = 'Pay Securely <span class="material-symbols-outlined" style="font-size:1rem;line-height:1;">arrow_forward</span>';
 
   document.getElementById("payButton").addEventListener("click", async () => {
     const button = document.getElementById("payButton");
     const gatewayNote = document.getElementById("gatewayNote");
     button.disabled = true;
-    button.textContent = "Opening Razorpay...";
-    if (gatewayNote) gatewayNote.textContent = "Creating secure Razorpay order...";
+    button.innerHTML = '<span class="pay-spinner"></span> Opening Razorpay…';
+    if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">lock</span> Creating secure Razorpay order…';
 
     try {
       if (!window.Razorpay) {
@@ -618,8 +800,11 @@ function renderPaymentPage() {
           color: "#884c2d"
         },
         handler: async (response) => {
-          button.textContent = "Verifying payment...";
-          if (gatewayNote) gatewayNote.textContent = "Verifying payment with Razorpay...";
+          // Razorpay calls this after a successful charge. Wrap it so a failing
+          // verify request resets the button instead of hanging on "Verifying…".
+          button.disabled = true;
+          button.innerHTML = '<span class="pay-spinner"></span> Verifying payment…';
+          if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying payment & generating your invoice…';
 
           try {
             const savedOrder = await apiRequest("/razorpay/verify", {
@@ -633,27 +818,30 @@ function renderPaymentPage() {
               })
             });
 
+            const payment = savedOrder?.payment || {};
             order.paymentStatus = "paid";
-            order.paidAt = savedOrder.payment.paidAt;
-            order.invoiceId = savedOrder.payment.invoiceId;
-            order.razorpayOrderId = savedOrder.payment.razorpayOrderId;
-            order.razorpayPaymentId = savedOrder.payment.razorpayPaymentId;
-            order.mongoOrderId = savedOrder._id;
+            order.paidAt = payment.paidAt || new Date().toISOString();
+            order.invoiceId = payment.invoiceId || "";
+            order.razorpayOrderId = payment.razorpayOrderId || response.razorpay_order_id || "";
+            order.razorpayPaymentId = payment.razorpayPaymentId || response.razorpay_payment_id || "";
+            order.mongoOrderId = savedOrder?._id || "";
             saveOrder(order);
             window.location.href = "success.html";
           } catch (error) {
-            console.error(error);
+            console.error("Payment verification failed:", error);
             button.disabled = false;
-            button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
-            if (gatewayNote) gatewayNote.textContent = error.message;
-            showToast(error.message);
+            button.innerHTML = idleLabel;
+            if (gatewayNote) {
+              gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> Payment captured but verification failed: ${escapeHtml(error.message)}. Please contact support with your payment ID — do not pay again.`;
+            }
+            showToast("Payment verification failed. Please contact support before retrying.");
           }
         },
         modal: {
           ondismiss: () => {
             button.disabled = false;
-            button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
-            if (gatewayNote) gatewayNote.textContent = "Payment was cancelled. You can try again.";
+            button.innerHTML = idleLabel;
+            if (gatewayNote) gatewayNote.innerHTML = '<span class="material-symbols-outlined">info</span> Payment was cancelled. You can try again.';
           }
         }
       };
@@ -661,17 +849,17 @@ function renderPaymentPage() {
       const checkout = new window.Razorpay(options);
       checkout.on("payment.failed", (response) => {
         button.disabled = false;
-        button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
+        button.innerHTML = idleLabel;
         if (gatewayNote) {
-          gatewayNote.textContent = response.error?.description || "Payment failed. Please try again.";
+          gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> ${escapeHtml(response.error?.description || "Payment failed. Please try again.")}`;
         }
       });
       checkout.open();
     } catch (error) {
       console.error(error);
       button.disabled = false;
-      button.innerHTML = 'Pay Securely <span class="material-symbols-outlined">arrow_forward</span>';
-      if (gatewayNote) gatewayNote.textContent = error.message;
+      button.innerHTML = idleLabel;
+      if (gatewayNote) gatewayNote.innerHTML = `<span class="material-symbols-outlined">error</span> ${escapeHtml(error.message)}`;
       showToast(error.message);
     }
   });
@@ -685,8 +873,20 @@ function renderSuccessPage() {
   }
 
   const pkg = selectedPackage();
-  document.getElementById("successMessage").textContent =
-    `Payment for ${pkg.name} is confirmed. Invoice ${order.invoiceId} is generated, and a mail has been sent to ${order.customer.customerEmail} for the next process. Please open that email to set up your portal password and continue onboarding.`;
+  const gstin = order.customer?.companyGstin || "";
+
+  const message = document.getElementById("successMessage");
+  if (message) {
+    message.textContent =
+      `Payment for ${pkg.name} is confirmed${order.invoiceId ? `, and invoice ${order.invoiceId} has been generated` : ""}. A confirmation email has been sent to ${order.customer.customerEmail}. Please open it to set up your portal password and continue onboarding.`;
+  }
+
+  const overview = document.getElementById("selectedOverview");
+  if (overview) overview.innerHTML = overviewTemplate(pkg, gstin);
+  const total = document.getElementById("overviewTotal");
+  if (total) total.textContent = formatCurrency(packageTotal(pkg));
+  const invoiceEl = document.getElementById("successInvoiceId");
+  if (invoiceEl) invoiceEl.textContent = order.invoiceId || "Emailed shortly";
 
   const downloadBtn = document.getElementById("downloadInvoice");
   if (downloadBtn) {

@@ -78,28 +78,26 @@ export default function TimelinePage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex flex-col space-y-5 bg-[#F1F1F5] p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight text-[#111827]">Global Timeline</h2>
-          <p className="mt-1 text-sm text-[#6b7280]">All project stages plotted on a master Gantt chart.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Global Timeline</h1>
+          <p className="text-xs text-[#525866] mt-0.5">All project stages plotted on a master Gantt chart.</p>
         </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3 py-1.5 shadow-sm">
-            <Search size={16} className="text-[#9ca3af]" />
-            <input 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              placeholder="Search projects..." 
-              className="w-48 bg-transparent text-sm text-[#111827] outline-none" 
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3">
+            <Search size={14} className="text-[#9ca3af]" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects..."
+              className="w-44 bg-transparent text-sm text-[#111827] outline-none"
             />
           </div>
-          
           <select
             value={selectedPackage}
             onChange={(e) => setSelectedPackage(e.target.value)}
-            className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] shadow-sm outline-none focus:ring-2 focus:ring-[#884c2d]"
+            className="h-9 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#884c2d]"
           >
             {packages.map(pkg => (
               <option key={pkg} value={pkg}>{pkg === "All" ? "All Packages" : pkg}</option>
@@ -107,6 +105,7 @@ export default function TimelinePage() {
           </select>
         </div>
       </div>
+      <div className="p-5 xl:p-6 space-y-5">
 
       {loading ? (
         <div className="flex justify-center py-20 text-sm text-[#6b7280]">Loading timeline...</div>
@@ -121,6 +120,7 @@ export default function TimelinePage() {
            <GanttView stages={stages} onOpenEdit={handleOpenEdit} groupBy="project" groupCategories={projectCategories} />
         </div>
       )}
+      </div>
     </div>
   );
 }

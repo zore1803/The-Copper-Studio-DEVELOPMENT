@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../auth/useAuth";
 import { storeGet } from "../lib/store";
 import { useCrmRecords } from "../hooks/useCrmRecords";
+import { useToast } from "../components/useToast";
 
 const NAV_SECTIONS = [
   {
@@ -46,7 +47,7 @@ const NAV_SECTIONS = [
           { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
         ],
       },
-      { icon: FolderOpen, to: "/admin/documents/company-folders", label: "Company Folders" },
+      { icon: FolderOpen, label: "Documents", to: "/admin/documents" },
     ],
   },
 ];
@@ -68,8 +69,7 @@ const pageNames = {
   "/admin/services/communications": "Communication",
   "/admin/communication/email-templates": "Email Templates",
   "/admin/communication/whatsapp-templates": "WhatsApp Templates",
-  "/admin/documents/company-folders": "Company Folders",
-  "/admin/documents/project-folders": "Project Folders",
+  "/admin/documents": "Documents",
   "/admin/database": "Database",
   "/admin/settings": "Settings",
 };
@@ -87,8 +87,7 @@ const searchablePages = [
   { label: "Coupons", to: "/admin/coupons", keywords: "coupons discount codes finance" },
   { label: "Coupon Generator", to: "/admin/services/coupon-generator", keywords: "coupon code discount" },
   { label: "Proposal Generator", to: "/admin/services/proposal-generator", keywords: "proposal pdf client" },
-  { label: "Company Folders", to: "/admin/documents/company-folders", keywords: "documents company folders files" },
-  { label: "Project Folders", to: "/admin/documents/project-folders", keywords: "documents project folders files" },
+  { label: "Documents", to: "/admin/documents", keywords: "documents company project folders files" },
   { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
   { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
@@ -248,6 +247,7 @@ export default function AdminLayout() {
   const { records: projects } = useCrmRecords("projects");
   const { records: tasks } = useCrmRecords("tasks");
   const { records: invoices } = useCrmRecords("invoices");
+  const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
   // Always start collapsed on every load/reload; the sidebar only expands when
   // the user explicitly clicks the collapse/expand toggle.
   const [collapsed, setCollapsed] = useState(true);
@@ -260,11 +260,13 @@ export default function AdminLayout() {
   const searchRef = useRef(null);
   const quickAddRef = useRef(null);
   const notifRef = useRef(null);
+  const avatarRef = useRef(null);
 
   useEffect(() => {
     function onOutside(e) {
       if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
     }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
@@ -318,7 +320,7 @@ export default function AdminLayout() {
         ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
         ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
         ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
-        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
+        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents" })),
       ].filter((item) => item.label));
     }
     buildIndex();
@@ -365,10 +367,10 @@ export default function AdminLayout() {
   const sidebarW = collapsed ? 66 : 264;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F1F5] w-full">
+    <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
       {/* Sidebar */}
       <aside
-        className="relative z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200 shrink-0"
+        className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
         {/* Logo */}
@@ -407,15 +409,7 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3 gap-2" : "p-3 space-y-2"}`}>
-          <button
-            onClick={() => { auth.logout(); navigate("/login", { replace: true }); }}
-            title="Log out"
-            className={`flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
-          >
-            <LogOut size={15} />
-            {!collapsed && "Log out"}
-          </button>
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
             onClick={() => setCollapsed((v) => !v)}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -428,7 +422,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: sidebarW }}>
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
           {/* Breadcrumbs */}
@@ -499,33 +493,44 @@ export default function AdminLayout() {
             {/* Bell */}
             <div ref={notifRef} className="relative">
               <button
-                onClick={() => setNotifOpen((v) => !v)}
+                onClick={() => { setNotifOpen((v) => !v); markAllRead(); }}
                 className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                {notifications.length > 0 && <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DF120B] text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
-                  <div className="px-4 py-3 border-b border-[#e5e7eb]">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
                     <p className="font-semibold text-sm text-[#111827]">Notifications</p>
+                    {notifHistory.length > 0 && (
+                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#9ca3af] hover:text-red-500 transition-colors">
+                        Clear all
+                      </button>
+                    )}
                   </div>
-                  <div className="max-h-80 overflow-y-auto p-3 space-y-1.5">
-                    {notifications.length ? (
-                      notifications.map((n) => (
-                        <button
-                          key={n.id}
-                          onClick={() => { setNotifOpen(false); navigate(n.to); }}
-                          className="flex w-full gap-3 p-2.5 rounded-lg bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors text-left"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-[#111827]">{n.text}</p>
-                            <p className="text-xs mt-0.5 text-[#6b7280]">{n.time}</p>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#f3f4f6]">
+                    {notifHistory.length ? (
+                      notifHistory.map((n) => {
+                        const dotColor = n.type === "error" ? "bg-red-400" : n.type === "info" ? "bg-blue-400" : "bg-emerald-400";
+                        const timeStr = n.ts ? new Date(n.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) + ", " + new Date(n.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+                        return (
+                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#fafafa] transition-colors">
+                            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-[#111827]">{n.title}</p>
+                              {n.message && <p className="mt-0.5 text-xs text-[#6b7280] leading-relaxed">{n.message}</p>}
+                              <p className="mt-1 text-[10px] text-[#9ca3af]">{timeStr}</p>
+                            </div>
                           </div>
-                        </button>
-                      ))
+                        );
+                      })
                     ) : (
-                      <p className="px-2 py-3 text-xs text-[#6b7280]">You're all caught up.</p>
+                      <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No notifications yet.</p>
                     )}
                   </div>
                 </div>
@@ -557,7 +562,7 @@ export default function AdminLayout() {
             </div>
 
             {/* Avatar */}
-            <div className="relative">
+            <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#884c2d]/20 transition-all"

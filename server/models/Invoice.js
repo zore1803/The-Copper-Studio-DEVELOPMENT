@@ -8,6 +8,7 @@ const schema = new mongoose.Schema(
     invoiceId: { type: String, index: true, default: "" },
     sourceOrderId: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
     paymentId: { type: String, default: "", index: true },
+    projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project", default: null, index: true },
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", default: null, index: true },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     company: { type: String, default: "" },
@@ -34,6 +35,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.index({ sourceOrderId: 1 }, { unique: true, sparse: true });
+schema.index({ projectId: 1 }, { unique: true, sparse: true });
 
 export default defineModel({
   name: "Invoice",
@@ -42,6 +44,7 @@ export default defineModel({
   defaults: {
     invoiceId: "",
     paymentId: "",
+    projectId: null,
     companyId: null,
     clientId: null,
     company: "",

@@ -10,7 +10,7 @@ import { Button } from "./ui";
  * change after Apply is clicked, which keeps dropdown browsing from instantly
  * changing the underlying list.
  */
-export default function FilterButton({ fields, onReset, panelWidth, panelClassName = "" }) {
+export default function FilterButton({ fields, onReset, panelWidth = 640, panelClassName = "", buttonClassName = "" }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(() => fieldsToDraft(fields));
   const [panelStyle, setPanelStyle] = useState({});
@@ -39,8 +39,7 @@ export default function FilterButton({ fields, onReset, panelWidth, panelClassNa
       if (!button) return;
 
       const rect = button.getBoundingClientRect();
-      const defaultWidth = fields.length === 1 ? 300 : fields.length === 2 ? 480 : 640;
-      const width = Math.min(panelWidth || defaultWidth, Math.max(280, window.innerWidth - 24));
+      const width = Math.min(panelWidth, Math.max(280, window.innerWidth - 24));
       const left = Math.min(Math.max(12, rect.right - width), window.innerWidth - width - 12);
       const below = window.innerHeight - rect.bottom - 12;
       const above = rect.top - 12;
@@ -75,7 +74,7 @@ export default function FilterButton({ fields, onReset, panelWidth, panelClassNa
       window.removeEventListener("resize", updatePanelPosition);
       window.removeEventListener("scroll", updatePanelPosition, true);
     };
-  }, [open, panelWidth, fields.length]);
+  }, [open, panelWidth]);
 
   function setDraftValue(key, value) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -99,17 +98,12 @@ export default function FilterButton({ fields, onReset, panelWidth, panelClassNa
     }
   }
 
-  // Dynamic grid classes based on field count to prevent stretching over 3 columns if only 1-2 fields exist
-  let gridCols = "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
-  if (fields.length === 1) gridCols = "grid-cols-1";
-  else if (fields.length === 2) gridCols = "grid-cols-1 sm:grid-cols-2";
-
   return (
     <div className="relative">
       <button
         ref={buttonRef}
         onClick={() => setOpen((value) => !value)}
-        className={`relative flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${open ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-9 w-9"}`}
       >
         <Filter size={16} />
         {activeCount > 0 && (
@@ -127,7 +121,7 @@ export default function FilterButton({ fields, onReset, panelWidth, panelClassNa
           <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Filters</p>
           <div
             style={{ maxHeight: `calc(${panelStyle.maxHeight || 360}px - 88px)` }}
-            className={`grid gap-3 overflow-y-auto pr-1 ${gridCols}`}
+            className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
           >
             {fields.map((field) => (
               <label key={field.key} className="block">
