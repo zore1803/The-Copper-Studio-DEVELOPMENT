@@ -30,7 +30,8 @@ function assetDataUri(relativeFromAssets, mime) {
 
 function loadLogoDataUri() {
   if (process.env.SELLER_LOGO_URL) return process.env.SELLER_LOGO_URL;
-  return assetDataUri("copper-studio-logo.jpeg", "image/jpeg");
+  // Use the wordmark (icon + lettering) on the invoice header.
+  return assetDataUri("copper-studio-wordmark.png", "image/png") || assetDataUri("copper-studio-logo.jpeg", "image/jpeg");
 }
 
 // Authorized-signatory signature image. Drop the file in as assets/signature.png

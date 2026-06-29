@@ -236,7 +236,7 @@ export function renderInvoiceHtml(input) {
 
   .top { display:flex; justify-content:space-between; gap:18px; border-bottom:2px solid var(--copper); padding-bottom:14px; }
   .brand-block { display:flex; flex-direction:column; gap:10px; }
-  .logo { max-height:48px; max-width:160px; object-fit:contain; }
+  .logo { max-height:64px; max-width:200px; object-fit:contain; }
   .title { letter-spacing:6px; font-size:12px; font-weight:700; color:var(--copper); margin:0; }
   .seller-block { text-align:right; max-width:380px; }
   .brand-name { font-size:18px; font-weight:800; color:var(--copper); margin:0 0 4px; }
@@ -295,7 +295,9 @@ export function renderInvoiceHtml(input) {
   .sign .sign-img { display:block; margin-left:auto; max-height:54px; max-width:180px; object-fit:contain; mix-blend-mode:multiply; }
   .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:170px; }
 
-  .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
+  /* Terms & Conditions + Notes always begin on a fresh page. */
+  .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; page-break-before:always; break-before:page; }
+  .notes h4:first-child { margin-top:0; }
   .notes h4 { color:var(--ink); margin:0 0 4px; font-size:11px; }
   .notes ol { margin:4px 0 0; padding-left:18px; }
   .notes ol > li { margin-bottom:5px; }
