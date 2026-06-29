@@ -6,6 +6,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
+import { generateDefaultProjectName, generateProjectCode } from "../../lib/projectDefaults";
 
 const INVOICE_STATUSES = ["Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"];
 const UNPAID_STATUS_ACTIONS = ["Draft", "Generated", "Paid"];
@@ -56,12 +57,12 @@ function Metric({ label, value, icon: Icon }) {
   );
 }
 
-function Field({ label, value, onChange, type = "text", options }) {
+function Field({ label, value, onChange, type = "text", options, disabled = false, hint = "" }) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] disabled:bg-[#f3f4f6] disabled:text-[#6b7280]">
           {options.map((opt) => (
             typeof opt === "string"
               ? <option key={opt} value={opt}>{opt}</option>
@@ -69,13 +70,14 @@ function Field({ label, value, onChange, type = "text", options }) {
           ))}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#6b7280]" />
       )}
+      {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
   );
 }
 
-function InvoiceModal({ companies, onClose, onSave }) {
+function InvoiceModal({ companies, projects, onClose, onSave }) {
   const [mode, setMode] = useState("existing");
   const [form, setForm] = useState({
     companyId: "",
@@ -103,13 +105,34 @@ function InvoiceModal({ companies, onClose, onSave }) {
       label: company.name || company.companyName || "Unnamed company"
     }))
   ];
+  const selectedCompany = useMemo(
+    () => companies.find((company) => String(company._id || company.id) === String(form.companyId)),
+    [companies, form.companyId]
+  );
+  const normalizedSelectedCompany = useMemo(
+    () => selectedCompany ? { ...selectedCompany, name: selectedCompany.name || selectedCompany.companyName || "Company" } : null,
+    [selectedCompany]
+  );
+  const generatedProjectName = useMemo(
+    () => normalizedSelectedCompany ? generateDefaultProjectName(normalizedSelectedCompany, projects) : "",
+    [normalizedSelectedCompany, projects]
+  );
+  const generatedProjectCode = useMemo(
+    () => normalizedSelectedCompany ? generateProjectCode(normalizedSelectedCompany, projects) : "",
+    [normalizedSelectedCompany, projects]
+  );
+
+  useEffect(() => {
+    if (mode !== "existing") return;
+    setForm((prev) => ({ ...prev, projectName: generatedProjectName }));
+  }, [mode, generatedProjectName]);
 
   async function handleSave() {
     if (saving) return;
     setSaving(true);
     try {
       const payload = mode === "existing"
-        ? { ...form, companyName: "" }
+        ? { ...form, companyName: "", projectName: generatedProjectName }
         : { ...form, companyId: "" };
       await onSave(payload);
     } catch (error) {
@@ -172,7 +195,19 @@ function InvoiceModal({ companies, onClose, onSave }) {
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Project & Invoice Details</p>
         </div>
-        <div className="sm:col-span-2"><Field label="Project Name" value={form.projectName} onChange={set("projectName")} /></div>
+        <div className="sm:col-span-2">
+          {mode === "existing" ? (
+            <Field
+              label="Project Name"
+              value={generatedProjectName || "Select a company to generate"}
+              onChange={() => {}}
+              disabled
+              hint={generatedProjectCode ? `Project ID: ${generatedProjectCode}` : "Auto-generated after company selection and locked for manual invoices."}
+            />
+          ) : (
+            <Field label="Project Name" value={form.projectName} onChange={set("projectName")} />
+          )}
+        </div>
         <Field label="Package / Service Name" value={form.packageName} onChange={set("packageName")} />
         <Field label="Amount (INR)" type="number" value={form.amount} onChange={set("amount")} />
       </div>
@@ -188,6 +223,7 @@ export default function Invoices() {
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
+  const { records: projects } = useCrmRecords("projects");
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -327,7 +363,7 @@ export default function Invoices() {
         )}
       </section>
 
-      {creating && <InvoiceModal companies={companies} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {creating && <InvoiceModal companies={companies} projects={projects} onClose={() => setCreating(false)} onSave={handleCreate} />}
       </div>
     </div>
   );

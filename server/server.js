@@ -129,12 +129,24 @@ function companyCodeFromName(name) {
   return code.padEnd(4, "X");
 }
 
-// Structured project code: CS-<4 letters>-<company #>-<MMYY>, e.g. CS-DATC-02-0626.
-function buildProjectCode(companyName, companyNumber, date = new Date()) {
+// Structured project code: CS-<4 letters>-<project #>-<MMYY>, e.g. CS-DATC-02-0626.
+function buildProjectCode(companyName, projectNumber, date = new Date()) {
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const yy = String(date.getFullYear()).slice(-2);
-  const num = String(companyNumber || 1).padStart(2, "0");
+  const num = String(projectNumber || 1).padStart(2, "0");
   return `CS-${companyCodeFromName(companyName)}-${num}-${mm}${yy}`;
+}
+
+function buildDefaultProjectName(companyName, projectNumber, date = new Date()) {
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yy = String(date.getFullYear()).slice(-2);
+  return `${companyName}-Project ${projectNumber || 1}-${mm}${yy}`;
+}
+
+async function nextProjectNumberForCompany(companyId) {
+  if (!companyId) return 1;
+  const count = await Project.countDocuments({ companyId }).catch(() => 0);
+  return count + 1;
 }
 
 // Finds the checkout customer's company by name, creating it if it doesn't
@@ -198,19 +210,12 @@ async function ensureProjectForOrder(order, clientId, company) {
   const customer = order.customer || {};
   const companyName = company?.name || customer.customerCompany || "";
 
-  // Company number = its 1-based creation-order rank among all companies (or the
-  // next number if this company isn't a saved record yet).
-  let companyNumber = 1;
-  if (companyName) {
-    const companies = await Company.find({}).catch(() => []);
-    const ordered = [...companies].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-    const index = ordered.findIndex((c) => String(c.name || "").trim().toLowerCase() === companyName.trim().toLowerCase());
-    companyNumber = (index >= 0 ? index : ordered.length) + 1;
-  }
+  const projectNumber = await nextProjectNumberForCompany(company?._id);
+  const generatedProjectName = companyName ? buildDefaultProjectName(companyName, projectNumber, new Date()) : "";
 
   return Project.create({
-    name: customer.projectName || `${order.package?.name || "New"} project`,
-    projectId: companyName ? buildProjectCode(companyName, companyNumber, new Date()) : "",
+    name: customer.projectName || generatedProjectName || `${order.package?.name || "New"} project`,
+    projectId: companyName ? buildProjectCode(companyName, projectNumber, new Date()) : "",
     clientId: clientId || null,
     companyId: company?._id || null,
     orderId,
@@ -524,6 +529,9 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       if (!company) return res.status(404).json({ message: "Selected company not found." });
       resolvedCompanyName = company.name;
     }
+    const lockedProjectName = company
+      ? buildDefaultProjectName(resolvedCompanyName, await nextProjectNumberForCompany(company._id), new Date())
+      : "";
 
     const order = await Order.create({
       package: {
@@ -537,7 +545,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
         customerEmail: customerEmail || company?.email || "manual@example.com",
         customerPhone: customerPhone || company?.phone || "0000000000",
         customerCompany: resolvedCompanyName,
-        projectName: projectName || "Custom Project",
+        projectName: lockedProjectName || projectName || "Custom Project",
         companyWebsite: companyWebsite || company?.website || "",
         companyGstin: companyGstin || company?.gstin || "",
         billingAddressLine1: billingAddressLine1 || company?.address || "",
