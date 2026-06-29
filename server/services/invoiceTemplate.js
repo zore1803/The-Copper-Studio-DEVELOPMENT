@@ -406,7 +406,7 @@ export function renderInvoiceHtml(input) {
       </div>
       <div class="sign">
         <div class="for">For ${esc(s.legalName)}</div>
-        ${signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
+        ${isPaid && signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
         <div class="line">${signatory.name ? `${esc(signatory.name)}<br/>` : ""}Authorized Signatory</div>
       </div>
     </div>
