@@ -85,28 +85,28 @@ function PanelSection({ title, children }) {
 
 function KpiChip({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-xl border border-[#E1E4EA] bg-white px-5 py-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F1F1F5] text-[#884c2d]">
+    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-[#525866]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#0E121B]">{value}</p>
+          <p className="truncate text-xs font-medium text-[#6b7280]">{label}</p>
+          <p className="mt-0.5 truncate text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function Section({ title, action, children }) {
+function Section({ title, action, flush = false, children }) {
   return (
-    <section className="rounded-2xl border border-[#E1E4EA] bg-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
-      <div className="flex items-center justify-between border-b border-[#f3f4f6] bg-[#FAFAFA] rounded-t-2xl px-5 sm:px-7 py-4">
-        <h3 className="font-display text-sm font-bold text-[#0E121B]">{title}</h3>
+    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
+        <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
-      <div className="p-5 sm:p-7">{children}</div>
+      <div className={flush ? "bg-white" : "bg-white p-5"}>{children}</div>
     </section>
   );
 }
@@ -114,12 +114,12 @@ function Section({ title, action, children }) {
 function MetaRow({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center gap-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#F1F1F5] text-[#884c2d]">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
         <Icon size={17} />
       </div>
       <div>
         <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-        <p className="text-sm font-bold text-[#0E121B]">{value || "—"}</p>
+        <p className="text-sm font-bold text-[#111827]">{value || "—"}</p>
       </div>
     </div>
   );
@@ -440,7 +440,7 @@ export default function ProjectDetail() {
 
   if (!project && projectsLoading) {
     return (
-      <div className="rounded-2xl border border-[#E1E4EA] bg-[#FFFFFF] p-10 text-center">
+      <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
         <p className="text-sm font-semibold text-[#525866]">Loading project…</p>
       </div>
     );
@@ -448,7 +448,7 @@ export default function ProjectDetail() {
 
   if (!project) {
     return (
-      <div className="rounded-2xl border border-[#E1E4EA] bg-[#FFFFFF] p-10 text-center">
+      <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
         <p className="text-sm font-semibold text-[#525866]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
@@ -529,7 +529,7 @@ export default function ProjectDetail() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-full flex-col bg-[#f8fafc]">
       <ProjectHeader
         company={currentCompany}
         project={project}
@@ -539,20 +539,21 @@ export default function ProjectDetail() {
         onAction={() => setManaging(true)}
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-        <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} />
-        <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
-        <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
-        <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
-        <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
-      </div>
+      <div className="flex-1 space-y-5 p-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+          <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} />
+          <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
+          <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
+          <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
+          <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
+        </div>
 
-      <section className="grid grid-cols-12 gap-5">
+        <section className="grid grid-cols-12 gap-5">
         <div className="col-span-12 space-y-5 lg:col-span-7 xl:col-span-8">
-          <div className="rounded-2xl border border-[#E1E4EA] bg-[#FAFAF8] p-6 lg:p-8">
+          <div className="rounded-xl border border-[#e5e7eb] bg-white p-6 lg:p-8">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <h3 className="text-lg font-bold text-[#0E121B] flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[#111827] flex items-center gap-2">
                   <ListChecks className="text-[#884c2d]" size={20} />
                   Project Roadmap
                 </h3>
@@ -565,10 +566,10 @@ export default function ProjectDetail() {
               </div>
             </div>
 
-            <div className="relative pl-6 space-y-8 before:absolute before:left-10 before:top-4 before:bottom-4 before:w-0.5 before:bg-[#E1E4EA]">
+            <div className="relative pl-6 space-y-8 before:absolute before:left-10 before:top-4 before:bottom-4 before:w-0.5 before:bg-[#e5e7eb]">
               {displayPhases.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-                  <p className="text-sm font-semibold text-[#0E121B]">No stages yet.</p>
+                <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+                  <p className="text-sm font-semibold text-[#111827]">No stages yet.</p>
                   <p className="mt-1 text-sm text-[#6b7280]">Click &ldquo;Manage Stages&rdquo; to add the steps for this project.</p>
                 </div>
               ) : displayPhases.map((phase, index) => {
@@ -593,12 +594,12 @@ export default function ProjectDetail() {
                       {isCompleted ? <CheckCircle2 size={20} className={iconColor} /> : isActive ? <Zap size={18} className={iconColor} /> : <div className="h-2.5 w-2.5 rounded-full bg-[#d1d5db]" />}
                     </div>
                     
-                    <div className={`flex-1 rounded-2xl border p-5 transition-all ${cardBg}`}>
+                    <div className={`flex-1 rounded-xl border p-5 transition-all ${cardBg}`}>
                       <div className="flex items-center gap-3 mb-2">
                         <span className="flex h-5 w-5 items-center justify-center rounded-md bg-white/60 text-[11px] font-bold text-[#525866]">
                           {index + 1}
                         </span>
-                        <h4 className="text-base font-bold text-[#0E121B]">{phase.label}</h4>
+                        <h4 className="text-base font-bold text-[#111827]">{phase.label}</h4>
                       </div>
                       
                       <div className="mb-4">
@@ -653,19 +654,20 @@ export default function ProjectDetail() {
               <MetaRow icon={Calendar} label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "—"} />
               <MetaRow icon={Calendar} label="Expected Completion" value={(project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate) ? new Date(project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : new Date(new Date(project.startDate || Date.now()).getTime() + 45 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })} />
               <MetaRow icon={ListChecks} label="Package Purchased" value={project.packagePurchased || project.packageName} />
-              <div className="border-t border-[#E1E4EA] pt-5">
+              <div className="border-t border-[#e5e7eb] pt-5">
                 <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#525866]">
                   <span>Budget Usage</span>
-                  <span className="text-[#0E121B]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
+                  <span className="text-[#111827]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#F1F1F5]">
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#f3f4f6]">
                   <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${budgetPct}%` }} />
                 </div>
               </div>
             </div>
           </Section>
         </div>
-      </section>
+        </section>
+      </div>
 
       {managing && (
         <ManageProjectPanel
