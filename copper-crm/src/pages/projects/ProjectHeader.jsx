@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { FolderKanban, Calendar, Clock3, AlertCircle } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
-import Breadcrumb from "../../components/Breadcrumb";
 import { isRoadmapComplete } from "../../lib/stageProgress";
 
 const statusColor = {
@@ -45,16 +44,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
   return (
     <div className="border-b border-[#e5e7eb] bg-white">
       <div className="px-6 py-6">
-        <Breadcrumb
-          items={[
-            { label: "Companies", to: "/admin/companies" },
-            { label: company.name, to: `/admin/companies/${company.id || company._id}` },
-            { label: "Projects", to: `/admin/companies/${company.id || company._id}` },
-            { label: project.name, to: null },
-          ]}
-        />
-
-        <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
               <FolderKanban size={24} className="text-[#884c2d]" />
