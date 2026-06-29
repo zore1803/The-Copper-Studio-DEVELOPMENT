@@ -92,11 +92,15 @@ export async function htmlToPdfBuffer(html) {
     // "load" (not "networkidle0") so a slow/blocked external font request can't
     // stall content loading and force a fallback; cap it so it never hangs.
     await page.setContent(html, { waitUntil: "load", timeout: 20000 });
-    return await page.pdf({
+    const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
       margin: { top: "0", bottom: "0", left: "0", right: "0" }
     });
+    // Puppeteer v23+ returns a Uint8Array, not a Buffer. Express res.send() and
+    // SendGrid attachments only handle Buffers correctly — a raw Uint8Array gets
+    // JSON-serialized into a corrupt/0-page PDF. Always normalize to a Buffer.
+    return Buffer.isBuffer(pdf) ? pdf : Buffer.from(pdf);
   } finally {
     await page.close().catch(() => {});
   }

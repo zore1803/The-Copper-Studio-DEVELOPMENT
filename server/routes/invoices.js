@@ -39,7 +39,14 @@ async function loadByInvoiceId(invoiceId) {
   return { order, invoice };
 }
 
-async function respond(res, data, format) {
+// A real PDF always begins with the "%PDF" magic bytes. Anything else (empty
+// buffer, JSON-serialized Uint8Array, HTML error page) is treated as a failure
+// so we fall back to the printable HTML instead of serving a 0-page PDF.
+function looksLikePdf(buffer) {
+  return Buffer.isBuffer(buffer) && buffer.length > 1000 && buffer.subarray(0, 5).toString("latin1") === "%PDF-";
+}
+
+async function respond(res, data, format, { download = false } = {}) {
   if (!data || (!data.order && !data.invoice)) {
     return res.status(404).json({ message: "Invoice not found." });
   }
@@ -53,16 +60,26 @@ async function respond(res, data, format) {
 
   try {
     const pdf = await htmlToPdfBuffer(html);
+    if (!looksLikePdf(pdf)) {
+      throw new Error(`Generated PDF was empty or invalid (${Buffer.isBuffer(pdf) ? pdf.length : typeof pdf} bytes)`);
+    }
+    const disposition = download ? "attachment" : "inline";
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${safeFileName(model.invoiceNumber)}"`);
+    res.setHeader("Content-Disposition", `${disposition}; filename="${safeFileName(model.invoiceNumber)}"`);
     res.send(pdf);
   } catch (error) {
     // Graceful fallback for any PDF rendering failure (missing Chromium, OOM
-    // mid-render on low-memory hosts, etc.) so the client always gets a
-    // viewable/printable invoice instead of a bare 500.
+    // mid-render on low-memory hosts, empty buffer, etc.) so the client always
+    // gets a viewable/printable invoice instead of a bare 500 or 0-page PDF.
     console.warn("PDF generation failed, serving HTML invoice instead:", error.message);
     res.type("html").send(html);
   }
+}
+
+// ?download=1 forces a file download (Content-Disposition: attachment); without
+// it the PDF opens inline in the browser tab.
+function wantsDownload(req) {
+  return ["1", "true", "yes"].includes(String(req.query.download || "").toLowerCase());
 }
 
 router.get("/by-order/:orderId/html", async (req, res, next) => {
@@ -75,7 +92,7 @@ router.get("/by-order/:orderId/html", async (req, res, next) => {
 
 router.get("/by-order/:orderId/pdf", async (req, res, next) => {
   try {
-    await respond(res, await loadByOrderId(req.params.orderId), "pdf");
+    await respond(res, await loadByOrderId(req.params.orderId), "pdf", { download: wantsDownload(req) });
   } catch (error) {
     next(error);
   }
@@ -91,7 +108,7 @@ router.get("/:invoiceId/html", async (req, res, next) => {
 
 router.get("/:invoiceId/pdf", async (req, res, next) => {
   try {
-    await respond(res, await loadByInvoiceId(req.params.invoiceId), "pdf");
+    await respond(res, await loadByInvoiceId(req.params.invoiceId), "pdf", { download: wantsDownload(req) });
   } catch (error) {
     next(error);
   }

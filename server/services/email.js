@@ -60,7 +60,12 @@ async function sendMail(message) {
       attachments: attachments?.map((attachment) => ({
         filename: attachment.filename,
         type: attachment.contentType,
-        content: Buffer.isBuffer(attachment.content) ? attachment.content.toString("base64") : attachment.content,
+        // SendGrid needs base64. Normalize Buffers/Uint8Arrays (Puppeteer v23+
+        // returns a Uint8Array) to base64; pass through already-encoded strings.
+        content:
+          typeof attachment.content === "string"
+            ? attachment.content
+            : Buffer.from(attachment.content).toString("base64"),
         disposition: "attachment"
       }))
     });

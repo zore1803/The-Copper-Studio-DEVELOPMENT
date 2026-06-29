@@ -1116,7 +1116,7 @@ export function ClientBillingPage() {
                           type="button"
                           onClick={() =>
                             window.open(
-                              `${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices/by-order/${selectedOrder._id}/pdf`,
+                              `${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices/by-order/${selectedOrder._id}/pdf?download=1`,
                               "_blank",
                               "noopener"
                             )

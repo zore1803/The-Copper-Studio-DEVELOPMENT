@@ -296,7 +296,7 @@ export default function Invoices() {
     const path = orderId
       ? `/api/invoices/by-order/${orderId}/pdf`
       : `/api/invoices/${invoice._id || invoice.id || invoice.invoiceNumber}/pdf`;
-    window.open(`${base}${path}`, "_blank", "noopener");
+    window.open(`${base}${path}?download=1`, "_blank", "noopener");
   }
 
   return (
