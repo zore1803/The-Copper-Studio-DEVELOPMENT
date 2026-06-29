@@ -93,13 +93,32 @@ export function buildInvoiceModel({ order, invoice } = {}) {
 
   const total = Number(inv?.total ?? pkg.total ?? pkg.price ?? inv?.amount ?? 0);
   const rate = invoiceSettings.gstRatePercent;
+  // taxableAmount = the GST-exclusive amount actually charged (post-discount).
   const taxableAmount = total ? Math.round((total / (1 + rate / 100)) * 100) / 100 : 0;
   const gstTotal = Math.round((total - taxableAmount) * 100) / 100;
 
-  // Inter-state when the client's GSTIN state code differs from the seller's.
-  const clientGstin = customer.customerGstin || inv?.customerGstin || "";
+  // Discount: pkg.price is the GST-exclusive list price; taxableAmount is what was
+  // actually charged ex-GST. Any positive gap is the coupon/discount applied.
+  const listPrice = Number(pkg.price ?? 0);
+  const discount = listPrice && taxableAmount && listPrice > taxableAmount
+    ? Math.round((listPrice - taxableAmount) * 100) / 100
+    : 0;
+  // The line item shows the gross list price; the discount is then deducted below.
+  const grossTaxable = discount ? listPrice : taxableAmount;
+
+  // GST split depends on whether the customer supplied a GSTIN:
+  //  • No GSTIN, or a GSTIN in the seller's state  -> intra-state -> CGST + SGST
+  //  • GSTIN registered in another state           -> inter-state -> IGST
+  const clientGstin = customer.companyGstin || customer.customerGstin || inv?.customerGstin || "";
   const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : seller.stateCode;
   const isInterState = clientStateCode !== seller.stateCode;
+
+  const addressParts = [
+    customer.billingAddressLine1,
+    customer.billingAddressLine2,
+    [customer.city, customer.state, customer.pincode].filter(Boolean).join(", ")
+  ].filter((part) => part && String(part).trim());
+  const clientAddress = customer.customerAddress || addressParts.join(", ");
 
   const cgst = isInterState ? 0 : Math.round((gstTotal / 2) * 100) / 100;
   const sgst = isInterState ? 0 : Math.round((gstTotal - cgst) * 100) / 100;
@@ -126,7 +145,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
       email: customer.customerEmail || inv?.customerEmail || "",
       phone: customer.customerPhone || "",
       gstin: clientGstin,
-      address: customer.customerAddress || ""
+      address: clientAddress
     },
     transaction: {
       provider: (payment.provider || inv?.provider || "Razorpay").replace(/^\w/, (c) => c.toUpperCase()),
@@ -145,10 +164,12 @@ export function buildInvoiceModel({ order, invoice } = {}) {
         duration: pkg.duration || "",
         hsnSac: invoiceSettings.defaultSac,
         qty: 1,
-        amount: taxableAmount
+        amount: grossTaxable
       }
     ],
     totals: {
+      grossTaxable,
+      discount,
       taxableAmount,
       gstRate: rate,
       cgst,
@@ -249,6 +270,7 @@ export function renderInvoiceHtml(input) {
   .totals-strip { border-top:1px solid var(--line); padding:10px 14px; display:flex; justify-content:flex-end; }
   .totals { min-width:260px; }
   .tot-row { display:flex; justify-content:space-between; padding:4px 0; }
+  .tot-row.discount span:last-child { color:#15803d; font-weight:600; }
   .tot-row.grand { border-top:1px solid var(--line); margin-top:4px; padding-top:8px; font-size:14px; font-weight:800; color:var(--copper); }
 
   .below-card { display:flex; justify-content:space-between; gap:24px; margin-top:8px; padding-top:6px; font-size:11px; color:var(--muted); }
@@ -339,6 +361,8 @@ export function renderInvoiceHtml(input) {
       </table>
       <div class="totals-strip">
         <div class="totals">
+          ${totals.discount ? `<div class="tot-row"><span>Sub Total</span><span>${sym}${money(totals.grossTaxable)}</span></div>
+          <div class="tot-row discount"><span>Discount</span><span>- ${sym}${money(totals.discount)}</span></div>` : ""}
           <div class="tot-row"><span>Taxable Amount</span><span>${sym}${money(totals.taxableAmount)}</span></div>
           ${taxRows}
           <div class="tot-row grand"><span>Total</span><span>${sym}${money(totals.total)}</span></div>
@@ -363,6 +387,7 @@ export function renderInvoiceHtml(input) {
       <div class="bank-box">
         <p class="mini-label">Bank Details:</p>
         <div class="row"><span>Bank</span><span>${esc(b.name)}</span></div>
+        ${b.accountName ? `<div class="row"><span>A/c Name</span><span>${esc(b.accountName)}</span></div>` : ""}
         <div class="row"><span>Account #</span><span>${esc(b.accountNumber)}</span></div>
         <div class="row"><span>IFSC Code</span><span>${esc(b.ifsc)}</span></div>
         <div class="row"><span>Branch</span><span>${esc(b.branch)}</span></div>

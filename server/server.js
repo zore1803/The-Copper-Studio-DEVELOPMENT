@@ -69,14 +69,25 @@ async function emailInvoiceForOrder(order, invoice) {
     const customer = order.customer || {};
     if (!customer.customerEmail) return;
 
-    const model = buildInvoiceModel({ order, invoice });
-    const html = renderInvoiceHtml(model);
+    // Building the print model / HTML / PDF are all best-effort. If any of them
+    // fail we STILL send the payment-success confirmation email (without the PDF),
+    // using whatever invoice number we can recover — the email must never be lost.
+    let model = null;
+    let html = null;
+    try {
+      model = buildInvoiceModel({ order, invoice });
+      html = renderInvoiceHtml(model);
+    } catch (modelError) {
+      console.warn("Invoice model/HTML rendering failed; sending plain confirmation email:", modelError.message);
+    }
 
     let pdfBuffer = null;
-    try {
-      pdfBuffer = await htmlToPdfBuffer(html);
-    } catch (pdfError) {
-      console.warn("Invoice PDF generation failed; sending confirmation email without the PDF attachment:", pdfError.message);
+    if (html) {
+      try {
+        pdfBuffer = await htmlToPdfBuffer(html);
+      } catch (pdfError) {
+        console.warn("Invoice PDF generation failed; sending confirmation email without the PDF attachment:", pdfError.message);
+      }
     }
 
     // The email body is ALWAYS the short confirmation message. The invoice only
@@ -84,13 +95,13 @@ async function emailInvoiceForOrder(order, invoice) {
     await sendInvoiceEmail({
       to: customer.customerEmail,
       name: customer.customerName,
-      invoiceNumber: model.invoiceNumber,
-      packageName: model.items?.[0]?.name,
-      total: model.totals?.total,
+      invoiceNumber: model?.invoiceNumber || invoice?.invoiceNumber || order.payment?.invoiceId,
+      packageName: model?.items?.[0]?.name || order.package?.name,
+      total: model?.totals?.total ?? order.package?.total,
       pdfBuffer
     });
   } catch (error) {
-    console.error("Failed to email invoice:", error.message);
+    console.error("Failed to email invoice:", error.response?.body || error.message);
   }
 }
 
@@ -513,11 +524,23 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       couponResult.coupon.discountAmount = couponResult.discount;
       await couponResult.coupon.save();
     }
-    const invite = await createPortalInvite(order);
-    const company = await ensureCompanyForOrder(order);
-    await ensureContactForOrder(order, company);
-    await ensureProjectForOrder(order, invite?.userId, company);
-    const finance = await syncFinanceForOrder(order);
+    // Each post-payment side-effect is isolated: a failure in one (portal invite,
+    // CRM upserts, finance sync) must NOT prevent the others — most importantly it
+    // must never suppress the payment-success invoice email.
+    const step = async (label, fn) => {
+      try {
+        return await fn();
+      } catch (error) {
+        console.error(`Post-payment step "${label}" failed:`, error.message);
+        return null;
+      }
+    };
+
+    const invite = await step("portalInvite", () => createPortalInvite(order));
+    const company = await step("ensureCompany", () => ensureCompanyForOrder(order));
+    await step("ensureContact", () => ensureContactForOrder(order, company));
+    await step("ensureProject", () => ensureProjectForOrder(order, invite?.userId, company));
+    const finance = await step("syncFinance", () => syncFinanceForOrder(order));
 
     // PDF generation (headless Chromium) can be slow/flaky on the free-tier host —
     // never let it block or risk the payment-success response. Both helpers already

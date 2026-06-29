@@ -10,34 +10,54 @@
  * keep real GSTIN / bank details out of the repo. Env wins over the defaults here.
  */
 
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Embed the brand logo as a data URI so it renders inside the Puppeteer-generated
+// PDF (the invoice HTML is loaded via setContent, so relative/served URLs won't
+// resolve). Falls back to the text brand mark if the file can't be read.
+function loadLogoDataUri() {
+  if (process.env.SELLER_LOGO_URL) return process.env.SELLER_LOGO_URL;
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const logoPath = path.resolve(here, "../../assets/copper-studio-logo.jpeg");
+    const base64 = fs.readFileSync(logoPath).toString("base64");
+    return `data:image/jpeg;base64,${base64}`;
+  } catch {
+    return "";
+  }
+}
+
 export const seller = {
   legalName: process.env.SELLER_LEGAL_NAME || "The Copper Studio",
   tradeName: process.env.SELLER_TRADE_NAME || "The Copper Studio",
-  // GST registration number. Must be a valid 15-char GSTIN before launch.
-  gstin: process.env.SELLER_GSTIN || "REPLACE_GSTIN_27XXXXXXXXXXXZX",
+  // GST registration number.
+  gstin: process.env.SELLER_GSTIN || "27AJXPM6211H2ZT",
   // Used for "Place of Supply" intra/inter-state CGST+SGST vs IGST decision.
   stateCode: process.env.SELLER_STATE_CODE || "27", // 27 = Maharashtra
   stateName: process.env.SELLER_STATE_NAME || "MAHARASHTRA",
   address: {
-    line1: process.env.SELLER_ADDRESS_LINE1 || "REPLACE_ADDRESS_LINE_1",
-    line2: process.env.SELLER_ADDRESS_LINE2 || "REPLACE_ADDRESS_LINE_2",
-    city: process.env.SELLER_CITY || "Mumbai",
-    state: process.env.SELLER_STATE_NAME || "MAHARASHTRA",
-    pincode: process.env.SELLER_PINCODE || "400000"
+    line1: process.env.SELLER_ADDRESS_LINE1 || "Registered Office No. 721, Floor 7th, Centura Square IT Park",
+    line2: process.env.SELLER_ADDRESS_LINE2 || "Road No. 27, Wagle Estate",
+    city: process.env.SELLER_CITY || "Thane (West)",
+    state: process.env.SELLER_STATE_NAME || "Maharashtra",
+    pincode: process.env.SELLER_PINCODE || "400604"
   },
-  mobile: process.env.SELLER_MOBILE || "+91 00000 00000",
-  email: process.env.SELLER_EMAIL || "contact@thecopperstudio.in",
-  website: process.env.SELLER_WEBSITE || "thecopperstudio.in",
+  mobile: process.env.SELLER_MOBILE || "+91 98209 33877",
+  email: process.env.SELLER_EMAIL || "contact@thecopperstudio.com",
+  website: process.env.SELLER_WEBSITE || "thecopperstudio.com",
   // Logo: absolute URL or data URI. Leave empty to print the text brand mark only.
-  logoUrl: process.env.SELLER_LOGO_URL || ""
+  logoUrl: loadLogoDataUri()
 };
 
 export const bank = {
-  name: process.env.SELLER_BANK_NAME || "REPLACE_BANK_NAME",
-  accountNumber: process.env.SELLER_BANK_ACCOUNT || "REPLACE_ACCOUNT_NUMBER",
-  ifsc: process.env.SELLER_BANK_IFSC || "REPLACE_IFSC",
-  branch: process.env.SELLER_BANK_BRANCH || "REPLACE_BRANCH",
-  upiId: process.env.SELLER_UPI_ID || "" // optional, e.g. thecopperstudio@hdfcbank
+  name: process.env.SELLER_BANK_NAME || "State Bank of India",
+  accountName: process.env.SELLER_BANK_ACCOUNT_NAME || "DataCircles Technology",
+  accountNumber: process.env.SELLER_BANK_ACCOUNT || "44478970783",
+  ifsc: process.env.SELLER_BANK_IFSC || "SBIN0061707",
+  branch: process.env.SELLER_BANK_BRANCH || "Wagle Circle",
+  upiId: process.env.SELLER_UPI_ID || "" // optional, e.g. thecopperstudio@sbi
 };
 
 export const invoiceSettings = {
