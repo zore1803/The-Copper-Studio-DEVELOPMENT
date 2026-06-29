@@ -732,6 +732,7 @@ function customerReviewTemplate() {
   const verified = '<span class="verified-chip"><span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span>Verified</span>';
 
   const rows = [
+    c.projectName ? ["Project", escapeHtml(c.projectName)] : null,
     ["Contact", `${escapeHtml(name)}${c.designation ? ` &middot; ${escapeHtml(c.designation)}` : ""}`],
     ["Email", `${escapeHtml(c.customerEmail || "—")}${order.verified?.email ? verified : ""}`],
     ["Phone", `${escapeHtml(phone)}${order.verified?.phone ? verified : ""}`],
