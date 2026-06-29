@@ -11,6 +11,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import SearchableSelectField from "../../components/SearchableSelect";
 import ProjectHeader from "./ProjectHeader";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { roadmapProgress, isRoadmapComplete, nextPhaseForStages } from "../../lib/stageProgress";
 
 const PHASES = [
@@ -421,6 +422,8 @@ export default function ProjectDetail() {
   const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
   const [managing, setManaging] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const project = useMemo(
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
@@ -521,11 +524,16 @@ export default function ProjectDetail() {
     showToast({ title: "Project updated", message: "Details, commercials, and client updates were saved." });
   }
 
-  async function handleDeleteProject() {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
-    await removeProject(project);
-    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
-    navigate(`/admin/companies/${currentCompany.id || currentCompany._id}`);
+  async function confirmDeleteProject() {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await removeProject(project);
+      showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
+      navigate(`/admin/companies/${currentCompany.id || currentCompany._id}`);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -675,7 +683,18 @@ export default function ProjectDetail() {
           invoices={invoices}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
-          onDelete={handleDeleteProject}
+          onDelete={() => setConfirmDeleteOpen(true)}
+        />
+      )}
+      {confirmDeleteOpen && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={project.name || "this project"}
+          message="This cannot be undone."
+          confirmLabel="Delete Project"
+          loading={deleting}
+          onCancel={() => setConfirmDeleteOpen(false)}
+          onConfirm={confirmDeleteProject}
         />
       )}
     </div>

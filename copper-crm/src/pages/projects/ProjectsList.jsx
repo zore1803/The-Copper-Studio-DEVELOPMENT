@@ -6,6 +6,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 function formatINR(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
@@ -62,6 +63,8 @@ export default function ProjectsList() {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const { records: projects, loading, save, update, remove } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
@@ -143,10 +146,16 @@ export default function ProjectsList() {
     showToast({ title: "Status updated", message: `${project.name} is now ${newStatus.replace("_", " ")}.` });
   }
 
-  async function handleDeleteProject(project) {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
-    await remove(project);
-    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
+  async function confirmDeleteProject() {
+    if (!pendingDelete || deleting) return;
+    setDeleting(true);
+    try {
+      await remove(pendingDelete);
+      showToast({ title: "Project deleted", message: `${pendingDelete.name || "Project"} removed.` });
+      setPendingDelete(null);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const statusFilters = [
@@ -288,7 +297,7 @@ export default function ProjectsList() {
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteProject(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                    <button onClick={() => setPendingDelete(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -316,6 +325,17 @@ export default function ProjectsList() {
           invoices={invoices}
           onClose={() => setCreating(false)}
           onSave={handleCreate}
+        />
+      )}
+      {pendingDelete && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={pendingDelete.name || "this project"}
+          message="This cannot be undone."
+          confirmLabel="Delete Project"
+          loading={deleting}
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={confirmDeleteProject}
         />
       )}
       </div>

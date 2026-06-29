@@ -21,6 +21,7 @@ import CompanyFormPanel from "../../components/CompanyFormPanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/RichTextEditor";
 import FilterButton from "../../components/FilterButton";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -101,9 +102,9 @@ function SocialIconLink({ href, icon: Icon, label }) {
       target="_blank"
       rel="noopener noreferrer"
       title={label}
-      className="flex h-7 w-7 items-center justify-center transition-transform hover:scale-110"
+      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform hover:scale-110"
     >
-      <Icon className="h-full w-full" />
+      <Icon className="h-full w-full rounded-full" />
     </a>
   );
 }
@@ -124,9 +125,9 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
       rel="noopener noreferrer"
       title={label}
       style={{ color: brand.color, backgroundColor: brand.bg }}
-      className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent transition-transform hover:scale-110"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-transparent shadow-sm ring-1 ring-black/5 transition-transform hover:scale-110"
     >
-      <Icon size={13} />
+      <Icon size={15} />
     </a>
   );
 }
@@ -711,6 +712,8 @@ export default function CompanyDetail() {
   const [projectPackageFilter, setProjectPackageFilter] = useState("All");
   const [projectManagerFilter, setProjectManagerFilter] = useState("All");
   const [projectTimelineFilter, setProjectTimelineFilter] = useState("All");
+  const [pendingProjectDelete, setPendingProjectDelete] = useState(null);
+  const [deletingProject, setDeletingProject] = useState(false);
   const { records: companies, loading: companiesLoading, save: saveCompany } = useCrmRecords("companies");
   const { records: projects, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
@@ -1032,9 +1035,19 @@ export default function CompanyDetail() {
   }
 
   async function handleDeleteProject(project) {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
-    await removeProject(project);
-    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed from ${company.name}.` });
+    setPendingProjectDelete(project);
+  }
+
+  async function confirmDeleteProject() {
+    if (!pendingProjectDelete || deletingProject) return;
+    setDeletingProject(true);
+    try {
+      await removeProject(pendingProjectDelete);
+      showToast({ title: "Project deleted", message: `${pendingProjectDelete.name || "Project"} removed from ${company.name}.` });
+      setPendingProjectDelete(null);
+    } finally {
+      setDeletingProject(false);
+    }
   }
 
   async function handleMarkInvoicePaid(invoice) {
@@ -1380,6 +1393,17 @@ export default function CompanyDetail() {
           defaultCategory={typeof uploadingDocument === "string" ? uploadingDocument : ""}
           onClose={() => setUploadingDocument(false)}
           onSave={handleUploadDocument}
+        />
+      )}
+      {pendingProjectDelete && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={pendingProjectDelete.name || "this project"}
+          message="This cannot be undone."
+          confirmLabel="Delete Project"
+          loading={deletingProject}
+          onCancel={() => setPendingProjectDelete(null)}
+          onConfirm={confirmDeleteProject}
         />
       )}
     </div>
