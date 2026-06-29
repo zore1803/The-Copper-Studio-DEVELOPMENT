@@ -275,6 +275,10 @@ export function renderInvoiceHtml(input) {
   .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
   .notes h4 { color:var(--ink); margin:0 0 4px; font-size:11px; }
   .notes ol { margin:4px 0 0; padding-left:18px; }
+  .notes ol > li { margin-bottom:5px; }
+  .notes .term-title { color:var(--ink); font-weight:600; }
+  .notes ol ul { list-style:disc; margin:3px 0 2px; padding-left:16px; }
+  .notes ol ul li { margin-bottom:2px; }
   .foot { margin-top:18px; text-align:center; color:var(--muted); font-size:10px; border-top:1px solid var(--line); padding-top:10px; }
 
   @media print { html, body { background:#fff; } .sheet { margin:0; padding:26px 30px; width:auto; min-height:auto; } @page { size:A4; margin:12mm; } }
@@ -371,10 +375,22 @@ export function renderInvoiceHtml(input) {
     </div>
 
     <div class="notes">
-      <h4>Notes:</h4>
-      <div>${esc(cfg.notes)}</div>
-      <h4 style="margin-top:12px">Terms and Conditions:</h4>
-      <ol>${cfg.terms.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>
+      <h4>Terms &amp; Conditions:</h4>
+      <ol>${cfg.terms
+        .map((t) =>
+          typeof t === "string"
+            ? `<li>${esc(t)}</li>`
+            : `<li><span class="term-title">${esc(t.title)}</span>${
+                (t.points || []).length
+                  ? `<ul>${t.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`
+                  : ""
+              }</li>`
+        )
+        .join("")}</ol>
+      <h4 style="margin-top:12px">Notes:</h4>
+      ${Array.isArray(cfg.notes)
+        ? `<ol>${cfg.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`
+        : `<div>${esc(cfg.notes)}</div>`}
     </div>
 
     <div class="foot">This is a digitally generated invoice and does not require a physical signature. &nbsp;•&nbsp; ${esc(s.website)}</div>
