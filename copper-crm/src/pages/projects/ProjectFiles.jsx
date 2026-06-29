@@ -150,7 +150,7 @@ export default function ProjectFiles() {
   }
 
   return (
-    <div className="space-y-6" onClick={() => setDocMenu(null)}>
+    <div className="flex min-h-full flex-col bg-[#f8fafc]" onClick={() => setDocMenu(null)}>
       <ProjectHeader
         company={company}
         project={project}
@@ -160,6 +160,7 @@ export default function ProjectFiles() {
         onAction={() => fileInputRef.current?.click()}
       />
 
+      <div className="flex-1 space-y-5 p-6">
       {/* Upload folder selector */}
       <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <FilePlus2 size={15} className="text-[#884c2d] shrink-0" />
@@ -355,6 +356,7 @@ export default function ProjectFiles() {
           )}
         </div>
       </section>
+      </div>
     </div>
   );
 }
