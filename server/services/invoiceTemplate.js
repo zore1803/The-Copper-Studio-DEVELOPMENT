@@ -106,10 +106,12 @@ export function buildInvoiceModel({ order, invoice } = {}) {
   // The line item shows the gross list price; the discount is then deducted below.
   const grossTaxable = discount ? listPrice : taxableAmount;
 
-  // GST split depends on whether the customer supplied a GSTIN:
-  //  • No GSTIN, or a GSTIN in the seller's state  -> intra-state -> CGST + SGST
-  //  • GSTIN registered in another state           -> inter-state -> IGST
+  // GST presentation depends on whether the customer supplied a GSTIN:
+  //  • No GSTIN (B2C, as charged at checkout)  -> single consolidated GST 18% line
+  //  • GSTIN in the seller's state             -> intra-state -> CGST + SGST
+  //  • GSTIN registered in another state       -> inter-state -> IGST
   const clientGstin = customer.companyGstin || customer.customerGstin || inv?.customerGstin || "";
+  const hasClientGstin = Boolean(clientGstin);
   const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : seller.stateCode;
   const isInterState = clientStateCode !== seller.stateCode;
 
@@ -172,6 +174,8 @@ export function buildInvoiceModel({ order, invoice } = {}) {
       discount,
       taxableAmount,
       gstRate: rate,
+      hasClientGstin,
+      gstTotal,
       cgst,
       sgst,
       igst,
@@ -211,10 +215,14 @@ export function renderInvoiceHtml(input) {
     )
     .join("");
 
-  const taxRows = m.isInterState
-    ? `<div class="tot-row"><span>IGST ${totals.gstRate}%</span><span>${sym}${money(totals.igst)}</span></div>`
-    : `<div class="tot-row"><span>CGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.cgst)}</span></div>
-       <div class="tot-row"><span>SGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.sgst)}</span></div>`;
+  // No customer GSTIN (B2C) -> single GST line matching the flat 18% charged at
+  // checkout. With a GSTIN: inter-state -> IGST, same-state -> CGST + SGST split.
+  const taxRows = !totals.hasClientGstin
+    ? `<div class="tot-row"><span>GST ${totals.gstRate}%</span><span>${sym}${money(totals.gstTotal)}</span></div>`
+    : m.isInterState
+      ? `<div class="tot-row"><span>IGST ${totals.gstRate}%</span><span>${sym}${money(totals.igst)}</span></div>`
+      : `<div class="tot-row"><span>CGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.cgst)}</span></div>
+         <div class="tot-row"><span>SGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.sgst)}</span></div>`;
 
   const txnLine = [
     tx.paymentId ? `Txn: ${esc(tx.paymentId)}` : "",
