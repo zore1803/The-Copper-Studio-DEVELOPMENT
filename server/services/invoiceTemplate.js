@@ -290,7 +290,7 @@ export function renderInvoiceHtml(input) {
   .bank-box { line-height:1.6; }
   .bank-box .row span:first-child { color:var(--muted); display:inline-block; min-width:74px; }
   .bank-box .row span:last-child { font-family:"Courier New",monospace; font-weight:600; }
-  .sign { text-align:center; margin-top:22px; }
+  .sign { text-align:center; }
   .sign .for { font-weight:700; margin-bottom:6px; }
   .sign .sign-img { display:block; margin:0 auto; max-height:54px; max-width:180px; object-fit:contain; mix-blend-mode:multiply; }
   .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:200px; }
@@ -396,12 +396,11 @@ export function renderInvoiceHtml(input) {
         <div class="row"><span>Branch</span><span>${esc(b.branch)}</span></div>
         ${b.upiId ? `<div class="row"><span>UPI</span><span>${esc(b.upiId)}</span></div>` : ""}
       </div>
-    </div>
-
-    <div class="sign">
-      <div class="for">For ${esc(s.legalName)}</div>
-      ${signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
-      <div class="line">${signatory.name ? `${esc(signatory.name)}<br/>` : ""}Authorized Signatory</div>
+      <div class="sign">
+        <div class="for">For ${esc(s.legalName)}</div>
+        ${signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
+        <div class="line">${signatory.name ? `${esc(signatory.name)}<br/>` : ""}Authorized Signatory</div>
+      </div>
     </div>
 
     <div class="notes">
