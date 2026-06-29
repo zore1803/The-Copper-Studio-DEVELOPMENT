@@ -425,6 +425,12 @@ body[data-page="payment"] select:focus,
   text-decoration: underline;
 }
 
+/* The `hidden` attribute must win over the inline-flex display above, so the
+   Change button only appears once a field is verified. */
+.change-link[hidden] {
+  display: none;
+}
+
 /* Once a channel is verified, hide its OTP row and lock the input visually */
 .verify-field.is-verified .otp-row {
   display: none;
