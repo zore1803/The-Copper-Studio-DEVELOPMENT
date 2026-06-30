@@ -854,11 +854,14 @@ async function start() {
       await User.findOneAndUpdate(
         { email: process.env.SUPERADMIN_EMAIL.toLowerCase() },
         {
-          $set: { role: "superadmin", status: "active" },
+          $set: {
+            role: "superadmin",
+            status: "active",
+            passwordHash: await bcrypt.default.hash(process.env.SUPERADMIN_PASSWORD, 12)
+          },
           $setOnInsert: {
             name: process.env.SUPERADMIN_NAME || "Super Admin",
-            email: process.env.SUPERADMIN_EMAIL.toLowerCase(),
-            passwordHash: await bcrypt.default.hash(process.env.SUPERADMIN_PASSWORD, 12)
+            email: process.env.SUPERADMIN_EMAIL.toLowerCase()
           }
         },
         { upsert: true }

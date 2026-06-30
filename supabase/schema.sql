@@ -28,7 +28,8 @@ declare
   tables text[] := array[
     'users', 'orders', 'leads', 'contacts', 'companies', 'crm_leads',
     'deals', 'projects', 'tasks', 'meetings', 'documents', 'invoices',
-    'payments', 'coupons', 'notes', 'settings'
+    'payments', 'coupons', 'notes', 'settings',
+    'email_templates', 'whatsapp_templates'
   ];
 begin
   foreach t in array tables loop
