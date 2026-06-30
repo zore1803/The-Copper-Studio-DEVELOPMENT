@@ -1,11 +1,61 @@
-import { useState, useEffect, Suspense } from "react";
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
-import LoadingScreen from "../components/LoadingScreen";
 import {
   LayoutDashboard, GitBranch, Video, FileText,
-  Receipt, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X
+  Receipt, Settings, LogOut, Bell, ChevronsLeft, ChevronsRight, Menu, X,
+  FolderKanban, ChevronDown, Check
 } from "lucide-react";
+import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
+
+function ProjectSwitcher() {
+  const { projects, selectedProject, selectedId, setSelectedId } = useClientProject();
+  const [open, setOpen] = useState(false);
+
+  if (!projects.length) return null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-9 max-w-[240px] items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm text-[#111827] hover:bg-[#f9fafb] transition-colors"
+        title="Switch project"
+      >
+        <FolderKanban size={15} className="shrink-0 text-[#C57E5B]" />
+        <span className="truncate font-medium">{selectedProject?.name || "Select a project"}</span>
+        <ChevronDown size={14} className={`shrink-0 text-[#9ca3af] transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
+            <p className="px-3 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Your Projects</p>
+            <div className="max-h-80 overflow-y-auto pb-1">
+              {projects.map((p) => {
+                const id = String(p._id || p.id);
+                const active = id === String(selectedId);
+                return (
+                  <button
+                    key={id}
+                    onClick={() => { setSelectedId(id); setOpen(false); }}
+                    className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm hover:bg-[#f9fafb] ${active ? "bg-[#fff8f6]" : ""}`}
+                  >
+                    <FolderKanban size={15} className={`shrink-0 ${active ? "text-[#C57E5B]" : "text-[#9ca3af]"}`} />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium text-[#111827]">{p.name || "Untitled project"}</span>
+                      {p.packageName && <span className="block truncate text-xs text-[#9ca3af]">{p.packageName}</span>}
+                    </span>
+                    {active && <Check size={15} className="shrink-0 text-[#C57E5B]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", to: "/client", end: true },
@@ -25,32 +75,34 @@ const pageTitles = {
   "/client/profile": "Settings",
 };
 
-function NavItem({ item, collapsed }) {
+function isActive(item, pathname) {
+  return item.end ? pathname === item.to : pathname.startsWith(item.to);
+}
+
+function NavItem({ item, collapsed, active, onNavigate }) {
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => onNavigate(item.to)}
+        title={item.label}
+        className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+          active ? "bg-white border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
+        }`}
+      >
+        <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
+      </button>
+    );
+  }
   return (
-    <NavLink
-      to={item.to}
-      end={item.end}
-      title={collapsed ? item.label : undefined}
-      className={({ isActive }) =>
-        `group relative flex items-center gap-3 rounded-lg transition-all duration-150 ${
-          collapsed ? "justify-center px-0 py-2.5 mx-1" : "px-3 py-2 mx-2"
-        } ${
-          isActive
-            ? "bg-[#884c2d]/15 text-[#884c2d]"
-            : "text-[#9ca3af] hover:bg-white/6 hover:text-white"
-        }`
-      }
+    <button
+      onClick={() => onNavigate(item.to)}
+      className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+        active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"
+      }`}
     >
-      {({ isActive }) => (
-        <>
-          {isActive && !collapsed && (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[#884c2d]" />
-          )}
-          <item.icon size={17} strokeWidth={1.8} className="shrink-0" />
-          {!collapsed && <span className="truncate text-[13px] font-medium">{item.label}</span>}
-        </>
-      )}
-    </NavLink>
+      <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
+      <span className="truncate text-sm font-medium">{item.label}</span>
+    </button>
   );
 }
 
@@ -58,7 +110,8 @@ export default function ClientLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  // Match the admin shell: start collapsed; expand only on explicit toggle.
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -66,83 +119,84 @@ export default function ClientLayout() {
   const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
   const pageTitle = pageTitles[location.pathname] || "Portal";
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  function go(to) {
+    navigate(to);
+    setMobileOpen(false);
+  }
 
   function handleLogout() {
     auth.logout();
     navigate("/login", { replace: true });
   }
 
-  const sidebarW = collapsed ? 64 : 240;
+  const sidebarW = collapsed ? 66 : 264;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f6fa]">
+   <ClientProjectProvider>
+    <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#111827] transition-all duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
-        style={{ width: mobileOpen ? 240 : sidebarW }}
+        style={{ width: mobileOpen ? 264 : sidebarW }}
       >
         {/* Logo */}
-        <div className={`flex items-center border-b border-white/8 ${collapsed && !mobileOpen ? "justify-center px-0 py-5" : "px-5 py-5"}`}>
-          {collapsed && !mobileOpen ? (
-            <div className="h-8 w-8 rounded-lg bg-[#884c2d] flex items-center justify-center text-white font-bold text-sm">CS</div>
-          ) : (
-            <div className="flex items-center gap-2 min-w-0 w-full">
-              <div className="h-8 w-8 shrink-0 rounded-lg bg-[#884c2d] flex items-center justify-center text-white font-bold text-sm">CS</div>
-              <div className="min-w-0 flex-1">
-                <p className="text-white text-sm font-bold truncate">The Copper Studio</p>
-                <p className="text-[#6b7280] text-[10px] truncate">Client Portal</p>
-              </div>
-              <button className="lg:hidden text-[#6b7280] hover:text-white" onClick={() => setMobileOpen(false)}>
-                <X size={16} />
-              </button>
-            </div>
+        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed && !mobileOpen ? "px-1 py-3" : "px-4 py-5"}`}>
+          <img
+            src="/copper-studio-wordmark.png"
+            alt="Copper Studio"
+            className={`object-contain ${collapsed && !mobileOpen ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
+          />
+          {mobileOpen && (
+            <button className="ml-auto lg:hidden text-[#9ca3af] hover:text-[#111827]" onClick={() => setMobileOpen(false)}>
+              <X size={16} />
+            </button>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-3 space-y-0.5">
-          {!collapsed || mobileOpen ? (
-            <div className="px-2 py-1.5 mb-1">
-              <p className="px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6b7280]">Navigation</p>
-            </div>
-          ) : null}
+        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
+          {(!collapsed || mobileOpen) && (
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af]">Navigation</p>
+          )}
           {navItems.map((item) => (
-            <NavItem key={item.to} item={item} collapsed={collapsed && !mobileOpen} />
+            <NavItem
+              key={item.to}
+              item={item}
+              collapsed={collapsed && !mobileOpen}
+              active={isActive(item, location.pathname)}
+              onNavigate={go}
+            />
           ))}
         </nav>
 
-        {/* Bottom */}
-        <div className={`border-t border-white/8 py-3 ${collapsed && !mobileOpen ? "px-1" : "px-3"}`}>
+        {/* Bottom: user + collapse */}
+        <div className={`border-t border-[#ECECEC] ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2 py-3" : "p-3 space-y-2"}`}>
           {(!collapsed || mobileOpen) && (
-            <div className="flex items-center gap-2.5 px-2 py-2 mb-2 rounded-lg">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-[#884c2d] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+            <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+              <div className="h-8 w-8 shrink-0 rounded-full bg-[#C57E5B] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
               <div className="min-w-0 flex-1">
-                <p className="text-white text-xs font-semibold truncate">{name}</p>
-                <p className="text-[#6b7280] text-[10px] truncate">{auth.user?.email}</p>
+                <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
+                <p className="text-[10px] text-[#9ca3af] truncate">{auth.user?.email}</p>
               </div>
-              <button onClick={handleLogout} className="text-[#6b7280] hover:text-white transition-colors" title="Log out">
+              <button onClick={handleLogout} className="text-[#9ca3af] hover:text-red-500 transition-colors" title="Log out">
                 <LogOut size={14} />
               </button>
             </div>
           )}
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className={`hidden lg:flex items-center justify-center w-full rounded-lg py-2 text-[#6b7280] hover:bg-white/8 hover:text-white transition-all ${collapsed ? "" : "gap-2"}`}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed && !mobileOpen ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
-            {collapsed ? <ChevronRight size={16} /> : (
-              <>
-                <ChevronLeft size={14} />
-                <span className="text-xs font-medium">Collapse</span>
-              </>
-            )}
+            {collapsed && !mobileOpen ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+            {(!collapsed || mobileOpen) && "Collapse"}
           </button>
         </div>
       </aside>
@@ -150,22 +204,25 @@ export default function ClientLayout() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: sidebarW }}>
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#e5e7eb] bg-white px-6 gap-4">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
+          <div className="flex items-center gap-3 min-w-0">
             <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827]" onClick={() => setMobileOpen(true)}>
               <Menu size={18} />
             </button>
-            <h2 className="text-sm font-semibold text-[#111827]">{pageTitle}</h2>
+            <h2 className="hidden sm:block text-sm font-semibold text-[#111827] truncate">{pageTitle}</h2>
+            <span className="hidden sm:block h-5 w-px bg-[#E1E4EA]" />
+            <ProjectSwitcher />
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            {/* Bell */}
             <div className="relative">
               <button
-                onClick={() => setNotifOpen(!notifOpen)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:text-[#111827] transition-colors"
+                onClick={() => setNotifOpen((v) => !v)}
+                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#884c2d]" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#C57E5B]" />
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
@@ -188,19 +245,22 @@ export default function ClientLayout() {
                 </div>
               )}
             </div>
-            <div className="h-9 w-9 rounded-full bg-[#884c2d] flex items-center justify-center text-white text-xs font-bold cursor-pointer">
-              {initials}
+
+            {/* Avatar */}
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
+                {initials}
+              </span>
             </div>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-[#f5f6fa]">
-          <Suspense fallback={<LoadingScreen />}>
-            <Outlet />
-          </Suspense>
+        <main className="flex-1 overflow-y-auto bg-white">
+          <Outlet />
         </main>
       </div>
     </div>
+   </ClientProjectProvider>
   );
 }

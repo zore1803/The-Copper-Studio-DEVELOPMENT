@@ -16,6 +16,10 @@ const stageSchema = new mongoose.Schema(
 const schema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+    // Buyer's original project wording from checkout. `name` may later be
+    // rewritten to the coded "<Company>-Project N-MMYY" format when a company
+    // adopts the project, so this keeps the human-readable intent.
+    clientProjectName: { type: String, default: "" },
     description: { type: String, default: "" },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", default: null, index: true },
@@ -42,6 +46,7 @@ export default defineModel({
   table: "projects",
   schema,
   defaults: {
+    clientProjectName: "",
     description: "",
     clientId: null,
     companyId: null,

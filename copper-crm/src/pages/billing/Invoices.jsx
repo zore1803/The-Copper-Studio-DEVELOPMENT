@@ -1,39 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
+import { Download, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
-import FilterButton from "../../components/FilterButton";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
 import { generateDefaultProjectName, generateProjectCode } from "../../lib/projectDefaults";
 
 const INVOICE_STATUSES = ["Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"];
 const UNPAID_STATUS_ACTIONS = ["Draft", "Generated", "Paid"];
-const PAGE_SIZE = 25;
-
-const SORT_OPTIONS = [
-  { value: "created_desc", label: "Newest first" },
-  { value: "created_asc", label: "Oldest first" },
-  { value: "number_asc", label: "Invoice # (A–Z)" },
-  { value: "number_desc", label: "Invoice # (Z–A)" },
-  { value: "amount_desc", label: "Amount (high–low)" },
-  { value: "amount_asc", label: "Amount (low–high)" }
-];
-
-// Closes the sort dropdown when clicking outside its trigger/menu.
-function useClickOutside(ref, onOutside, active) {
-  useEffect(() => {
-    if (!active) return;
-    function onDown(event) {
-      if (ref.current && ref.current.contains(event.target)) return;
-      onOutside();
-    }
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [active, onOutside, ref]);
-}
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -101,8 +77,11 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
   );
 }
 
-function InvoiceModal({ companies, projects, onClose, onSave }) {
+function InvoiceModal({ companies, projects, contacts = [], packages = [], onClose, onSave }) {
   const [mode, setMode] = useState("existing");
+  const [clientQuery, setClientQuery] = useState("");
+  const [clientOpen, setClientOpen] = useState(false);
+  const [pkgChoice, setPkgChoice] = useState("");
   const [form, setForm] = useState({
     companyId: "",
     companyName: "",
@@ -151,8 +130,64 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
     setForm((prev) => ({ ...prev, projectName: generatedProjectName }));
   }, [mode, generatedProjectName]);
 
+  // Package picker: the live packages plus a "Custom" option for ad-hoc work.
+  const packageOptions = [
+    { value: "", label: "Select package" },
+    ...packages.map((p) => ({ value: p.id, label: `${p.name} — ₹${Number(p.price).toLocaleString("en-IN")}` })),
+    { value: "custom", label: "Custom package…" }
+  ];
+
+  function onPackageChange(value) {
+    setPkgChoice(value);
+    if (value === "custom") {
+      setForm((prev) => ({ ...prev, packageName: "" }));
+    } else if (value) {
+      const pkg = packages.find((p) => String(p.id) === String(value));
+      setForm((prev) => ({ ...prev, packageName: pkg?.name || "", amount: pkg ? String(pkg.price) : prev.amount }));
+    } else {
+      setForm((prev) => ({ ...prev, packageName: "" }));
+    }
+  }
+
+  // Searchable list of existing clients (contacts) for the recommendation dropdown.
+  const clientMatches = useMemo(() => {
+    const q = clientQuery.trim().toLowerCase();
+    const list = q
+      ? contacts.filter((c) => `${c.name || ""} ${c.email || ""} ${c.company || ""}`.toLowerCase().includes(q))
+      : contacts;
+    return list.slice(0, 8);
+  }, [contacts, clientQuery]);
+
+  // Picking an existing client pre-fills their details and auto-selects their
+  // company, so the admin only has to add the package + amount. A brand-new
+  // project is still created for them on save (same pipeline as checkout).
+  function selectClient(contact) {
+    const company = companies.find(
+      (c) => String(c._id || c.id) === String(contact.companyId) || (contact.company && c.name === contact.company)
+    );
+    setForm((prev) => ({
+      ...prev,
+      customerName: contact.name || "",
+      customerEmail: contact.email || "",
+      customerPhone: contact.phone || "",
+      companyId: company ? (company._id || company.id) : prev.companyId,
+      companyName: company ? "" : (contact.company || prev.companyName),
+      companyGstin: company?.gstin || prev.companyGstin,
+      companyWebsite: company?.website || prev.companyWebsite
+    }));
+    if (company) setMode("existing");
+    setClientQuery(contact.name || contact.email || "");
+    setClientOpen(false);
+  }
+
   async function handleSave() {
     if (saving) return;
+    if (mode === "existing" && !form.companyId) return alert("Please select a company.");
+    if (mode === "new" && !form.companyName.trim()) return alert("Please enter a company name.");
+    if (!form.customerName.trim() || !form.customerEmail.trim()) return alert("Customer name and email are required.");
+    if (!pkgChoice) return alert("Please select a package (or choose Custom).");
+    if (!form.packageName.trim()) return alert("Enter a name for the custom package.");
+    if (!(Number(form.amount) > 0)) return alert("Enter a valid invoice amount.");
     setSaving(true);
     try {
       const payload = mode === "existing"
@@ -178,6 +213,40 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
         </div>
       }
     >
+      {/* Existing-client picker: search by name / email / company. Selecting one
+          auto-fills the client + company so a new project is created under them. */}
+      <div className="relative mb-5">
+        <label className="text-xs font-semibold text-[#374151]">Bill an Existing Client</label>
+        <div className="relative mt-1.5">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" />
+          <input
+            value={clientQuery}
+            onChange={(e) => { setClientQuery(e.target.value); setClientOpen(true); }}
+            onFocus={() => setClientOpen(true)}
+            onBlur={() => setTimeout(() => setClientOpen(false), 150)}
+            placeholder="Search clients by name, email, or company…"
+            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          />
+          {clientOpen && clientMatches.length > 0 && (
+            <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
+              {clientMatches.map((contact) => (
+                <li key={contact._id || contact.id || contact.email}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); selectClient(contact); }}
+                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#fff1ec]"
+                  >
+                    <span className="text-sm font-semibold text-[#111827]">{contact.name || "Unnamed client"}</span>
+                    <span className="text-[11px] text-[#6b7280]">{[contact.email, contact.company].filter(Boolean).join(" · ") || "No details"}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p className="mt-1 text-[11px] text-[#9ca3af]">Or just fill in the details below for a new client.</p>
+      </div>
+
       <div className="mb-6 grid grid-cols-2 rounded-lg bg-[#f3f4f6] p-1">
         <button
           type="button"
@@ -196,25 +265,35 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {/* Company: pick an existing one or name a brand-new one. */}
         {mode === "existing" ? (
           <div className="sm:col-span-2">
             <Field label="Select Company" value={form.companyId} onChange={set("companyId")} options={companyOptions} />
           </div>
         ) : (
-          <>
-            <div className="sm:col-span-2"><Field label="Company Name" value={form.companyName} onChange={set("companyName")} /></div>
-            <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
-            <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
-            <Field label="Customer Phone" value={form.customerPhone} onChange={set("customerPhone")} />
-            <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} />
-            <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} />
-            <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
-            <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} /></div>
-            <Field label="City" value={form.city} onChange={set("city")} />
-            <Field label="State" value={form.state} onChange={set("state")} />
-            <Field label="Pincode" value={form.pincode} onChange={set("pincode")} />
-          </>
+          <div className="sm:col-span-2"><Field label="Company Name" value={form.companyName} onChange={set("companyName")} /></div>
         )}
+
+        {/* Client details are always collected here: a manual invoice has no
+            checkout form to pull them from. */}
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Client Information</p>
+          <p className="text-[11px] text-[#9ca3af]">Entered manually since the client did not go through checkout.</p>
+        </div>
+        <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
+        <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
+        <Field label="Customer Phone" value={form.customerPhone} onChange={set("customerPhone")} />
+        <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} hint="Optional" />
+        <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} hint="Optional" />
+
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Billing Address</p>
+        </div>
+        <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
+        <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} hint="Optional" /></div>
+        <Field label="City" value={form.city} onChange={set("city")} />
+        <Field label="State" value={form.state} onChange={set("state")} />
+        <Field label="Pincode" value={form.pincode} onChange={set("pincode")} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Project & Invoice Details</p>
@@ -232,8 +311,22 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
             <Field label="Project Name" value={form.projectName} onChange={set("projectName")} />
           )}
         </div>
-        <Field label="Package / Service Name" value={form.packageName} onChange={set("packageName")} />
-        <Field label="Amount (INR)" type="number" value={form.amount} onChange={set("amount")} />
+        <Field label="Package / Service" value={pkgChoice} onChange={onPackageChange} options={packageOptions} />
+        {pkgChoice === "custom" && (
+          <Field label="Custom Package Name" value={form.packageName} onChange={set("packageName")} hint="Describe the custom service" />
+        )}
+        <Field
+          label="Amount before GST (INR)"
+          type="number"
+          value={form.amount}
+          onChange={set("amount")}
+          hint={
+            (Number(form.amount) > 0
+              ? `18% GST added → total ₹${Math.round(Number(form.amount) * 1.18).toLocaleString("en-IN")}. `
+              : "") +
+            (pkgChoice && pkgChoice !== "custom" ? "Auto-filled from package (editable)." : "Enter the pre-GST amount.")
+          }
+        />
       </div>
     </SidePanel>
   );
@@ -244,17 +337,13 @@ export default function Invoices() {
   const location = useLocation();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
-  const [companyFilter, setCompanyFilter] = useState("All");
-  const [sortBy, setSortBy] = useState("created_desc");
-  const [sortOpen, setSortOpen] = useState(false);
-  const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
+  const { records: contacts } = useCrmRecords("contacts");
+  const [packages, setPackages] = useState([]);
   const { showToast } = useToast();
-  const sortRef = useRef(null);
-  useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -263,48 +352,20 @@ export default function Invoices() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const companyNames = useMemo(
-    () => ["All", ...Array.from(new Set(invoices.map((i) => i.company || i.client).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
-    [invoices]
-  );
+  useEffect(() => {
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    fetch(`${base}/api/packages`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setPackages(Array.isArray(data) ? data : []))
+      .catch(() => setPackages([]));
+  }, []);
 
   const filtered = useMemo(() => invoices.filter((invoice) => {
     const invoiceStatus = invoice.status || "Draft";
     const matchesStatus = status === "All" || invoiceStatus === status;
-    const matchesCompany = companyFilter === "All" || (invoice.company || invoice.client) === companyFilter;
     const haystack = `${invoice.invoiceNumber || invoice.id || ""} ${invoice.company || invoice.client || ""} ${invoice.project || ""} ${invoiceStatus}`.toLowerCase();
-    return matchesStatus && matchesCompany && haystack.includes(query.toLowerCase());
-  }), [invoices, query, status, companyFilter]);
-
-  const sorted = useMemo(() => {
-    const arr = [...filtered];
-    const num = (i) => String(i.invoiceNumber || i.id || "");
-    const amt = (i) => parseMoney(i.total || i.amount);
-    const created = (i) => new Date(i.createdAt || i.issueDate || i.date || 0);
-    switch (sortBy) {
-      case "created_asc": return arr.sort((a, b) => created(a) - created(b));
-      case "number_asc": return arr.sort((a, b) => num(a).localeCompare(num(b), undefined, { numeric: true }));
-      case "number_desc": return arr.sort((a, b) => num(b).localeCompare(num(a), undefined, { numeric: true }));
-      case "amount_desc": return arr.sort((a, b) => amt(b) - amt(a));
-      case "amount_asc": return arr.sort((a, b) => amt(a) - amt(b));
-      case "created_desc":
-      default: return arr.sort((a, b) => created(b) - created(a));
-    }
-  }, [filtered, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  useEffect(() => {
-    if (page > totalPages) setPage(1);
-  }, [page, totalPages]);
-
-  function resetFilters() {
-    setStatus("All");
-    setCompanyFilter("All");
-    setQuery("");
-    setPage(1);
-  }
+    return matchesStatus && haystack.includes(query.toLowerCase());
+  }), [invoices, query, status]);
 
   const totals = useMemo(() => {
     const paidInvoices = invoices.filter(isPaidInvoice);
@@ -362,7 +423,7 @@ export default function Invoices() {
     const path = orderId
       ? `/api/invoices/by-order/${orderId}/pdf`
       : `/api/invoices/${invoice._id || invoice.id || invoice.invoiceNumber}/pdf`;
-    window.open(`${base}${path}?download=1`, "_blank", "noopener");
+    window.open(`${base}${path}`, "_blank", "noopener");
   }
 
   return (
@@ -372,56 +433,7 @@ export default function Invoices() {
           <h1 className="text-base font-medium text-[#0E121B]">Invoices</h1>
           <p className="text-xs text-[#525866] mt-0.5">Legal billing documents, PDF generation, customer mapping, and payment mapping.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
-              placeholder="Search by number, company, or project…"
-              value={query}
-              onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            />
-          </div>
-          {/* Sort */}
-          <div className="relative" ref={sortRef}>
-            <button
-              onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
-            >
-              <ArrowUpDown size={15} />
-              <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
-            </button>
-            {sortOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                {SORT_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#884c2d]" : "text-[#374151]"}`}
-                  >
-                    {opt.label}
-                    {sortBy === opt.value && <Check size={14} />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <FilterButton
-            onReset={resetFilters}
-            buttonClassName="h-11 w-11"
-            fields={[
-              { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...INVOICE_STATUSES] },
-              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames }
-            ]}
-          />
-          <button
-            onClick={() => setCreating(true)}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
-          >
-            <Plus size={16} /> Generate Invoice
-          </button>
-        </div>
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> Generate Invoice</Button>
       </div>
 
       <div className="p-5 xl:p-6">
@@ -433,70 +445,43 @@ export default function Invoices() {
       </div>
 
       <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-        {sorted.length ? (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
-                  <tr>
-                    {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#f3f4f6]">
-                  {paginated.map((invoice) => (
-                    <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="hover:bg-[#fafafa]">
-                      <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{invoice.invoiceNumber || invoice.id || invoice._id}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{invoice.company || invoice.client || "Not linked"}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
-                      <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
-                      <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap gap-2">
+            {["All", ...INVOICE_STATUSES].map((item) => (
+              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
+            ))}
+          </div>
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+            <Search size={14} className="text-[#9ca3af]" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search invoices" className="w-64 bg-transparent text-sm outline-none" />
+          </div>
+        </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
-              <p className="text-sm text-[#6b7280]">
-                Showing <span className="font-semibold text-[#111827]">{paginated.length}</span> of{" "}
-                <span className="font-semibold text-[#111827]">{sorted.length}</span> Invoices
-              </p>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                      p === page
-                        ? "bg-[#884c2d] text-white"
-                        : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
-                    }`}
-                  >
-                    {p}
-                  </button>
+        {filtered.length ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <tr>
+                  {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f3f4f6]">
+                {filtered.map((invoice) => (
+                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="hover:bg-[#fafafa]">
+                    <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{invoice.invoiceNumber || invoice.id || invoice._id}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.company || invoice.client || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
+                    <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
+                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
+                  </tr>
                 ))}
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            </div>
-          </>
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div className="p-10 text-center">
             <p className="text-sm font-semibold text-[#111827]">No invoices yet.</p>
@@ -505,7 +490,7 @@ export default function Invoices() {
         )}
       </section>
 
-      {creating && <InvoiceModal companies={companies} projects={projects} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {creating && <InvoiceModal companies={companies} projects={projects} contacts={contacts} packages={packages} onClose={() => setCreating(false)} onSave={handleCreate} />}
       </div>
     </div>
   );

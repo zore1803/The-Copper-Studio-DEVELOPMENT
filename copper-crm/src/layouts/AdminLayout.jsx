@@ -68,6 +68,7 @@ const pageNames = {
   "/admin/services/coupon-generator": "Coupon Generator",
   "/admin/services/proposal-generator": "Proposal Generator",
   "/admin/services/communications": "Communication",
+  "/admin/communication": "Communication",
   "/admin/communication/email-templates": "Email Templates",
   "/admin/communication/whatsapp-templates": "WhatsApp Templates",
   "/admin/documents": "Documents",
@@ -111,7 +112,7 @@ function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) 
       const project = projects.find((p) => String(p.id) === seg || String(p._id) === seg);
       const contact = contacts.find((c) => String(c.id) === seg || String(c._id) === seg);
       const contactName = contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : null;
-      name = company?.name || project?.name || contactName || (seg.length > 8 ? seg.slice(0, 8) + "â€¦" : seg.charAt(0).toUpperCase() + seg.slice(1));
+      name = company?.name || project?.name || contactName || (seg.length > 8 ? `${seg.slice(0, 8)}...` : seg.charAt(0).toUpperCase() + seg.slice(1));
     }
     crumbs.push({ label: name, to: fullPath });
   }
@@ -119,7 +120,7 @@ function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) 
 }
 
 function initialsOf(name) {
-  return (name || "").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "â€”";
+  return (name || "").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "CS";
 }
 
 function isLeafActive(item, pathname) {

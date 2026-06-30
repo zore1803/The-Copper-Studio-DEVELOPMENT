@@ -1,4 +1,4 @@
-import { seller, bank, signatory, invoiceSettings } from "../data/sellerConfig.js";
+import { seller, bank, invoiceSettings } from "../data/sellerConfig.js";
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -83,44 +83,28 @@ function invoicePaymentStatus(inv, payment) {
  * Invoice finance record. The Order carries the dynamic client + Razorpay
  * transaction details; sellerConfig carries the static issuer details.
  */
-export function buildInvoiceModel({ order, invoice } = {}) {
+export function buildInvoiceModel({ order, invoice, project } = {}) {
   const src = order ? (typeof order.toObject === "function" ? order.toObject() : order) : null;
   const inv = invoice ? (typeof invoice.toObject === "function" ? invoice.toObject() : invoice) : null;
+  const proj = project ? (typeof project.toObject === "function" ? project.toObject() : project) : null;
 
   const customer = src?.customer || {};
   const pkg = src?.package || {};
   const payment = src?.payment || {};
+  // The project's human code (e.g. CS-DATC-02-0626) uniquely identifies which
+  // project this invoice belongs to — shown on the PDF so the document is
+  // self-identifying. Falls back to the code stored on the invoice record.
+  const projectCode = proj?.projectId || inv?.projectCode || "";
 
   const total = Number(inv?.total ?? pkg.total ?? pkg.price ?? inv?.amount ?? 0);
   const rate = invoiceSettings.gstRatePercent;
-  // taxableAmount = the GST-exclusive amount actually charged (post-discount).
   const taxableAmount = total ? Math.round((total / (1 + rate / 100)) * 100) / 100 : 0;
   const gstTotal = Math.round((total - taxableAmount) * 100) / 100;
 
-  // Discount: pkg.price is the GST-exclusive list price; taxableAmount is what was
-  // actually charged ex-GST. Any positive gap is the coupon/discount applied.
-  const listPrice = Number(pkg.price ?? 0);
-  const discount = listPrice && taxableAmount && listPrice > taxableAmount
-    ? Math.round((listPrice - taxableAmount) * 100) / 100
-    : 0;
-  // The line item shows the gross list price; the discount is then deducted below.
-  const grossTaxable = discount ? listPrice : taxableAmount;
-
-  // GST presentation depends on whether the customer supplied a GSTIN:
-  //  • No GSTIN (B2C, as charged at checkout)  -> single consolidated GST 18% line
-  //  • GSTIN in the seller's state             -> intra-state -> CGST + SGST
-  //  • GSTIN registered in another state       -> inter-state -> IGST
-  const clientGstin = customer.companyGstin || customer.customerGstin || inv?.customerGstin || "";
-  const hasClientGstin = Boolean(clientGstin);
+  // Inter-state when the client's GSTIN state code differs from the seller's.
+  const clientGstin = customer.customerGstin || inv?.customerGstin || "";
   const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : seller.stateCode;
   const isInterState = clientStateCode !== seller.stateCode;
-
-  const addressParts = [
-    customer.billingAddressLine1,
-    customer.billingAddressLine2,
-    [customer.city, customer.state, customer.pincode].filter(Boolean).join(", ")
-  ].filter((part) => part && String(part).trim());
-  const clientAddress = customer.customerAddress || addressParts.join(", ");
 
   const cgst = isInterState ? 0 : Math.round((gstTotal / 2) * 100) / 100;
   const sgst = isInterState ? 0 : Math.round((gstTotal - cgst) * 100) / 100;
@@ -137,6 +121,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
     bank,
     settings: invoiceSettings,
     invoiceNumber,
+    projectCode,
     issueDate,
     dueDate: invoiceSettings.dueOnIssue ? issueDate : (inv?.dueDate || issueDate),
     placeOfSupply: `${seller.stateCode}-${seller.stateName}`,
@@ -147,7 +132,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
       email: customer.customerEmail || inv?.customerEmail || "",
       phone: customer.customerPhone || "",
       gstin: clientGstin,
-      address: clientAddress
+      address: customer.customerAddress || ""
     },
     transaction: {
       provider: (payment.provider || inv?.provider || "Razorpay").replace(/^\w/, (c) => c.toUpperCase()),
@@ -166,16 +151,12 @@ export function buildInvoiceModel({ order, invoice } = {}) {
         duration: pkg.duration || "",
         hsnSac: invoiceSettings.defaultSac,
         qty: 1,
-        amount: grossTaxable
+        amount: taxableAmount
       }
     ],
     totals: {
-      grossTaxable,
-      discount,
       taxableAmount,
       gstRate: rate,
-      hasClientGstin,
-      gstTotal,
       cgst,
       sgst,
       igst,
@@ -215,14 +196,10 @@ export function renderInvoiceHtml(input) {
     )
     .join("");
 
-  // No customer GSTIN (B2C) -> single GST line matching the flat 18% charged at
-  // checkout. With a GSTIN: inter-state -> IGST, same-state -> CGST + SGST split.
-  const taxRows = !totals.hasClientGstin
-    ? `<div class="tot-row"><span>GST ${totals.gstRate}%</span><span>${sym}${money(totals.gstTotal)}</span></div>`
-    : m.isInterState
-      ? `<div class="tot-row"><span>IGST ${totals.gstRate}%</span><span>${sym}${money(totals.igst)}</span></div>`
-      : `<div class="tot-row"><span>CGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.cgst)}</span></div>
-         <div class="tot-row"><span>SGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.sgst)}</span></div>`;
+  const taxRows = m.isInterState
+    ? `<div class="tot-row"><span>IGST ${totals.gstRate}%</span><span>${sym}${money(totals.igst)}</span></div>`
+    : `<div class="tot-row"><span>CGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.cgst)}</span></div>
+       <div class="tot-row"><span>SGST ${totals.gstRate / 2}%</span><span>${sym}${money(totals.sgst)}</span></div>`;
 
   const txnLine = [
     tx.paymentId ? `Txn: ${esc(tx.paymentId)}` : "",
@@ -244,7 +221,7 @@ export function renderInvoiceHtml(input) {
 
   .top { display:flex; justify-content:space-between; gap:18px; border-bottom:2px solid var(--copper); padding-bottom:14px; }
   .brand-block { display:flex; flex-direction:column; gap:10px; }
-  .logo { max-height:64px; max-width:200px; object-fit:contain; }
+  .logo { max-height:48px; max-width:160px; object-fit:contain; }
   .title { letter-spacing:6px; font-size:12px; font-weight:700; color:var(--copper); margin:0; }
   .seller-block { text-align:right; max-width:380px; }
   .brand-name { font-size:18px; font-weight:800; color:var(--copper); margin:0 0 4px; }
@@ -278,7 +255,6 @@ export function renderInvoiceHtml(input) {
   .totals-strip { border-top:1px solid var(--line); padding:10px 14px; display:flex; justify-content:flex-end; }
   .totals { min-width:260px; }
   .tot-row { display:flex; justify-content:space-between; padding:4px 0; }
-  .tot-row.discount span:last-child { color:#15803d; font-weight:600; }
   .tot-row.grand { border-top:1px solid var(--line); margin-top:4px; padding-top:8px; font-size:14px; font-weight:800; color:var(--copper); }
 
   .below-card { display:flex; justify-content:space-between; gap:24px; margin-top:8px; padding-top:6px; font-size:11px; color:var(--muted); }
@@ -298,14 +274,11 @@ export function renderInvoiceHtml(input) {
   .bank-box { line-height:1.6; }
   .bank-box .row span:first-child { color:var(--muted); display:inline-block; min-width:74px; }
   .bank-box .row span:last-child { font-family:"Courier New",monospace; font-weight:600; }
-  .sign { text-align:center; }
-  .sign .for { font-weight:700; margin-bottom:6px; }
-  .sign .sign-img { display:block; margin:0 auto; max-height:54px; max-width:180px; object-fit:contain; mix-blend-mode:multiply; }
-  .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:200px; }
+  .sign { text-align:right; }
+  .sign .for { font-weight:700; margin-bottom:46px; }
+  .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:170px; }
 
-  /* Terms & Conditions + Notes always begin on a fresh page, flush to the top. */
-  .notes { margin-top:0; padding-top:0; color:var(--muted); line-height:1.55; page-break-before:always; break-before:page; }
-  .notes h4:first-child { margin-top:0; }
+  .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
   .notes h4 { color:var(--ink); margin:0 0 4px; font-size:11px; }
   .notes ol { margin:4px 0 0; padding-left:18px; }
   .notes ol > li { margin-bottom:5px; }
@@ -349,6 +322,7 @@ export function renderInvoiceHtml(input) {
       <div>
         <table class="meta-table">
           <tr><td>Invoice #:</td><td>${esc(m.invoiceNumber)}</td></tr>
+          ${m.projectCode ? `<tr><td>Project ID:</td><td>${esc(m.projectCode)}</td></tr>` : ""}
           <tr><td>Invoice Date:</td><td>${formatDate(m.issueDate)}</td></tr>
           <tr><td>Due Date:</td><td>${formatDate(m.dueDate)}</td></tr>
           <tr><td>Place of Supply:</td><td>${esc(m.placeOfSupply)}</td></tr>
@@ -372,8 +346,6 @@ export function renderInvoiceHtml(input) {
       </table>
       <div class="totals-strip">
         <div class="totals">
-          ${totals.discount ? `<div class="tot-row"><span>Sub Total</span><span>${sym}${money(totals.grossTaxable)}</span></div>
-          <div class="tot-row discount"><span>Discount</span><span>- ${sym}${money(totals.discount)}</span></div>` : ""}
           <div class="tot-row"><span>Taxable Amount</span><span>${sym}${money(totals.taxableAmount)}</span></div>
           ${taxRows}
           <div class="tot-row grand"><span>Total</span><span>${sym}${money(totals.total)}</span></div>
@@ -398,7 +370,6 @@ export function renderInvoiceHtml(input) {
       <div class="bank-box">
         <p class="mini-label">Bank Details:</p>
         <div class="row"><span>Bank</span><span>${esc(b.name)}</span></div>
-        ${b.accountName ? `<div class="row"><span>A/c Name</span><span>${esc(b.accountName)}</span></div>` : ""}
         <div class="row"><span>Account #</span><span>${esc(b.accountNumber)}</span></div>
         <div class="row"><span>IFSC Code</span><span>${esc(b.ifsc)}</span></div>
         <div class="row"><span>Branch</span><span>${esc(b.branch)}</span></div>
@@ -406,8 +377,7 @@ export function renderInvoiceHtml(input) {
       </div>
       <div class="sign">
         <div class="for">For ${esc(s.legalName)}</div>
-        ${isPaid && signatory.image ? `<img class="sign-img" src="${esc(signatory.image)}" alt="Signature" />` : ""}
-        <div class="line">${signatory.name ? `${esc(signatory.name)}<br/>` : ""}Authorized Signatory</div>
+        <div class="line">Authorized Signatory</div>
       </div>
     </div>
 

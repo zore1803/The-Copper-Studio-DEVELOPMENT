@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Building2, Calendar, Edit3, Eye, EyeOff,
-  Globe2, LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
+  LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
   Plus, Save, Search,
   Settings as SettingsIcon, ShieldCheck, SlidersHorizontal,
   Trash2, UploadCloud, UserPlus
@@ -922,10 +922,6 @@ export function SettingsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="secondary" size="lg">
-            <Globe2 size={15} />
-            Live workspace
-          </Button>
           {!showGate && !loading && activeSection === "profile" && (
             <Button size="lg" disabled={saving} onClick={() => saveSection(activeSection, activeMeta?.title || "Settings")}>
               <Save size={15} />

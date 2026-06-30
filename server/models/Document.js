@@ -17,6 +17,9 @@ const schema = new mongoose.Schema(
       enum: ["client_shared", "internal"],
       default: "client_shared"
     },
+    // Admin-controlled switch for whether this document shows in the client
+    // portal. Defaults to visible; setting it false hides the doc from clients.
+    clientVisible: { type: Boolean, default: true },
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", default: null, index: true },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
@@ -45,6 +48,7 @@ export default defineModel({
     fileUrl: "",
     status: "pending_review",
     scope: "client_shared",
+    clientVisible: true,
     companyId: null,
     clientId: null,
     uploadedByName: "The Copper Studio",

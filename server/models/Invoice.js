@@ -29,6 +29,9 @@ const schema = new mongoose.Schema(
     provider: { type: String, default: "Razorpay" },
     razorpayOrderId: { type: String, default: "" },
     razorpayPaymentId: { type: String, default: "" },
+    // Admin-controlled switch for whether the invoice PDF shows in the client
+    // portal / document center. Defaults to visible.
+    clientVisible: { type: Boolean, default: true },
     paidAt: { type: Date }
   },
   { timestamps: true, strict: false }
@@ -61,6 +64,7 @@ export default defineModel({
     paymentStatus: "Paid",
     provider: "Razorpay",
     razorpayOrderId: "",
-    razorpayPaymentId: ""
+    razorpayPaymentId: "",
+    clientVisible: true
   }
 });
