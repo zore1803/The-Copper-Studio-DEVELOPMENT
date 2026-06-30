@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell, BarChart2, Building2, ChevronDown,
@@ -162,27 +161,10 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   // Expanded sidebar: the group dropdown opens on hover and closes when the
   // cursor leaves the section (no click needed).
   const [open, setOpen] = useState(false);
-  const [flyoutOpen, setFlyoutOpen] = useState(false);
-  const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef(null);
-  const closeTimer = useRef(null);
-
-  function openFlyout() {
-    clearTimeout(closeTimer.current);
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (rect) setFlyoutPos({ top: rect.top, left: rect.right + 8 });
-    setFlyoutOpen(true);
-  }
-
-  function scheduleCloseFlyout() {
-    closeTimer.current = setTimeout(() => setFlyoutOpen(false), 150);
-  }
-
-  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   if (collapsed) {
     return (
-      <div ref={triggerRef} className="relative" onMouseEnter={openFlyout} onMouseLeave={scheduleCloseFlyout}>
+      <div className="relative">
         <button
           title={item.label}
           className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
@@ -191,27 +173,6 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
         >
           <item.icon size={20} strokeWidth={1.8} />
         </button>
-        {flyoutOpen && createPortal(
-          <div
-            style={{ position: "fixed", top: flyoutPos.top, left: flyoutPos.left }}
-            className="w-56 rounded-xl border border-[#E5E5E5] bg-white shadow-lg py-1.5 z-[100]"
-            onMouseEnter={openFlyout}
-            onMouseLeave={scheduleCloseFlyout}
-          >
-            <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
-            {item.children.map((child) => (
-              <button
-                key={child.to}
-                onClick={() => { setFlyoutOpen(false); onNavigate(child.to); }}
-                className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-[#f9fafb] ${isLeafActive(child, location) ? "text-[#C57E5B] font-semibold" : "text-[#374151]"}`}
-              >
-                <child.icon size={15} className="shrink-0" />
-                <span className="truncate">{child.label}</span>
-              </button>
-            ))}
-          </div>,
-          document.body
-        )}
       </div>
     );
   }
@@ -391,7 +352,7 @@ export default function AdminLayout() {
           />
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? "flex flex-col items-center gap-2.5" : "space-y-4 px-3"}`}>
+        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
               {section.items.map((item) =>
