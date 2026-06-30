@@ -898,6 +898,22 @@ async function start() {
   app.listen(port, () => {
     console.log(`API running at http://localhost:${port} (DB: ${dbDriver})`);
   });
+
+  // Keep-warm: free hosting tiers spin the instance down after a few minutes of
+  // no inbound HTTP, and the cold start can take 50s+ — which is the main reason
+  // the dashboard feels slow on first load. When KEEP_ALIVE_URL is set to the
+  // service's own public /api/health URL, ping it on an interval so the platform
+  // keeps counting inbound traffic and never sleeps the instance.
+  const keepAliveUrl = process.env.KEEP_ALIVE_URL;
+  if (keepAliveUrl) {
+    const intervalMs = Number(process.env.KEEP_ALIVE_INTERVAL_MS) || 10 * 60 * 1000;
+    setInterval(() => {
+      fetch(keepAliveUrl).catch((err) => {
+        console.warn("Keep-alive ping failed:", err.message);
+      });
+    }, intervalMs).unref();
+    console.log(`Keep-alive enabled — pinging ${keepAliveUrl} every ${Math.round(intervalMs / 1000)}s`);
+  }
 }
 
 start().catch((error) => {

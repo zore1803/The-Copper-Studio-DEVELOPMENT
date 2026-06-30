@@ -1,49 +1,54 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AdminLayout from "./layouts/AdminLayout";
-import ClientLayout from "./layouts/ClientLayout";
 import { AuthProvider } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { ToastProvider } from "./components/ToastProvider";
+import LoadingScreen from "./components/LoadingScreen";
 
-import Companies from "./pages/crm/Companies";
-import CompanyDetail from "./pages/crm/CompanyDetail";
-import Contacts from "./pages/crm/Contacts";
-import ContactDetail from "./pages/crm/ContactDetail";
-import ProjectsList from "./pages/projects/ProjectsList";
-import ProjectDetail from "./pages/projects/ProjectDetail";
-import ProjectTimeline from "./pages/projects/ProjectTimeline";
-import TimelinePage from "./pages/projects/TimelinePage";
-import ProjectFiles from "./pages/projects/ProjectFiles";
-import KanbanBoard from "./pages/projects/KanbanBoard";
-import Payments from "./pages/billing/Payments";
-import Invoices from "./pages/billing/Invoices";
-import Coupons from "./pages/billing/Coupons";
-import ClientDashboard from "./pages/client/ClientDashboard";
-import {
-  ClientBillingPage,
-  ClientDocumentsPage,
-  ClientMeetingsPage,
-  ClientPurchasesPage,
-  ClientSettingsPage,
-  ClientSupportPage,
-  ClientTimelinePage
-} from "./pages/client/ClientPages";
-import { ForgotPasswordPage, LoginPage, SetPasswordPage } from "./pages/auth/AuthPages";
-import {
-  SettingsPage,
-  TasksPage
-} from "./pages/admin/AdminWorkflows";
-import { DatabaseTablesPage, ProposalGeneratorPage } from "./pages/admin/AdminTabs";
-import { AnalyticsPage } from "./pages/admin/AnalyticsPage";
-import CommunicationCenter from "./pages/admin/CommunicationCenter";
-import DocumentCenter from "./pages/admin/DocumentCenter";
-import PublicPackages from "./pages/public/PublicPackages";
+// Every route is code-split so the initial bundle stays small and a hard
+// refresh only downloads the chunk for the page you're on, not the whole app.
+const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
+const ClientLayout = lazy(() => import("./layouts/ClientLayout"));
+
+const Companies = lazy(() => import("./pages/crm/Companies"));
+const CompanyDetail = lazy(() => import("./pages/crm/CompanyDetail"));
+const Contacts = lazy(() => import("./pages/crm/Contacts"));
+const ContactDetail = lazy(() => import("./pages/crm/ContactDetail"));
+const ProjectsList = lazy(() => import("./pages/projects/ProjectsList"));
+const ProjectDetail = lazy(() => import("./pages/projects/ProjectDetail"));
+const ProjectTimeline = lazy(() => import("./pages/projects/ProjectTimeline"));
+const TimelinePage = lazy(() => import("./pages/projects/TimelinePage"));
+const ProjectFiles = lazy(() => import("./pages/projects/ProjectFiles"));
+const KanbanBoard = lazy(() => import("./pages/projects/KanbanBoard"));
+const Payments = lazy(() => import("./pages/billing/Payments"));
+const Invoices = lazy(() => import("./pages/billing/Invoices"));
+const Coupons = lazy(() => import("./pages/billing/Coupons"));
+const ClientDashboard = lazy(() => import("./pages/client/ClientDashboard"));
+const ClientBillingPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientBillingPage })));
+const ClientDocumentsPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientDocumentsPage })));
+const ClientMeetingsPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientMeetingsPage })));
+const ClientPurchasesPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientPurchasesPage })));
+const ClientSettingsPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientSettingsPage })));
+const ClientSupportPage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientSupportPage })));
+const ClientTimelinePage = lazy(() => import("./pages/client/ClientPages").then((m) => ({ default: m.ClientTimelinePage })));
+const LoginPage = lazy(() => import("./pages/auth/AuthPages").then((m) => ({ default: m.LoginPage })));
+const ForgotPasswordPage = lazy(() => import("./pages/auth/AuthPages").then((m) => ({ default: m.ForgotPasswordPage })));
+const SetPasswordPage = lazy(() => import("./pages/auth/AuthPages").then((m) => ({ default: m.SetPasswordPage })));
+const SettingsPage = lazy(() => import("./pages/admin/AdminWorkflows").then((m) => ({ default: m.SettingsPage })));
+const TasksPage = lazy(() => import("./pages/admin/AdminWorkflows").then((m) => ({ default: m.TasksPage })));
+const DatabaseTablesPage = lazy(() => import("./pages/admin/AdminTabs").then((m) => ({ default: m.DatabaseTablesPage })));
+const ProposalGeneratorPage = lazy(() => import("./pages/admin/AdminTabs").then((m) => ({ default: m.ProposalGeneratorPage })));
+const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })));
+const CommunicationCenter = lazy(() => import("./pages/admin/CommunicationCenter"));
+const DocumentCenter = lazy(() => import("./pages/admin/DocumentCenter"));
+const PublicPackages = lazy(() => import("./pages/public/PublicPackages"));
 
 export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
         <BrowserRouter>
+          <Suspense fallback={<LoadingScreen />}>
           <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -103,6 +108,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>

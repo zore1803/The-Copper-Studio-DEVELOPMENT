@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell, BarChart2, Building2, ChevronDown,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { primeDataFields } from "../lib/dataFields";
+import LoadingScreen from "../components/LoadingScreen";
 import { storeGet } from "../lib/store";
 import { useCrmRecords } from "../hooks/useCrmRecords";
 import { useToast } from "../components/useToast";
@@ -576,7 +577,9 @@ export default function AdminLayout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-white">
-          <Outlet />
+          <Suspense fallback={<LoadingScreen />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

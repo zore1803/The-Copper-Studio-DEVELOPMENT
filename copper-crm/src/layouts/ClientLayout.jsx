@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import LoadingScreen from "../components/LoadingScreen";
 import {
   LayoutDashboard, GitBranch, Video, FileText,
   Receipt, Settings, LogOut, Bell, ChevronLeft, ChevronRight, Menu, X
@@ -195,7 +196,9 @@ export default function ClientLayout() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto bg-[#f5f6fa]">
-          <Outlet />
+          <Suspense fallback={<LoadingScreen />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

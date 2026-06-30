@@ -7,6 +7,12 @@
 
 * { box-sizing: border-box; }
 
+/* Indeterminate progress bar used by the branded LoadingScreen. */
+@keyframes loadbar {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(420%); }
+}
+
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
