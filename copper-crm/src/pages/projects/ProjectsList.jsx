@@ -232,31 +232,26 @@ export default function ProjectsList() {
 
   return (
     <div className="flex flex-col min-h-full bg-[#F1F1F5]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-3 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
         <div>
           <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
           <p className="text-xs text-[#525866] mt-0.5">{sorted.length} of {projects.length} projects across every company</p>
         </div>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
-      </div>
-
-      {/* Second strip: search, sort, and filters (matches Companies) */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-[#E1E4EA] bg-white px-6 py-3">
-        <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-          <Search size={16} className="shrink-0 text-[#1F2937]/50" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search projects or clients…"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
-          />
-        </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
+            <Search size={14} className="shrink-0 text-[#9ca3af]" />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search projects or clients…"
+              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
+            />
+          </div>
           {/* Sort */}
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -284,6 +279,7 @@ export default function ProjectsList() {
               { key: "template", label: "Template", type: "select", value: templateFilter, onChange: setTemplateFilter, options: templateOptions }
             ]}
           />
+          <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
         </div>
       </div>
 
