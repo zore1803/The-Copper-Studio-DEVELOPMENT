@@ -37,7 +37,11 @@ const schema = new mongoose.Schema(
     security: {
       inviteExpiry: { type: String, default: "48 hours" },
       otpExpiry: { type: String, default: "10 minutes" }
-    }
+    },
+    // Workspace-configurable dropdown option lists (industry, lead source,
+    // payment status, document categories, etc.). Shape is driven by the
+    // frontend dataFields registry; stored as-is and merged with defaults there.
+    dataFields: { type: mongoose.Schema.Types.Mixed, default: {} }
   },
   { timestamps: true, strict: false }
 );
@@ -78,6 +82,7 @@ export default defineModel({
     security: {
       inviteExpiry: "48 hours",
       otpExpiry: "10 minutes"
-    }
+    },
+    dataFields: {}
   }
 });

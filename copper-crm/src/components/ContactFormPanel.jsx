@@ -7,6 +7,7 @@ import { useToast } from "./useToast";
 import { useAuth } from "../auth/useAuth";
 import { apiPost } from "../lib/api";
 import { isEmail, isPhone } from "../lib/validators";
+import { useDataFields } from "../lib/dataFields";
 
 // Single source of truth for the contact form used everywhere a contact is
 // created or edited — the Contacts list, a Contact's detail page, and inside a
@@ -201,7 +202,8 @@ export default function ContactFormPanel({ contact, company = null, companies = 
   const companyName = pickedCompany?.name || pickedCompany?.companyName || "";
   // Always keep the current value selectable so an existing status outside the
   // standard list isn't silently dropped on save.
-  const statusOptions = Array.from(new Set([form.status, ...STATUS_OPTIONS].filter(Boolean)));
+  const dataFields = useDataFields(token);
+  const statusOptions = Array.from(new Set([form.status, ...dataFields.contactStatus].filter(Boolean)));
   const salutationOptions = Array.from(new Set([form.salutation, ...SALUTATION_OPTIONS].filter(Boolean)));
 
   async function invitePortalAccess({ email, name, phone }) {

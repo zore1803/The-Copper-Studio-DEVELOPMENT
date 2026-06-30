@@ -5,8 +5,8 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
+import { useDataFields } from "../../lib/dataFields";
 
-const PAYMENT_STATUSES = ["Success", "Pending", "Failed", "Refunded"];
 const PAGE_SIZE = 25;
 
 const SORT_OPTIONS = [
@@ -82,6 +82,7 @@ function Field({ label, value, onChange, type = "text", options }) {
 }
 
 function PaymentModal({ companies, onClose, onSave }) {
+  const dataFields = useDataFields();
   const [form, setForm] = useState({ company: "", amount: "", method: "UPI", gateway: "Razorpay", status: "Success" });
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -100,15 +101,16 @@ function PaymentModal({ companies, onClose, onSave }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Company" value={form.company} onChange={set("company")} options={["", ...companies.map((c) => c.name)]} />
         <Field label="Amount" type="number" value={form.amount} onChange={set("amount")} />
-        <Field label="Method" value={form.method} onChange={set("method")} options={["UPI", "Card", "Netbanking", "Wallet", "Bank Transfer"]} />
-        <Field label="Gateway" value={form.gateway} onChange={set("gateway")} options={["Razorpay", "Stripe", "Manual"]} />
-        <Field label="Status" value={form.status} onChange={set("status")} options={["Success", "Pending", "Failed", "Refunded"]} />
+        <Field label="Method" value={form.method} onChange={set("method")} options={dataFields.paymentMethod} />
+        <Field label="Gateway" value={form.gateway} onChange={set("gateway")} options={dataFields.paymentGateway} />
+        <Field label="Status" value={form.status} onChange={set("status")} options={dataFields.paymentStatusPayments} />
       </div>
     </SidePanel>
   );
 }
 
 export default function Payments() {
+  const dataFields = useDataFields();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [methodFilter, setMethodFilter] = useState("All");
@@ -228,7 +230,7 @@ export default function Payments() {
             onReset={resetFilters}
             buttonClassName="h-11 w-11"
             fields={[
-              { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...PAYMENT_STATUSES] },
+              { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...dataFields.paymentStatusPayments] },
               { key: "method", label: "Method", type: "select", value: methodFilter, onChange: (value) => { setMethodFilter(value); setPage(1); }, options: methodNames },
               { key: "gateway", label: "Gateway", type: "select", value: gatewayFilter, onChange: (value) => { setGatewayFilter(value); setPage(1); }, options: gatewayNames }
             ]}

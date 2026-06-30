@@ -4,12 +4,11 @@ import { Button } from "./ui";
 import SidePanel from "./SidePanel";
 import SearchableSelectField from "./SearchableSelect";
 import { generateProjectCode, generateDefaultProjectName, PROJECT_TEMPLATES } from "../lib/projectDefaults";
+import { useDataFields } from "../lib/dataFields";
+import { useAuth } from "../auth/useAuth";
 
-const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
-const PROJECT_TEMPLATE_OPTIONS = Object.keys(PROJECT_TEMPLATES);
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
-const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -92,6 +91,8 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
 
 /** Rich project creation form, shared between the company workspace and the global Projects page. */
 export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], projects = [], onClose, onSave }) {
+  const { token } = useAuth();
+  const dataFields = useDataFields(token);
   const [companyId, setCompanyId] = useState(() => String(company?.id || company?._id || ""));
   const [form, setForm] = useState({
     name: "",
@@ -204,8 +205,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           )}
           <Select label="Primary contact" value={form.primaryContactId} onChange={set("primaryContactId")}
             options={scopedContacts.map((c) => ({ value: String(c.id || c._id), label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Select span label="Project manager" value={form.projectManager} onChange={set("projectManager")}
-            options={scopedContacts.map((c) => ({ value: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email, label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
+          <Select span label="Project manager" value={form.projectManager} onChange={set("projectManager")} options={dataFields.companyOwner} />
           <Select label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
           {form.packageName === "Custom" && (
             <Input label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} error={errors.customPackageName} />
@@ -219,8 +219,8 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
         </FormSection>
 
         <FormSection title="Delivery Pipeline">
-          <Select label="Delivery stage" value={form.status} onChange={set("status")} options={PROJECT_STATUS} />
-          <Select label="Project template" value={form.template} onChange={set("template")} options={PROJECT_TEMPLATE_OPTIONS}
+          <Select label="Delivery stage" value={form.status} onChange={set("status")} options={dataFields.projectDeliveryStage} />
+          <Select label="Project template" value={form.template} onChange={set("template")} options={dataFields.projectTemplate}
             hint="Generates the editable project-stage roadmap" />
         </FormSection>
 
@@ -230,7 +230,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           <Input label="Final amount" value={formatINR(finalAmount)} disabled />
           <SearchableSelectField label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
             options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} placeholder="Search invoices…" />
-          <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
+          <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={dataFields.paymentStatusProjects} />
         </FormSection>
 
         <FormSection title="Internal">

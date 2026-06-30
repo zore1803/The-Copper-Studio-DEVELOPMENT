@@ -14,6 +14,7 @@ import { useToast } from "../../components/useToast";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
+import { useDataFields } from "../../lib/dataFields";
 import { isSameLocalDay } from "../../lib/dates";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
@@ -320,7 +321,6 @@ function LinkClientPanel({ company, contacts, projects, clients, loading, onClos
   );
 }
 
-const DOCUMENT_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
 
 function fileExt(filename) {
   return (filename || "").split(".").pop().toLowerCase();
@@ -342,6 +342,7 @@ const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
 function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" }) {
   const { showToast } = useToast();
+  const dataFields = useDataFields();
   const [form, setForm] = useState({ name: "", category: defaultCategory || "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
   const [reading, setReading] = useState(false);
@@ -441,8 +442,8 @@ function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" })
           </div>
         </label>
         <Input span label="File name *" value={form.name} onChange={set("name")} />
-        <Select label="Category" value={form.category} onChange={set("category")} options={DOCUMENT_CATEGORIES} />
-        <Select label="File type" value={form.fileType} onChange={set("fileType")} options={["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"]} />
+        <Select label="Category" value={form.category} onChange={set("category")} options={dataFields.documentCategory} />
+        <Select label="File type" value={form.fileType} onChange={set("fileType")} options={dataFields.documentFileType} />
         <Input span label="...or paste a file URL" value={fileReady ? "" : form.fileUrl} onChange={set("fileUrl")} disabled={fileReady} hint="Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above." />
         <Textarea span label="Notes" value={form.notes} onChange={set("notes")} />
       </div>

@@ -37,8 +37,34 @@ router.get("/", async (req, res, next) => {
       billing: settings.billing,
       email: settings.email,
       notifications: settings.notifications,
-      security: settings.security
+      security: settings.security,
+      dataFields: settings.dataFields || {}
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Configurable dropdown option lists. The frontend owns the canonical defaults
+// and merges them over whatever is stored, so we just persist the raw map here.
+router.get("/data-fields", async (_req, res, next) => {
+  try {
+    const settings = await getSingleton();
+    res.json({ dataFields: settings.dataFields || {} });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/data-fields", async (req, res, next) => {
+  try {
+    const dataFields = req.body?.dataFields && typeof req.body.dataFields === "object" ? req.body.dataFields : {};
+    const settings = await Settings.findOneAndUpdate(
+      {},
+      { $set: { dataFields } },
+      { upsert: true, new: true }
+    );
+    res.json({ dataFields: settings.dataFields || {} });
   } catch (error) {
     next(error);
   }

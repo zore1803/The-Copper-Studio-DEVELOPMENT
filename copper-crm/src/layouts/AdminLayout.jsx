@@ -8,6 +8,7 @@ import {
   ShoppingCart, UserRound, Wallet, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
+import { primeDataFields } from "../lib/dataFields";
 import { storeGet } from "../lib/store";
 import { useCrmRecords } from "../hooks/useCrmRecords";
 import { useToast } from "../components/useToast";
@@ -226,6 +227,12 @@ export default function AdminLayout() {
   const quickAddRef = useRef(null);
   const notifRef = useRef(null);
   const avatarRef = useRef(null);
+
+  // Warm the workspace dropdown-option lists once so every form (company,
+  // contact, project, payment, document) renders saved values immediately.
+  useEffect(() => {
+    if (auth.token) primeDataFields(auth.token);
+  }, [auth.token]);
 
   useEffect(() => {
     function onOutside(e) {

@@ -15,6 +15,7 @@ import { apiGet, apiPost, apiPut } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import { isEmail, isGstin } from "../../lib/validators";
 import { loadCompanyOwners, persistCompanyOwners } from "../../lib/companyOwners";
+import { DATA_FIELD_GROUPS, getDataFields, primeDataFields, saveDataFields } from "../../lib/dataFields";
 
 const URL_RE = /^([a-z]+:\/\/)?[^\s.]+\.[^\s]{2,}$/i;
 
@@ -673,6 +674,117 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
   );
 }
 
+// Editable chip-list for one configurable option list (industry, lead source…).
+function DataFieldList({ label, hint, values, onChange }) {
+  const [draft, setDraft] = useState("");
+
+  function addValue() {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    if (values.some((v) => v.toLowerCase() === trimmed.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...values, trimmed]);
+    setDraft("");
+  }
+
+  return (
+    <div className="rounded-2xl border border-[#ead8d1] bg-[#fffdfc] p-4">
+      <p className="text-sm font-bold text-[#211a17]">{label}</p>
+      {hint && <p className="mt-0.5 text-xs text-[#6c6355]">{hint}</p>}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {values.length ? values.map((value) => (
+          <span key={value} className="flex items-center gap-1.5 rounded-full border border-[#ead8d1] bg-white px-3 py-1 text-xs font-semibold text-[#211a17]">
+            {value}
+            <button type="button" onClick={() => onChange(values.filter((v) => v !== value))} className="text-[#9c8c80] hover:text-red-500">
+              <Trash2 size={12} />
+            </button>
+          </span>
+        )) : (
+          <span className="text-xs text-[#9c8c80]">No options yet.</span>
+        )}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addValue(); } }}
+          placeholder="Add an option…"
+          className="flex-1 rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+        />
+        <Button variant="secondary" onClick={addValue}><Plus size={14} /> Add</Button>
+      </div>
+    </div>
+  );
+}
+
+function DataFieldsSection() {
+  const { showToast } = useToast();
+  const { token } = useAuth();
+  const [values, setValues] = useState(() => getDataFields());
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    primeDataFields(token).then((data) => {
+      if (alive && data) setValues(data);
+    }).finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [token]);
+
+  function setList(key, next) {
+    setValues((prev) => ({ ...prev, [key]: next }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await saveDataFields(values, token);
+      showToast({ title: "Data fields updated", message: "Your dropdown options have been saved." });
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't save", message: err.message || "Something went wrong." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return <div className="py-16 text-center text-sm text-[#6c6355]">Loading data fields…</div>;
+  }
+
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div>
+          <h3 className="text-lg font-semibold text-[#211a17]">Data Fields</h3>
+          <p className="mt-1 text-sm text-[#6c6355]">Manage the dropdown options used across the CRM. Changes apply everywhere the field is used.</p>
+        </div>
+        <Button disabled={saving} onClick={handleSave}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
+      </div>
+      <div className="space-y-8">
+        {DATA_FIELD_GROUPS.map((group) => (
+          <div key={group.label}>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">{group.label}</p>
+            <div className="grid gap-4 lg:grid-cols-2">
+              {group.fields.map((field) => (
+                <DataFieldList
+                  key={field.key}
+                  label={field.label}
+                  hint={field.hint}
+                  values={values[field.key] || []}
+                  onChange={(next) => setList(field.key, next)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { showToast } = useToast();
   const { token } = useAuth();
@@ -801,9 +913,8 @@ export function SettingsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#F1F1F5]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:min-h-14 xl:flex-row xl:items-center xl:justify-between xl:gap-4">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">Workspace administration</p>
           <h1 className="text-base font-medium text-[#0E121B]">Account Settings</h1>
           <p className="mt-0.5 max-w-3xl text-xs text-[#525866]">
             Manage the super admin identity, change your password, and edit the email and WhatsApp message templates.
@@ -903,19 +1014,7 @@ export function SettingsPage() {
                 </div>
               )}
 
-              {activeSection === "dataFields" && (
-                <div>
-                  <div className="mb-6">
-                    <h3 className="text-lg font-semibold text-[#211a17]">Data Fields</h3>
-                    <p className="mt-1 text-sm text-[#6c6355]">Configure the custom data fields used across the CRM.</p>
-                  </div>
-                  <div className="rounded-2xl border border-dashed border-[#d8c2b9] bg-[#fffdfc] px-6 py-12 text-center">
-                    <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><SlidersHorizontal size={20} /></div>
-                    <p className="mt-3 text-sm font-semibold text-[#211a17]">Coming soon</p>
-                    <p className="mt-1 text-xs text-[#6c6355]">Data field configuration will be available here.</p>
-                  </div>
-                </div>
-              )}
+              {activeSection === "dataFields" && <DataFieldsSection />}
 
               {activeSection === "company" && (
                 <div>

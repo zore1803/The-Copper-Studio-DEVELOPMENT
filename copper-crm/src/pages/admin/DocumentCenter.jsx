@@ -8,6 +8,7 @@ import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import { useDataFields } from "../../lib/dataFields";
 import customFolderSvg from "../../assets/Folder.svg";
 function readFileAsDataUrl(file, onProgress) {
   return new Promise((resolve, reject) => {
@@ -120,13 +121,13 @@ function fileExt(filename) {
   return (filename || "").split(".").pop().toLowerCase();
 }
 
-const DOCUMENT_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
 // Same fields as the company-workspace upload panel (CompanyDetail.jsx) so
 // uploading from the Documentation tab produces an identical document record.
 function UploadPanel({ folderLabel, onClose, onSave }) {
   const { showToast } = useToast();
+  const dataFields = useDataFields();
   const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
   const [fileReady, setFileReady] = useState(false);
   const [reading, setReading] = useState(false);
@@ -230,13 +231,13 @@ function UploadPanel({ folderLabel, onClose, onSave }) {
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Category</span>
           <select value={form.category} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
-            {DOCUMENT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
+            {dataFields.documentCategory.map((category) => <option key={category}>{category}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File type</span>
           <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
-            {["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"].map((type) => <option key={type}>{type}</option>)}
+            {dataFields.documentFileType.map((type) => <option key={type}>{type}</option>)}
           </select>
         </label>
         <label className="block">
