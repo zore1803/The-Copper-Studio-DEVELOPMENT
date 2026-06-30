@@ -37,24 +37,25 @@ body {
   --studio-copper-light: #ffb693;
   --studio-teal: #026769;
 
-  /* Copper Studio OS design tokens (from UI reference) */
-  --cs-primary: #894d0d;
-  --cs-primary-container: #a76526;
+  /* Copper Studio OS design tokens — aligned to the admin design system so the
+     client portal shares the same copper palette, neutrals and surfaces. */
+  --cs-primary: #884c2d;
+  --cs-primary-container: #b06a48;
   --cs-on-primary: #ffffff;
-  --cs-primary-fixed: #ffdcc2;
-  --cs-primary-fixed-dim: #ffb77b;
-  --cs-background: #f8f9fb;
-  --cs-surface: #f8f9fb;
+  --cs-primary-fixed: #fff1ec;
+  --cs-primary-fixed-dim: #ffdbcc;
+  --cs-background: #f5f6fa;
+  --cs-surface: #ffffff;
   --cs-surface-container-lowest: #ffffff;
-  --cs-surface-container-low: #f2f4f6;
-  --cs-surface-container: #edeef0;
-  --cs-surface-container-high: #e7e8ea;
-  --cs-surface-container-highest: #e1e2e4;
-  --cs-outline-variant: #d8c3b4;
-  --cs-on-surface: #191c1e;
-  --cs-on-surface-variant: #524439;
-  --cs-secondary: #555f6d;
-  --cs-error: #ba1a1a;
+  --cs-surface-container-low: #fafafa;
+  --cs-surface-container: #f3f4f6;
+  --cs-surface-container-high: #ececec;
+  --cs-surface-container-highest: #e1e4ea;
+  --cs-outline-variant: #e5e7eb;
+  --cs-on-surface: #111827;
+  --cs-on-surface-variant: #374151;
+  --cs-secondary: #6b7280;
+  --cs-error: #df120b;
 }
 
 h1, h2, h3, .font-display {

@@ -1,6 +1,7 @@
 import express from "express";
 import Order from "../models/Order.js";
 import Invoice from "../models/Invoice.js";
+import Project from "../models/Project.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "../services/invoiceTemplate.js";
 import { htmlToPdfBuffer } from "../services/pdf.js";
 
@@ -21,12 +22,27 @@ function safeFileName(invoiceNumber) {
   return `${String(invoiceNumber || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`;
 }
 
+// Find the project this invoice belongs to so its code (CS-...) can be printed
+// on the PDF. Prefer the order link, then the invoice's stored projectId.
+async function findProjectFor(order, invoice) {
+  if (order?._id) {
+    const byOrder = await Project.findOne({ orderId: order._id }).catch(() => null);
+    if (byOrder) return byOrder;
+  }
+  if (invoice?.projectId) {
+    const byId = await Project.findById(invoice.projectId).catch(() => null);
+    if (byId) return byId;
+  }
+  return null;
+}
+
 async function loadByOrderId(orderId) {
   if (!isObjectId(orderId)) return null;
   const order = await Order.findById(orderId);
   if (!order) return null;
   const invoice = await Invoice.findOne({ sourceOrderId: order._id });
-  return { order, invoice };
+  const project = await findProjectFor(order, invoice);
+  return { order, invoice, project };
 }
 
 async function loadByInvoiceId(invoiceId) {
@@ -36,7 +52,8 @@ async function loadByInvoiceId(invoiceId) {
   if (!invoice) invoice = await Invoice.findOne({ id: invoiceId });
   if (!invoice) return null;
   const order = invoice.sourceOrderId ? await Order.findById(invoice.sourceOrderId) : null;
-  return { order, invoice };
+  const project = await findProjectFor(order, invoice);
+  return { order, invoice, project };
 }
 
 async function respond(res, data, format) {

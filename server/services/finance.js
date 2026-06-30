@@ -67,13 +67,18 @@ export async function syncFinanceForOrder(orderInput) {
   const client = customer.customerEmail
     ? await User.findOne({ email: String(customer.customerEmail).toLowerCase() }).select("_id name email").catch(() => null)
     : null;
-  const company = await findLinkedCompany(order, client?._id);
   const invoiceNumber = await invoiceNumberFor(order, paidAt);
   const paymentId = paymentIdFor(order);
   const total = Number(pkg.total || pkg.price || 0);
   const taxableBase = total ? Math.round(total / 1.18) : 0;
   const gst = total ? total - taxableBase : 0;
-  const project = await Project.findOne({ orderId: order._id }).select("_id name projectName").catch(() => null);
+  const project = await Project.findOne({ orderId: order._id }).select("_id name projectName companyId").catch(() => null);
+  // The project carries the resolved company for returning, already-linked
+  // clients (checkout no longer collects a company name); fall back to matching
+  // by company name / member list for the legacy/manual paths.
+  const company = (project?.companyId
+    ? await Company.findById(project.companyId).select("_id name userId").catch(() => null)
+    : null) || await findLinkedCompany(order, client?._id);
 
   const shared = {
     sourceOrderId: order._id,

@@ -51,6 +51,9 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
             </div>
             <div className="min-w-0">
               <h2 className="truncate text-2xl font-bold text-[#111827]">{project.name}</h2>
+              {project.clientProjectName && project.clientProjectName !== project.name && (
+                <p className="mt-0.5 truncate text-sm text-[#6b7280]">“{project.clientProjectName}”</p>
+              )}
               <p className="mt-0.5 text-sm text-[#6b7280]">{company.name}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Badge color={statusColor[liveStatus] || "gray"}>{liveStatus}</Badge>

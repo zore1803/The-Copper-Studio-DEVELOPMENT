@@ -14,6 +14,7 @@ import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
 import User from "../models/User.js";
 import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
+import { buildProjectCode, buildDefaultProjectName } from "../services/projectNaming.js";
 import { sendContactCreatedEmail } from "../services/email.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
@@ -119,6 +120,102 @@ async function cascadeClientLink(companyId, userIds) {
   ]);
 }
 
+// Clients who buy a package at checkout no longer enter a company name, so the
+// project/invoice/etc. created from their paid order are orphaned with a null
+// companyId. When an admin later links that client to a company, adopt those
+// orphan records into the company: stamp the companyId so they file under it
+// (making the project visible in the Document Center), and rename each project
+// from the buyer's free-text name to the coded "<Company>-Project N-MMYY" format
+// with a matching CS-XXXX-NN-MMYY code. The buyer's original wording is preserved
+// in clientProjectName. Kept driver-agnostic: we load by clientId then filter for
+// the company-less records in JS rather than relying on $exists/null semantics.
+async function adoptOrphansIntoCompany(company, userIds) {
+  if (!company?._id || !userIds?.length) return;
+  const ids = userIds.map(String).filter(Boolean);
+  if (!ids.length) return;
+
+  const companyId = company._id;
+  const companyName = company.name || "";
+  const hasNoCompany = (record) => !record.companyId;
+
+  // Projects need per-record renaming + sequential numbering within the company.
+  const clientProjects = await Project.find({ clientId: { $in: ids } }).catch(() => []);
+  const orphanProjects = clientProjects
+    .filter(hasNoCompany)
+    .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+  let projectNumber = await Project.countDocuments({ companyId }).catch(() => 0);
+  for (const project of orphanProjects) {
+    projectNumber += 1;
+    const created = project.createdAt ? new Date(project.createdAt) : new Date();
+    await Project.findByIdAndUpdate(project._id, {
+      companyId,
+      companyName,
+      client: companyName,
+      name: buildDefaultProjectName(companyName, projectNumber, created),
+      projectId: buildProjectCode(companyName, projectNumber, created),
+      clientProjectName: project.clientProjectName || project.name || ""
+    }).catch(() => {});
+  }
+
+  // Finance + collateral records only need the company stamped onto them.
+  const collateral = [
+    [Invoice, { company: companyName }],
+    [Payment, { company: companyName }],
+    [Document, {}],
+    [Meeting, {}],
+    [Note, {}]
+  ];
+  for (const [Model, extra] of collateral) {
+    const records = await Model.find({ clientId: { $in: ids } }).catch(() => []);
+    await Promise.all(
+      records
+        .filter(hasNoCompany)
+        .map((record) => Model.findByIdAndUpdate(record._id, { companyId, ...extra }).catch(() => {}))
+    );
+  }
+}
+
+// Trigger when a company's member list changes (company-side linking).
+async function adoptOrphanRecordsForCompany(company) {
+  if (!company?._id) return;
+  const userIds = [...(company.userIds || []), ...(company.userId ? [company.userId] : [])];
+  await adoptOrphansIntoCompany(company, userIds);
+}
+
+// Trigger when a contact is assigned to a company (the actual admin flow:
+// Contact card -> set company). The contact references its company by the
+// free-text `id` field, not the Mongo _id, and is matched to the buyer's portal
+// login by email (the contact created at checkout has no userId yet), so we
+// resolve both here, back-fill the contact->login link, then adopt the buyer's
+// orphan project/finance records into the company.
+async function adoptOrphanRecordsForContact(contact) {
+  if (!contact?.companyId && !contact?.company) return;
+
+  let company = null;
+  if (contact.companyId) {
+    company = await Company.findById(contact.companyId).catch(() => null);
+    if (!company) company = await Company.findOne({ id: contact.companyId }).catch(() => null);
+  }
+  if (!company && contact.company) {
+    company = await Company.findOne({ name: contact.company }).catch(() => null);
+  }
+  if (!company) return;
+
+  let user = contact.userId ? await User.findById(contact.userId).catch(() => null) : null;
+  if (!user && contact.email) {
+    user = await User.findOne({ email: String(contact.email).toLowerCase() }).catch(() => null);
+  }
+  if (!user) return;
+
+  // Wire the contact to the resolved login so client-portal visibility resolves.
+  if (!contact.userId && contact._id) {
+    await Contact.findByIdAndUpdate(contact._id, { userId: user._id }).catch(() => {});
+  }
+
+  await adoptOrphansIntoCompany(company, [user._id]);
+}
+
 router.get("/:type", validateType, async (req, res, next) => {
   try {
     const Model = models[req.params.type];
@@ -142,6 +239,12 @@ router.post("/:type", createLimiter, validateType, async (req, res, next) => {
     if (type === "contacts") {
       sendContactCreatedEmail({ name: record.name, email: record.email, phone: record.phone, company: record.company }).catch(() => {});
     }
+    if (type === "companies" && (record.userIds?.length || record.userId)) {
+      await adoptOrphanRecordsForCompany(record);
+    }
+    if (type === "contacts" && (record.companyId || record.company)) {
+      await adoptOrphanRecordsForContact(record);
+    }
     res.status(201).json(asPublicRecord(record));
   } catch (error) {
     next(error);
@@ -158,6 +261,10 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
     if (!record) return res.status(404).json({ message: "CRM record not found." });
     if (type === "companies" && (Object.prototype.hasOwnProperty.call(payload, "userId") || Object.prototype.hasOwnProperty.call(payload, "userIds"))) {
       await cascadeClientLink(record._id, record.userIds?.length ? record.userIds : record.userId);
+      await adoptOrphanRecordsForCompany(record);
+    }
+    if (type === "contacts" && (record.companyId || record.company)) {
+      await adoptOrphanRecordsForContact(record);
     }
     res.json(asPublicRecord(record));
   } catch (error) {

@@ -8,8 +8,10 @@ async function run() {
   
   for (let c of collections) {
     if (c.collectionName === 'users') {
-      await c.deleteMany({ role: { $ne: 'admin' } });
-      console.log('Deleted non-admin users');
+      // Roles in this app are "user" / "superadmin" (there is no "admin" role),
+      // so keep both admin-style roles and drop only ordinary client logins.
+      const { deletedCount } = await c.deleteMany({ role: { $nin: ['admin', 'superadmin'] } });
+      console.log('Deleted non-admin users:', deletedCount);
     } else if (c.collectionName !== 'settings') {
       await c.deleteMany({});
       console.log('Cleared ' + c.collectionName);

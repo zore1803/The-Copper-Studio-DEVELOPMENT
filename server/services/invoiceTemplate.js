@@ -83,13 +83,18 @@ function invoicePaymentStatus(inv, payment) {
  * Invoice finance record. The Order carries the dynamic client + Razorpay
  * transaction details; sellerConfig carries the static issuer details.
  */
-export function buildInvoiceModel({ order, invoice } = {}) {
+export function buildInvoiceModel({ order, invoice, project } = {}) {
   const src = order ? (typeof order.toObject === "function" ? order.toObject() : order) : null;
   const inv = invoice ? (typeof invoice.toObject === "function" ? invoice.toObject() : invoice) : null;
+  const proj = project ? (typeof project.toObject === "function" ? project.toObject() : project) : null;
 
   const customer = src?.customer || {};
   const pkg = src?.package || {};
   const payment = src?.payment || {};
+  // The project's human code (e.g. CS-DATC-02-0626) uniquely identifies which
+  // project this invoice belongs to — shown on the PDF so the document is
+  // self-identifying. Falls back to the code stored on the invoice record.
+  const projectCode = proj?.projectId || inv?.projectCode || "";
 
   const total = Number(inv?.total ?? pkg.total ?? pkg.price ?? inv?.amount ?? 0);
   const rate = invoiceSettings.gstRatePercent;
@@ -116,6 +121,7 @@ export function buildInvoiceModel({ order, invoice } = {}) {
     bank,
     settings: invoiceSettings,
     invoiceNumber,
+    projectCode,
     issueDate,
     dueDate: invoiceSettings.dueOnIssue ? issueDate : (inv?.dueDate || issueDate),
     placeOfSupply: `${seller.stateCode}-${seller.stateName}`,
@@ -316,6 +322,7 @@ export function renderInvoiceHtml(input) {
       <div>
         <table class="meta-table">
           <tr><td>Invoice #:</td><td>${esc(m.invoiceNumber)}</td></tr>
+          ${m.projectCode ? `<tr><td>Project ID:</td><td>${esc(m.projectCode)}</td></tr>` : ""}
           <tr><td>Invoice Date:</td><td>${formatDate(m.issueDate)}</td></tr>
           <tr><td>Due Date:</td><td>${formatDate(m.dueDate)}</td></tr>
           <tr><td>Place of Supply:</td><td>${esc(m.placeOfSupply)}</td></tr>

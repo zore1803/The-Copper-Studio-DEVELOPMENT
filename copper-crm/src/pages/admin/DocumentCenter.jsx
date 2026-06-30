@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Building2, FileArchive, FileText, Folder, FolderOpen, Grid3X3,
@@ -75,11 +75,37 @@ function FolderCard({ icon: Icon, title, meta, onClick, active }) {
   );
 }
 
-function DocumentRow({ doc, selected, onSelect }) {
+// Whether a document is currently shared with the client. The admin-set
+// `clientVisible` flag wins; legacy docs fall back to their visibility/scope.
+function isClientVisible(doc) {
+  return doc.clientVisible !== false
+    && doc.visibility !== "internal"
+    && doc.scope !== "internal"
+    && doc.category !== "Internal";
+}
+
+function VisibilityToggle({ visible, busy, onChange }) {
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={(e) => { e.stopPropagation(); if (!busy) onChange(!visible); }}
+      title={visible ? "Visible to the client — click to hide" : "Hidden from the client — click to share"}
+      className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold transition-colors ${busy ? "opacity-60 cursor-wait" : "cursor-pointer"} ${visible ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+    >
+      <span className={`relative h-3.5 w-6 shrink-0 rounded-full transition-colors ${visible ? "bg-emerald-500" : "bg-gray-300"}`}>
+        <span className={`absolute top-0.5 h-2.5 w-2.5 rounded-full bg-white shadow transition-all ${visible ? "left-[13px]" : "left-0.5"}`} />
+      </span>
+      {busy ? <Loader2 size={11} className="animate-spin" /> : (visible ? <Share2 size={11} /> : <Lock size={11} />)}
+      {visible ? "Client Visible" : "Hidden"}
+    </button>
+  );
+}
+
+function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
   const type = fileType(doc.fileName || doc.name || doc.storageUrl);
   const Icon = TYPE_ICON[type] || FileText;
-  const visibility = VISIBILITY[doc.visibility] || VISIBILITY.private;
-  const VisibilityIcon = visibility.icon;
+  const visible = isClientVisible(doc);
 
   const dateStr = doc.createdAt || doc.date || doc.updatedAt;
   const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString(undefined, {
@@ -101,9 +127,13 @@ function DocumentRow({ doc, selected, onSelect }) {
         </span>
       </span>
       <span className="text-[#374151]">{type.toUpperCase()}</span>
-      <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${visibility.className}`}>
-        <VisibilityIcon size={11} /> {visibility.label}
-      </span>
+      {canToggle ? (
+        <VisibilityToggle visible={visible} busy={busy} onChange={(next) => onToggle(doc, next)} />
+      ) : (
+        <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${visible ? VISIBILITY.client.className : VISIBILITY.private.className}`}>
+          {visible ? <Share2 size={11} /> : <Lock size={11} />} {visible ? "Client Visible" : "Hidden"}
+        </span>
+      )}
       <span className="text-[#6b7280]">{formattedDate}</span>
       <span onClick={(e) => e.stopPropagation()}>
         {doc.fileUrl ? (
@@ -125,14 +155,23 @@ const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
 // Same fields as the company-workspace upload panel (CompanyDetail.jsx) so
 // uploading from the Documentation tab produces an identical document record.
-function UploadPanel({ folderLabel, onClose, onSave }) {
+function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCompanyId = "", defaultProjectId = "" }) {
   const { showToast } = useToast();
-  const [form, setForm] = useState({ name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
+  const [form, setForm] = useState({
+    companyId: defaultCompanyId || "",
+    projectId: defaultProjectId || "",
+    name: "", category: "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "",
+  });
   const [fileReady, setFileReady] = useState(false);
   const [reading, setReading] = useState(false);
   const [readPct, setReadPct] = useState(0);
   const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  // Projects belonging to the chosen company — that's the list of folders the
+  // document can be filed into.
+  const companyProjects = projects.filter((p) => String(p.companyId) === String(form.companyId));
+  const companyName = (c) => c.companyName || c.name || "Unnamed company";
 
   async function handleBrowse(event) {
     const file = event.target.files?.[0];
@@ -176,18 +215,56 @@ function UploadPanel({ folderLabel, onClose, onSave }) {
   return (
     <SidePanel
       title="Upload Document"
-      subtitle={folderLabel ? `Uploading to ${folderLabel}.` : "Select a company or project folder, or upload unfiled."}
+      subtitle="Choose which company and project folder this document belongs to."
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!form.name.trim() || reading || saving}>
+          <Button onClick={handleSave} disabled={!form.name.trim() || !form.companyId || reading || saving}>
             {saving ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : <><Upload size={14} /> Save Document</>}
           </Button>
         </div>
       }
     >
       <div className="space-y-4">
+        {/* Destination — clearly state where the document will be filed. */}
+        <div className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] p-3 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Destination folder</p>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">Company *</span>
+            <select
+              value={form.companyId}
+              onChange={(e) => setForm((prev) => ({ ...prev, companyId: e.target.value, projectId: "" }))}
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            >
+              <option value="">Select a company…</option>
+              {companies.map((c) => (
+                <option key={c._id || c.id} value={c._id || c.id}>{companyName(c)}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">Project folder</span>
+            <select
+              value={form.projectId}
+              onChange={(e) => set("projectId")(e.target.value)}
+              disabled={!form.companyId}
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#9ca3af]"
+            >
+              <option value="">Company level (no specific project)</option>
+              {companyProjects.map((p) => (
+                <option key={p._id || p.id} value={p._id || p.id}>{p.name || p.projectName || "Untitled project"}</option>
+              ))}
+            </select>
+            <span className="mt-1 block text-[11px] text-[#9ca3af]">
+              {!form.companyId
+                ? "Pick a company first to choose its project folder."
+                : form.projectId
+                  ? "Filed inside this project's folder."
+                  : "Filed at the company level (not inside any project folder)."}
+            </span>
+          </label>
+        </div>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File *</span>
           <div className="mt-1.5 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
@@ -263,6 +340,75 @@ function UploadPanel({ folderLabel, onClose, onSave }) {
   );
 }
 
+function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
+        <div>
+          <p className="text-sm font-bold text-[#111827]">{title}</p>
+          <p className="text-xs text-[#6b7280]">{docs.length} documents</p>
+        </div>
+      </div>
+      {docs.length ? (
+        <div>
+          <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+            <span>Name</span><span>Type</span><span>Visibility</span><span>Date</span><span>File</span>
+          </div>
+          {/* Documents scroll independently of the folders above. */}
+          <div className="max-h-[220px] overflow-y-auto">
+            {docs.map((doc, index) => (
+              <DocumentRow
+                key={doc._id || doc.id || `${doc.fileName}-${index}`}
+                doc={doc}
+                selected={selected === doc}
+                onSelect={onSelect}
+                onToggle={onToggle}
+                canToggle={Boolean(onToggle)}
+                busy={togglingId != null && String(togglingId) === String(doc._id || doc.id)}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <EmptyState title="No documents yet." text="Upload documents to see them here." />
+      )}
+    </div>
+  );
+}
+
+function DetailCard({ label, value }) {
+  return (
+    <div className="rounded-lg border border-[#eef0f3] bg-[#f9fafb] px-4 py-3">
+      <p className="text-xs text-[#9ca3af]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#111827] break-words">{value || "—"}</p>
+    </div>
+  );
+}
+
+function ProjectDetails({ project, company }) {
+  const money = (v) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(v) || 0);
+  const date = (v) => (v ? new Date(v).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "—");
+  const amount = Number(project.finalAmount ?? project.packageValue ?? project.budget ?? 0);
+  const status = String(project.status || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return (
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-6">
+      <h3 className="mb-4 text-base font-bold text-[#111827]">Project Information</h3>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <DetailCard label="Project ID" value={project.projectId} />
+        <DetailCard label="Project Name" value={project.name} />
+        <DetailCard label="Original Request" value={project.clientProjectName} />
+        <DetailCard label="Company" value={company?.name || company?.companyName || project.companyName} />
+        <DetailCard label="Package" value={project.packageName} />
+        <DetailCard label="Amount" value={money(amount)} />
+        <DetailCard label="Status" value={status} />
+        <DetailCard label="Current Phase" value={project.currentPhase} />
+        <DetailCard label="Created" value={date(project.createdAt)} />
+        <DetailCard label="Expected Delivery" value={date(project.expectedEndDate)} />
+      </div>
+    </div>
+  );
+}
+
 export default function DocumentCenter() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCompanyId = searchParams.get("company");
@@ -272,13 +418,18 @@ export default function DocumentCenter() {
   const [view, setView] = useState("grid");
   const [selected, setSelected] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [projectTab, setProjectTab] = useState("details");
+  const [togglingId, setTogglingId] = useState(null);
   const { records: companies } = useCrmRecords("companies");
-  const { records: projects } = useCrmRecords("projects");
+  const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: documents, save: saveDocument } = useCrmRecords("documents");
-  const { records: invoices } = useCrmRecords("invoices");
+  const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
 
   const currentCompany = companies.find((c) => String(c.id) === String(selectedCompanyId) || String(c._id) === String(selectedCompanyId));
   const currentProject = projects.find((p) => String(p.id) === String(selectedProjectId) || String(p._id) === String(selectedProjectId));
+
+  // Always land on the Details tab when opening a different project.
+  useEffect(() => { setProjectTab("details"); }, [selectedProjectId]);
 
   const projectDocs = useMemo(() => {
     // 1. Fetch from the documents collection where projectId is set
@@ -288,6 +439,7 @@ export default function DocumentCenter() {
         const project = projects.find((p) => String(p._id || p.id) === String(doc.projectId));
         return {
           ...doc,
+          _source: "document",
           id: doc._id || doc.id,
           projectId: doc.projectId,
           companyId: doc.companyId || project?.companyId,
@@ -303,6 +455,7 @@ export default function DocumentCenter() {
     const embeddedDocs = projects.flatMap((project) =>
       (project.documents || []).map((doc) => ({
         ...doc,
+        _source: "embedded",
         id: doc._id || doc.id,
         projectId: project.id || project._id,
         companyId: project.companyId,
@@ -327,6 +480,7 @@ export default function DocumentCenter() {
       const pId = project?._id || project?.id;
 
       return {
+        _source: "invoice",
         _id: inv._id || inv.id,
         id: inv._id || inv.id,
         name: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
@@ -337,7 +491,8 @@ export default function DocumentCenter() {
         projectId: pId,
         companyId: inv.companyId || project?.companyId,
         projectName: pName,
-        visibility: "client",
+        clientVisible: inv.clientVisible,
+        visibility: inv.clientVisible === false ? "internal" : "client",
         folderPath: `${pName} / Invoices`,
         fileUrl: `/api/invoices/${inv._id || inv.id || inv.invoiceNumber}/pdf`,
         createdAt: inv.createdAt || inv.date || inv.paidAt,
@@ -347,12 +502,6 @@ export default function DocumentCenter() {
     return [...collectionDocs, ...embeddedDocs, ...invoiceDocs];
   }, [projects, documents, invoices]);
 
-  const companyDocs = useMemo(() => documents.map(doc => ({
-    ...doc,
-    folderPath: "Company Files",
-    fileName: doc.fileName || doc.name
-  })), [documents]);
-
   const normalizedQuery = query.trim().toLowerCase();
   const filterDoc = (doc) => {
     if (!normalizedQuery) return true;
@@ -360,61 +509,62 @@ export default function DocumentCenter() {
     return haystack.includes(normalizedQuery);
   };
 
+  // Pure company-level documents = the documents collection rows that aren't
+  // tied to a project (so they don't double-count with projectDocs).
+  const directCompanyDocs = (companyId) =>
+    documents
+      .filter((d) => !d.projectId && String(d.companyId) === String(companyId))
+      .map((doc) => ({ ...doc, id: doc._id || doc.id, projectName: "Company", folderPath: "Company Files", fileName: doc.fileName || doc.name }));
+
+  // Every document belonging to a company: all its projects' files + invoices
+  // (projectDocs) plus its direct company files.
+  const allDocsForCompany = (companyId) =>
+    [...projectDocs.filter((d) => String(d.companyId) === String(companyId)), ...directCompanyDocs(companyId)];
+
+  const mode = !selectedCompanyId ? "root" : (!selectedProjectId ? "company" : "project");
+
   let displayFolders = [];
   let displayFiles = [];
   let viewTitle = "";
   let viewSubtitle = "";
-  let showFolders = true;
-  let showFiles = false;
 
-  if (!selectedCompanyId) {
-    // Root level
+  if (mode === "root") {
     displayFolders = companies.map((company) => {
-      const companyProjects = projects.filter((p) => String(p.companyId) === String(company._id || company.id));
-      const companyFiles = companyDocs.filter(d => String(d.companyId) === String(company._id || company.id));
+      const cid = company._id || company.id;
+      const companyProjects = projects.filter((p) => String(p.companyId) === String(cid));
       return {
-        id: company._id || company.id,
+        id: cid,
         icon: customFolderSvg,
         title: company.companyName || company.name || "Unnamed company",
-        meta: `${companyProjects.length} projects, ${companyFiles.length} files`,
+        meta: `${companyProjects.length} projects · ${allDocsForCompany(cid).length} files`,
         type: "company"
       };
     });
-    if (normalizedQuery) {
-       displayFolders = displayFolders.filter(f => f.title.toLowerCase().includes(normalizedQuery));
-    }
+    if (normalizedQuery) displayFolders = displayFolders.filter((f) => f.title.toLowerCase().includes(normalizedQuery));
     viewTitle = "Company Folders";
-    viewSubtitle = "A folder-first view of all company documents, proposals, contracts, invoices, projects, and shared files.";
-    showFolders = true;
-    showFiles = false;
-  } else if (!selectedProjectId) {
-    // Company level
+    viewSubtitle = "All documents grouped by company. Open a company to see everything; open a project for its details and files.";
+  } else if (mode === "company") {
     const companyProjects = projects.filter((p) => String(p.companyId) === String(selectedCompanyId));
     displayFolders = companyProjects.map((project) => ({
       id: project._id || project.id,
       icon: customFolderSvg,
       title: project.name || project.projectName || "Unnamed project",
-      meta: `${projectDocs.filter(d => String(d.projectId) === String(project._id || project.id)).length} items`,
+      meta: `${projectDocs.filter((d) => String(d.projectId) === String(project._id || project.id)).length} items`,
       type: "project"
     }));
-    if (normalizedQuery) {
-       displayFolders = displayFolders.filter(f => f.title.toLowerCase().includes(normalizedQuery));
-    }
-    displayFiles = companyDocs.filter(d => String(d.companyId) === String(selectedCompanyId)).filter(filterDoc);
+    if (normalizedQuery) displayFolders = displayFolders.filter((f) => f.title.toLowerCase().includes(normalizedQuery));
+    displayFiles = allDocsForCompany(selectedCompanyId).filter(filterDoc);
 
     viewTitle = currentCompany?.companyName || currentCompany?.name || "Company";
-    viewSubtitle = `Projects and documents for ${viewTitle}`;
-    showFolders = true;
-    showFiles = false;
+    viewSubtitle = `All documents for ${viewTitle}`;
   } else {
-    // Project level
-    displayFiles = projectDocs.filter(d => String(d.projectId) === String(selectedProjectId)).filter(filterDoc);
-
+    // Project level: details + that project's documents only.
+    displayFiles = projectDocs.filter((d) => String(d.projectId) === String(selectedProjectId)).filter(filterDoc);
     viewTitle = currentProject?.name || currentProject?.projectName || "Project";
-    viewSubtitle = `Documents for project ${viewTitle}`;
-    showFolders = false;
-    showFiles = true;
+    viewSubtitle = currentCompany?.name || currentCompany?.companyName || "";
   }
+
+  const showFolders = mode === "root" || mode === "company";
 
   function handleFolderClick(folder) {
     setQuery("");
@@ -426,19 +576,72 @@ export default function DocumentCenter() {
   }
 
   async function handleUpload(form) {
+    // Destination now comes from the form's own company/project selectors, so a
+    // document can be filed anywhere — not just the folder currently open.
     const payload = { ...form, name: form.name };
-    if (selectedCompanyId) payload.companyId = selectedCompanyId;
-    if (selectedProjectId) payload.projectId = selectedProjectId;
+    if (!payload.companyId) delete payload.companyId;
+    if (!payload.projectId) delete payload.projectId;
     await saveDocument(payload);
     setUploading(false);
+  }
+
+  // Flip a document's client-portal visibility. Each document source lives in a
+  // different collection, so we persist the change to the right record.
+  async function handleToggleVisibility(doc, nextVisible) {
+    const docId = doc._id || doc.id;
+    setTogglingId(docId);
+    try {
+      if (doc._source === "invoice") {
+        const inv = invoices.find((i) => String(i._id || i.id) === String(docId));
+        if (inv) await saveInvoice({ ...inv, clientVisible: nextVisible });
+      } else if (doc._source === "embedded") {
+        const project = projects.find((p) => String(p._id || p.id) === String(doc.projectId));
+        if (project) {
+          const updatedDocs = (project.documents || []).map((d) =>
+            String(d._id || d.id) === String(docId)
+              ? { ...d, clientVisible: nextVisible, visibility: nextVisible ? "client" : "internal" }
+              : d
+          );
+          await saveProject({ ...project, documents: updatedDocs });
+        }
+      } else {
+        const rec = documents.find((d) => String(d._id || d.id) === String(docId));
+        if (rec) {
+          await saveDocument({
+            ...rec,
+            clientVisible: nextVisible,
+            visibility: nextVisible ? "client" : "internal",
+            scope: nextVisible ? "client_shared" : "internal",
+          });
+        }
+      }
+    } finally {
+      setTogglingId(null);
+    }
   }
 
   return (
     <div className="flex min-h-full flex-col bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
-          <h1 className="text-base font-medium text-[#0E121B]">{viewTitle}</h1>
-          <p className="mt-0.5 max-w-3xl truncate text-xs text-[#525866]">{viewSubtitle}</p>
+          <nav className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
+            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#884c2d]">Companies</button>
+            {selectedCompanyId && (
+              <>
+                <span>/</span>
+                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#884c2d] truncate max-w-[180px]">
+                  {currentCompany?.name || currentCompany?.companyName || "Company"}
+                </button>
+              </>
+            )}
+            {selectedProjectId && (
+              <>
+                <span>/</span>
+                <span className="font-medium text-[#374151] truncate max-w-[200px]">{currentProject?.name || "Project"}</span>
+              </>
+            )}
+          </nav>
+          <h1 className="mt-0.5 text-base font-medium text-[#0E121B] truncate">{viewTitle}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
@@ -454,19 +657,26 @@ export default function DocumentCenter() {
       <section className="min-w-0 flex-1 p-5 xl:p-6">
         {showFolders && displayFolders.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-lg font-bold text-[#111827] mb-4">{!selectedCompanyId ? "Companies" : "Projects"}</h2>
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="text-lg font-bold text-[#111827]">{!selectedCompanyId ? "Companies" : "Projects"}</h2>
+              <span className="text-xs font-medium text-[#9ca3af]">{displayFolders.length} {displayFolders.length === 1 ? "folder" : "folders"}</span>
+            </div>
             {view === "grid" ? (
-              <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                {displayFolders.map((folder) => (
-                  <FolderCard key={folder.id} {...folder} active={false} onClick={() => handleFolderClick(folder)} />
-                ))}
+              // Cap the folders area so a company with many projects doesn't push
+              // the document list off-screen — this region scrolls on its own.
+              <div className="max-h-[240px] overflow-y-auto overflow-x-hidden rounded-xl border border-[#e5e7eb] bg-white p-3">
+                <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {displayFolders.map((folder) => (
+                    <FolderCard key={folder.id} {...folder} active={false} onClick={() => handleFolderClick(folder)} />
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
                 <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af] border-b border-[#f3f4f6]">
                   <span>Folder</span><span className="text-right">Items</span>
                 </div>
-                <div className="divide-y divide-[#f3f4f6]">
+                <div className="max-h-[240px] overflow-y-auto divide-y divide-[#f3f4f6]">
                   {displayFolders.map((folder) => (
                     <button
                       key={folder.id}
@@ -490,35 +700,59 @@ export default function DocumentCenter() {
            <EmptyState title="No companies found." text="Create companies first. Each company becomes a document workspace." />
         )}
 
-        {showFiles && (
-          <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-            <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
-              <div>
-                <p className="text-sm font-bold text-[#111827]">
-                  {selectedProjectId ? "Project Files" : "Company Files"}
-                </p>
-                <p className="text-xs text-[#6b7280]">{displayFiles.length} documents visible</p>
-              </div>
-              <p className="text-xs font-semibold text-[#6b7280]">Private / Internal / Project Team / Client Visible</p>
-            </div>
-            {displayFiles.length ? (
-              <div>
-                <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
-                  <span>Name</span><span>Type</span><span>Visibility</span><span>Date</span><span>File</span>
+        {/* Company level: every document belonging to the company, in one place. */}
+        {mode === "company" && (
+          <FilesTable title={`All Documents — ${viewTitle}`} docs={displayFiles} selected={selected} onSelect={setSelected} onToggle={handleToggleVisibility} togglingId={togglingId} />
+        )}
+
+        {/* Project level: details + that project's documents, in tabs. */}
+        {mode === "project" && currentProject && (
+          <div className="space-y-5">
+            <div className="rounded-xl border border-[#e5e7eb] bg-white px-6 pt-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <h2 className="truncate text-xl font-bold text-[#111827]">{currentProject.name}</h2>
+                  {currentProject.clientProjectName && currentProject.clientProjectName !== currentProject.name && (
+                    <p className="mt-0.5 truncate text-sm text-[#6b7280]">“{currentProject.clientProjectName}”</p>
+                  )}
+                  <p className="mt-0.5 text-xs text-[#9ca3af]">{currentCompany?.name || currentCompany?.companyName || currentProject.companyName}</p>
                 </div>
-                {displayFiles.map((doc, index) => (
-                  <DocumentRow key={doc._id || doc.id || `${doc.fileName}-${index}`} doc={doc} selected={selected === doc} onSelect={setSelected} />
+                {currentProject.projectId && (
+                  <span className="shrink-0 rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{currentProject.projectId}</span>
+                )}
+              </div>
+              <div className="mt-4 flex gap-1">
+                {[["details", "Project Details"], ["documents", `Documents (${displayFiles.length})`]].map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setProjectTab(key)}
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#111827]"}`}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
+            </div>
+
+            {projectTab === "details" ? (
+              <ProjectDetails project={currentProject} company={currentCompany} />
             ) : (
-              <EmptyState title="No documents yet." text="Upload documents to see them here." />
+              <FilesTable title="Project Documents" docs={displayFiles} selected={selected} onSelect={setSelected} onToggle={handleToggleVisibility} togglingId={togglingId} />
             )}
           </div>
         )}
       </section>
 
       {uploading && (
-        <UploadPanel folderLabel={viewTitle} onClose={() => setUploading(false)} onSave={handleUpload} />
+        <UploadPanel
+          companies={companies}
+          projects={projects}
+          defaultCompanyId={selectedCompanyId || ""}
+          defaultProjectId={selectedProjectId || ""}
+          onClose={() => setUploading(false)}
+          onSave={handleUpload}
+        />
       )}
     </div>
   );

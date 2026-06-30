@@ -111,6 +111,9 @@ router.get("/orders", async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.sub);
     if (!user) return res.status(404).json({ message: "User not found." });
+    // Billing always shows every order/invoice — the admin's "client visible"
+    // toggle only governs the client Documents section, not billing. An invoice
+    // is a record of a real purchase, so it must stay here regardless.
     const orders = await Order.find({ "customer.customerEmail": user.email }).sort({ createdAt: -1 });
     res.json(orders);
   } catch (error) {
@@ -154,7 +157,7 @@ router.get("/documents", async (req, res, next) => {
 
     // 1. Fetch from the documents collection
     const docsCollection = await Document.find({
-      $and: [filter, { scope: { $ne: "internal" } }]
+      $and: [filter, { scope: { $ne: "internal" } }, { clientVisible: { $ne: false } }]
     }).sort({ createdAt: -1 });
 
     // Fetch projects to map info and extract embedded docs
@@ -178,7 +181,7 @@ router.get("/documents", async (req, res, next) => {
     // 2. Fetch from the embedded project.documents
     const embeddedDocs = projects.flatMap((project) =>
       (project.documents || [])
-        .filter(doc => doc.visibility !== "internal" && doc.category !== "Internal" && doc.scope !== "internal")
+        .filter(doc => doc.visibility !== "internal" && doc.category !== "Internal" && doc.scope !== "internal" && doc.clientVisible !== false)
         .map((doc) => ({
           ...doc,
           id: doc._id || doc.id,
@@ -197,7 +200,7 @@ router.get("/documents", async (req, res, next) => {
       $or: [{ clientId: user._id }, { customerEmail: user.email }]
     }).sort({ createdAt: -1 }).lean();
 
-    const invoiceDocs = userInvoices.map((inv) => {
+    const invoiceDocs = userInvoices.filter(inv => inv.clientVisible !== false).map((inv) => {
       const project = projects.find(
         (p) =>
           (inv.projectId && String(p._id || p.id) === String(inv.projectId)) ||

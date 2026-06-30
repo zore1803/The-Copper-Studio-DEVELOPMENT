@@ -28,6 +28,7 @@ import { sendInvoiceEmail } from "./services/email.js";
 import { sendPortalInvite } from "./services/portalInvite.js";
 import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
 import { syncFinanceForOrder } from "./services/finance.js";
+import { buildProjectCode, buildDefaultProjectName } from "./services/projectNaming.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
 import { htmlToPdfBuffer } from "./services/pdf.js";
 
@@ -69,7 +70,8 @@ async function emailInvoiceForOrder(order, invoice) {
     const customer = order.customer || {};
     if (!customer.customerEmail) return;
 
-    const model = buildInvoiceModel({ order, invoice });
+    const project = await Project.findOne({ orderId: order._id }).catch(() => null);
+    const model = buildInvoiceModel({ order, invoice, project });
     const html = renderInvoiceHtml(model);
 
     let pdfBuffer = null;
@@ -147,35 +149,6 @@ async function createPortalInvite(order) {
   return result;
 }
 
-// First 4 DISTINCT letters of the company name (repeats skipped), e.g.
-// "DATACENTRIC" -> "DATC". Padded with X if fewer than 4 distinct letters.
-function companyCodeFromName(name) {
-  const letters = String(name || "").toUpperCase().replace(/[^A-Z]/g, "");
-  const seen = new Set();
-  let code = "";
-  for (const ch of letters) {
-    if (seen.has(ch)) continue;
-    seen.add(ch);
-    code += ch;
-    if (code.length === 4) break;
-  }
-  return code.padEnd(4, "X");
-}
-
-// Structured project code: CS-<4 letters>-<project #>-<MMYY>, e.g. CS-DATC-02-0626.
-function buildProjectCode(companyName, projectNumber, date = new Date()) {
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yy = String(date.getFullYear()).slice(-2);
-  const num = String(projectNumber || 1).padStart(2, "0");
-  return `CS-${companyCodeFromName(companyName)}-${num}-${mm}${yy}`;
-}
-
-function buildDefaultProjectName(companyName, projectNumber, date = new Date()) {
-  const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const yy = String(date.getFullYear()).slice(-2);
-  return `${companyName}-Project ${projectNumber || 1}-${mm}${yy}`;
-}
-
 async function nextProjectNumberForCompany(companyId) {
   if (!companyId) return 1;
   const count = await Project.countDocuments({ companyId }).catch(() => 0);
@@ -202,6 +175,45 @@ async function ensureCompanyForOrder(order) {
   });
 }
 
+// Checkout no longer collects a company name, so a returning client's company is
+// known only from the link an admin made earlier (their contact's companyId, or
+// a previous project of theirs). This finds that company so every later purchase
+// by an already-linked client lands under the same company automatically.
+// `companyId` may be stored as the Company's Mongo _id or its free-text `id`.
+async function resolveCompanyForCustomer(order, clientId) {
+  const customer = order.customer || {};
+  const email = String(customer.customerEmail || "").trim().toLowerCase();
+
+  const byCompanyId = async (companyId) =>
+    (await Company.findById(companyId).catch(() => null)) ||
+    (await Company.findOne({ id: companyId }).catch(() => null));
+
+  // 1) The client's existing contact may already point at a company.
+  if (email) {
+    const contact = await Contact.findOne({ email }).catch(() => null);
+    if (contact?.companyId) {
+      const company = await byCompanyId(contact.companyId);
+      if (company) return company;
+    }
+    if (contact?.company) {
+      const company = await Company.findOne({ name: contact.company }).catch(() => null);
+      if (company) return company;
+    }
+  }
+
+  // 2) A previous project of theirs may already sit under a company.
+  if (clientId) {
+    const priorProjects = await Project.find({ clientId }).catch(() => []);
+    const linked = priorProjects.find((p) => p.companyId);
+    if (linked?.companyId) {
+      const company = await byCompanyId(linked.companyId);
+      if (company) return company;
+    }
+  }
+
+  return null;
+}
+
 // Anyone who fills out checkout and pays is a client, so they should show up
 // as a Contact in the CRM — not just an Order/User in the background.
 // Upserts by email so retries/backfills never create duplicates.
@@ -219,12 +231,17 @@ async function ensureContactForOrder(order, company) {
     email,
     phone: fullPhone,
     designation: customer.designation || "",
-    company: company?.name || customer.customerCompany || "",
-    companyId: company?._id || null,
     linkedin: customer.linkedinUrl || "",
     status: "Active",
     isPrimary: true
   };
+  // Only stamp the company when this order actually resolved one. A repeat
+  // purchase must never blank out a company an admin already linked, so we leave
+  // the existing contact's company/companyId untouched when there's none here.
+  if (company) {
+    payload.company = company.name;
+    payload.companyId = company._id;
+  }
 
   const existing = await Contact.findOne({ email }).catch(() => null);
   if (existing) return Contact.findByIdAndUpdate(existing._id, payload, { new: true });
@@ -241,16 +258,25 @@ async function ensureProjectForOrder(order, clientId, company) {
   if (existing) return existing;
 
   const customer = order.customer || {};
-  const companyName = company?.name || customer.customerCompany || "";
+  const companyName = company?.name || "";
+  const typedName = customer.projectName || "";
 
   const projectNumber = await nextProjectNumberForCompany(company?._id);
-  const generatedProjectName = companyName ? buildDefaultProjectName(companyName, projectNumber, new Date()) : "";
+  // When the buyer's company is already known (returning, linked client), apply
+  // the coded "<Company>-Project N-MMYY" name + CS code straight away. For a
+  // first-time buyer with no company yet, keep their typed name until an admin
+  // links them — the rename happens then. Either way the typed wording is kept
+  // in clientProjectName.
+  const formattedName = companyName ? buildDefaultProjectName(companyName, projectNumber, new Date()) : "";
+  const formattedCode = companyName ? buildProjectCode(companyName, projectNumber, new Date()) : "";
 
   return Project.create({
-    name: customer.projectName || generatedProjectName || `${order.package?.name || "New"} project`,
-    projectId: companyName ? buildProjectCode(companyName, projectNumber, new Date()) : "",
+    name: formattedName || typedName || `${order.package?.name || "New"} project`,
+    clientProjectName: typedName,
+    projectId: formattedCode,
     clientId: clientId || null,
     companyId: company?._id || null,
+    companyName,
     orderId,
     packageName: order.package?.name || "",
     status: "not_started",
@@ -514,7 +540,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);
-    const company = await ensureCompanyForOrder(order);
+    const company = (await ensureCompanyForOrder(order)) || (await resolveCompanyForCustomer(order, invite?.userId));
     await ensureContactForOrder(order, company);
     await ensureProjectForOrder(order, invite?.userId, company);
     const finance = await syncFinanceForOrder(order);
@@ -551,10 +577,15 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       amount
     } = req.body;
 
-    const total = Number(amount);
-    if (!total || total <= 0) {
+    // The amount the admin types is the pre-tax base (same convention as the
+    // online package price), so 18% GST is added on top to form the invoice
+    // total. The invoice builder then splits that 18% into 9% CGST + 9% SGST for
+    // an in-state client, or 18% IGST for an out-of-state one.
+    const baseAmount = Number(amount);
+    if (!baseAmount || baseAmount <= 0) {
       return res.status(400).json({ message: "A valid invoice amount is required." });
     }
+    const total = Math.round(baseAmount * 1.18);
     if (!companyId && !String(companyName || "").trim()) {
       return res.status(400).json({ message: "Select an existing company or enter a company name." });
     }
@@ -575,7 +606,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       package: {
         id: "manual",
         name: packageName || "Custom Package",
-        price: total,
+        price: baseAmount,
         total
       },
       customer: {
@@ -607,7 +638,12 @@ app.post("/api/invoices/manual", async (req, res, next) => {
     if (!company) company = await ensureCompanyForOrder(order);
     await ensureContactForOrder(order, company);
 
-    const primaryClientId = company?.userIds?.[0] || company?.userId || null;
+    // Prefer linking the project to the client's own portal login (matched by the
+    // email entered on the invoice form); fall back to the company's primary user.
+    const clientUser = order.customer.customerEmail
+      ? await User.findOne({ email: String(order.customer.customerEmail).toLowerCase() }).catch(() => null)
+      : null;
+    const primaryClientId = clientUser?._id || company?.userIds?.[0] || company?.userId || null;
     const project = await ensureProjectForOrder(order, primaryClientId, company);
     const finance = await syncFinanceForOrder(order);
 
@@ -661,7 +697,7 @@ app.post("/api/orders", async (req, res, next) => {
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);
-    const company = await ensureCompanyForOrder(order);
+    const company = (await ensureCompanyForOrder(order)) || (await resolveCompanyForCustomer(order, invite?.userId));
     if (order.payment.status === "paid") await ensureContactForOrder(order, company);
     await ensureProjectForOrder(order, invite?.userId, company);
     const finance = await syncFinanceForOrder(order);

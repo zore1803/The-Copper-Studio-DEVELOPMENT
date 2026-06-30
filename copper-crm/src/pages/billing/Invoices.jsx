@@ -77,8 +77,11 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
   );
 }
 
-function InvoiceModal({ companies, projects, onClose, onSave }) {
+function InvoiceModal({ companies, projects, contacts = [], packages = [], onClose, onSave }) {
   const [mode, setMode] = useState("existing");
+  const [clientQuery, setClientQuery] = useState("");
+  const [clientOpen, setClientOpen] = useState(false);
+  const [pkgChoice, setPkgChoice] = useState("");
   const [form, setForm] = useState({
     companyId: "",
     companyName: "",
@@ -127,8 +130,64 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
     setForm((prev) => ({ ...prev, projectName: generatedProjectName }));
   }, [mode, generatedProjectName]);
 
+  // Package picker: the live packages plus a "Custom" option for ad-hoc work.
+  const packageOptions = [
+    { value: "", label: "Select package" },
+    ...packages.map((p) => ({ value: p.id, label: `${p.name} — ₹${Number(p.price).toLocaleString("en-IN")}` })),
+    { value: "custom", label: "Custom package…" }
+  ];
+
+  function onPackageChange(value) {
+    setPkgChoice(value);
+    if (value === "custom") {
+      setForm((prev) => ({ ...prev, packageName: "" }));
+    } else if (value) {
+      const pkg = packages.find((p) => String(p.id) === String(value));
+      setForm((prev) => ({ ...prev, packageName: pkg?.name || "", amount: pkg ? String(pkg.price) : prev.amount }));
+    } else {
+      setForm((prev) => ({ ...prev, packageName: "" }));
+    }
+  }
+
+  // Searchable list of existing clients (contacts) for the recommendation dropdown.
+  const clientMatches = useMemo(() => {
+    const q = clientQuery.trim().toLowerCase();
+    const list = q
+      ? contacts.filter((c) => `${c.name || ""} ${c.email || ""} ${c.company || ""}`.toLowerCase().includes(q))
+      : contacts;
+    return list.slice(0, 8);
+  }, [contacts, clientQuery]);
+
+  // Picking an existing client pre-fills their details and auto-selects their
+  // company, so the admin only has to add the package + amount. A brand-new
+  // project is still created for them on save (same pipeline as checkout).
+  function selectClient(contact) {
+    const company = companies.find(
+      (c) => String(c._id || c.id) === String(contact.companyId) || (contact.company && c.name === contact.company)
+    );
+    setForm((prev) => ({
+      ...prev,
+      customerName: contact.name || "",
+      customerEmail: contact.email || "",
+      customerPhone: contact.phone || "",
+      companyId: company ? (company._id || company.id) : prev.companyId,
+      companyName: company ? "" : (contact.company || prev.companyName),
+      companyGstin: company?.gstin || prev.companyGstin,
+      companyWebsite: company?.website || prev.companyWebsite
+    }));
+    if (company) setMode("existing");
+    setClientQuery(contact.name || contact.email || "");
+    setClientOpen(false);
+  }
+
   async function handleSave() {
     if (saving) return;
+    if (mode === "existing" && !form.companyId) return alert("Please select a company.");
+    if (mode === "new" && !form.companyName.trim()) return alert("Please enter a company name.");
+    if (!form.customerName.trim() || !form.customerEmail.trim()) return alert("Customer name and email are required.");
+    if (!pkgChoice) return alert("Please select a package (or choose Custom).");
+    if (!form.packageName.trim()) return alert("Enter a name for the custom package.");
+    if (!(Number(form.amount) > 0)) return alert("Enter a valid invoice amount.");
     setSaving(true);
     try {
       const payload = mode === "existing"
@@ -154,6 +213,40 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
         </div>
       }
     >
+      {/* Existing-client picker: search by name / email / company. Selecting one
+          auto-fills the client + company so a new project is created under them. */}
+      <div className="relative mb-5">
+        <label className="text-xs font-semibold text-[#374151]">Bill an Existing Client</label>
+        <div className="relative mt-1.5">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" />
+          <input
+            value={clientQuery}
+            onChange={(e) => { setClientQuery(e.target.value); setClientOpen(true); }}
+            onFocus={() => setClientOpen(true)}
+            onBlur={() => setTimeout(() => setClientOpen(false), 150)}
+            placeholder="Search clients by name, email, or company…"
+            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          />
+          {clientOpen && clientMatches.length > 0 && (
+            <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
+              {clientMatches.map((contact) => (
+                <li key={contact._id || contact.id || contact.email}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); selectClient(contact); }}
+                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#fff1ec]"
+                  >
+                    <span className="text-sm font-semibold text-[#111827]">{contact.name || "Unnamed client"}</span>
+                    <span className="text-[11px] text-[#6b7280]">{[contact.email, contact.company].filter(Boolean).join(" · ") || "No details"}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p className="mt-1 text-[11px] text-[#9ca3af]">Or just fill in the details below for a new client.</p>
+      </div>
+
       <div className="mb-6 grid grid-cols-2 rounded-lg bg-[#f3f4f6] p-1">
         <button
           type="button"
@@ -172,25 +265,35 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {/* Company: pick an existing one or name a brand-new one. */}
         {mode === "existing" ? (
           <div className="sm:col-span-2">
             <Field label="Select Company" value={form.companyId} onChange={set("companyId")} options={companyOptions} />
           </div>
         ) : (
-          <>
-            <div className="sm:col-span-2"><Field label="Company Name" value={form.companyName} onChange={set("companyName")} /></div>
-            <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
-            <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
-            <Field label="Customer Phone" value={form.customerPhone} onChange={set("customerPhone")} />
-            <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} />
-            <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} />
-            <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
-            <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} /></div>
-            <Field label="City" value={form.city} onChange={set("city")} />
-            <Field label="State" value={form.state} onChange={set("state")} />
-            <Field label="Pincode" value={form.pincode} onChange={set("pincode")} />
-          </>
+          <div className="sm:col-span-2"><Field label="Company Name" value={form.companyName} onChange={set("companyName")} /></div>
         )}
+
+        {/* Client details are always collected here: a manual invoice has no
+            checkout form to pull them from. */}
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Client Information</p>
+          <p className="text-[11px] text-[#9ca3af]">Entered manually since the client did not go through checkout.</p>
+        </div>
+        <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
+        <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
+        <Field label="Customer Phone" value={form.customerPhone} onChange={set("customerPhone")} />
+        <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} hint="Optional" />
+        <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} hint="Optional" />
+
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Billing Address</p>
+        </div>
+        <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
+        <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} hint="Optional" /></div>
+        <Field label="City" value={form.city} onChange={set("city")} />
+        <Field label="State" value={form.state} onChange={set("state")} />
+        <Field label="Pincode" value={form.pincode} onChange={set("pincode")} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Project & Invoice Details</p>
@@ -208,8 +311,22 @@ function InvoiceModal({ companies, projects, onClose, onSave }) {
             <Field label="Project Name" value={form.projectName} onChange={set("projectName")} />
           )}
         </div>
-        <Field label="Package / Service Name" value={form.packageName} onChange={set("packageName")} />
-        <Field label="Amount (INR)" type="number" value={form.amount} onChange={set("amount")} />
+        <Field label="Package / Service" value={pkgChoice} onChange={onPackageChange} options={packageOptions} />
+        {pkgChoice === "custom" && (
+          <Field label="Custom Package Name" value={form.packageName} onChange={set("packageName")} hint="Describe the custom service" />
+        )}
+        <Field
+          label="Amount before GST (INR)"
+          type="number"
+          value={form.amount}
+          onChange={set("amount")}
+          hint={
+            (Number(form.amount) > 0
+              ? `18% GST added → total ₹${Math.round(Number(form.amount) * 1.18).toLocaleString("en-IN")}. `
+              : "") +
+            (pkgChoice && pkgChoice !== "custom" ? "Auto-filled from package (editable)." : "Enter the pre-GST amount.")
+          }
+        />
       </div>
     </SidePanel>
   );
@@ -224,6 +341,8 @@ export default function Invoices() {
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
+  const { records: contacts } = useCrmRecords("contacts");
+  const [packages, setPackages] = useState([]);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -231,6 +350,14 @@ export default function Invoices() {
       navigate(location.pathname, { replace: true, state: {} });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    fetch(`${base}/api/packages`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setPackages(Array.isArray(data) ? data : []))
+      .catch(() => setPackages([]));
   }, []);
 
   const filtered = useMemo(() => invoices.filter((invoice) => {
@@ -363,7 +490,7 @@ export default function Invoices() {
         )}
       </section>
 
-      {creating && <InvoiceModal companies={companies} projects={projects} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {creating && <InvoiceModal companies={companies} projects={projects} contacts={contacts} packages={packages} onClose={() => setCreating(false)} onSave={handleCreate} />}
       </div>
     </div>
   );
