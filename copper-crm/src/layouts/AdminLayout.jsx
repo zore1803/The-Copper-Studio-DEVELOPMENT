@@ -159,8 +159,9 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
 }
 
 function NavGroup({ item, collapsed, active, onNavigate, location }) {
-  const [userOpen, setUserOpen] = useState(null);
-  const open = userOpen === null ? active : userOpen;
+  // Expanded sidebar: the group dropdown opens on hover and closes when the
+  // cursor leaves the section (no click needed).
+  const [open, setOpen] = useState(false);
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef(null);
@@ -216,9 +217,9 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   }
 
   return (
-    <div>
+    <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
-        onClick={() => setUserOpen(!open)}
+        onClick={() => setOpen((v) => !v)}
         className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#C57E5B]" : "text-[#374151] hover:bg-white/70"}`}
       >
         <span className="flex items-center gap-3">
@@ -248,9 +249,12 @@ export default function AdminLayout() {
   const { records: tasks } = useCrmRecords("tasks");
   const { records: invoices } = useCrmRecords("invoices");
   const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
-  // Always start collapsed on every load/reload; the sidebar only expands when
-  // the user explicitly clicks the collapse/expand toggle.
-  const [collapsed, setCollapsed] = useState(true);
+  // The sidebar stays collapsed (icon rail) until the cursor enters it, then it
+  // expands automatically and collapses again once the cursor leaves. The
+  // toggle button lets the user pin it open.
+  const [pinned, setPinned] = useState(false);
+  const [hovering, setHovering] = useState(false);
+  const collapsed = !pinned && !hovering;
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -365,11 +369,16 @@ export default function AdminLayout() {
   }
 
   const sidebarW = collapsed ? 66 : 264;
+  // Content margin tracks the pinned (resting) rail width so hover-expansion
+  // overlays the page instead of shoving it sideways.
+  const baseW = pinned ? 264 : 66;
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
       {/* Sidebar */}
       <aside
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
         className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
@@ -411,8 +420,8 @@ export default function AdminLayout() {
 
         <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
-            onClick={() => setCollapsed((v) => !v)}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            onClick={() => setPinned((v) => !v)}
+            title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
             className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
@@ -422,7 +431,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: sidebarW }}>
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: baseW }}>
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
           {/* Breadcrumbs */}
