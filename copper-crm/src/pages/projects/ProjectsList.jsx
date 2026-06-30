@@ -1,12 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, CheckCircle2, Check, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
+import FilterButton from "../../components/FilterButton";
+
+const SORT_OPTIONS = [
+  { value: "created_desc", label: "Newest first" },
+  { value: "created_asc", label: "Oldest first" },
+  { value: "name_asc", label: "Name (A–Z)" },
+  { value: "name_desc", label: "Name (Z–A)" },
+  { value: "progress_desc", label: "Progress (high–low)" },
+  { value: "progress_asc", label: "Progress (low–high)" },
+  { value: "value_desc", label: "Value (high–low)" }
+];
 
 function formatINR(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
@@ -79,6 +90,20 @@ export default function ProjectsList() {
   }, []);
 
   const [statusFilter, setStatusFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
+  const [templateFilter, setTemplateFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("created_desc");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef(null);
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    function onDown(event) {
+      if (sortRef.current && !sortRef.current.contains(event.target)) setSortOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [sortOpen]);
 
   const computedProjects = useMemo(() => {
     return projects.map((p) => {
@@ -115,14 +140,52 @@ export default function ProjectsList() {
     });
   }, [projects, companies]);
 
+  const templateOf = (p) => p.template || p.packageName || "Custom";
+
+  const companyOptions = useMemo(
+    () => ["All", ...Array.from(new Set(computedProjects.map((p) => p.computedCompanyName).filter((v) => v && v !== "-"))).sort((a, b) => String(a).localeCompare(String(b)))],
+    [computedProjects]
+  );
+  const templateOptions = useMemo(
+    () => ["All", ...Array.from(new Set(computedProjects.map(templateOf).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
+    [computedProjects]
+  );
+
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return computedProjects.filter((project) => {
       const matchesQuery = !query || `${project.name} ${project.client} ${project.template}`.toLowerCase().includes(query);
       const matchesStatus = statusFilter === "All" || project.effectiveStatus === statusFilter;
-      return matchesQuery && matchesStatus;
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [computedProjects, search, statusFilter]);
+      const matchesCompany = companyFilter === "All" || project.computedCompanyName === companyFilter;
+      const matchesTemplate = templateFilter === "All" || templateOf(project) === templateFilter;
+      return matchesQuery && matchesStatus && matchesCompany && matchesTemplate;
+    });
+  }, [computedProjects, search, statusFilter, companyFilter, templateFilter]);
+
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    const byStr = (a, b, key) => String(a[key] || "").localeCompare(String(b[key] || ""), undefined, { sensitivity: "base" });
+    const byCreated = (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    const value = (p) => Number(p.finalAmount || p.budget || 0);
+    switch (sortBy) {
+      case "created_asc": return arr.sort(byCreated);
+      case "name_asc": return arr.sort((a, b) => byStr(a, b, "name"));
+      case "name_desc": return arr.sort((a, b) => byStr(b, a, "name"));
+      case "progress_desc": return arr.sort((a, b) => b.computedProgress - a.computedProgress);
+      case "progress_asc": return arr.sort((a, b) => a.computedProgress - b.computedProgress);
+      case "value_desc": return arr.sort((a, b) => value(b) - value(a));
+      case "created_desc":
+      default: return arr.sort((a, b) => byCreated(b, a));
+    }
+  }, [filtered, sortBy]);
+
+  const hasActiveFilters = statusFilter !== "All" || companyFilter !== "All" || templateFilter !== "All";
+
+  function resetFilters() {
+    setStatusFilter("All");
+    setCompanyFilter("All");
+    setTemplateFilter("All");
+  }
 
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
@@ -158,13 +221,13 @@ export default function ProjectsList() {
     }
   }
 
-  const statusFilters = [
-    { label: "All", value: "All" },
-    { label: "Not Started", value: "not_started" },
-    { label: "In Progress", value: "in_progress" },
-    { label: "Completed", value: "completed" },
-    { label: "Delayed", value: "delayed" },
-    { label: "Cancelled", value: "cancelled" }
+  const statusFilterOptions = [
+    { value: "All", label: "All statuses" },
+    { value: "not_started", label: "Not Started" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "delayed", label: "Delayed" },
+    { value: "cancelled", label: "Cancelled" }
   ];
 
   return (
@@ -172,21 +235,58 @@ export default function ProjectsList() {
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
-          <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
+          <p className="text-xs text-[#525866] mt-0.5">{sorted.length} of {projects.length} projects across every company</p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
-            <Search size={14} className="text-[#9ca3af]" />
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search projects or clients"
-              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
-            />
+        <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
+      </div>
+
+      {/* Second strip: search, sort, and filters (matches Companies) */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#E1E4EA] bg-white px-6 py-3">
+        <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+          <Search size={16} className="shrink-0 text-[#1F2937]/50" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search projects or clients…"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+          />
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          {/* Sort */}
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setSortOpen((value) => !value)}
+              className={`flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <ArrowUpDown size={15} />
+              <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#884c2d]" : "text-[#374151]"}`}
+                  >
+                    {opt.label}
+                    {sortBy === opt.value && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
+          <FilterButton
+            onReset={resetFilters}
+            fields={[
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: statusFilterOptions },
+              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: setCompanyFilter, options: companyOptions },
+              { key: "template", label: "Template", type: "select", value: templateFilter, onChange: setTemplateFilter, options: templateOptions }
+            ]}
+          />
         </div>
       </div>
+
       <div className="p-5 xl:p-6 space-y-6">
 
       {!loading && (
@@ -201,21 +301,6 @@ export default function ProjectsList() {
       <Section
         title="Project Portfolio"
         subtitle="Manage all active projects and workflows."
-        action={
-          <div className="flex gap-1.5 overflow-x-auto">
-            {statusFilters.map((item) => (
-              <button
-                key={item.value}
-                onClick={() => setStatusFilter(item.value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        }
       >
         <table className="w-full text-left text-sm text-[#6b7280]">
           <thead className="bg-[#fff1ec] text-xs uppercase text-[#9ca3af]">
@@ -241,7 +326,7 @@ export default function ProjectsList() {
                   <p className="mt-4 text-sm font-semibold text-[#111827]">Loading projects...</p>
                 </td>
               </tr>
-            ) : filtered.length > 0 ? filtered.map((project) => {
+            ) : sorted.length > 0 ? sorted.map((project) => {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
@@ -309,7 +394,7 @@ export default function ProjectsList() {
                   <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
                     <FolderKanban size={20} />
                   </div>
-                  <p className="text-sm font-semibold text-[#111827]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{search || hasActiveFilters ? "No projects match your filters." : "No projects yet."}</p>
                   <p className="mt-1 text-sm text-[#6b7280]">Create a project and link it to a company to get started.</p>
                 </td>
               </tr>
