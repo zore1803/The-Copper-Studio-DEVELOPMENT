@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
-import { Archive, Copy, Mail, MessageCircle, Plus, Save, Search, Settings2, Sparkles, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Archive, ChevronDown, Copy, Mail, MessageCircle, Pencil, Plus, Save, Search, Settings2, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const EMAIL_CATEGORIES = [
   "Welcome", "Consultation Booked", "Proposal Sent", "Proposal Reminder",
@@ -166,7 +167,7 @@ function VariablesModal({ onClose }) {
   );
 }
 
-function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onArchive }) {
+function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onArchive, onDelete }) {
   const [query, setQuery] = useState("");
   const filtered = records.filter((record) =>
     `${record.name || ""} ${record.category || ""} ${record.subject || ""}`.toLowerCase().includes(query.toLowerCase())
@@ -205,8 +206,10 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
                     {template.subject && <p className="mt-2 text-sm text-[#374151]">{template.subject}</p>}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
                     <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
                     <button onClick={() => onArchive(template)} title={template.status === "Archived" ? "Unarchive" : "Archive"} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Archive size={13} /></button>
+                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
                   </div>
                 </div>
               </div>
@@ -234,11 +237,58 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
   );
 }
 
+// Dropdown to add ONE specific default template (vs. seeding all of them).
+// Defaults already present in the workspace are shown disabled.
+function DefaultTemplatesMenu({ defaults, existing, onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <Button variant="secondary" onClick={() => setOpen((v) => !v)}>
+        <Sparkles size={14} /> Add Default <ChevronDown size={13} className={`transition-transform ${open ? "rotate-180" : ""}`} />
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-2 max-h-80 w-72 overflow-y-auto rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg">
+          {defaults.map((def) => {
+            const added = existing.some((r) => r.category === def.category);
+            return (
+              <button
+                key={def.category}
+                disabled={added}
+                onClick={() => { onPick(def); setOpen(false); }}
+                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-[#fafafa] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-[#111827]">{def.name}</span>
+                  <span className="block truncate text-xs text-[#9ca3af]">{def.category}</span>
+                </span>
+                {added ? <span className="shrink-0 text-[10px] font-bold uppercase text-[#9ca3af]">Added</span> : <Plus size={14} className="shrink-0 text-[#884c2d]" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CommunicationCenter({ mode = "email" }) {
-  const { records: emailTemplates, save: saveEmailTemplate } = useCrmRecords("emailTemplates");
-  const { records: whatsappTemplates, save: saveWhatsappTemplate } = useCrmRecords("whatsappTemplates");
+  const { records: emailTemplates, save: saveEmailTemplate, remove: removeEmailTemplate } = useCrmRecords("emailTemplates");
+  const { records: whatsappTemplates, save: saveWhatsappTemplate, remove: removeWhatsappTemplate } = useCrmRecords("whatsappTemplates");
   const { showToast } = useToast();
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const [deletingTemplate, setDeletingTemplate] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [variablesOpen, setVariablesOpen] = useState(false);
   const [seeding, setSeeding] = useState(false);
 
@@ -256,6 +306,9 @@ export default function CommunicationCenter({ mode = "email" }) {
 
   const PageIcon = page.icon;
   const saveTemplate = mode === "whatsapp" ? saveWhatsappTemplate : saveEmailTemplate;
+  const removeTemplate = mode === "whatsapp" ? removeWhatsappTemplate : removeEmailTemplate;
+  const currentRecords = mode === "whatsapp" ? whatsappTemplates : emailTemplates;
+  const currentDefaults = mode === "whatsapp" ? DEFAULT_WHATSAPP_TEMPLATES : DEFAULT_EMAIL_TEMPLATES;
 
   async function handleSaveTemplate(form) {
     await saveTemplate({ ...form, id: form.id || `${mode}-template-${Date.now()}` });
@@ -274,6 +327,25 @@ export default function CommunicationCenter({ mode = "email" }) {
     const nextStatus = template.status === "Archived" ? "Draft" : "Archived";
     await saveTemplate({ ...template, status: nextStatus });
     showToast({ title: nextStatus === "Archived" ? "Template archived" : "Template restored", message: `${template.name || "Template"} is now ${nextStatus}.` });
+  }
+
+  async function handleDeleteTemplate() {
+    if (!deletingTemplate) return;
+    setDeleting(true);
+    try {
+      await removeTemplate(deletingTemplate);
+      showToast({ title: "Template deleted", message: `${deletingTemplate.name || "Template"} was removed.` });
+      setDeletingTemplate(null);
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't delete", message: err.message || "Something went wrong." });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  async function handleCreateSpecificDefault(def) {
+    await saveTemplate({ ...def, status: "Active", id: `${mode}-template-${Date.now()}-${def.category.replace(/\s+/g, "-")}` });
+    showToast({ title: "Template created", message: `Added the "${def.name}" template.` });
   }
 
   async function handleCreateDefaults() {
@@ -313,8 +385,9 @@ export default function CommunicationCenter({ mode = "email" }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <DefaultTemplatesMenu defaults={currentDefaults} existing={currentRecords} onPick={handleCreateSpecificDefault} />
           <Button variant="secondary" onClick={handleCreateDefaults} disabled={seeding}>
-            <Sparkles size={14} /> {seeding ? "Creating..." : "Create All Templates"}
+            <Sparkles size={14} /> {seeding ? "Creating..." : "Create All"}
           </Button>
           <Button variant="secondary" onClick={() => setVariablesOpen(true)}><Settings2 size={14} /> Variables</Button>
         </div>
@@ -336,6 +409,7 @@ export default function CommunicationCenter({ mode = "email" }) {
           onEdit={setEditingTemplate}
           onCopy={handleCopyTemplate}
           onArchive={handleArchiveTemplate}
+          onDelete={setDeletingTemplate}
         />
       ) : (
         <TemplateList
@@ -346,6 +420,7 @@ export default function CommunicationCenter({ mode = "email" }) {
           onEdit={setEditingTemplate}
           onCopy={handleCopyTemplate}
           onArchive={handleArchiveTemplate}
+          onDelete={setDeletingTemplate}
         />
       )}
 
@@ -359,6 +434,16 @@ export default function CommunicationCenter({ mode = "email" }) {
         />
       )}
       {variablesOpen && <VariablesModal onClose={() => setVariablesOpen(false)} />}
+      {deletingTemplate && (
+        <ConfirmDeleteModal
+          title="Delete template?"
+          name={deletingTemplate.name || "this template"}
+          message="This template will be permanently removed."
+          loading={deleting}
+          onCancel={() => setDeletingTemplate(null)}
+          onConfirm={handleDeleteTemplate}
+        />
+      )}
     </div>
   );
 }
