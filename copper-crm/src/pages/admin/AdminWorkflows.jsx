@@ -748,8 +748,8 @@ function DataFieldsSection({ onSave, saving }) {
   const currentGroup = DATA_FIELD_GROUPS.find((g) => g.label === activeGroup) || DATA_FIELD_GROUPS[0];
 
   return (
-    <div className="flex gap-0 divide-x divide-[#f3f4f6]">
-      {/* Left nav — group tabs */}
+    <div className="flex min-h-0 flex-1 gap-0 divide-x divide-[#f3f4f6]">
+      {/* Left nav — fixed, never scrolls */}
       <nav className="w-44 shrink-0 py-1 pr-4">
         {DATA_FIELD_GROUPS.map((group) => {
           const totalOptions = group.fields.reduce((sum, f) => sum + (values[f.key]?.length || 0), 0);
@@ -767,21 +767,23 @@ function DataFieldsSection({ onSave, saving }) {
         })}
       </nav>
 
-      {/* Right — fields for active group */}
-      <div className="flex-1 pl-6">
-        <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{currentGroup.label}</p>
-        <div className="divide-y divide-[#f3f4f6]">
-          {currentGroup.fields.map((field) => (
-            <DataFieldList
-              key={field.key}
-              label={field.label}
-              hint={field.hint}
-              values={values[field.key] || []}
-              onChange={(next) => setList(field.key, next)}
-            />
-          ))}
+      {/* Right — scrollable fields panel */}
+      <div className="flex min-h-0 flex-1 flex-col pl-6">
+        <div className="flex-1 overflow-y-auto">
+          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{currentGroup.label}</p>
+          <div className="divide-y divide-[#f3f4f6]">
+            {currentGroup.fields.map((field) => (
+              <DataFieldList
+                key={field.key}
+                label={field.label}
+                hint={field.hint}
+                values={values[field.key] || []}
+                onChange={(next) => setList(field.key, next)}
+              />
+            ))}
+          </div>
         </div>
-        <div className="mt-5 flex justify-end border-t border-[#f3f4f6] pt-4">
+        <div className="flex shrink-0 justify-end border-t border-[#f3f4f6] pt-4 mt-4">
           <Button disabled={saving} onClick={() => onSave(values)}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
         </div>
       </div>
@@ -927,7 +929,7 @@ const SETTINGS_TILES = [
 export function SettingsPage() {
   const navigate = useNavigate();
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+    <div className="flex h-full flex-col bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
           <h1 className="text-base font-medium text-[#0E121B]">Settings</h1>
@@ -961,7 +963,7 @@ export function SettingsPage() {
 function SettingsSubPage({ title, description, icon: Icon, actions, children }) {
   const navigate = useNavigate();
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+    <div className="flex h-full flex-col bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-3">
           <button
@@ -981,8 +983,8 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
         {actions}
       </div>
 
-      <section className="p-5 xl:p-6">
-        <Card className="p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">{children}</Card>
+      <section className="flex flex-1 flex-col overflow-hidden p-5 xl:p-6">
+        <Card className="flex flex-1 flex-col overflow-hidden p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">{children}</Card>
       </section>
     </div>
   );
