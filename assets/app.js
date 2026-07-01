@@ -1327,6 +1327,8 @@ if (page === "packages") {
     symbolEl.textContent = mode === "rs" ? "₹" : "%";
     valueInput.value = discountAmount || "";
     popup.classList.add("is-visible");
+    rsBtn.classList.toggle("active", mode === "rs");
+    pctBtn.classList.toggle("active", mode === "pct");
     valueInput.focus();
   }
 
@@ -1352,6 +1354,8 @@ if (page === "packages") {
   function clearDiscount() {
     discountAmount = 0;
     discountMode = null;
+    rsBtn.classList.remove("active");
+    pctBtn.classList.remove("active");
     renderDiscountedPrices();
   }
 
