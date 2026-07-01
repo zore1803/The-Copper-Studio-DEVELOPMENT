@@ -1,6 +1,9 @@
 const CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
 
-const packages = [
+// Fallback list — used only until the live packages are fetched from the API
+// (and if that request fails). The pricing shown to customers is driven by the
+// database (Settings > Pricing), so admin edits reflect here without a redeploy.
+let packages = [
   // CopperBrand
   {
     id: "copperbrand-essential", category: "CopperBrand",
@@ -1298,6 +1301,21 @@ const pageRenderers = {
 };
 
 pageRenderers[page]?.();
+
+// The packages page first renders the fallback list instantly, then pulls the
+// live pricing from the database so admin edits (Settings > Pricing) show up
+// without changing any code. Only replace the fallback with a well-formed
+// response (array of category-tagged packages).
+if (page === "packages") {
+  apiRequest("/packages")
+    .then((data) => {
+      if (Array.isArray(data) && data.length && data.some((p) => p.category)) {
+        packages = data;
+        renderPackagesPage();
+      }
+    })
+    .catch(() => {});
+}
 
 // ── Discount display tool (packages page only, Ctrl+Z to toggle) ──────────
 if (page === "packages") {
