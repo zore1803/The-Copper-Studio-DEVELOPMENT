@@ -226,6 +226,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
   const isEmail = type === "email";
   const [jsonError, setJsonError] = useState("");
   const [testOpen, setTestOpen] = useState(false);
+  const [testRecipient, setTestRecipient] = useState("");
   const [testVars, setTestVars] = useState({});
   const [testing, setTesting] = useState(false);
 
@@ -259,9 +260,14 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
   }
 
   async function sendTest() {
+    if (!testRecipient.trim()) {
+      showToast({ title: "Recipient required", message: `Enter a${isEmail ? "n email address" : " phone number"} to send the test to.`, variant: "error" });
+      return;
+    }
     setTesting(true);
     try {
       const result = await apiPost("/admin/settings/test-email", {
+        to: testRecipient.trim(),
         subject: form.subject || "",
         body: form.body || "",
         vars: testVars,
@@ -295,29 +301,39 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
               {testOpen && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-xl">
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="text-sm font-bold text-[#111827]">Send Test Email</p>
+                    <p className="text-sm font-bold text-[#111827]">{isEmail ? "Send Test Email" : "Send Test Message"}</p>
                     <button onClick={() => setTestOpen(false)} className="text-[#9ca3af] hover:text-[#374151]"><X size={14} /></button>
                   </div>
-                  <p className="mb-3 text-xs text-[#6b7280]">Fill in test values for each variable. The email will be sent to your admin address.</p>
-                  {templateVars.length === 0 ? (
-                    <p className="text-xs text-[#9ca3af] italic">No variables in this template.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {templateVars.map((v) => (
-                        <label key={v} className="block">
-                          <span className="text-[11px] font-semibold text-[#374151]">{`{{${v}}}`}</span>
-                          <input
-                            value={testVars[v] || ""}
-                            onChange={(e) => setTestVars((prev) => ({ ...prev, [v]: e.target.value }))}
-                            placeholder={`Test value for ${v}`}
-                            className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
-                          />
-                        </label>
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <label className="block">
+                      <span className="text-[11px] font-semibold text-[#374151]">{isEmail ? "Send to (email address)" : "Send to (phone number)"}</span>
+                      <input
+                        value={testRecipient}
+                        onChange={(e) => setTestRecipient(e.target.value)}
+                        placeholder={isEmail ? "e.g. you@example.com" : "e.g. +919876543210"}
+                        type={isEmail ? "email" : "tel"}
+                        className="mt-0.5 w-full rounded-lg border border-[#884c2d] px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                      />
+                    </label>
+                    {templateVars.length > 0 && (
+                      <>
+                        <p className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">Template variables</p>
+                        {templateVars.map((v) => (
+                          <label key={v} className="block">
+                            <span className="text-[11px] font-semibold text-[#374151]">{`{{${v}}}`}</span>
+                            <input
+                              value={testVars[v] || ""}
+                              onChange={(e) => setTestVars((prev) => ({ ...prev, [v]: e.target.value }))}
+                              placeholder={`Test value for ${v}`}
+                              className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                            />
+                          </label>
+                        ))}
+                      </>
+                    )}
+                  </div>
                   <Button className="mt-3 w-full justify-center" onClick={sendTest} disabled={testing}>
-                    <Sparkles size={13} /> {testing ? "Sending…" : "Send Test Email"}
+                    <Sparkles size={13} /> {testing ? "Sending…" : `Send Test ${isEmail ? "Email" : "Message"}`}
                   </Button>
                 </div>
               )}

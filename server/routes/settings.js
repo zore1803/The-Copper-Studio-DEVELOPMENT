@@ -180,12 +180,13 @@ router.post("/verify-password", async (req, res, next) => {
 });
 
 // Send a test email using the current template body/subject with filled-in vars.
-// Sends to the logged-in admin's own email address.
+// Sends to the address provided in the request (falls back to admin's own email).
 router.post("/test-email", async (req, res, next) => {
   try {
-    const { subject = "", body = "", vars = {} } = req.body;
+    const { to: toOverride = "", subject = "", body = "", vars = {} } = req.body;
     const user = await User.findById(req.auth.sub).select("email name");
-    if (!user?.email) return res.status(400).json({ message: "Admin email not found." });
+    const to = toOverride.trim() || user?.email;
+    if (!to) return res.status(400).json({ message: "Recipient email is required." });
 
     // Replace {{variable}} tokens with provided test values
     function interpolate(text) {
@@ -210,12 +211,12 @@ router.post("/test-email", async (req, res, next) => {
     }
 
     await sendTestEmail({
-      to: user.email,
+      to,
       subject: interpolate(subject),
       body: interpolateBody(body),
     });
 
-    res.json({ ok: true, sentTo: user.email });
+    res.json({ ok: true, sentTo: to });
   } catch (error) {
     next(error);
   }

@@ -153,29 +153,22 @@ const DEFAULT_EMAIL_TEMPLATES = [
   },
 ];
 
-// Inserts missing default email templates and upgrades seeded ones to JSON format.
-// Never overwrites a template the admin has manually edited.
+// Inserts default email templates for any category not already in the DB.
+// Never updates existing records — admin edits are always preserved.
 export async function seedEmailTemplates() {
-  const existing = await EmailTemplate.find({}).lean();
-  const existingByCategory = Object.fromEntries(existing.map((t) => [t.category, t]));
+  const existing = await EmailTemplate.find({}, { category: 1 }).lean();
+  const existingCategories = new Set(existing.map((t) => t.category));
 
-  let inserted = 0;
-  let upgraded = 0;
+  const missing = DEFAULT_EMAIL_TEMPLATES.filter((t) => !existingCategories.has(t.category));
+  if (!missing.length) return;
 
-  for (const tpl of DEFAULT_EMAIL_TEMPLATES) {
-    const seedId = `email-template-seed-${tpl.category.replace(/\s+/g, "-").toLowerCase()}`;
-    const found = existingByCategory[tpl.category];
+  await EmailTemplate.insertMany(
+    missing.map((t) => ({
+      ...t,
+      id: `email-template-seed-${t.category.replace(/\s+/g, "-").toLowerCase()}`,
+      status: "Active",
+    }))
+  );
 
-    if (!found) {
-      await EmailTemplate.create({ ...tpl, id: seedId, status: "Active" });
-      inserted++;
-    } else if (found.id === seedId && found.body !== tpl.body) {
-      await EmailTemplate.updateOne({ _id: found._id }, { $set: { body: tpl.body, subject: tpl.subject, name: tpl.name } });
-      upgraded++;
-    }
-  }
-
-  if (inserted || upgraded) {
-    console.log(`Email templates: ${inserted} inserted, ${upgraded} upgraded.`);
-  }
+  console.log(`Email templates: seeded ${missing.length} — ${missing.map((t) => t.category).join(", ")}`);
 }
