@@ -9,8 +9,8 @@
     <link rel="stylesheet" href="assets/styles.css?v=checkout-reference-1">
     <style>
       body[data-page="checkout"] {
-        background: #FFFFFF;
-        color: #1A1A1A;
+        background: #f7f7f7;
+        color: #111111;
       }
 
       body[data-page="checkout"] .shell-header {
@@ -22,8 +22,8 @@
         align-items: center;
         min-height: 74px;
         padding: 0 clamp(24px, 5vw, 64px);
-        border-bottom: 1px solid #E5E7EB;
-        background: #FFFFFF;
+        border-bottom: 1px solid #e8ddd8;
+        background: #fff8f6;
         backdrop-filter: blur(14px);
       }
 
@@ -56,7 +56,7 @@
         gap: 0;
         display: inline-flex;
         align-items: center;
-        background: #E5E7EB;
+        background: #EDD9CE;
         border-radius: 999px;
         padding: 4px;
       }
@@ -65,7 +65,7 @@
         min-height: 32px;
         padding: 6px 18px;
         border-radius: 999px;
-        color: #6B7280;
+        color: #6b4c3b;
         background: transparent;
         font-size: 0.78rem;
         font-weight: 700;
@@ -75,13 +75,13 @@
       }
 
       body[data-page="checkout"] .top-nav a:hover {
-        color: #C55418;
+        color: #3d1f0e;
         background: rgba(255,255,255,0.5);
       }
 
       body[data-page="checkout"] .top-nav a.is-active {
         background: #ffffff;
-        color: #1A1A1A;
+        color: #111111;
         box-shadow: 0 1px 4px rgba(0,0,0,0.12);
       }
 
@@ -110,7 +110,7 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
-        color: #6B7280;
+        color: #a8a8a8;
         font-size: 0.74rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -126,24 +126,24 @@
         border-radius: 12px;
         border: 0;
         color: #ffffff;
-        background: #E5E7EB;
+        background: #dddddd;
         font-size: 0.78rem;
         letter-spacing: 0;
       }
 
       .checkout-step.is-active {
-        color: #1A1A1A;
+        color: #111111;
       }
 
       .checkout-step.is-active .checkout-step-num {
-        background: #C55418;
+        background: #8D3118;
       }
 
       .checkout-step-divider {
         height: 1px;
         min-width: 0;
         margin: 0;
-        background: #E5E7EB;
+        background: #e5e5e5;
       }
 
       #customerForm {
@@ -153,7 +153,7 @@
 
       .form-section-block,
       .sticky-panel {
-        border: 1px solid #FFFFFF;
+        border: 1px solid #efefef;
         border-radius: 8px;
         background: #ffffff;
         box-shadow: 0 14px 34px rgba(0, 0, 0, 0.04);
@@ -167,12 +167,12 @@
         display: block;
         margin: 0 0 30px;
         padding-bottom: 18px;
-        border-bottom: 1px solid #FFFFFF;
+        border-bottom: 1px solid #eeeeee;
       }
 
       .block-header h3 {
         margin: 0;
-        color: #1A1A1A;
+        color: #111111;
         font-family: "DM Sans", system-ui, sans-serif;
         font-size: 1.25rem;
         font-weight: 500;
@@ -192,7 +192,7 @@
       label span,
       .verify-header label span {
         margin: 0;
-        color: #1A1A1A;
+        color: #111111;
         font-size: 0.74rem;
         font-weight: 700;
         letter-spacing: 0.12em;
@@ -200,7 +200,7 @@
       }
 
       label em {
-        color: #6B7280;
+        color: #8f8f8f;
         font-style: normal;
         font-weight: 500;
       }
@@ -220,10 +220,10 @@
       body[data-page="checkout"] input,
       body[data-page="checkout"] select {
         min-height: 50px;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #dedede;
         border-radius: 12px;
-        background: #FFFFFF;
-        color: #1A1A1A;
+        background: #f2f2f2;
+        color: #111111;
         padding: 12px 14px;
         font-size: 0.95rem;
         box-shadow: none;
@@ -237,7 +237,7 @@
       body[data-page="checkout"] select:focus,
       .phone-field:focus-within,
       .plain-phone:focus-within {
-        border-color: #C55418;
+        border-color: #8D3118;
         box-shadow: 0 0 0 3px rgba(150, 77, 10, 0.12);
       }
 
@@ -254,7 +254,7 @@
       }
 
       .verify-badge {
-        color: #C55418;
+        color: #a33b22;
         border: 0;
         background: transparent;
         padding: 0;
@@ -269,7 +269,7 @@
       }
 
       .verify-field.is-verified .verify-badge {
-        color: #6B7280;
+        color: #53606f;
       }
 
       .verify-field.is-verified .verify-badge::before {
@@ -292,7 +292,7 @@
         min-height: 50px;
         border: 0;
         border-radius: 0 12px 12px 0;
-        background: #1A1A1A;
+        background: #111111;
         color: #ffffff;
         font-size: 0.78rem;
         font-weight: 800;
@@ -306,10 +306,10 @@
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         min-height: 50px;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #dedede;
         border-radius: 12px;
         overflow: visible;
-        background: #FFFFFF;
+        background: #f2f2f2;
       }
 
       /* manually clip corners on first/last children instead */
@@ -325,7 +325,7 @@
 
       .country-picker,
       .plain-phone-prefix {
-        border-right: 1px solid #E5E7EB;
+        border-right: 1px solid #dedede;
       }
 
       .country-picker-trigger,
@@ -334,8 +334,8 @@
         align-items: center;
         gap: 5px;
         min-height: 50px;
-        background: #FFFFFF;
-        color: #6B7280;
+        background: #f2f2f2;
+        color: #53606f;
         padding: 0 12px;
         font-size: 0.9rem;
         white-space: nowrap;
@@ -346,7 +346,7 @@
         min-height: 48px;
         border: 0 !important;
         border-radius: 0 12px 12px 0;
-        background: #FFFFFF;
+        background: #f2f2f2;
         box-shadow: none !important;
       }
 
@@ -365,7 +365,7 @@
         display: flex;
         flex-direction: column;
         background: #ffffff;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #dedede;
         border-radius: 8px;
         box-shadow: 0 12px 32px rgba(0,0,0,0.14);
         overflow: hidden;
@@ -373,9 +373,9 @@
 
       .country-picker-search {
         border: 0;
-        border-bottom: 1px solid #FFFFFF;
+        border-bottom: 1px solid #eeeeee;
         border-radius: 0;
-        background: #FFFFFF;
+        background: #fafafa;
         min-height: 40px;
         padding: 8px 14px;
         font-size: 0.88rem;
@@ -398,16 +398,16 @@
         font-size: 0.85rem;
         text-align: left;
         cursor: pointer;
-        color: #1A1A1A;
+        color: #111111;
       }
 
       .country-picker-option:hover,
       .country-picker-option.is-active {
-        background: #FFFFFF;
+        background: #f5f0ee;
       }
 
       .country-picker-dial {
-        color: #6B7280;
+        color: #888;
         flex-shrink: 0;
         font-size: 0.8rem;
       }
@@ -415,7 +415,7 @@
       .country-picker-empty {
         padding: 10px 14px;
         font-size: 0.82rem;
-        color: #6B7280;
+        color: #888;
       }
 
       /* Phone combo: country select + number input in one row */
@@ -455,14 +455,14 @@
       .otp-row small {
         grid-column: 1 / -1;
         margin-top: 6px;
-        color: #6B7280;
+        color: #8f8f8f;
         font-size: 0.72rem;
       }
 
       .input-hint {
         display: block;
         margin-top: 2px;
-        color: #6B7280;
+        color: #8f8f8f;
         font-size: 0.75rem;
         line-height: 1.35;
       }
@@ -478,7 +478,7 @@
         min-height: 54px;
         border: 0;
         background: transparent;
-        color: #6B7280;
+        color: #646464;
       }
 
       .form-actions .btn-primary {
@@ -486,7 +486,7 @@
         min-height: 58px;
         border: 0;
         border-radius: 12px;
-        background: #C55418;
+        background: #8D3118;
         color: #ffffff;
         font-size: 0.78rem;
         font-weight: 800;
@@ -506,7 +506,7 @@
 
       .sticky-panel .mini-label {
         margin: 0 0 24px;
-        color: #1A1A1A;
+        color: #111111;
         font-family: "DM Sans", system-ui, sans-serif;
         font-size: 1.25rem;
         font-weight: 500;
@@ -529,27 +529,27 @@
       .summary-thumb {
         width: 78px;
         aspect-ratio: 1;
-        border: 1px solid #E5E7EB;
+        border: 1px solid #dedede;
         background:
           linear-gradient(135deg, rgba(150, 77, 10, 0.08), rgba(17, 17, 17, 0.08)),
           url("assets/copper-studio-logo.jpeg") center / cover no-repeat;
       }
 
       .overview-card h3 {
-        color: #1A1A1A;
+        color: #111111;
         font-size: 1rem;
         margin: 0;
       }
 
       .overview-card p {
         margin: 3px 0 5px;
-        color: #6B7280;
+        color: #646464;
         font-size: 0.78rem;
       }
 
       .summary-price {
         display: block;
-        color: #1A1A1A;
+        color: #111111;
         font-size: 0.95rem;
         font-weight: 700;
       }
@@ -559,20 +559,20 @@
         display: flex;
         justify-content: space-between;
         gap: 18px;
-        color: #6B7280;
+        color: #646464;
         font-size: 0.92rem;
         padding: 8px 0;
       }
 
       .overview-row strong,
       .total-row strong {
-        color: #1A1A1A;
+        color: #111111;
         font-weight: 500;
       }
 
       .summary-divider {
         margin: 22px 0;
-        background: #FFFFFF;
+        background: #eeeeee;
       }
 
       .coupon-box {
@@ -590,32 +590,32 @@
       }
 
       .coupon-box .input-action .btn {
-        border: 1px solid #E5E7EB;
+        border: 1px solid #dedede;
         background: #ffffff;
-        color: #1A1A1A;
+        color: #111111;
       }
 
       .trust-row {
         display: grid;
         gap: 14px;
         padding-top: 20px;
-        border-top: 1px solid #FFFFFF;
+        border-top: 1px solid #eeeeee;
       }
 
       .trust-item {
         display: flex;
         align-items: center;
         gap: 10px;
-        border: 1px solid #FFFFFF;
+        border: 1px solid #eeeeee;
         border-radius: 12px;
-        background: #FFFFFF;
-        color: #1A1A1A;
+        background: #fafafa;
+        color: #444444;
         padding: 12px 14px;
         font-size: 0.74rem;
       }
 
       .trust-item .material-symbols-outlined {
-        color: #C55418;
+        color: #8D3118;
         font-size: 1rem;
       }
 
@@ -625,7 +625,7 @@
         gap: 24px;
         margin-top: 88px;
         padding-top: 48px;
-        border-top: 1px solid #FFFFFF;
+        border-top: 1px solid #eeeeee;
       }
 
       .checkout-footer strong {
@@ -637,7 +637,7 @@
 
       .checkout-footer small,
       .checkout-footer a {
-        color: #6B7280;
+        color: #646464;
         font-size: 0.78rem;
       }
 

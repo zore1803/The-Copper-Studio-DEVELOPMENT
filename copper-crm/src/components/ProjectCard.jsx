@@ -14,16 +14,16 @@ const statusColor = {
 
 function dueMeta(project) {
   const raw = project.dueDate || project.expectedEndDate;
-  if (!raw) return { label: "No due date", tone: "text-[#6B7280]" };
+  if (!raw) return { label: "No due date", tone: "text-[#9b8c83]" };
   const due = parseFullDate(raw);
-  if (Number.isNaN(due.getTime())) return { label: String(raw), tone: "text-[#6B7280]" };
+  if (Number.isNaN(due.getTime())) return { label: String(raw), tone: "text-[#6c6355]" };
   const isDone = String(project.status || project.clientStatus || "").toLowerCase() === "completed";
   const left = daysBetween(today(), due);
   const label = due.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   if (isDone) return { label, tone: "text-emerald-600", note: "Done" };
   if (left < 0) return { label, tone: "text-red-600", note: `${Math.abs(left)}d overdue` };
   if (left <= 7) return { label, tone: "text-amber-600", note: `${left}d left` };
-  return { label, tone: "text-[#6B7280]", note: `${left}d left` };
+  return { label, tone: "text-[#6c6355]", note: `${left}d left` };
 }
 
 export default function ProjectCard({ project, showClient = true }) {
@@ -37,27 +37,27 @@ export default function ProjectCard({ project, showClient = true }) {
   return (
     <Link
       to={`/admin/companies/${project.companyId}/projects/${projectId}`}
-      className="group block rounded-xl border border-[#E5E7EB] bg-white p-5 transition-all hover:border-[#C55418] hover:shadow-md hover:shadow-[#C55418]/5"
+      className="group block rounded-xl border border-[#ead9d0] bg-white p-5 transition-all hover:border-[#B25A34] hover:shadow-md hover:shadow-[#8D3118]/5"
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-[#1A1A1A] group-hover:text-[#C55418]">{project.name || "Untitled project"}</p>
-          {showClient && <p className="mt-0.5 truncate text-xs text-[#6B7280]">{project.client || "Unassigned client"}</p>}
+          <p className="truncate text-sm font-bold text-[#2b211c] group-hover:text-[#8D3118]">{project.name || "Untitled project"}</p>
+          {showClient && <p className="mt-0.5 truncate text-xs text-[#6c6355]">{project.client || "Unassigned client"}</p>}
         </div>
         <Badge color={statusColor[status] || "gray"}>{status}</Badge>
       </div>
 
       <div className="mb-4">
-        <div className="mb-1.5 flex justify-between text-[11px] text-[#6B7280]">
+        <div className="mb-1.5 flex justify-between text-[11px] text-[#6c6355]">
           <span>Progress</span>
-          <span className="font-bold text-[#1A1A1A]">{progress}%</span>
+          <span className="font-bold text-[#2b211c]">{progress}%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[#E5E7EB]">
-          <div className={`h-full rounded-full ${isDone ? "bg-emerald-500" : "bg-[#C55418]"}`} style={{ width: `${Math.min(100, progress)}%` }} />
+        <div className="h-2 overflow-hidden rounded-full bg-[#f1e7e1]">
+          <div className={`h-full rounded-full ${isDone ? "bg-emerald-500" : "bg-[#8D3118]"}`} style={{ width: `${Math.min(100, progress)}%` }} />
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-3">
+      <div className="flex items-center justify-between border-t border-[#f3e9e4] pt-3">
         <div className="flex items-center">
           {team.length ? (
             <div className="flex -space-x-1.5">
@@ -67,11 +67,11 @@ export default function ProjectCard({ project, showClient = true }) {
                 </div>
               ))}
               {team.length > 4 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E5E7EB] text-[10px] font-bold text-[#C55418] ring-2 ring-white">+{team.length - 4}</div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f1e7e1] text-[10px] font-bold text-[#8D3118] ring-2 ring-white">+{team.length - 4}</div>
               )}
             </div>
           ) : (
-            <span className="flex items-center gap-1 text-[11px] text-[#6B7280]"><Users size={11} /> No team</span>
+            <span className="flex items-center gap-1 text-[11px] text-[#9b8c83]"><Users size={11} /> No team</span>
           )}
         </div>
         <div className={`flex items-center gap-1 text-[11px] font-semibold ${due.tone}`}>

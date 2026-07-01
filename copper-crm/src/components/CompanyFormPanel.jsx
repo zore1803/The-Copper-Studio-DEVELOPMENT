@@ -52,7 +52,7 @@ const COMPANY_STATUS_OPTIONS = ["Active", "Prospect", "Inactive"];
 function Field({ label, value, onChange, placeholder = "", type = "text", error = "", span = false }) {
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
         value={value || ""}
@@ -60,7 +60,7 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
@@ -71,11 +71,11 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
 function SelectField({ label, value, onChange, options, placeholder = "Select…" }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <select
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 bg-white"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 bg-white"
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
@@ -164,17 +164,17 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     >
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="sm:col-span-3 flex items-center gap-4">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#FFFFFF]">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
             {form.logo ? (
               <img src={form.logo} alt="Company logo" className="h-full w-full object-cover" />
             ) : (
-              <Building2 size={28} className="text-[#C55418]" />
+              <Building2 size={28} className="text-[#8D3118]" />
             )}
           </div>
           <div>
-            <span className="text-xs font-semibold text-[#1A1A1A]">Profile picture</span>
+            <span className="text-xs font-semibold text-[#374151]">Profile picture</span>
             <div className="mt-1.5 flex items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#C55418] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6E2412]">
                 <Upload size={13} /> {form.logo ? "Change" : "Upload"}
                 <input type="file" accept="image/*" className="hidden" onChange={handleLogoPick} />
               </label>
@@ -182,13 +182,13 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
                 <button
                   type="button"
                   onClick={() => set("logo")("")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#E5E7EB]"
+                  className="inline-flex items-center gap-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb]"
                 >
                   <X size={13} /> Remove
                 </button>
               )}
             </div>
-            <p className="mt-1 text-[11px] text-[#6B7280]">PNG, JPG or SVG · up to 2 MB</p>
+            <p className="mt-1 text-[11px] text-[#9ca3af]">PNG, JPG or SVG · up to 2 MB</p>
           </div>
         </div>
         <Field label="Company name *" value={form.name} onChange={set("name")} error={errors.name} />
@@ -197,15 +197,15 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <SearchableSelectField label="Industry" value={form.industry} onChange={set("industry")} options={INDUSTRIES} allowCustom placeholder="Select or type…" />
         <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
         <label className="block">
-          <span className="text-xs font-semibold text-[#1A1A1A]">Primary contact</span>
+          <span className="text-xs font-semibold text-[#374151]">Primary contact</span>
           {primaryContact ? (
-            <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 py-2 text-sm">
-              <span className="truncate text-[#1A1A1A]">{form.contact || primaryContact.name || "Contact"}</span>
+            <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm">
+              <span className="truncate text-[#111827]">{form.contact || primaryContact.name || "Contact"}</span>
               <span className="flex shrink-0 items-center gap-1">
-                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#C55418] hover:text-[#C55418]" title="Edit contact">
+                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#8D3118] hover:text-[#6E2412]" title="Edit contact">
                   <Pencil size={13} />
                 </button>
-                <button type="button" onClick={() => { setPrimaryContact(null); set("contact")(""); }} className="text-[#6B7280] hover:text-[#6b7280]" title="Remove">
+                <button type="button" onClick={() => { setPrimaryContact(null); set("contact")(""); }} className="text-[#9ca3af] hover:text-[#6b7280]" title="Remove">
                   <X size={13} />
                 </button>
               </span>
@@ -214,7 +214,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowContactForm(true)}
-              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#C55418] hover:bg-[#E5E7EB]"
+              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
             >
               <UserPlus size={14} /> Add primary contact
             </button>
@@ -227,7 +227,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={LEAD_SOURCES} allowCustom placeholder="Select or type…" />
 
         <div className="sm:col-span-3 mt-1 border-t border-[#FFFFFF] pt-3">
-          <span className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">Address</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Address</span>
         </div>
         <Field span label="Address line 1" value={form.addressLine1} onChange={set("addressLine1")} />
         <Field span label="Address line 2" value={form.addressLine2} onChange={set("addressLine2")} />
@@ -236,7 +236,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
 
         <div className="sm:col-span-3 mt-1 border-t border-[#FFFFFF] pt-3">
-          <span className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">Social profiles</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Social profiles</span>
         </div>
         <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" error={errors.linkedin} />
         <Field label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="https://instagram.com/…" error={errors.instagram} />
@@ -244,11 +244,11 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="X (Twitter)" value={form.twitter} onChange={set("twitter")} placeholder="https://x.com/…" error={errors.twitter} />
         <Field label="Personal website" value={form.personalWebsite} onChange={set("personalWebsite")} placeholder="https://…" />
         <label className="block sm:col-span-3">
-          <span className="text-xs font-semibold text-[#1A1A1A]">Notes</span>
+          <span className="text-xs font-semibold text-[#374151]">Notes</span>
           <textarea
             value={form.notes || ""}
             onChange={(e) => set("notes")(e.target.value)}
-            className="mt-1.5 min-h-24 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 transition-all"
+            className="mt-1.5 min-h-24 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 transition-all"
           />
         </label>
       </div>

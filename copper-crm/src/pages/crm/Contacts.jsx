@@ -71,11 +71,11 @@ function useClickOutside(refs, onOutside, active) {
 
 function EmptyState({ onCreate }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
+    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <Phone size={20} />
       </div>
-      <p className="text-sm font-semibold text-[#1A1A1A]">No contacts yet.</p>
+      <p className="text-sm font-semibold text-[#111827]">No contacts yet.</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">Contacts are people inside companies. Add them with company links so deals, projects, and communication history stay connected.</p>
       <Button className="mt-4" onClick={onCreate}><Plus size={14} /> New Contact</Button>
     </div>
@@ -101,26 +101,26 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
 
   return (
     <div
-      className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_auto] gap-4 border-b border-[#FFFFFF] px-4 py-3 text-sm hover:bg-[#E5E7EB] cursor-pointer"
+      className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_auto] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-sm hover:bg-[#fafafa] cursor-pointer"
       onClick={() => onOpen(contact)}
     >
       <button onClick={(e) => { e.stopPropagation(); onOpen(contact); }} className="flex min-w-0 items-center gap-3 text-left">
         <Avatar name={contactFullName(contact)} size="sm" />
         <span className="min-w-0">
-          <span className="block truncate font-semibold text-[#1A1A1A]">{contactFullName(contact)}</span>
+          <span className="block truncate font-semibold text-[#111827]">{contactFullName(contact)}</span>
           <span className="block truncate text-xs text-[#6b7280]">{contact.designation || "No designation"}</span>
         </span>
       </button>
-      <span className="flex min-w-0 items-center gap-2 text-[#1A1A1A]"><Building2 size={13} className="text-[#6B7280]" /> <span className="truncate">{companyName}</span></span>
-      <span className="flex min-w-0 items-center gap-2 text-[#1A1A1A]"><Mail size={13} className="text-[#6B7280]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
-      <span className="flex min-w-0 items-center gap-2 text-[#1A1A1A]"><MessageCircle size={13} className="text-[#6B7280]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
-      <span className="h-fit rounded-full bg-[#FFFFFF] px-2 py-1 text-center text-xs font-semibold text-[#1A1A1A]">{contact.status || "Active"}</span>
+      <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Building2 size={13} className="text-[#9ca3af]" /> <span className="truncate">{companyName}</span></span>
+      <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Mail size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
+      <span className="flex min-w-0 items-center gap-2 text-[#374151]"><MessageCircle size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
+      <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
       <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <ContactExportMenu contact={contact} companyName={companyName} />
         <button
           ref={btnRef}
           onClick={toggleMenu}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#1A1A1A] transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
         >
           <MoreVertical size={14} />
         </button>
@@ -130,10 +130,10 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
             style={{ position: "fixed", top: menuPos.top, left: menuPos.left }}
             className="z-50 w-44 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1"
           >
-            <button onClick={() => { setMenuOpen(false); onOpen(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
+            <button onClick={() => { setMenuOpen(false); onOpen(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
               <Eye size={14} /> Open profile
             </button>
-            <button onClick={() => { setMenuOpen(false); onEdit(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
+            <button onClick={() => { setMenuOpen(false); onEdit(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
               <Edit2 size={14} /> Edit contact
             </button>
             <button onClick={() => { setMenuOpen(false); onDelete(contact); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -151,14 +151,14 @@ function FolderCard({ folder, count, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white p-4 text-left transition-colors hover:bg-[#E5E7EB]"
+      className="flex flex-col items-start gap-3 rounded-xl border border-[#E1E4EA] bg-white p-4 text-left transition-colors hover:bg-[#fafafa]"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <FolderIcon size={18} />
       </div>
       <div>
-        <p className="text-sm font-semibold text-[#1A1A1A]">{folder}</p>
-        <p className="text-xs text-[#6B7280] mt-0.5">{count} contacts</p>
+        <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
+        <p className="text-xs text-[#525866] mt-0.5">{count} contacts</p>
       </div>
     </button>
   );
@@ -168,15 +168,15 @@ function FolderRow({ folder, count, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-left transition-colors hover:bg-[#E5E7EB]"
+      className="flex items-center justify-between rounded-xl border border-[#E1E4EA] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa]"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
           <FolderIcon size={16} />
         </div>
-        <p className="text-sm font-semibold text-[#1A1A1A]">{folder}</p>
+        <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
       </div>
-      <span className="text-xs text-[#6B7280]">{count} contacts</span>
+      <span className="text-xs text-[#525866]">{count} contacts</span>
     </button>
   );
 }
@@ -186,26 +186,26 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] transition-colors hover:bg-[#E5E7EB]" title="Back to all folders">
+          <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]" title="Back to all folders">
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <FolderOpen size={18} className="text-[#C55418]" />
+            <FolderOpen size={18} className="text-[#B25A34]" />
             <div>
-              <p className="text-base font-medium text-[#1A1A1A]">{folder}</p>
-              <p className="text-xs text-[#6B7280]">{contacts.length} {contacts.length === 1 ? "contact" : "contacts"}</p>
+              <p className="text-base font-medium text-[#0E121B]">{folder}</p>
+              <p className="text-xs text-[#525866]">{contacts.length} {contacts.length === 1 ? "contact" : "contacts"}</p>
             </div>
           </div>
         </div>
-        <button onClick={onAdd} className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#C55418] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto">
+        <button onClick={onAdd} className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#B25A34] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#B25A34] sm:self-auto">
           <Plus size={15} /> Add contacts
         </button>
       </div>
 
       {contacts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white py-12 text-center">
+        <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white py-12 text-center">
           <p className="text-sm text-[#6b7280]">No contacts in this folder yet.</p>
-          <button onClick={onAdd} className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#C55418] px-3.5 py-2 text-xs font-medium text-[#C55418] transition-colors hover:bg-[#E5E7EB]">
+          <button onClick={onAdd} className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#B25A34] px-3.5 py-2 text-xs font-medium text-[#B25A34] transition-colors hover:bg-[#fff8f6]">
             <Plus size={14} /> Add contacts
           </button>
         </div>
@@ -215,20 +215,20 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
             const company = companyMap.get(String(c.companyId));
             const companyName = company?.companyName || company?.name || c.company || "Not linked";
             return (
-              <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E5E7EB] bg-white p-4">
-                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
+              <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
+                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
                   <X size={14} />
                 </button>
                 <div className="flex items-center gap-3">
                   <Avatar name={contactFullName(c)} size="sm" />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactFullName(c)}</p>
-                    <p className="truncate text-xs text-[#6B7280]">{c.designation || companyName}</p>
+                    <p className="truncate text-sm font-semibold text-[#111827]">{contactFullName(c)}</p>
+                    <p className="truncate text-xs text-[#525866]">{c.designation || companyName}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="rounded-full bg-[#FFFFFF] px-2 py-1 text-[11px] font-semibold text-[#1A1A1A]">{c.status || "Active"}</span>
-                  <button onClick={() => onOpenContact(c)} className="inline-flex items-center gap-1 text-xs font-medium text-[#C55418] hover:underline">
+                  <span className="rounded-full bg-[#f3f4f6] px-2 py-1 text-[11px] font-semibold text-[#374151]">{c.status || "Active"}</span>
+                  <button onClick={() => onOpenContact(c)} className="inline-flex items-center gap-1 text-xs font-medium text-[#8D3118] hover:underline">
                     <Eye size={13} /> Open
                   </button>
                 </div>
@@ -256,14 +256,14 @@ function FolderModal({ onClose, onCreate }) {
       }
     >
       <label className="block">
-        <span className="text-xs font-semibold text-[#1A1A1A]">Folder name</span>
+        <span className="text-xs font-semibold text-[#374151]">Folder name</span>
         <input
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") onCreate(name); }}
           placeholder="e.g. Q3 Decision Makers"
-          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
       </label>
     </SidePanel>
@@ -297,10 +297,10 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5">
-        <Search size={15} className="text-[#1A1A1A]/50 shrink-0" />
+      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5">
+        <Search size={15} className="text-[#1F2937]/50 shrink-0" />
         <input
-          className="w-full bg-transparent text-sm outline-none placeholder:text-[#1A1A1A]/50"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
           placeholder="Search contacts…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -311,11 +311,11 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
           const id = idOf(c);
           const checked = selected.has(id);
           return (
-            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${checked ? "border-[#C55418] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}>
-              <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#E5E7EB] accent-[#C55418]" />
+            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${checked ? "border-[#B25A34] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}>
+              <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#d1d5db] accent-[#8D3118]" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactFullName(c)}</p>
-                <p className="truncate text-xs text-[#6B7280]">
+                <p className="truncate text-sm font-semibold text-[#111827]">{contactFullName(c)}</p>
+                <p className="truncate text-xs text-[#525866]">
                   {c.designation || "—"}
                   {c.folder && c.folder !== folder ? ` · in ${c.folder}` : ""}
                 </p>
@@ -490,21 +490,21 @@ export default function Contacts() {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#1A1A1A]">Contacts</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">Manage your organisation contacts</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5 sm:w-72">
-            <Search size={16} className="text-[#1A1A1A]/50 shrink-0" />
-            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#1A1A1A]/50" />
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+            <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50" />
           </div>
             {/* Sort */}
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen((value) => !value)}
-                className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#C55418] bg-[#FFFFFF] text-[#C55418]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+                className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
               >
                 <ArrowUpDown size={15} />
                 <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -515,7 +515,7 @@ export default function Contacts() {
                     <button
                       key={opt.value}
                       onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#C55418]" : "text-[#1A1A1A]"}`}
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                     >
                       {opt.label}
                       {sortBy === opt.value && <Check size={14} />}
@@ -539,17 +539,17 @@ export default function Contacts() {
             {/* View toggle */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#C55418]/20" : "bg-[#FFFFFF]"}`}
+              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
             >
               <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
-                <Grid2x2 size={16} className={view === "hotlist" ? "text-[#C55418]" : "text-[#1A1A1A]"} />
-                <span className={view === "hotlist" ? "text-[#C55418]" : "text-[#1A1A1A]"}>Hotlist</span>
+                <Grid2x2 size={16} className={view === "hotlist" ? "text-[#B25A34]" : "text-[#1F2937]"} />
+                <span className={view === "hotlist" ? "text-[#B25A34]" : "text-[#1F2937]"}>Hotlist</span>
               </span>
             </button>
 
             <button
               onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}
-              className="flex h-11 items-center gap-1.5 rounded-full bg-[#C55418] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
+              className="flex h-11 items-center gap-1.5 rounded-full bg-[#B25A34] px-4 text-sm font-medium text-white hover:bg-[#B25A34] transition-colors shadow-sm"
             >
               <Plus size={16} /> New Contact
             </button>
@@ -559,8 +559,8 @@ export default function Contacts() {
       <main className="flex-1 overflow-auto bg-[#FFFFFF] p-6">
         {view === "table" ? (
           <>
-            <div className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-              <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_auto] gap-4 border-b border-[#E5E7EB] bg-[#FFFFFF] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#6B7280]">
+            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
+              <div className="grid grid-cols-[minmax(220px,1.2fr)_minmax(160px,1fr)_180px_180px_120px_auto] gap-4 border-b border-[#f3e5e0] bg-[#fff1ec] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
                 <span className="flex items-center gap-1.5"><SlidersHorizontal size={12} /> Contact</span>
                 <span>Associated Company</span><span>Email</span><span>WhatsApp</span><span>Status</span><span />
               </div>
@@ -579,16 +579,16 @@ export default function Contacts() {
                 ))
               ) : <div className="p-5"><EmptyState onCreate={() => setEditing({ status: "Active" })} /></div>}
 
-              <div className="flex items-center justify-between border-t border-[#E5E7EB] px-6 py-3.5">
+              <div className="flex items-center justify-between border-t border-[#E1E4EA] px-6 py-3.5">
                 <p className="text-sm text-[#6b7280]">
-                  Showing <span className="font-semibold text-[#1A1A1A]">{rows.length}</span> of{" "}
-                  <span className="font-semibold text-[#1A1A1A]">{filtered.length}</span> Contacts
+                  Showing <span className="font-semibold text-[#111827]">{rows.length}</span> of{" "}
+                  <span className="font-semibold text-[#111827]">{filtered.length}</span> Contacts
                 </p>
                 <div className="flex items-center gap-1">
                   <button
                     disabled={page === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] transition-colors hover:bg-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
@@ -598,8 +598,8 @@ export default function Contacts() {
                       onClick={() => setPage(p)}
                       className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                         p === page
-                          ? "bg-[#C55418] text-white"
-                          : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                          ? "bg-[#8D3118] text-white"
+                          : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
                       }`}
                     >
                       {p}
@@ -608,7 +608,7 @@ export default function Contacts() {
                   <button
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] transition-colors hover:bg-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -618,22 +618,22 @@ export default function Contacts() {
           </>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-4 rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-[0_4px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-lg border border-[#E1E4EA] bg-white p-6 shadow-[0_4px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-base font-medium text-[#1A1A1A]">Contact Hotlists</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">Organise your contacts into custom folders</p>
+                <p className="text-base font-medium text-[#0E121B]">Contact Hotlists</p>
+                <p className="text-xs text-[#525866] mt-0.5">Organise your contacts into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5 sm:w-72">
-                  <Search size={15} className="text-[#1A1A1A]/50 shrink-0" />
+                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+                  <Search size={15} className="text-[#1F2937]/50 shrink-0" />
                   <input
-                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1A1A1A]/50"
+                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1F2937]/50"
                     placeholder="Search folders…"
                     value={folderSearch}
                     onChange={(e) => { setFolderSearch(e.target.value); setFolderPage(1); }}
                   />
                 </div>
-                <button onClick={() => setCreatingFolder(true)} className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#C55418] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors">
+                <button onClick={() => setCreatingFolder(true)} className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#B25A34] px-3.5 text-xs font-medium text-white hover:bg-[#B25A34] transition-colors">
                   <FolderPlus size={15} /> New Folder
                 </button>
               </div>
@@ -652,28 +652,28 @@ export default function Contacts() {
             ) : (
               <>
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-sm text-[#6B7280]">{visibleFolders.length} folders</p>
+                  <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setFolderView((v) => (v === "grid" ? "list" : "grid"))}
                       title={folderView === "grid" ? "Switch to list view" : "Switch to grid view"}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB] transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
                     >
                       {folderView === "grid" ? <List size={16} /> : <Grid2x2 size={16} />}
                     </button>
-                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronLeft size={16} />
                     </button>
                     {Array.from({ length: folderTotalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
                       <button
                         key={p}
                         onClick={() => setFolderPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#C55418] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#B25A34] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
                     ))}
-                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronRight size={16} />
                     </button>
                   </div>

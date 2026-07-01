@@ -226,7 +226,7 @@ export default function ProjectFiles() {
 
   if ((!company || !project) && projectsLoading) {
     return (
-      <div className="rounded-2xl border border-[#6B7280] bg-[#FFFFFF] p-10 text-center">
+      <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
         <p className="text-sm font-semibold text-[#6b7280]">Loading project files…</p>
       </div>
     );
@@ -234,7 +234,7 @@ export default function ProjectFiles() {
 
   if (!company || !project) {
     return (
-      <div className="rounded-2xl border border-[#6B7280] bg-[#FFFFFF] p-10 text-center">
+      <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
         <p className="text-sm font-semibold text-[#6b7280]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
@@ -328,7 +328,7 @@ export default function ProjectFiles() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFFFF]" onClick={() => setDocMenu(null)}>
+    <div className="flex min-h-full flex-col bg-[#f8fafc]" onClick={() => setDocMenu(null)}>
       <ProjectHeader
         company={company}
         project={project}
@@ -342,12 +342,12 @@ export default function ProjectFiles() {
       {/* Upload folder selector + live upload progress */}
       <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <FilePlus2 size={15} className="text-[#C55418] shrink-0" />
-          <span className="text-xs font-semibold text-[#1A1A1A]">Upload to:</span>
+          <FilePlus2 size={15} className="text-[#8D3118] shrink-0" />
+          <span className="text-xs font-semibold text-[#374151]">Upload to:</span>
           <select
             value={effectiveUploadFolder}
             onChange={(e) => handleUploadFolderChange(e.target.value)}
-            className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#C55418]"
+            className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#8D3118]"
           >
             {allFolderDefs.length === 0 && <option value="">No folders yet</option>}
             {allFolderDefs.map((f) => <option key={f.key} value={f.key}>{f.key}</option>)}
@@ -356,7 +356,7 @@ export default function ProjectFiles() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={!allFolderDefs.length || uploadProgress !== null}
-            className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#C55418] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6E2412] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           >
             <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
           </button>
@@ -368,9 +368,9 @@ export default function ProjectFiles() {
               <span>Uploading…</span>
               <span>{uploadProgress}%</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#f1e6e0]">
               <div
-                className="h-full rounded-full bg-[#C55418] transition-[width] duration-200 ease-out"
+                className="h-full rounded-full bg-[#8D3118] transition-[width] duration-200 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
@@ -382,7 +382,7 @@ export default function ProjectFiles() {
       <section>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h3 className="font-display text-lg font-semibold text-[#1A1A1A]">Directory</h3>
+            <h3 className="font-display text-lg font-semibold text-[#211a17]">Directory</h3>
             <p className="mt-1 text-xs text-[#6b7280]">{documents.length} files across {folders.filter((f) => f.count > 0).length} folders</p>
           </div>
           {newFolderMode ? (
@@ -392,12 +392,12 @@ export default function ProjectFiles() {
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Folder name…"
-                className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs outline-none focus:border-[#C55418] w-36"
+                className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs outline-none focus:border-[#8D3118] w-36"
               />
-              <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#C55418] text-white hover:bg-[#6B7280]">
+              <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#8D3118] text-white hover:bg-[#6E2412]">
                 <Check size={13} />
               </button>
-              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]">
+              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
                 <X size={13} />
               </button>
             </form>
@@ -420,14 +420,14 @@ export default function ProjectFiles() {
                   }`}
                 >
                   <img src={customFolderSvg} alt="Folder" className="mb-3 h-[96px] w-auto object-contain drop-shadow-sm" />
-                  <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#1A1A1A]">{folder.key}</p>
-                  <p className="mt-0.5 w-full text-[11px] text-[#6B7280]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+                  <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#374151]">{folder.key}</p>
+                  <p className="mt-0.5 w-full text-[11px] text-[#9ca3af]">{folder.count} items · {formatSizeMB(folder.size)}</p>
                 </button>
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder); }}
                   title="Delete folder"
-                  className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-lg bg-white/90 text-[#6B7280] opacity-0 shadow-sm transition-opacity hover:text-red-600 group-hover:opacity-100"
+                  className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-lg bg-white/90 text-[#9ca3af] opacity-0 shadow-sm transition-opacity hover:text-red-600 group-hover:opacity-100"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -435,9 +435,9 @@ export default function ProjectFiles() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-[#6B7280] bg-[#FFFFFF] p-8 text-center">
+          <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-[#fff8f6] p-8 text-center">
             <p className="text-sm text-[#6b7280]">No folders yet for this project.</p>
-            <button onClick={() => setNewFolderMode(true)} className="mt-2 text-xs font-bold text-[#C55418] hover:underline">
+            <button onClick={() => setNewFolderMode(true)} className="mt-2 text-xs font-bold text-[#8D3118] hover:underline">
               Create the first folder →
             </button>
           </div>
@@ -452,29 +452,29 @@ export default function ProjectFiles() {
               <button
                 type="button"
                 onClick={() => { setActiveFolder(null); setPage(1); }}
-                className="font-display font-semibold text-[#C55418] hover:underline"
+                className="font-display font-semibold text-[#8D3118] hover:underline"
               >
                 Directory
               </button>
-              <ChevronRight size={16} className="text-[#6B7280]" />
-              <span className="font-display font-semibold text-[#1A1A1A]">{activeFolder}</span>
-              <span className="ml-1 text-xs font-normal text-[#6B7280]">({filteredDocuments.length} files)</span>
+              <ChevronRight size={16} className="text-[#9ca3af]" />
+              <span className="font-display font-semibold text-[#211a17]">{activeFolder}</span>
+              <span className="ml-1 text-xs font-normal text-[#9ca3af]">({filteredDocuments.length} files)</span>
             </nav>
           ) : (
-            <h3 className="font-display text-lg font-semibold text-[#1A1A1A]">All Documents</h3>
+            <h3 className="font-display text-lg font-semibold text-[#211a17]">All Documents</h3>
           )}
           <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
             <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
-              <Search size={14} className="text-[#6B7280]" />
+              <Search size={14} className="text-[#9ca3af]" />
               <input
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                 placeholder="Search files…"
-                className="w-40 bg-transparent text-xs text-[#1A1A1A] outline-none placeholder:text-[#6B7280]"
+                className="w-40 bg-transparent text-xs text-[#111827] outline-none placeholder:text-[#9ca3af]"
               />
               {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery("")} className="text-[#6B7280] hover:text-[#6b7280]">
+                <button type="button" onClick={() => setSearchQuery("")} className="text-[#9ca3af] hover:text-[#6b7280]">
                   <X size={13} />
                 </button>
               )}
@@ -483,7 +483,7 @@ export default function ProjectFiles() {
             <select
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#1A1A1A] outline-none focus:border-[#C55418]"
+              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#374151] outline-none focus:border-[#8D3118]"
             >
               <option value="">All types</option>
               {typeOptions.map((key) => <option key={key} value={key}>{TYPE_META[key].label}</option>)}
@@ -492,7 +492,7 @@ export default function ProjectFiles() {
               <button
                 type="button"
                 onClick={() => { setActiveFolder(null); setSearchQuery(""); setTypeFilter(""); setPage(1); }}
-                className="text-xs font-bold text-[#C55418] hover:underline"
+                className="text-xs font-bold text-[#8D3118] hover:underline"
               >
                 Clear
               </button>
@@ -503,11 +503,11 @@ export default function ProjectFiles() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#6B7280] bg-[#FFFFFF] shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+        <div className="overflow-hidden rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
           {pageDocuments.length ? (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-[#E5E7EB] bg-[#FFFFFF]">
+                <tr className="border-b border-[#ead8d1] bg-[#fff1ec]">
                   <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Name</th>
                   <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Folder</th>
                   <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Size</th>
@@ -516,13 +516,13 @@ export default function ProjectFiles() {
                   <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E5E7EB]">
+              <tbody className="divide-y divide-[#ead8d1]">
                 {pageDocuments.map((doc, index) => {
                   const meta = TYPE_META[doc.type] || TYPE_META.doc;
                   const Icon = meta.icon;
                   const menuKey = doc._id || doc.name;
                   return (
-                    <tr key={menuKey || index} className="transition-colors hover:bg-[#E5E7EB]/60">
+                    <tr key={menuKey || index} className="transition-colors hover:bg-[#fff1ec]/60">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <button
@@ -537,7 +537,7 @@ export default function ProjectFiles() {
                             <button
                               type="button"
                               onClick={() => openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg }))}
-                              className="block max-w-[220px] truncate text-left text-sm font-semibold text-[#1A1A1A] hover:text-[#C55418] hover:underline"
+                              className="block max-w-[220px] truncate text-left text-sm font-semibold text-[#211a17] hover:text-[#8D3118] hover:underline"
                             >
                               {doc.name}
                             </button>
@@ -551,28 +551,28 @@ export default function ProjectFiles() {
                       <td className="hidden px-6 py-5 md:table-cell">
                         <div className="flex items-center gap-2">
                           <Avatar name={doc.uploadedBy} size="sm" />
-                          <span className="text-sm text-[#1A1A1A]">{doc.uploadedBy}</span>
+                          <span className="text-sm text-[#211a17]">{doc.uploadedBy}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right relative" onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           onClick={() => setDocMenu(docMenu === menuKey ? null : menuKey)}
-                          className="text-[#6b7280] transition-colors hover:text-[#C55418]"
+                          className="text-[#6b7280] transition-colors hover:text-[#8D3118]"
                         >
                           <MoreHorizontal size={18} />
                         </button>
                         {docMenu === menuKey && (
                           <div className="absolute right-6 top-full z-20 mt-1 w-40 rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg text-left">
                             <button
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:text-[#6B7280]"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb] disabled:text-[#9ca3af]"
                               disabled={!doc.fileUrl}
                               onClick={() => { openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg })); setDocMenu(null); }}
                             >
                               <ExternalLink size={14} /> Open file
                             </button>
                             <button
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                               onClick={() => { setInfoDoc(doc); setDocMenu(null); }}
                             >
                               <Info size={14} /> View Info
@@ -603,7 +603,7 @@ export default function ProjectFiles() {
               {!searchQuery && !typeFilter && (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-bold text-[#C55418] hover:underline"
+                  className="text-xs font-bold text-[#8D3118] hover:underline"
                 >
                   Upload the first file →
                 </button>
@@ -613,7 +613,7 @@ export default function ProjectFiles() {
 
           {/* Pagination */}
           {filteredDocuments.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between border-t border-[#E5E7EB] bg-[#FFFFFF]/40 px-6 py-3">
+            <div className="flex items-center justify-between border-t border-[#ead8d1] bg-[#fff1ec]/40 px-6 py-3">
               <p className="text-[11px] text-[#6b7280]">
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredDocuments.length)} of {filteredDocuments.length}
               </p>
@@ -622,16 +622,16 @@ export default function ProjectFiles() {
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setPage(currentPage - 1)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="px-2 text-xs font-semibold text-[#1A1A1A]">{currentPage} / {totalPages}</span>
+                <span className="px-2 text-xs font-semibold text-[#374151]">{currentPage} / {totalPages}</span>
                 <button
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setPage(currentPage + 1)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -647,10 +647,10 @@ export default function ProjectFiles() {
         <div className="fixed inset-0 z-50 grid place-items-center bg-gray-950/40 p-4" onClick={() => setInfoDoc(null)}>
           <div className="w-full max-w-md overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Header — full-width so the whole file name is visible */}
-            <div className="relative border-b border-[#FFFFFF] bg-[#FFFFFF] px-5 pb-4 pt-5">
+            <div className="relative border-b border-[#f3f4f6] bg-[#fafafa] px-5 pb-4 pt-5">
               <button
                 onClick={() => setInfoDoc(null)}
-                className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-[#6B7280] hover:bg-[#E5E7EB]"
+                className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-lg text-[#9ca3af] hover:bg-[#f3f4f6]"
               >
                 <X size={15} />
               </button>
@@ -665,8 +665,8 @@ export default function ProjectFiles() {
                   );
                 })()}
                 <div className="min-w-0">
-                  <p className="break-words text-sm font-bold leading-snug text-[#1A1A1A]">{infoDoc.name}</p>
-                  <p className="mt-1 inline-block rounded bg-white px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#6B7280] ring-1 ring-[#e5e7eb]">
+                  <p className="break-words text-sm font-bold leading-snug text-[#211a17]">{infoDoc.name}</p>
+                  <p className="mt-1 inline-block rounded bg-white px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af] ring-1 ring-[#e5e7eb]">
                     {(TYPE_META[infoDoc.type] || TYPE_META.doc).label}
                   </p>
                 </div>
@@ -675,7 +675,7 @@ export default function ProjectFiles() {
 
             {/* Details */}
             <div className="px-5 py-4">
-              <dl className="divide-y divide-[#FFFFFF] text-sm">
+              <dl className="divide-y divide-[#f3f4f6] text-sm">
                 {[
                   ["Folder", infoDoc.category || "—"],
                   ["Size", formatDocSize(infoDoc)],
@@ -684,7 +684,7 @@ export default function ProjectFiles() {
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-start justify-between gap-4 py-2.5">
                     <dt className="shrink-0 text-[#6b7280]">{label}</dt>
-                    <dd className="break-words text-right font-semibold text-[#1A1A1A]">{value}</dd>
+                    <dd className="break-words text-right font-semibold text-[#211a17]">{value}</dd>
                   </div>
                 ))}
               </dl>

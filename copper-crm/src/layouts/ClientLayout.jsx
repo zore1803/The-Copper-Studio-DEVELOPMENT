@@ -18,18 +18,18 @@ function ProjectSwitcher() {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 max-w-[240px] items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB] transition-colors"
+        className="flex h-9 max-w-[240px] items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm text-[#111827] hover:bg-[#f9fafb] transition-colors"
         title="Switch project"
       >
-        <FolderKanban size={15} className="shrink-0 text-[#C55418]" />
+        <FolderKanban size={15} className="shrink-0 text-[#B25A34]" />
         <span className="truncate font-medium">{selectedProject?.name || "Select a project"}</span>
-        <ChevronDown size={14} className={`shrink-0 text-[#6B7280] transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} className={`shrink-0 text-[#9ca3af] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full z-50 mt-2 w-72 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
-            <p className="px-3 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Your Projects</p>
+            <p className="px-3 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Your Projects</p>
             <div className="max-h-80 overflow-y-auto pb-1">
               {projects.map((p) => {
                 const id = String(p._id || p.id);
@@ -38,14 +38,14 @@ function ProjectSwitcher() {
                   <button
                     key={id}
                     onClick={() => { setSelectedId(id); setOpen(false); }}
-                    className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm hover:bg-[#E5E7EB] ${active ? "bg-[#FFFFFF]" : ""}`}
+                    className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm hover:bg-[#f9fafb] ${active ? "bg-[#fff8f6]" : ""}`}
                   >
-                    <FolderKanban size={15} className={`shrink-0 ${active ? "text-[#C55418]" : "text-[#6B7280]"}`} />
+                    <FolderKanban size={15} className={`shrink-0 ${active ? "text-[#B25A34]" : "text-[#9ca3af]"}`} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium text-[#1A1A1A]">{p.name || "Untitled project"}</span>
-                      {p.packageName && <span className="block truncate text-xs text-[#6B7280]">{p.packageName}</span>}
+                      <span className="block truncate font-medium text-[#111827]">{p.name || "Untitled project"}</span>
+                      {p.packageName && <span className="block truncate text-xs text-[#9ca3af]">{p.packageName}</span>}
                     </span>
-                    {active && <Check size={15} className="shrink-0 text-[#C55418]" />}
+                    {active && <Check size={15} className="shrink-0 text-[#B25A34]" />}
                   </button>
                 );
               })}
@@ -86,7 +86,7 @@ function NavItem({ item, collapsed, active, onNavigate }) {
         onClick={() => onNavigate(item.to)}
         title={item.label}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-          active ? "bg-white border-[#E5E7EB] text-[#C55418] shadow-sm" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
+          active ? "bg-white border-[#E5E5E5] text-[#B25A34] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
         }`}
       >
         <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
@@ -97,7 +97,7 @@ function NavItem({ item, collapsed, active, onNavigate }) {
     <button
       onClick={() => onNavigate(item.to)}
       className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-        active ? "bg-white border border-[#E5E7EB] text-[#C55418] shadow-sm" : "text-[#1A1A1A] hover:bg-white/70"
+        active ? "bg-white border border-[#E5E5E5] text-[#B25A34] shadow-sm" : "text-[#374151] hover:bg-white/70"
       }`}
     >
       <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
@@ -141,20 +141,20 @@ export default function ClientLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FFFFFF] border-r border-[#E5E7EB] transition-all duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
         style={{ width: mobileOpen ? 264 : sidebarW }}
       >
         {/* Logo */}
-        <div className={`flex items-center justify-center border-b border-[#E5E7EB] ${collapsed && !mobileOpen ? "px-1 py-3" : "px-4 py-5"}`}>
+        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed && !mobileOpen ? "px-1 py-3" : "px-4 py-5"}`}>
           <img
             src="/copper-studio-wordmark.png"
             alt="Copper Studio"
             className={`object-contain ${collapsed && !mobileOpen ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
           />
           {mobileOpen && (
-            <button className="ml-auto lg:hidden text-[#6B7280] hover:text-[#1A1A1A]" onClick={() => setMobileOpen(false)}>
+            <button className="ml-auto lg:hidden text-[#9ca3af] hover:text-[#111827]" onClick={() => setMobileOpen(false)}>
               <X size={16} />
             </button>
           )}
@@ -163,7 +163,7 @@ export default function ClientLayout() {
         {/* Nav */}
         <nav className={`flex-1 overflow-y-auto py-3 ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
           {(!collapsed || mobileOpen) && (
-            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#6B7280]">Navigation</p>
+            <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af]">Navigation</p>
           )}
           {navItems.map((item) => (
             <NavItem
@@ -177,15 +177,15 @@ export default function ClientLayout() {
         </nav>
 
         {/* Bottom: user + collapse */}
-        <div className={`border-t border-[#E5E7EB] ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2 py-3" : "p-3 space-y-2"}`}>
+        <div className={`border-t border-[#ECECEC] ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2 py-3" : "p-3 space-y-2"}`}>
           {(!collapsed || mobileOpen) && (
             <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-[#C55418] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+              <div className="h-8 w-8 shrink-0 rounded-full bg-[#B25A34] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#1A1A1A] truncate">{name}</p>
-                <p className="text-[10px] text-[#6B7280] truncate">{auth.user?.email}</p>
+                <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
+                <p className="text-[10px] text-[#9ca3af] truncate">{auth.user?.email}</p>
               </div>
-              <button onClick={handleLogout} className="text-[#6B7280] hover:text-red-500 transition-colors" title="Log out">
+              <button onClick={handleLogout} className="text-[#9ca3af] hover:text-red-500 transition-colors" title="Log out">
                 <LogOut size={14} />
               </button>
             </div>
@@ -193,7 +193,7 @@ export default function ClientLayout() {
           <button
             onClick={() => setCollapsed((v) => !v)}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={`flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white text-sm font-semibold text-[#6B7280] hover:bg-[#E5E7EB] transition-colors ${collapsed && !mobileOpen ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed && !mobileOpen ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
             {collapsed && !mobileOpen ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
             {(!collapsed || mobileOpen) && "Collapse"}
@@ -204,13 +204,13 @@ export default function ClientLayout() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: sidebarW }}>
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-6 gap-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#1A1A1A]" onClick={() => setMobileOpen(true)}>
+            <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827]" onClick={() => setMobileOpen(true)}>
               <Menu size={18} />
             </button>
-            <h2 className="hidden sm:block text-sm font-semibold text-[#1A1A1A] truncate">{pageTitle}</h2>
-            <span className="hidden sm:block h-5 w-px bg-[#E5E7EB]" />
+            <h2 className="hidden sm:block text-sm font-semibold text-[#111827] truncate">{pageTitle}</h2>
+            <span className="hidden sm:block h-5 w-px bg-[#E1E4EA]" />
             <ProjectSwitcher />
           </div>
 
@@ -219,24 +219,24 @@ export default function ClientLayout() {
             <div className="relative">
               <button
                 onClick={() => setNotifOpen((v) => !v)}
-                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] text-black hover:bg-[#E5E7EB] transition-colors"
+                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#C55418]" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#B25A34]" />
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
                   <div className="px-4 py-3 border-b border-[#e5e7eb]">
-                    <p className="font-semibold text-sm text-[#1A1A1A]">Notifications</p>
+                    <p className="font-semibold text-sm text-[#111827]">Notifications</p>
                   </div>
                   <div className="p-3 space-y-1.5">
                     {[
                       { text: "Meeting scheduled for tomorrow", time: "2h ago" },
                       { text: "New document available for review", time: "1d ago" },
                     ].map((n, i) => (
-                      <div key={i} className="flex gap-3 p-2.5 rounded-lg bg-[#FFFFFF] hover:bg-[#E5E7EB] transition-colors cursor-pointer">
+                      <div key={i} className="flex gap-3 p-2.5 rounded-lg bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors cursor-pointer">
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-[#1A1A1A]">{n.text}</p>
+                          <p className="text-xs font-medium text-[#111827]">{n.text}</p>
                           <p className="text-xs mt-0.5 text-[#6b7280]">{n.time}</p>
                         </div>
                       </div>
@@ -247,8 +247,8 @@ export default function ClientLayout() {
             </div>
 
             {/* Avatar */}
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white p-1">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C55418] text-white text-xs font-medium">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B25A34] text-white text-xs font-medium">
                 {initials}
               </span>
             </div>

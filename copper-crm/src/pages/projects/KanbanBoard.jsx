@@ -25,7 +25,7 @@ const priorityConfig = {
   Low: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
-const assigneeColor = ["bg-[#C55418]", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"];
+const assigneeColor = ["bg-[#2563EB]", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"];
 function assigneeIdx(letter = "A") { return String(letter || "A").charCodeAt(0) % assigneeColor.length; }
 
 function reorder(list, startIndex, endIndex) {
@@ -274,10 +274,10 @@ export default function KanbanBoard() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#1A1A1A]">Kanban Board</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">{totals.done}/{totals.total} completed · {totals.high} high priority tasks</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Kanban Board</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{totals.done}/{totals.total} completed · {totals.high} high priority tasks</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Toggle buttons */}

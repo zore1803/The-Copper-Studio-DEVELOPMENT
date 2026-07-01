@@ -127,7 +127,7 @@ export default function ContactExportMenu({ contact, companyName, className = ""
         ref={btnRef}
         onClick={toggle}
         title="Export contact"
-        className={triggerClassName || "flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#1A1A1A] transition-colors"}
+        className={triggerClassName || "flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"}
       >
         <Share2 size={iconSize} />
         {triggerLabel && <span>{triggerLabel}</span>}
@@ -138,21 +138,21 @@ export default function ContactExportMenu({ contact, companyName, className = ""
           style={{ position: "fixed", top: pos.top, left: pos.left }}
           className="z-50 w-56 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1.5"
         >
-          <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Export to</p>
-          <button onClick={shareWhatsApp} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
+          <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Export to</p>
+          <button onClick={shareWhatsApp} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
             <MessageCircle size={14} className="text-emerald-600" /> Share via WhatsApp
           </button>
-          <button onClick={openLinkedIn} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
-            <Link2 size={14} className="text-[#C55418]" /> Open LinkedIn profile
+          <button onClick={openLinkedIn} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
+            <Link2 size={14} className="text-[#0a66c2]" /> Open LinkedIn profile
           </button>
-          <button onClick={shareEmail} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
-            <Mail size={14} className="text-[#C55418]" /> Share via Email
+          <button onClick={shareEmail} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
+            <Mail size={14} className="text-[#8D3118]" /> Share via Email
           </button>
-          <button onClick={downloadVCard} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
+          <button onClick={downloadVCard} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
             <Download size={14} /> Download as vCard
           </button>
-          <div className="my-1 border-t border-[#FFFFFF]" />
-          <button onClick={copyDetails} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
+          <div className="my-1 border-t border-[#f3f4f6]" />
+          <button onClick={copyDetails} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
             <Copy size={14} /> Copy details
           </button>
         </div>,

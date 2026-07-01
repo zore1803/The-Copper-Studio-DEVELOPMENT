@@ -14,7 +14,7 @@ function formatINR(value) {
 
 function KpiChip({ label, value, icon: Icon, tone = "default" }) {
   const toneStyles = {
-    default: "bg-[#FFFFFF] text-[#C55418]",
+    default: "bg-[#fff1ec] text-[#8D3118]",
     success: "bg-emerald-50 text-emerald-700",
     warning: "bg-amber-50 text-amber-700",
     danger: "bg-red-50 text-red-700",
@@ -27,7 +27,7 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
         </div>
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#1A1A1A]">{value}</p>
+          <p className="mt-0.5 truncate text-base font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
@@ -37,9 +37,9 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
 function Section({ title, subtitle, action, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-[#FFFFFF] px-5 py-3.5">
+      <div className="flex items-center justify-between border-b border-[#f3e5e0] bg-[#fff1ec] px-5 py-3.5">
         <div>
-          <h3 className="text-sm font-bold text-[#1A1A1A]">{title}</h3>
+          <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
           {subtitle && <p className="mt-0.5 text-xs text-[#6b7280]">{subtitle}</p>}
         </div>
         {action}
@@ -176,19 +176,19 @@ export default function ProjectsList() {
 
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
-      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#1A1A1A]">All Projects</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
+          <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
+          <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3 sm:w-64">
-            <Search size={14} className="text-[#6B7280]" />
+          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
+            <Search size={14} className="text-[#9ca3af]" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search projects or clients"
-              className="w-full bg-transparent text-sm text-[#1A1A1A] outline-none placeholder:text-[#6B7280]"
+              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
             />
           </div>
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
@@ -215,7 +215,7 @@ export default function ProjectsList() {
                 key={item.value}
                 onClick={() => setStatusFilter(item.value)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#C55418] text-white" : "bg-[#FFFFFF] text-[#6b7280] hover:bg-[#e5e7eb]"
+                  statusFilter === item.value ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
                 }`}
               >
                 {item.label}
@@ -225,7 +225,7 @@ export default function ProjectsList() {
         }
       >
         <table className="w-full text-left text-sm text-[#6b7280]">
-          <thead className="bg-[#FFFFFF] text-xs uppercase text-[#6B7280]">
+          <thead className="bg-[#fff1ec] text-xs uppercase text-[#9ca3af]">
             <tr>
               <th className="px-5 py-3 font-semibold">Project Name</th>
               <th className="px-5 py-3 font-semibold">Company</th>
@@ -238,45 +238,45 @@ export default function ProjectsList() {
               <th className="px-5 py-3 w-10" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E5E7EB] bg-white">
+          <tbody className="divide-y divide-[#f3e5e0] bg-white">
             {loading ? (
               <tr>
                 <td colSpan={9} className="px-5 py-10 text-center">
                   <div className="mx-auto flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C55418]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8D3118]"></div>
                   </div>
-                  <p className="mt-4 text-sm font-semibold text-[#1A1A1A]">Loading projects...</p>
+                  <p className="mt-4 text-sm font-semibold text-[#111827]">Loading projects...</p>
                 </td>
               </tr>
             ) : filtered.length > 0 ? filtered.map((project) => {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
-                <tr key={project.id || project._id} className="hover:bg-[#E5E7EB] transition-colors">
+                <tr key={project.id || project._id} className="hover:bg-[#fff1ec] transition-colors">
                   <td className="px-5 py-4">
                     <Link
                       to={`/admin/projects/${project.id || project._id}`}
-                      className="font-bold text-[#C55418] hover:underline"
+                      className="font-bold text-[#8D3118] hover:underline"
                     >
                       {project.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-4 font-medium text-[#1A1A1A]">{project.computedCompanyName}</td>
+                  <td className="px-5 py-4 font-medium text-[#111827]">{project.computedCompanyName}</td>
                   <td className="px-5 py-4">
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-700">
                       {project.template || project.packageName || "Custom"}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-xs font-medium text-[#1A1A1A] truncate max-w-[150px]">{project.currentStage}</td>
+                  <td className="px-5 py-4 text-xs font-medium text-[#111827] truncate max-w-[150px]">{project.currentStage}</td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-16 overflow-hidden rounded-full bg-[#FFFFFF]">
+                      <div className="h-2 w-16 overflow-hidden rounded-full bg-[#f3f4f6]">
                         <div
-                          className={`h-full rounded-full ${project.computedProgress === 100 ? "bg-emerald-500" : "bg-[#C55418]"}`}
+                          className={`h-full rounded-full ${project.computedProgress === 100 ? "bg-emerald-500" : "bg-[#8D3118]"}`}
                           style={{ width: `${project.computedProgress}%` }}
                         />
                       </div>
-                      <span className="text-[11px] font-bold text-[#1A1A1A]">{project.computedProgress}%</span>
+                      <span className="text-[11px] font-bold text-[#111827]">{project.computedProgress}%</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -286,7 +286,7 @@ export default function ProjectsList() {
                       className={`rounded-md border-0 bg-transparent py-1 pl-1 pr-6 text-xs font-semibold focus:ring-0 ${
                         project.effectiveStatus === "completed" ? "text-emerald-700" :
                         project.effectiveStatus === "delayed" ? "text-red-700" :
-                        "text-[#1A1A1A]"
+                        "text-[#111827]"
                       }`}
                     >
                       {PROJECT_STATUS_OPTIONS.map((opt) => (
@@ -296,15 +296,15 @@ export default function ProjectsList() {
                   </td>
                   <td className="px-5 py-4 text-xs">
                     <div className="flex flex-col gap-0.5">
-                      <span className="text-[#6B7280]">Start: <span className="text-[#1A1A1A] font-medium">{start}</span></span>
-                      <span className="text-[#6B7280]">Due: <span className="text-[#1A1A1A] font-medium">{deadline}</span></span>
+                      <span className="text-[#9ca3af]">Start: <span className="text-[#111827] font-medium">{start}</span></span>
+                      <span className="text-[#9ca3af]">Due: <span className="text-[#111827] font-medium">{deadline}</span></span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-right font-bold text-[#1A1A1A]">
+                  <td className="px-5 py-4 text-right font-bold text-[#111827]">
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteProject(project)} className="rounded-lg p-2 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                    <button onClick={() => handleDeleteProject(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -313,10 +313,10 @@ export default function ProjectsList() {
             }) : (
               <tr>
                 <td colSpan={9} className="px-5 py-10 text-center">
-                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#C55418]">
+                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
                     <FolderKanban size={20} />
                   </div>
-                  <p className="text-sm font-semibold text-[#1A1A1A]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
                   <p className="mt-1 text-sm text-[#6b7280]">Create a project and link it to a company to get started.</p>
                 </td>
               </tr>

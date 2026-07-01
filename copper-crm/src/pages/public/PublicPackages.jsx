@@ -81,7 +81,7 @@ export default function PublicPackages() {
     visible[1]?.id;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FFFFFF", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#1A1A1A" }}>
+    <div style={{ minHeight: "100vh", background: "#f9f6f3", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#111" }}>
 
       {/* Logo */}
       <div style={{ display: "flex", justifyContent: "center", padding: "32px 0 28px" }}>
@@ -104,25 +104,25 @@ export default function PublicPackages() {
           gap: 32,
           alignItems: "center",
           padding: "40px 36px",
-          border: "1px solid #FFFFFF",
+          border: "1px solid #efefef",
           borderRadius: 14,
           background: "#ffffff",
           boxShadow: "0 14px 34px rgba(0,0,0,0.04)",
           marginBottom: 40,
         }}>
           <div>
-            <span style={{ display: "inline-block", marginBottom: 12, color: "#C55418", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            <span style={{ display: "inline-block", marginBottom: 12, color: "#8D3118", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
               Step 1 — Select a package
             </span>
-            <h1 style={{ margin: "0 0 12px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#1A1A1A" }}>
+            <h1 style={{ margin: "0 0 12px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#111" }}>
               Choose a package to get started.
             </h1>
-            <p style={{ margin: 0, maxWidth: 500, color: "#6B7280", fontSize: "0.95rem", lineHeight: 1.55 }}>
+            <p style={{ margin: 0, maxWidth: 500, color: "#555", fontSize: "0.95rem", lineHeight: 1.55 }}>
               Pick a package, verify your details, pay securely via Razorpay, and receive your invoice by email.
             </p>
           </div>
-          <div style={{ padding: 20, border: "1px solid #E5E7EB", borderRadius: 12, background: "#FFFFFF" }}>
-            <p style={{ margin: "0 0 12px", color: "#6B7280", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          <div style={{ padding: 20, border: "1px solid #efe6dd", borderRadius: 12, background: "#fbf7f3" }}>
+            <p style={{ margin: "0 0 12px", color: "#8a6a55", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Included after payment
             </p>
             <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 11 }}>
@@ -131,8 +131,8 @@ export default function PublicPackages() {
                 { icon: "✓", text: "GST invoice (PDF)" },
                 { icon: "✓", text: "Welcome & onboarding steps" },
               ].map((item) => (
-                <li key={item.text} style={{ display: "flex", alignItems: "center", gap: 10, color: "#1A1A1A", fontSize: "0.86rem" }}>
-                  <span style={{ color: "#C55418", fontWeight: 700 }}>{item.icon}</span>
+                <li key={item.text} style={{ display: "flex", alignItems: "center", gap: 10, color: "#3f3a36", fontSize: "0.86rem" }}>
+                  <span style={{ color: "#8D3118", fontWeight: 700 }}>{item.icon}</span>
                   {item.text}
                 </li>
               ))}
@@ -142,17 +142,17 @@ export default function PublicPackages() {
 
         {/* Section head */}
         <div style={{ marginBottom: 22 }}>
-          <h2 style={{ margin: "0 0 5px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", color: "#1A1A1A" }}>
+          <h2 style={{ margin: "0 0 5px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", color: "#111" }}>
             Our packages
           </h2>
-          <p style={{ margin: 0, color: "#6B7280", fontSize: "0.9rem" }}>
+          <p style={{ margin: 0, color: "#646464", fontSize: "0.9rem" }}>
             Select a service category, choose your plan, and proceed to checkout.
           </p>
         </div>
 
         {/* Category switcher */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", background: "#fff", border: "1px solid #E5E7EB", borderRadius: 16, padding: 5, gap: 4, boxShadow: "0 2px 10px rgba(136,76,45,0.07)" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#fff", border: "1px solid #e5d8d1", borderRadius: 16, padding: 5, gap: 4, boxShadow: "0 2px 10px rgba(136,76,45,0.07)" }}>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
@@ -165,8 +165,8 @@ export default function PublicPackages() {
                   borderRadius: 12,
                   cursor: "pointer",
                   transition: "background 0.18s, color 0.18s, box-shadow 0.18s",
-                  background: activeCategory === cat ? "#C55418" : "transparent",
-                  color: activeCategory === cat ? "#fff" : "#6B7280",
+                  background: activeCategory === cat ? "#8D3118" : "transparent",
+                  color: activeCategory === cat ? "#fff" : "#6c6355",
                   boxShadow: activeCategory === cat ? "0 2px 8px rgba(136,76,45,0.22)" : "none",
                   whiteSpace: "nowrap",
                 }}
@@ -190,30 +190,30 @@ export default function PublicPackages() {
                   flexDirection: "column",
                   gap: 14,
                   padding: "28px 26px",
-                  border: featured ? "1px solid #C55418" : "1px solid #E5E7EB",
+                  border: featured ? "1px solid #8D3118" : "1px solid #ececec",
                   borderRadius: 14,
                   background: "#ffffff",
                   boxShadow: featured
-                    ? "0 0 0 1px #C55418 inset, 0 18px 40px rgba(150,77,10,0.12)"
+                    ? "0 0 0 1px #8D3118 inset, 0 18px 40px rgba(150,77,10,0.12)"
                     : "0 14px 34px rgba(0,0,0,0.04)",
                   transition: "border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease",
                   cursor: "default",
                 }}
-                onMouseEnter={(e) => { if (!featured) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = "#6B7280"; } }}
-                onMouseLeave={(e) => { if (!featured) { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "#E5E7EB"; } }}
+                onMouseEnter={(e) => { if (!featured) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = "#d8c2b9"; } }}
+                onMouseLeave={(e) => { if (!featured) { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "#ececec"; } }}
               >
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                   <div>
-                    <p style={{ margin: "0 0 5px", color: "#6B7280", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                    <p style={{ margin: "0 0 5px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                       {activeCategory}
                     </p>
-                    <h3 style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#1A1A1A" }}>
+                    <h3 style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
                       {pkg.name}
                     </h3>
                   </div>
                   {featured && (
-                    <span style={{ flexShrink: 0, background: "#FFFFFF", color: "#C55418", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999 }}>
+                    <span style={{ flexShrink: 0, background: "#fff1ec", color: "#8D3118", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999 }}>
                       Popular
                     </span>
                   )}
@@ -221,19 +221,19 @@ export default function PublicPackages() {
 
                 {/* Price */}
                 <div>
-                  <p style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "2.1rem", fontWeight: 500, color: "#1A1A1A" }}>
+                  <p style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
                     {money(pkg.price)}
                   </p>
-                  <p style={{ margin: "4px 0 0", color: "#6B7280", fontSize: "0.84rem" }}>
+                  <p style={{ margin: "4px 0 0", color: "#646464", fontSize: "0.84rem" }}>
                     {pkg.duration}
                   </p>
                 </div>
 
                 {/* Inclusions */}
-                <ul style={{ listStyle: "none", margin: "4px 0 0", padding: "16px 0 6px", borderTop: "1px solid #FFFFFF", display: "grid", gap: 11, flex: 1 }}>
+                <ul style={{ listStyle: "none", margin: "4px 0 0", padding: "16px 0 6px", borderTop: "1px solid #f1f1f1", display: "grid", gap: 11, flex: 1 }}>
                   {(pkg.includes || []).map((item) => (
-                    <li key={item} style={{ display: "flex", gap: 10, color: "#1A1A1A", fontSize: "0.88rem", lineHeight: 1.4 }}>
-                      <span style={{ color: "#C55418", fontWeight: 700, flexShrink: 0 }}>✓</span>
+                    <li key={item} style={{ display: "flex", gap: 10, color: "#444", fontSize: "0.88rem", lineHeight: 1.4 }}>
+                      <span style={{ color: "#8D3118", fontWeight: 700, flexShrink: 0 }}>✓</span>
                       {item}
                     </li>
                   ))}
@@ -255,19 +255,19 @@ export default function PublicPackages() {
                     textDecoration: "none",
                     textAlign: "center",
                     lineHeight: "52px",
-                    border: featured ? "none" : "1px solid #E5E7EB",
-                    background: featured ? "#C55418" : "#ffffff",
-                    color: featured ? "#ffffff" : "#1A1A1A",
+                    border: featured ? "none" : "1px solid #dcdcdc",
+                    background: featured ? "#8D3118" : "#ffffff",
+                    color: featured ? "#ffffff" : "#111111",
                     transition: "background 0.15s, color 0.15s, border-color 0.15s",
                     boxSizing: "border-box",
                   }}
                   onMouseEnter={(e) => {
-                    if (featured) { e.currentTarget.style.background = "#C55418"; }
-                    else { e.currentTarget.style.borderColor = "#C55418"; e.currentTarget.style.color = "#C55418"; }
+                    if (featured) { e.currentTarget.style.background = "#6E2412"; }
+                    else { e.currentTarget.style.borderColor = "#8D3118"; e.currentTarget.style.color = "#8D3118"; }
                   }}
                   onMouseLeave={(e) => {
-                    if (featured) { e.currentTarget.style.background = "#C55418"; }
-                    else { e.currentTarget.style.borderColor = "#E5E7EB"; e.currentTarget.style.color = "#1A1A1A"; }
+                    if (featured) { e.currentTarget.style.background = "#8D3118"; }
+                    else { e.currentTarget.style.borderColor = "#dcdcdc"; e.currentTarget.style.color = "#111111"; }
                   }}
                 >
                   Continue to Checkout →
@@ -285,20 +285,20 @@ export default function PublicPackages() {
           gap: 24,
           marginTop: 36,
           padding: "32px 36px",
-          border: "1px solid #FFFFFF",
+          border: "1px solid #efefef",
           borderRadius: 14,
           background: "#ffffff",
           boxShadow: "0 14px 34px rgba(0,0,0,0.04)",
           flexWrap: "wrap",
         }}>
           <div>
-            <p style={{ margin: "0 0 6px", color: "#6B7280", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            <p style={{ margin: "0 0 6px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Custom Package Plan
             </p>
-            <h3 style={{ margin: "0 0 8px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#1A1A1A" }}>
+            <h3 style={{ margin: "0 0 8px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
               Need something tailored to your business?
             </h3>
-            <p style={{ margin: 0, color: "#6B7280", fontSize: "0.9rem", lineHeight: 1.55 }}>
+            <p style={{ margin: 0, color: "#555", fontSize: "0.9rem", lineHeight: 1.55 }}>
               Tell us about your requirements and we'll put together a custom plan that fits your goals, timeline, and budget.
             </p>
           </div>
@@ -308,7 +308,7 @@ export default function PublicPackages() {
               flexShrink: 0,
               display: "inline-block",
               padding: "14px 28px",
-              background: "#C55418",
+              background: "#8D3118",
               color: "#fff",
               fontWeight: 800,
               fontSize: "0.78rem",
@@ -318,26 +318,26 @@ export default function PublicPackages() {
               borderRadius: 10,
               transition: "background 0.15s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "#C55418"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#C55418"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#6E2412"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#8D3118"; }}
           >
             Get a Custom Quote
           </a>
         </div>
 
         {/* Footer */}
-        <footer style={{ marginTop: 56, borderTop: "1px solid #FFFFFF", paddingTop: 28, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        <footer style={{ marginTop: 56, borderTop: "1px solid #efefef", paddingTop: 28, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <strong style={{ fontSize: "0.9rem", color: "#1A1A1A" }}>The Copper Studio</strong>
-            <small style={{ display: "block", marginTop: 3, color: "#6B7280", fontSize: "0.78rem" }}>
+            <strong style={{ fontSize: "0.9rem", color: "#111" }}>The Copper Studio</strong>
+            <small style={{ display: "block", marginTop: 3, color: "#999", fontSize: "0.78rem" }}>
               © 2024 The Copper Studio. Secure checkout guaranteed.
             </small>
           </div>
           <nav style={{ display: "flex", gap: 20 }}>
             {["Privacy Policy", "Terms of Service", "Support"].map((link) => (
-              <a key={link} href="#" style={{ fontSize: "0.82rem", color: "#6B7280", textDecoration: "none" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#C55418"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#6B7280"; }}
+              <a key={link} href="#" style={{ fontSize: "0.82rem", color: "#888", textDecoration: "none" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#8D3118"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#888"; }}
               >{link}</a>
             ))}
           </nav>

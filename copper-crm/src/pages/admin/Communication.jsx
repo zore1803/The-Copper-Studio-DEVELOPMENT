@@ -99,7 +99,7 @@ export default function Communication() {
           <nav className="mb-2 flex gap-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
             <span>Communication</span>
             <span>/</span>
-            <span className="text-[#C55418]">{selectedCategory} Templates</span>
+            <span className="text-[#2563EB]">{selectedCategory} Templates</span>
           </nav>
           <h1 className="text-2xl font-bold tracking-tight text-gray-950">{selected.name}</h1>
           {templatesInCategory.length > 1 && (
@@ -110,7 +110,7 @@ export default function Communication() {
                   type="button"
                   onClick={() => setSelectedId(t.id)}
                   className={`rounded-full border px-3 py-1 text-xs font-bold transition-colors ${
-                    t.id === selectedId ? "border-[#C55418] bg-blue-50 text-[#C55418]" : "border-gray-200 text-gray-500 hover:bg-gray-50"
+                    t.id === selectedId ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-500 hover:bg-gray-50"
                   }`}
                 >
                   {t.name}
@@ -139,7 +139,7 @@ export default function Communication() {
                     type="button"
                     onClick={() => selectCategory(category)}
                     className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-left text-sm font-medium transition-colors ${
-                      isActive ? "bg-[#C55418] text-white" : "text-gray-500 hover:bg-gray-50"
+                      isActive ? "bg-[#2563EB] text-white" : "text-gray-500 hover:bg-gray-50"
                     }`}
                   >
                     <span>{category}</span>
@@ -176,7 +176,7 @@ export default function Communication() {
               <button
                 type="button"
                 onClick={() => setChannel("email")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold ${channel === "email" ? "bg-gray-100 text-[#C55418]" : "text-gray-400 hover:bg-gray-50"}`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-bold ${channel === "email" ? "bg-gray-100 text-[#2563EB]" : "text-gray-400 hover:bg-gray-50"}`}
               >
                 <Mail size={16} /> Email
               </button>
@@ -205,12 +205,12 @@ export default function Communication() {
                 <span className="mb-1.5 block text-xs font-bold text-gray-600">Message Body</span>
                 <div className="overflow-hidden rounded-lg border border-gray-200">
                   <div className="flex gap-4 border-b border-gray-100 bg-gray-50 px-4 py-2">
-                    <Bold size={16} className="text-gray-400 hover:text-[#C55418]" />
-                    <Italic size={16} className="text-gray-400 hover:text-[#C55418]" />
-                    <Link2 size={16} className="text-gray-400 hover:text-[#C55418]" />
-                    <List size={16} className="text-gray-400 hover:text-[#C55418]" />
+                    <Bold size={16} className="text-gray-400 hover:text-[#2563EB]" />
+                    <Italic size={16} className="text-gray-400 hover:text-[#2563EB]" />
+                    <Link2 size={16} className="text-gray-400 hover:text-[#2563EB]" />
+                    <List size={16} className="text-gray-400 hover:text-[#2563EB]" />
                     <div className="mt-1 h-4 w-px bg-gray-200" />
-                    <Variable size={16} className="text-gray-400 hover:text-[#C55418]" />
+                    <Variable size={16} className="text-gray-400 hover:text-[#2563EB]" />
                   </div>
                   <textarea
                     ref={bodyRef}
@@ -232,7 +232,7 @@ export default function Communication() {
                   key={variable}
                   type="button"
                   onClick={() => insertVariable(`{{${variable}}}`)}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 transition-colors hover:border-[#C55418] hover:text-[#C55418]"
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 transition-colors hover:border-[#2563EB] hover:text-[#2563EB]"
                 >
                   {variable}
                 </button>
@@ -277,14 +277,14 @@ export default function Communication() {
                       <p key={index} className={line ? "" : "h-2"}>{line}</p>
                     ))}
                     {body.includes("{{portal_link}}") && (
-                      <a href={communicationPreviewSample.portal_link} className="inline-block rounded-lg bg-[#C55418] px-6 py-3 text-sm font-bold text-white">
+                      <a href={communicationPreviewSample.portal_link} className="inline-block rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-bold text-white">
                         Access Client Portal
                       </a>
                     )}
                   </div>
                 </>
               ) : (
-                <div className="min-h-[420px] bg-[#E5E7EB] p-6">
+                <div className="min-h-[420px] bg-[#e5ddd5] p-6">
                   <div className="max-w-[85%] rounded-lg rounded-tl-none bg-white px-4 py-3 text-sm leading-relaxed text-gray-900 shadow-sm">
                     {previewBody.split("\n").map((line, index) => <p key={index}>{line}</p>)}
                   </div>

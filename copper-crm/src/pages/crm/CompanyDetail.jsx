@@ -31,7 +31,7 @@ const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
 function LinkedInGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#C55418" />
+      <circle cx="28" cy="28" r="28" fill="#1877B5" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -47,11 +47,11 @@ function InstagramGlyph(props) {
     <svg viewBox="0 0 56 56" {...props}>
       <defs>
         <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#C55418" />
-          <stop offset="25%" stopColor="#C55418" />
-          <stop offset="50%" stopColor="#C55418" />
-          <stop offset="75%" stopColor="#C55418" />
-          <stop offset="100%" stopColor="#C55418" />
+          <stop offset="0%" stopColor="#FED576" />
+          <stop offset="25%" stopColor="#F47133" />
+          <stop offset="50%" stopColor="#BC3081" />
+          <stop offset="75%" stopColor="#C92F88" />
+          <stop offset="100%" stopColor="#8B3AB5" />
         </linearGradient>
       </defs>
       <rect width="56" height="56" rx="14" fill="url(#igGradient)" />
@@ -65,7 +65,7 @@ function InstagramGlyph(props) {
 function FacebookGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#C55418" />
+      <circle cx="28" cy="28" r="28" fill="#1877F2" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -79,7 +79,7 @@ function FacebookGlyph(props) {
 function XGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <rect width="56" height="56" rx="12" fill="#1A1A1A" />
+      <rect width="56" height="56" rx="12" fill="#000" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -110,14 +110,14 @@ function SocialIconLink({ href, icon: Icon, label }) {
 }
 
 const WEBSITE_BRAND_STYLES = {
-  Website: { color: "#C55418", bg: "#FFFFFF" },
-  "Personal site": { color: "#C55418", bg: "#FFFFFF" },
+  Website: { color: "#0EA5E9", bg: "#E0F2FE" },
+  "Personal site": { color: "#7C3AED", bg: "#EFE6FD" },
 };
 
 function WebsiteIconLink({ href, icon: Icon, label }) {
   if (!href) return null;
   const url = /^https?:\/\//i.test(href) ? href : `https://${href}`;
-  const brand = WEBSITE_BRAND_STYLES[label] || { color: "#6b7280", bg: "#FFFFFF" };
+  const brand = WEBSITE_BRAND_STYLES[label] || { color: "#6b7280", bg: "#f3f4f6" };
   return (
     <a
       href={url}
@@ -143,7 +143,7 @@ function WebsiteTextLink({ href }) {
       target="_blank"
       rel="noopener noreferrer"
       title={href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[#6B7280] bg-white px-2.5 py-1 text-xs font-semibold text-[#C55418] shadow-sm transition-colors hover:bg-[#E5E7EB]"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-2.5 py-1 text-xs font-semibold text-[#8D3118] shadow-sm transition-colors hover:bg-[#fff8f6]"
     >
       <Globe size={12} className="shrink-0" />
       {label}
@@ -172,11 +172,11 @@ function formatINR(value) {
 
 function EmptyState({ icon: Icon, title, text, action }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#C55418]">
+    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
         <Icon size={20} />
       </div>
-      <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
+      <p className="text-sm font-semibold text-[#111827]">{title}</p>
       {text && <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">{text}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -187,12 +187,12 @@ function KpiChip({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#6b7280]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 text-base font-bold leading-tight text-[#1A1A1A]" title={String(value)}>{value}</p>
+          <p className="mt-0.5 text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
         </div>
       </div>
     </div>
@@ -233,7 +233,7 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
       <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactName}</p>
+            <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
             <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -242,14 +242,14 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
           </div>
         </div>
         {!matchedUser && (
-          <p className="mt-3 text-xs text-[#6B7280]">No client portal account found for {contact.email || "this contact"}. Send a portal invite from Edit Contact first.</p>
+          <p className="mt-3 text-xs text-[#9ca3af]">No client portal account found for {contact.email || "this contact"}. Send a portal invite from Edit Contact first.</p>
         )}
         {matchedUser && (
           <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
             <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Client Account</p>
-            <p className="mt-0.5 text-sm font-semibold text-[#1A1A1A]">{matchedUser.name}</p>
+            <p className="mt-0.5 text-sm font-semibold text-[#111827]">{matchedUser.name}</p>
             <p className="text-xs text-[#6b7280]">{matchedUser.email}</p>
-            <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Projects visible</p>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible</p>
             <p className="text-xs text-[#6b7280]">{linkedProjectNames.length ? linkedProjectNames.join(", ") : "None yet"}</p>
           </div>
         )}
@@ -258,12 +258,12 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
   }
 
   return (
-    <div className="rounded-xl border-2 border-[#C55418] bg-white p-4">
-      <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactName}</p>
+    <div className="rounded-xl border-2 border-[#8D3118] bg-white p-4">
+      <p className="truncate text-sm font-semibold text-[#111827]">{contactName}</p>
       <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
 
       <div className="mt-3 space-y-1.5">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Projects visible in their portal</p>
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Projects visible in their portal</p>
         {projects.length ? (
           projects.map((project) => {
             const id = String(project._id || project.id);
@@ -271,10 +271,10 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#C55418] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
               >
-                <span className="font-semibold text-[#1A1A1A]">{project.name}</span>
-                <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#E5E7EB] accent-[#C55418]" />
+                <span className="font-semibold text-[#111827]">{project.name}</span>
+                <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]" />
               </label>
             );
           })
@@ -367,11 +367,11 @@ function InvoicePanel({ invoice, onClose, onDownload, onMarkPaid }) {
       }
     >
       <div className="mb-4 rounded-xl border border-[#e5e7eb] bg-white p-5">
-        <p className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">PDF Preview</p>
-        <div className="mt-4 rounded-lg border border-dashed border-[#6B7280] bg-[#FFFFFF] p-5">
-          <p className="text-lg font-bold text-[#1A1A1A]">The Copper Studio</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">PDF Preview</p>
+        <div className="mt-4 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] p-5">
+          <p className="text-lg font-bold text-[#111827]">The Copper Studio</p>
           <p className="mt-1 text-sm text-[#6b7280]">Invoice {invoice.invoiceId || invoice.id || invoice._id}</p>
-          <p className="mt-5 text-2xl font-bold text-[#C55418]">{formatINR(parseMoney(invoice.total || invoice.amount))}</p>
+          <p className="mt-5 text-2xl font-bold text-[#8D3118]">{formatINR(parseMoney(invoice.total || invoice.amount))}</p>
         </div>
       </div>
       <div className="space-y-4">
@@ -412,10 +412,10 @@ function ContactDetailPanel({ contact, projects, meetings, onClose, onEdit, onDe
       }
     >
       <div className="space-y-5">
-        <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-[#FFFFFF] p-4">
+        <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-4">
           <Avatar name={name} size="md" />
           <div>
-            <p className="font-bold text-[#1A1A1A]">{name}</p>
+            <p className="font-bold text-[#111827]">{name}</p>
             <p className="text-sm text-[#6b7280]">{contact.email || "No email"}</p>
           </div>
         </div>
@@ -446,15 +446,15 @@ function ContactDetailPanel({ contact, projects, meetings, onClose, onEdit, onDe
 function Input({ label, value, onChange, type = "text", disabled = false, span = false, hint }) {
   return (
     <label className={`block ${span ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
         value={value || ""}
         disabled={disabled}
         onChange={(event) => onChange?.(event.target.value)}
-        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
+        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
-      {hint && <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>}
+      {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
   );
 }
@@ -462,12 +462,12 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
 function Textarea({ label, value, onChange, span = false }) {
   return (
     <label className={`block ${span ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <textarea
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -477,11 +477,11 @@ function Select({ label, value, onChange, options = [], span = false }) {
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
     <label className={`block ${span ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">Select…</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -492,9 +492,9 @@ function Select({ label, value, onChange, options = [], span = false }) {
 
 function DetailRow({ label, value }) {
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-[#FFFFFF] p-3">
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-[#1A1A1A]">{value || "Not added"}</p>
+    <div className="rounded-xl border border-[#e5e7eb] bg-[#f9fafb] p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#111827]">{value || "Not added"}</p>
     </div>
   );
 }
@@ -677,7 +677,7 @@ export default function CompanyDetail() {
     return (
       <div className="m-6 rounded-xl border border-[#e5e7eb] bg-white p-12 text-center">
         <p className="text-sm font-semibold text-[#6b7280]">Company not found.</p>
-        <button onClick={() => navigate("/admin/companies")} className="mt-4 text-sm font-semibold text-[#C55418] hover:underline">
+        <button onClick={() => navigate("/admin/companies")} className="mt-4 text-sm font-semibold text-[#8D3118] hover:underline">
           Back to Companies
         </button>
       </div>
@@ -956,20 +956,20 @@ export default function CompanyDetail() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#FFFFFF]">
+    <div className="flex min-h-full flex-col bg-[#f8fafc]">
       <div className="border-b border-[#e5e7eb] bg-white">
         <div className="px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#FFFFFF]">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
                 {company.logo ? (
                   <img src={company.logo} alt={`${company.name} logo`} className="h-full w-full object-cover" />
                 ) : (
-                  <Building2 size={24} className="text-[#C55418]" />
+                  <Building2 size={24} className="text-[#8D3118]" />
                 )}
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-2xl font-bold text-[#1A1A1A]">{company.name}</h2>
+                <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
                   {company.industry && <span>{company.industry}</span>}
                   <WebsiteTextLink href={company.website} />
@@ -990,7 +990,7 @@ export default function CompanyDetail() {
               <button
                 onClick={openLinkClient}
                 title="Link Client Portal"
-                className={`flex h-9 items-center rounded-full border border-[#6B7280] bg-white text-[#1A1A1A] transition-colors hover:bg-[#E5E7EB] ${
+                className={`flex h-9 items-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec] ${
                   linkedClientContacts.length ? "gap-1.5 pl-3 pr-1.5" : "w-9 justify-center"
                 }`}
               >
@@ -1007,7 +1007,7 @@ export default function CompanyDetail() {
                       </span>
                     ))}
                     {linkedClientContacts.length > 4 && (
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#6B7280] text-[10px] font-bold text-white ring-2 ring-white">
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
                         +{linkedClientContacts.length - 4}
                       </span>
                     )}
@@ -1021,25 +1021,25 @@ export default function CompanyDetail() {
                   <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
                     <button
                       onClick={() => { setCreatingProject(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
                       <FolderKanban size={14} /> Add Project
                     </button>
                     <button
                       onClick={() => { setEditingContact({}); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
                       <Users size={14} /> Add Contact
                     </button>
                     <button
                       onClick={() => { setCreatingTask(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
                       <StickyNote size={14} /> Add Task
                     </button>
                     <button
                       onClick={() => { setUploadingDocument(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
                       <FolderOpen size={14} /> Add Document
                     </button>
@@ -1049,7 +1049,7 @@ export default function CompanyDetail() {
             </div>
           </div>
 
-          <div className="mt-5 rounded-xl border border-[#FFFFFF] bg-[#FFFFFF]">
+          <div className="mt-5 rounded-xl border border-[#FFFFFF] bg-[#fafafa]">
             <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
               <InfoLine label="GSTIN" value={company.gstin} />
               <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
@@ -1061,7 +1061,7 @@ export default function CompanyDetail() {
                 onClick={() => setCompanyDetailsOpen((open) => !open)}
                 aria-expanded={companyDetailsOpen}
                 title={companyDetailsOpen ? "Hide company details" : "Show company details"}
-                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#E5E7EB] bg-white text-[#C55418] transition-colors hover:bg-[#E5E7EB] sm:col-start-3 lg:col-start-auto"
+                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
               >
                 <ChevronDown size={18} className={`transition-transform ${companyDetailsOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1090,13 +1090,13 @@ export default function CompanyDetail() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${activeTab === tab ? "bg-[#C55418] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${activeTab === tab ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
               >
                 {tab}
                 {Boolean(tabCounts[tab]) && (
                   <span
                     className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
-                      activeTab === tab ? "bg-white/20 text-white" : "bg-[#e5e7eb] text-[#1A1A1A]"
+                      activeTab === tab ? "bg-white/20 text-white" : "bg-[#e5e7eb] text-[#374151]"
                     }`}
                   >
                     {tabCounts[tab]}
@@ -1261,8 +1261,8 @@ export default function CompanyDetail() {
 function Section({ title, action, flush = false, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between bg-[#FFFFFF] border-b border-[#E5E7EB] px-5 py-4">
-        <h3 className="text-sm font-bold text-[#1A1A1A]">{title}</h3>
+      <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
+        <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
       <div className={flush ? "bg-white" : "bg-white p-5"}>{children}</div>
@@ -1276,12 +1276,12 @@ function Section({ title, action, flush = false, children }) {
 function ModuleSearch({ value, onChange, placeholder }) {
   return (
     <div className="flex h-11 items-center gap-2 rounded-full border border-[#e5e7eb] bg-white px-3.5">
-      <Search size={14} className="text-[#6B7280]" />
+      <Search size={14} className="text-[#9ca3af]" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-44 bg-transparent text-sm outline-none placeholder:text-[#6B7280]"
+        className="w-44 bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
       />
     </div>
   );
@@ -1323,12 +1323,12 @@ function ActivityTimeline({ items, full = false }) {
             const Icon = item.icon || MessageSquare;
             return (
               <div key={`${item.type}-${item.title}-${index}`} className="flex gap-3">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#FFFFFF] text-[#C55418]">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
                   <Icon size={15} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">{item.dateLabel}</p>
-                  <p className="mt-0.5 text-sm font-semibold text-[#1A1A1A]">{item.title}</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{item.dateLabel}</p>
+                  <p className="mt-0.5 text-sm font-semibold text-[#111827]">{item.title}</p>
                   {full && <p className="text-xs text-[#6b7280]">{item.type}</p>}
                 </div>
               </div>
@@ -1344,8 +1344,8 @@ function InfoLine({ label, value }) {
   const displayValue = value === 0 ? "0" : value || "Not added";
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-      <p className="mt-0.5 break-words text-[#1A1A1A]">{displayValue}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-0.5 break-words text-[#374151]">{displayValue}</p>
     </div>
   );
 }
@@ -1354,30 +1354,30 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#6B7280]">Project</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Package</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Progress</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Due</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Project Manager</th>
-            <th className="py-3 pr-4 text-right text-xs font-medium text-[#6B7280]">Budget</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Package</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Progress</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project Manager</th>
+            <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Budget</th>
             <th className="py-3 pl-2 pr-5 w-10" />
           </tr>
         </thead>
         <tbody className="bg-white">
           {projects.map((project) => (
-            <tr key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="cursor-pointer border-b border-[#FFFFFF] hover:bg-[#E5E7EB]">
-              <td className="py-3 pl-5 pr-4 font-semibold text-[#1A1A1A]">{project.name || "Untitled project"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{project.packageName || project.package || "Not linked"}</td>
+            <tr key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="cursor-pointer border-b border-[#f9fafb] hover:bg-[#fafafa]">
+              <td className="py-3 pl-5 pr-4 font-semibold text-[#111827]">{project.name || "Untitled project"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{project.packageName || project.package || "Not linked"}</td>
               <td className="py-3 pr-4"><StatusBadge status={project.status || project.currentPhase || "Not Started"} /></td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{Number(project.progress) || 0}%</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{project.dueDate || project.expectedEndDate || "Not set"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{project.projectManager || project.manager || "Unassigned"}</td>
-              <td className="py-3 pr-4 text-right font-semibold text-[#1A1A1A]">{formatINR(Number(project.budget || project.value || 0))}</td>
+              <td className="py-3 pr-4 text-[#374151]">{Number(project.progress) || 0}%</td>
+              <td className="py-3 pr-4 text-[#374151]">{project.dueDate || project.expectedEndDate || "Not set"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{project.projectManager || project.manager || "Unassigned"}</td>
+              <td className="py-3 pr-4 text-right font-semibold text-[#111827]">{formatINR(Number(project.budget || project.value || 0))}</td>
               <td className="py-3 pl-2 pr-5 text-right" onClick={(event) => event.stopPropagation()}>
-                <button onClick={() => onDelete(project)} className="rounded-lg p-2 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                <button onClick={() => onDelete(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -1396,7 +1396,7 @@ function WorkspaceToggle({ options, value, onChange }) {
         <button
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#C55418] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
+          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
         >
           {option}
         </button>
@@ -1447,7 +1447,7 @@ function ProjectBoard({ projects, companyId, onOpen }) {
           <div className="space-y-2">
             {projects.filter((project) => (project.status || project.currentPhase || "Unassigned") === stage).map((project) => (
               <button key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="w-full rounded-lg border border-[#e5e7eb] bg-white p-3 text-left">
-                <p className="font-semibold text-[#1A1A1A]">{project.name}</p>
+                <p className="font-semibold text-[#111827]">{project.name}</p>
                 <p className="text-xs text-[#6b7280]">{project.progress || 0}% / {project.packageName || "No package"}</p>
               </button>
             ))}
@@ -1463,9 +1463,9 @@ function ProjectTimeline({ projects }) {
     <div className="space-y-3">
       {projects.map((project) => (
         <div key={project.id || project._id} className="flex gap-3 rounded-xl border border-[#e5e7eb] bg-white p-4">
-          <div className="mt-1 h-3 w-3 rounded-full bg-[#C55418]" />
+          <div className="mt-1 h-3 w-3 rounded-full bg-[#8D3118]" />
           <div>
-            <p className="font-semibold text-[#1A1A1A]">{project.name}</p>
+            <p className="font-semibold text-[#111827]">{project.name}</p>
             <p className="text-sm text-[#6b7280]">{project.startDate || "No start"} to {project.dueDate || project.expectedEndDate || "No due date"} / {project.status || project.currentPhase || "Not started"}</p>
           </div>
         </div>
@@ -1487,11 +1487,11 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
           <button
             key={project.id || project._id}
             onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)}
-            className="rounded-xl border border-[#e5e7eb] bg-white p-5 text-left hover:border-[#C55418]/40 hover:shadow-sm"
+            className="rounded-xl border border-[#e5e7eb] bg-white p-5 text-left hover:border-[#8D3118]/40 hover:shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-base font-bold text-[#1A1A1A]">{project.name || "Untitled project"}</p>
+                <p className="text-base font-bold text-[#111827]">{project.name || "Untitled project"}</p>
                 <p className="mt-1 text-sm text-[#6b7280]">{project.packageName || project.package || "No package linked"}</p>
               </div>
               <StatusBadge status={project.status || project.currentPhase || "Not Started"} />
@@ -1509,8 +1509,8 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[#FFFFFF]">
-                <div className="h-full rounded-full bg-[#C55418]" style={{ width: `${Math.min(progress, 100)}%` }} />
+              <div className="h-2 overflow-hidden rounded-full bg-[#f3f4f6]">
+                <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${Math.min(progress, 100)}%` }} />
               </div>
             </div>
           </button>
@@ -1523,8 +1523,8 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
 function DetailMini({ label, value }) {
   return (
     <div className="rounded-lg bg-white p-3">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-      <p className="mt-1 truncate font-semibold text-[#1A1A1A]">{value || "Not added"}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-1 truncate font-semibold text-[#374151]">{value || "Not added"}</p>
     </div>
   );
 }
@@ -1533,18 +1533,18 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#6B7280]">Contact</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Email</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Phone</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">WhatsApp</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">LinkedIn</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Status</th>
-            <th className="py-3 pr-5 text-right text-xs font-medium text-[#6B7280]">Actions</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Contact</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Email</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Phone</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">WhatsApp</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">LinkedIn</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#FFFFFF] bg-white">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {contacts.map((contact) => {
             const name = contact.name || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""}`.trim();
             return (
@@ -1553,20 +1553,20 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
                 <div className="flex items-center gap-3">
                   <Avatar name={name} size="sm" />
                   <div>
-                    <p className="font-semibold text-[#1A1A1A]">{name || "Unnamed contact"}</p>
+                    <p className="font-semibold text-[#111827]">{name || "Unnamed contact"}</p>
                     <p className="text-xs text-[#6b7280]">{contact.designation || "No designation"}</p>
                   </div>
                 </div>
               </td>
-              <td className="py-3 pr-4 text-[#1A1A1A]"><span className="inline-flex items-center gap-1"><Mail size={12} /> {contact.email || "No email"}</span></td>
-              <td className="py-3 pr-4 text-[#1A1A1A]"><span className="inline-flex items-center gap-1"><Phone size={12} /> {contact.phone || "No phone"}</span></td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{contact.whatsapp || "No WhatsApp"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{contact.linkedin ? <a className="text-[#C55418] hover:underline" href={contact.linkedin} target="_blank" rel="noreferrer">Open</a> : "No LinkedIn"}</td>
+              <td className="py-3 pr-4 text-[#374151]"><span className="inline-flex items-center gap-1"><Mail size={12} /> {contact.email || "No email"}</span></td>
+              <td className="py-3 pr-4 text-[#374151]"><span className="inline-flex items-center gap-1"><Phone size={12} /> {contact.phone || "No phone"}</span></td>
+              <td className="py-3 pr-4 text-[#374151]">{contact.whatsapp || "No WhatsApp"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{contact.linkedin ? <a className="text-[#8D3118] hover:underline" href={contact.linkedin} target="_blank" rel="noreferrer">Open</a> : "No LinkedIn"}</td>
               <td className="py-3 pr-4"><StatusBadge status={contact.status || "Active"} /></td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#C55418]"><Eye size={14} /></button>
-                  <button onClick={() => onEdit(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#C55418]"><Edit2 size={14} /></button>
+                  <button onClick={() => onView(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onEdit(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Edit2 size={14} /></button>
                   <button onClick={() => onPrimary(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
                   <button onClick={() => onDelete(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
                 </div>
@@ -1583,32 +1583,32 @@ function InvoicesTable({ invoices, onView, onDownload }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#6B7280]">Invoice ID</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Amount</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Due Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Payment</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Transaction ID</th>
-            <th className="py-3 pr-5 text-right text-xs font-medium text-[#6B7280]">Actions</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Invoice ID</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Amount</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Payment</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Transaction ID</th>
+            <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#FFFFFF] bg-white">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {invoices.map((invoice) => (
             <tr key={invoice.id || invoice._id}>
               <td className="py-3 pl-5 pr-4 font-mono text-xs text-[#6b7280]">{invoice.invoiceId || invoice.id || invoice._id}</td>
-              <td className="py-3 pr-4 font-semibold text-[#1A1A1A]">{formatINR(parseMoney(invoice.total || invoice.amount))}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{invoice.date || invoice.createdAt || "No date"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{invoice.dueDate || "No due date"}</td>
+              <td className="py-3 pr-4 font-semibold text-[#111827]">{formatINR(parseMoney(invoice.total || invoice.amount))}</td>
+              <td className="py-3 pr-4 text-[#374151]">{invoice.date || invoice.createdAt || "No date"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{invoice.dueDate || "No due date"}</td>
               <td className="py-3 pr-4"><StatusBadge status={invoice.status || "Pending"} /></td>
               <td className="py-3 pr-4"><StatusBadge status={invoice.paymentStatus || invoice.status || "Pending"} /></td>
               <td className="py-3 pr-4 font-mono text-xs text-[#6b7280]">{invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked"}</td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#C55418]"><Eye size={14} /></button>
-                  <button onClick={() => onDownload(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#C55418]"><Download size={14} /></button>
+                  <button onClick={() => onView(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onDownload(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Download size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1651,7 +1651,7 @@ function TaskGantt({ tasks, projects }) {
           <div />
           <div className="relative h-6 border-b border-[#e5e7eb]">
             {months.map((month) => (
-              <span key={month.label + month.left} className="absolute top-0 -translate-x-1/2 text-[10px] font-bold uppercase text-[#6B7280]" style={{ left: `${month.left}%` }}>
+              <span key={month.label + month.left} className="absolute top-0 -translate-x-1/2 text-[10px] font-bold uppercase text-[#9ca3af]" style={{ left: `${month.left}%` }}>
                 {month.label}
               </span>
             ))}
@@ -1664,12 +1664,12 @@ function TaskGantt({ tasks, projects }) {
           return (
             <div key={task.id || task._id} className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-center">
               <div>
-                <p className="text-sm font-semibold text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</p>
+                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                 <p className="text-xs text-[#6b7280]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"} / {task.status || "Backlog"}</p>
               </div>
-              <div className="relative h-9 rounded-lg bg-[#FFFFFF]">
+              <div className="relative h-9 rounded-lg bg-[#f3f4f6]">
                 <div
-                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#C55418] px-1.5 text-[10px] font-bold text-white"
+                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#8D3118] px-1.5 text-[10px] font-bold text-white"
                   style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
                   title={dateRange}
                 >
@@ -1731,7 +1731,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             <button
               type="button"
               onClick={() => setView("Grid")}
-              className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#FFFFFF] text-[#C55418]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
+              className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="Grid view"
             >
               <LayoutGrid size={15} />
@@ -1739,7 +1739,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             <button
               type="button"
               onClick={() => setView("List")}
-              className={`rounded-full p-1.5 ${view === "List" ? "bg-[#FFFFFF] text-[#C55418]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
+              className={`rounded-full p-1.5 ${view === "List" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="List view"
             >
               <ListIcon size={15} />
@@ -1751,18 +1751,18 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
       }
     >
       {creatingGroup && (
-        <div className="mb-4 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] p-3">
+        <div className="mb-4 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
           <input
             autoFocus
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             placeholder="Group name, e.g. Client Onboarding"
-            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
-          <p className="mt-3 text-xs font-semibold text-[#1A1A1A]">Select folders to include in this group</p>
+          <p className="mt-3 text-xs font-semibold text-[#374151]">Select folders to include in this group</p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
             {categories.map((folder) => (
-              <label key={folder} className="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1A1A1A]">
+              <label key={folder} className="flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#374151]">
                 <input type="checkbox" checked={groupFolders.includes(folder)} onChange={() => toggleGroupFolder(folder)} />
                 {folder}
               </label>
@@ -1786,20 +1786,20 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenGroup(group)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenGroup(group)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#C55418]/40"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onDeleteGroup(group.name); }}
-                  className="absolute right-2 top-2 rounded-lg p-1.5 text-[#6B7280] hover:bg-red-50 hover:text-red-600"
+                  className="absolute right-2 top-2 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                   title="Delete group"
                 >
                   <Trash2 size={13} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#C55418]"><Layers size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
                   <div>
-                    <p className="font-bold text-[#1A1A1A]">{group.name}</p>
+                    <p className="font-bold text-[#111827]">{group.name}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files · {group.folders.join(", ")}</p>
                   </div>
                 </div>
@@ -1815,22 +1815,22 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenFolder(category)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#C55418]/40"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#C55418]"><FolderOpen size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
                   <div>
-                    <p className="font-bold text-[#1A1A1A]">{category}</p>
+                    <p className="font-bold text-[#111827]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>
                   </div>
                 </div>
                 <div className="mt-4 space-y-2">
                   {docs.slice(0, 3).map((doc) => (
-                    <div key={doc.id || doc._id || doc.fileName || doc.name} className="rounded-lg bg-white px-3 py-2 text-xs text-[#1A1A1A]">
+                    <div key={doc.id || doc._id || doc.fileName || doc.name} className="rounded-lg bg-white px-3 py-2 text-xs text-[#374151]">
                       {doc.fileName || doc.name || "Untitled document"}
                     </div>
                   ))}
-                  {!docs.length && <p className="text-xs text-[#6B7280]">No files yet.</p>}
+                  {!docs.length && <p className="text-xs text-[#9ca3af]">No files yet.</p>}
                 </div>
               </div>
             );
@@ -1853,18 +1853,18 @@ function DocumentList({ documents, onDelete }) {
         return (
           <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[#1A1A1A]">{name}</p>
+              <p className="truncate text-sm font-semibold text-[#111827]">{name}</p>
               <p className="text-xs text-[#6b7280]">
                 {(doc.fileType || "file").toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} {doc.category || doc.folder ? `· ${doc.category || doc.folder}` : ""} {doc.projectName ? `· ${doc.projectName}` : ""}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {canOpen ? (
-                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#C55418] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
+                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6E2412]">
                   View
                 </a>
               ) : (
-                <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#6B7280]">No file</span>
+                <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
               )}
               {onDelete ? (
                 <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
@@ -1893,16 +1893,16 @@ function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload })
             return (
               <div key={doc.id || doc._id || name} className="flex items-center justify-between gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[#1A1A1A]">{name}</p>
+                  <p className="truncate text-sm font-semibold text-[#111827]">{name}</p>
                   <p className="text-xs text-[#6b7280]">{(doc.fileType || "file").toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} {doc.projectName ? `· ${doc.projectName}` : ""}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {canOpen ? (
-                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#C55418] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
+                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6E2412]">
                       View
                     </a>
                   ) : (
-                    <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#6B7280]">No file</span>
+                    <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
                   )}
                   {onDelete ? (
                     <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
@@ -1944,7 +1944,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
           return (
             <div key={status} className="flex flex-col rounded-xl border border-[#e5e7eb] bg-white">
               <p className="px-3 pt-3 pb-2 text-xs font-bold uppercase tracking-wide text-[#6b7280]">
-                {status} <span className="ml-1 text-[#6B7280]">{columnTasks.length}</span>
+                {status} <span className="ml-1 text-[#9ca3af]">{columnTasks.length}</span>
               </p>
               <Droppable droppableId={status}>
                 {(provided, snapshot) => (
@@ -1962,7 +1962,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                             {...prov.draggableProps}
                             {...prov.dragHandleProps}
                             className={`cursor-grab rounded-lg border bg-white p-3 shadow-sm transition-[box-shadow,border-color] duration-200 active:cursor-grabbing ${
-                              snap.isDragging ? "border-[#C55418]/40 shadow-lg" : "border-[#e5e7eb] hover:border-[#C55418]/30 hover:shadow-md"
+                              snap.isDragging ? "border-[#8D3118]/40 shadow-lg" : "border-[#e5e7eb] hover:border-[#8D3118]/30 hover:shadow-md"
                             }`}
                             style={{
                               ...prov.draggableProps.style,
@@ -1971,10 +1971,10 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                           >
                             <div className={snap.isDragging ? "kanban-card-lift" : ""}>
                               <div className="flex items-start justify-between gap-2">
-                                <p className="text-sm font-semibold text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</p>
+                                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); onDelete(task); }}
-                                  className="shrink-0 rounded-lg p-1 text-[#6B7280] hover:bg-red-50 hover:text-red-600"
+                                  className="shrink-0 rounded-lg p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                                   title="Delete task"
                                 >
                                   <Trash2 size={13} />
@@ -1984,7 +1984,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                                 <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${TASK_PRIORITY_STYLE[task.priority] || TASK_PRIORITY_STYLE.Medium}`}>
                                   {task.priority || "Medium"}
                                 </span>
-                                <span className="text-[11px] text-[#6B7280]">{task.assignedTo || "Unassigned"}</span>
+                                <span className="text-[11px] text-[#9ca3af]">{task.assignedTo || "Unassigned"}</span>
                               </div>
                             </div>
                           </div>
@@ -1993,7 +1993,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                     ))}
                     {provided.placeholder}
                     {!columnTasks.length && (
-                      <div className="grid h-16 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#6B7280]">
+                      <div className="grid h-16 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#9ca3af]">
                         Drop here
                       </div>
                     )}
@@ -2060,28 +2060,28 @@ function TasksTable({ tasks, projects, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
+        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
           <tr>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Task</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Assigned To</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Priority</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Due Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#6B7280]">Project</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Task</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Assigned To</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Priority</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
             <th className="py-3 pr-4" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#FFFFFF] bg-white">
+        <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {tasks.map((task) => (
             <tr key={task.id || task._id}>
-              <td className="py-3 pr-4 font-semibold text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{task.assignedTo || task.assigned || "Unassigned"}</td>
+              <td className="py-3 pr-4 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{task.assignedTo || task.assigned || "Unassigned"}</td>
               <td className="py-3 pr-4"><StatusBadge status={task.priority || "Medium"} /></td>
               <td className="py-3 pr-4"><StatusBadge status={task.status || "Backlog"} /></td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{task.dueDate || task.deadline || "No due date"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
               <td className="py-3 pr-4 text-right">
-                <button onClick={() => onDelete(task)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete task">
+                <button onClick={() => onDelete(task)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -2182,39 +2182,39 @@ function CalendarTaskView({ tasks, onCreate }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#1A1A1A] hover:bg-[#E5E7EB]">← Prev</button>
-          <p className="text-sm font-bold text-[#1A1A1A]">{headerLabel}</p>
-          <button onClick={() => navigate(1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#1A1A1A] hover:bg-[#E5E7EB]">Next →</button>
+          <button onClick={() => navigate(-1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+          <p className="text-sm font-bold text-[#111827]">{headerLabel}</p>
+          <button onClick={() => navigate(1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
         </div>
         <WorkspaceToggle options={CALENDAR_VIEWS} value={calendarView} onChange={setCalendarView} />
       </div>
 
       {calendarView === "Month" && (
         <div className="overflow-hidden rounded-xl border border-[#e5e7eb]">
-          <div className="grid grid-cols-7 bg-[#FFFFFF]">
+          <div className="grid grid-cols-7 bg-[#f9fafb]">
             {WEEKDAY_LABELS.map((label) => (
-              <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{label}</div>
+              <div key={label} className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
             {monthCells.map((cell, index) => {
-              if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#FFFFFF] bg-white" />;
+              if (!cell) return <div key={`pad-${index}`} className="aspect-square border border-[#f3f4f6] bg-white" />;
               const isToday = sameDay(cell.date, todayDate);
               return (
                 <button
                   key={cell.date.toISOString()}
                   onClick={() => setSelectedDay(cell.date)}
-                  className="aspect-square border border-[#FFFFFF] bg-white p-1.5 text-left transition-colors hover:bg-[#E5E7EB]"
+                  className="aspect-square border border-[#f3f4f6] bg-white p-1.5 text-left transition-colors hover:bg-[#f9fafb]"
                 >
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#C55418] text-white" : "text-[#1A1A1A]"}`}>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-[#374151]"}`}>
                     {cell.date.getDate()}
                   </span>
                   {cell.tasks.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-0.5">
                       {cell.tasks.slice(0, 3).map((task) => (
-                        <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#C55418]" />
+                        <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#8D3118]" />
                       ))}
-                      {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#C55418]">+{cell.tasks.length - 3}</span>}
+                      {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#8D3118]">+{cell.tasks.length - 3}</span>}
                     </div>
                   )}
                 </button>
@@ -2232,15 +2232,15 @@ function CalendarTaskView({ tasks, onCreate }) {
               <button
                 key={date.toISOString()}
                 onClick={() => setSelectedDay(date)}
-                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#C55418]/40 ${isToday ? "border-[#C55418]/40" : "border-[#e5e7eb]"}`}
+                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#8D3118]/40 ${isToday ? "border-[#8D3118]/40" : "border-[#e5e7eb]"}`}
               >
-                <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{WEEKDAY_LABELS[date.getDay()]}</p>
-                <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#C55418] text-white" : "text-[#1A1A1A]"}`}>{date.getDate()}</span>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{WEEKDAY_LABELS[date.getDay()]}</p>
+                <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-[#374151]"}`}>{date.getDate()}</span>
                 <div className="mt-2 space-y-1">
                   {dayTasksList.slice(0, 3).map((task) => (
-                    <p key={task.id || task._id} className="truncate rounded bg-[#FFFFFF] px-1.5 py-1 text-[10px] font-semibold text-[#C55418]">{task.title || task.taskName || "Task"}</p>
+                    <p key={task.id || task._id} className="truncate rounded bg-[#fff1ec] px-1.5 py-1 text-[10px] font-semibold text-[#8D3118]">{task.title || task.taskName || "Task"}</p>
                   ))}
-                  {dayTasksList.length > 3 && <p className="text-[10px] font-bold text-[#C55418]">+{dayTasksList.length - 3} more</p>}
+                  {dayTasksList.length > 3 && <p className="text-[10px] font-bold text-[#8D3118]">+{dayTasksList.length - 3} more</p>}
                 </div>
               </button>
             );
@@ -2251,13 +2251,13 @@ function CalendarTaskView({ tasks, onCreate }) {
       {calendarView === "Day" && (
         <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-[#1A1A1A]">{dayTasks.length} task{dayTasks.length === 1 ? "" : "s"} due</p>
+            <p className="text-sm font-bold text-[#111827]">{dayTasks.length} task{dayTasks.length === 1 ? "" : "s"} due</p>
             <Button size="sm" onClick={() => onCreate(toDateInputValue(cursor))}><Plus size={14} /> New Task</Button>
           </div>
           <div className="mt-3 space-y-2">
             {dayTasks.length ? dayTasks.map((task) => (
               <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
-                <p className="text-sm font-semibold text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</p>
+                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                 <div className="mt-1.5 flex items-center gap-2">
                   <StatusBadge status={task.status || "Backlog"} />
                   <span className="text-xs text-[#6b7280]">{task.priority || "Medium"} priority · {task.assignedTo || "Unassigned"}</span>
@@ -2283,7 +2283,7 @@ function CalendarTaskView({ tasks, onCreate }) {
             <div className="space-y-2">
               {selectedTasks.map((task) => (
                 <div key={task.id || task._id} className="rounded-xl border border-[#e5e7eb] bg-white p-3">
-                  <p className="text-sm font-semibold text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                   <div className="mt-1.5 flex items-center gap-2">
                     <StatusBadge status={task.status || "Backlog"} />
                     <span className="text-xs text-[#6b7280]">{task.priority || "Medium"} priority · {task.assignedTo || "Unassigned"}</span>
@@ -2382,25 +2382,25 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
     <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <div className="flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-2.5">
-          <Search size={13} className="text-[#6B7280]" />
+          <Search size={13} className="text-[#9ca3af]" />
           <input
             value={search}
             onChange={(event) => resetToFirstPage(setSearch)(event.target.value)}
             placeholder="Search notes…"
-            className="w-40 bg-transparent text-xs outline-none placeholder:text-[#6B7280]"
+            className="w-40 bg-transparent text-xs outline-none placeholder:text-[#9ca3af]"
           />
         </div>
         <input
           type="date"
           value={dateFilter}
           onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
-          className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+          className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
         <button
           type="button"
           onClick={cycleSort}
           className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-            sortDir ? "border-[#C55418] bg-[#FFFFFF] text-[#C55418]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"
+            sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
           }`}
           title="Sort by created date"
         >
@@ -2411,7 +2411,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           <button
             type="button"
             onClick={() => { setSearch(""); setDateFilter(""); setSortDir(null); setPage(1); }}
-            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#C55418] hover:bg-[#E5E7EB]"
+            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
           >
             Clear
           </button>
@@ -2431,30 +2431,30 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               onMouseEnter={(event) => showPreview(event, note)}
               onMouseLeave={scheduleHidePreview}
               className={`relative rounded-xl border bg-white p-4 transition-shadow ${
-                dragIndex === localIndex ? "opacity-50" : overIndex === localIndex ? "border-[#C55418]/50 shadow-md" : "border-[#e5e7eb]"
+                dragIndex === localIndex ? "opacity-50" : overIndex === localIndex ? "border-[#8D3118]/50 shadow-md" : "border-[#e5e7eb]"
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <span className={`mt-0.5 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} text-[#E5E7EB] hover:text-[#6B7280]`} title="Drag to reorder">
+                <span className={`mt-0.5 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} text-[#d1d5db] hover:text-[#9ca3af]`} title="Drag to reorder">
                   <GripVertical size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-[#1A1A1A]">{note.title || "Untitled note"}</p>
+                  <p className="truncate font-bold text-[#111827]">{note.title || "Untitled note"}</p>
                   <div
                     className="mt-1 line-clamp-3 text-sm text-[#6b7280] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
                     dangerouslySetInnerHTML={{ __html: note.body || "No content." }}
                   />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#C55418]" title="Edit note">
+                  <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
                     <Edit2 size={14} />
                   </button>
-                  <button type="button" onClick={() => onDelete(note)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                  <button type="button" onClick={() => onDelete(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">
+              <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
                 Created {formatDate(note.createdAt)}
                 {note.updatedAt && note.updatedAt !== note.createdAt ? ` · Updated ${formatDate(note.updatedAt)}` : ""}
               </p>
@@ -2472,13 +2472,13 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
       )}
       {totalPages > 1 && (
         <div className="mt-3 flex items-center justify-between">
-          <p className="text-xs text-[#6B7280]">Page {Math.min(page, totalPages)} / {totalPages}</p>
+          <p className="text-xs text-[#9ca3af]">Page {Math.min(page, totalPages)} / {totalPages}</p>
           <div className="flex gap-1.5">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronLeft size={14} />
             </button>
@@ -2486,7 +2486,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronRight size={14} />
             </button>
@@ -2500,9 +2500,9 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           style={{ position: "fixed", left: preview.left, width: preview.width, top: preview.top, bottom: preview.bottom }}
           className="z-50 max-h-72 overflow-y-auto rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-xl"
         >
-          <p className="font-bold text-[#1A1A1A]">{preview.note.title || "Untitled note"}</p>
+          <p className="font-bold text-[#111827]">{preview.note.title || "Untitled note"}</p>
           <div
-            className="mt-1.5 text-sm text-[#1A1A1A] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
+            className="mt-1.5 text-sm text-[#374151] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
             dangerouslySetInnerHTML={{ __html: preview.note.body || "No content." }}
           />
         </div>,
@@ -2530,13 +2530,13 @@ function NotePanel({ company, note, onClose, onSave }) {
     >
       <div className="space-y-4">
         <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#1A1A1A]">Title</span>
+          <span className="text-xs font-semibold text-[#374151]">Title</span>
           <textarea
             value={form.title || ""}
             rows={1}
             onChange={(event) => set("title")(event.target.value)}
             placeholder="e.g. Pricing discussion"
-            className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+            className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             onInput={(event) => { event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }}
             ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
           />
@@ -2555,10 +2555,10 @@ const GOOGLE_CALENDAR_TZ = import.meta.env.VITE_GOOGLE_CALENDAR_TZ || Intl.DateT
 function GoogleCalendarEmbed() {
   if (!GOOGLE_CALENDAR_ID) {
     return (
-      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-[#FFFFFF] p-6 text-sm text-[#6b7280]">
-        <p className="font-semibold text-[#1A1A1A]">Google Calendar isn't connected yet.</p>
+      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-[#fafafa] p-6 text-sm text-[#6b7280]">
+        <p className="font-semibold text-[#374151]">Google Calendar isn't connected yet.</p>
         <p className="mt-1">
-          Set <code className="rounded bg-[#FFFFFF] px-1 py-0.5 text-xs">VITE_GOOGLE_CALENDAR_ID</code> to the calendar Calendly books meetings into
+          Set <code className="rounded bg-[#eef2f6] px-1 py-0.5 text-xs">VITE_GOOGLE_CALENDAR_ID</code> to the calendar Calendly books meetings into
           (Google Calendar → Settings → that calendar → Integrate calendar → Calendar ID), and under "Access permissions"
           enable "Make available to public" with "See all event details" so it can be embedded.
         </p>
@@ -2578,7 +2578,7 @@ function CalendlyBookingModal({ url, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] shadow hover:text-[#C55418]"
+          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] shadow hover:text-[#8D3118]"
         >
           <X size={16} />
         </button>

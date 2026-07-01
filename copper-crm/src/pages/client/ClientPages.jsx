@@ -32,12 +32,12 @@ const CS = {
 /* Gantt status palette — shared with the admin task Gantt for visual parity. */
 const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 const GANTT_STATUS_COLOR = {
-  Backlog: "#6B7280",
-  "To Do": "#C55418",
-  "In Progress": "#C55418",
-  Review: "#C55418",
-  Completed: "#C55418",
-  Blocked: "#C55418",
+  Backlog: "#9ca3af",
+  "To Do": "#0ea5e9",
+  "In Progress": "#f59e0b",
+  Review: "#6366f1",
+  Completed: "#10b981",
+  Blocked: "#ef4444",
 };
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
@@ -70,10 +70,10 @@ function Card({ children, className = "" }) {
 function Badge({ label, type = "neutral" }) {
   const styles = {
     neutral: { background: CS.surfaceContainer, color: CS.secondary },
-    success: { background: "#FFFFFF", color: "#C55418" },
-    warning: { background: "#FFFFFF", color: "#C55418" },
+    success: { background: "#e8f5e9", color: "#388e3c" },
+    warning: { background: "#fff8e1", color: "#f57f17" },
     primary: { background: CS.primaryFixed, color: CS.primary },
-    error: { background: "#FFFFFF", color: CS.error },
+    error: { background: "#fde8e8", color: CS.error },
   };
   return (
     <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={styles[type] || styles.neutral}>
@@ -247,11 +247,11 @@ function ClientTaskGantt({ tasks }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#FFFFFF", color: "#C55418" }}>
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#e8f5e9", color: "#388e3c" }}>
             <CheckCircle2 size={14} /> {completionPct}% complete
           </span>
           {summary.blocked > 0 && (
-            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#FFFFFF", color: CS.error }}>{summary.blocked} blocked</span>
+            <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
           )}
           <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: CS.surfaceContainer }}>
             {Object.keys(GANTT_ZOOM).map((level) => (
@@ -379,7 +379,7 @@ export function ClientTimelinePage() {
   };
 
   const stageBadge = (s) => {
-    if (s === "completed") return { icon: "check_circle", color: "#C55418" };
+    if (s === "completed") return { icon: "check_circle", color: "#388e3c" };
     if (s === "in_progress") return { icon: "radio_button_checked", color: CS.primary };
     return { icon: "radio_button_unchecked", color: CS.outlineVariant };
   };
@@ -498,7 +498,7 @@ export function ClientTimelinePage() {
                               )}
                               {stage.status === "completed" && (
                                 <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ background: "#FFFFFF", color: "#C55418" }}>
+                                  style={{ background: "#e8f5e9", color: "#388e3c" }}>
                                   <CheckCircle2 size={12} />
                                   Completed
                                 </span>
@@ -731,8 +731,8 @@ export function ClientMeetingsPage() {
                     style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
                   />
                 </div>
-                {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#FFFFFF", color: CS.error }}>{error}</p>}
-                {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#FFFFFF", color: "#C55418" }}>{success}</p>}
+                {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#fde8e8", color: CS.error }}>{error}</p>}
+                {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#e8f5e9", color: "#388e3c" }}>{success}</p>}
                 <div className="flex justify-end">
                   <CsBtn type="submit" disabled={submitting} loading={submitting} icon={Send}>
                     {submitting ? "Sending…" : "Request Meeting"}
@@ -991,8 +991,8 @@ export function ClientBillingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {[
               { Icon: Wallet, label: "Total Paid", value: `₹${totalPaid.toLocaleString("en-IN")}`, color: CS.primary },
-              { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#C55418" },
-              { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#C55418" },
+              { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#4caf50" },
+              { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#ff9800" },
             ].map(s => (
               <div key={s.label} className="rounded-xl border p-5 flex items-center gap-4"
                 style={{ background: CS.surfaceLowest, borderColor: CS.outlineVariant }}>
@@ -1224,8 +1224,8 @@ export function ClientSettingsPage() {
         ))}
       </div>
 
-      {success && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#FFFFFF", color: "#C55418" }}>{success}</p>}
-      {error && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#FFFFFF", color: CS.error }}>{error}</p>}
+      {success && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#e8f5e9", color: "#388e3c" }}>{success}</p>}
+      {error && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#fde8e8", color: CS.error }}>{error}</p>}
 
       <div className="max-w-3xl space-y-5">
         {tab === "Account" && (

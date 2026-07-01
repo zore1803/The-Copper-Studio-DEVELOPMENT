@@ -14,8 +14,8 @@ const roleOptions = [
 
 function AuthShell({ children, title, subtitle }) {
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#1A1A1A] grid lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="studio-gradient hidden lg:flex flex-col justify-between border-r border-[#1A1A1A] px-10 py-9 text-white">
+    <div className="min-h-screen bg-[#f0ede4] text-[#211a17] grid lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="studio-gradient hidden lg:flex flex-col justify-between border-r border-[#211a17] px-10 py-9 text-white">
         <div>
           <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-24 w-80 rounded-xl object-cover shadow-2xl shadow-black/30" />
           <div className="mt-4">
@@ -40,7 +40,7 @@ function AuthShell({ children, title, subtitle }) {
         <div className="grid grid-cols-3 gap-3">
           {["Payment verified", "Invite emailed", "Portal unlocked"].map((item) => (
             <div key={item} className="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-              <CheckCircle2 size={16} className="text-[#C55418]" />
+              <CheckCircle2 size={16} className="text-[#E7A98C]" />
               <p className="mt-3 text-xs font-semibold text-white/86">{item}</p>
             </div>
           ))}
@@ -48,13 +48,13 @@ function AuthShell({ children, title, subtitle }) {
       </section>
 
       <main className="flex min-h-screen items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[440px] rounded-xl border border-[#6B7280] bg-[#FFFFFF] p-6 shadow-[0_24px_80px_rgba(54,47,44,0.12)] sm:p-8">
+        <div className="w-full max-w-[440px] rounded-xl border border-[#d8c2b9] bg-[#fff8f6] p-6 shadow-[0_24px_80px_rgba(54,47,44,0.12)] sm:p-8">
           <div className="mb-7">
-            <div className="mb-4 h-11 w-11 rounded-xl bg-[#E5E7EB] text-[#C55418] grid place-items-center">
+            <div className="mb-4 h-11 w-11 rounded-xl bg-[#F5D5C6] text-[#8D3118] grid place-items-center">
               <LockKeyhole size={20} />
             </div>
-            <h2 className="font-display text-2xl font-bold tracking-tight text-[#1A1A1A]">{title}</h2>
-            <p className="mt-2 text-sm leading-6 text-[#6B7280]">{subtitle}</p>
+            <h2 className="font-display text-2xl font-bold tracking-tight text-[#211a17]">{title}</h2>
+            <p className="mt-2 text-sm leading-6 text-[#6c6355]">{subtitle}</p>
           </div>
           {children}
         </div>
@@ -73,8 +73,8 @@ function RolePicker({ value, onChange }) {
           onClick={() => onChange(role.value)}
           className={`rounded-xl border p-3 text-left transition-all ${
             value === role.value
-              ? "border-[#C55418] bg-[#FFFFFF] text-[#C55418]"
-              : "border-[#6B7280] bg-white text-[#6B7280] hover:border-[#C55418]"
+              ? "border-[#8D3118] bg-[#fff1ec] text-[#6E2412]"
+              : "border-[#d8c2b9] bg-white text-[#6c6355] hover:border-[#E7A98C]"
           }`}
         >
           <p className="text-sm font-bold">{role.label}</p>
@@ -91,19 +91,19 @@ function Field({ icon: Icon, type = "text", label, value, onChange, placeholder,
 
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#6B7280]">{label}</span>
-      <span className="mt-1.5 flex items-center gap-2 rounded-xl border border-[#6B7280] bg-[#FFFFFF] px-3 py-2.5 focus-within:border-[#C55418] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#E5E7EB]/70">
-        <Icon size={16} className="text-[#6B7280]" />
+      <span className="text-xs font-semibold text-[#6c6355]">{label}</span>
+      <span className="mt-1.5 flex items-center gap-2 rounded-xl border border-[#d8c2b9] bg-[#fff1ec] px-3 py-2.5 focus-within:border-[#8D3118] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#F5D5C6]/70">
+        <Icon size={16} className="text-[#85736c]" />
         <input
           type={inputType}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           autoComplete={autoComplete}
-          className="w-full bg-transparent text-sm text-[#1A1A1A] outline-none placeholder:text-[#6B7280]"
+          className="w-full bg-transparent text-sm text-[#211a17] outline-none placeholder:text-[#b49f96]"
         />
         {type === "password" && (
-          <button type="button" onClick={() => setVisible((next) => !next)} className="text-[#6B7280] hover:text-[#C55418]">
+          <button type="button" onClick={() => setVisible((next) => !next)} className="text-[#85736c] hover:text-[#8D3118]">
             {visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
@@ -117,7 +117,7 @@ function SubmitButton({ children, loading }) {
     <button
       type="submit"
       disabled={loading}
-      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#C55418] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#C55418]/20 transition-colors hover:bg-[#6B7280] disabled:cursor-not-allowed disabled:opacity-60"
+      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#8D3118] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#8D3118]/20 transition-colors hover:bg-[#6E2412] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
       <ArrowRight size={16} />
@@ -177,7 +177,7 @@ export function LoginPage() {
         <Field icon={KeyRound} type="password" label="Password" value={password} onChange={setPassword} placeholder="Enter password" autoComplete="current-password" />
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-400">Secure JWT session</span>
-          <Link to="/forgot-password" className="font-semibold text-[#C55418] hover:text-blue-700">Forgot password?</Link>
+          <Link to="/forgot-password" className="font-semibold text-[#2563EB] hover:text-blue-700">Forgot password?</Link>
         </div>
         <Message type="error">{error}</Message>
         <SubmitButton loading={loading}>Log in</SubmitButton>
@@ -254,7 +254,7 @@ export function ForgotPasswordPage() {
         <Message type="success">{message}</Message>
         <Message type="error">{error}</Message>
         <SubmitButton loading={loading}>{otpSent ? "Reset password" : "Send OTP"}</SubmitButton>
-        <Link to="/login" className="block text-center text-xs font-semibold text-gray-500 hover:text-[#C55418]">Back to login</Link>
+        <Link to="/login" className="block text-center text-xs font-semibold text-gray-500 hover:text-[#2563EB]">Back to login</Link>
       </form>
     </AuthShell>
   );
@@ -311,7 +311,7 @@ export function SetPasswordPage() {
         <Message type="success">{message}</Message>
         <Message type="error">{error}</Message>
         <SubmitButton loading={loading}>Activate portal</SubmitButton>
-        <Link to="/login" className="block text-center text-xs font-semibold text-gray-500 hover:text-[#C55418]">Back to login</Link>
+        <Link to="/login" className="block text-center text-xs font-semibold text-gray-500 hover:text-[#2563EB]">Back to login</Link>
       </form>
     </AuthShell>
   );

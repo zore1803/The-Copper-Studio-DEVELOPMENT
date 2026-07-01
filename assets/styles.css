@@ -3,15 +3,15 @@
 :root {
   --bg: #FFFFFF;
   --surface: #ffffff;
-  --surface-soft: #FFFFFF;
-  --ink: #1A1A1A;
-  --muted: #6B7280;
-  --line: #6B7280;
-  --primary: #C55418;
-  --accent: #C55418;
-  --accent-dark: #6B7280;
-  --success: #C55418;
-  --danger: #C55418;
+  --surface-soft: #fff1ec;
+  --ink: #211a17;
+  --muted: #6c6355;
+  --line: #d8c2b9;
+  --primary: #8D3118;
+  --accent: #8D3118;
+  --accent-dark: #6E2412;
+  --success: #15803d;
+  --danger: #dc2626;
   --shadow: 0 18px 45px rgba(54, 47, 44, 0.10);
 }
 
@@ -123,7 +123,7 @@ a {
   border-radius: 12px;
   background:
     radial-gradient(circle at 88% 10%, rgba(255, 119, 38, 0.16), transparent 30%),
-    linear-gradient(135deg, #FFFFFF, #E5E7EB);
+    linear-gradient(135deg, #fff8f6, #eee1cf);
   box-shadow: var(--shadow);
 }
 
@@ -372,7 +372,7 @@ label em {
   font-style: normal;
   font-weight: 400;
   text-transform: lowercase;
-  color: var(--muted, #6B7280);
+  color: var(--muted, #9ca3af);
 }
 
 label {
@@ -473,7 +473,7 @@ select:focus {
 }
 
 .country-picker-trigger:hover {
-  background: #FFFFFF;
+  background: #eef2f7;
 }
 
 .country-picker-caret {
@@ -527,7 +527,7 @@ select:focus {
 
 .country-picker-option:hover,
 .country-picker-option.is-active {
-  background: #FFFFFF;
+  background: #eef2f7;
 }
 
 .country-picker-option .country-picker-dial {
@@ -573,7 +573,7 @@ select:focus {
 
 .verify-field.is-verified .otp-row input {
   border-color: var(--success);
-  background: #FFFFFF;
+  background: #f0fdf4;
 }
 
 .verify-field.is-verified .otp-row small {
@@ -687,7 +687,7 @@ select:focus {
   gap: 16px;
   padding: 20px 22px;
   color: #fff;
-  background: #C55418;
+  background: #4A1A0C;
 }
 
 .razorpay-logo {
@@ -778,7 +778,7 @@ select:focus {
   display: grid;
   min-height: 150px;
   place-items: center;
-  border: 1px dashed var(--outline, #6B7280);
+  border: 1px dashed var(--outline, #85736c);
   border-radius: 10px;
   color: var(--muted);
   background: var(--surface-soft);
@@ -946,7 +946,7 @@ select:focus {
 
 .admin-body {
   overflow: hidden;
-  background: #FFFFFF;
+  background: #eef2f7;
 }
 
 .admin-shell {
@@ -959,7 +959,7 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  border-right: 1px solid #E5E7EB;
+  border-right: 1px solid #d9e0ea;
   background: rgba(255, 255, 255, 0.86);
   padding: 18px 14px;
 }
@@ -995,7 +995,7 @@ select:focus {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #6B7280;
+  color: #475569;
   padding: 8px 10px;
   text-align: left;
   font-size: 0.9rem;
@@ -1026,7 +1026,7 @@ select:focus {
   grid-template-columns: minmax(180px, auto) minmax(260px, 1fr) auto;
   gap: 16px;
   align-items: center;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #d9e0ea;
   background: rgba(255, 248, 246, 0.92);
   padding: 14px 18px;
 }
@@ -1122,7 +1122,7 @@ select:focus {
 .ops-card,
 .metric-card,
 .invoice-paper {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #dde4ee;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
@@ -1197,8 +1197,8 @@ select:focus {
   align-items: center;
   width: max-content;
   border-radius: 999px;
-  background: #FFFFFF;
-  color: #C55418;
+  background: #ecfdf5;
+  color: #15803d;
   padding: 5px 8px;
   font-size: 0.72rem;
   font-weight: 750;
@@ -1210,7 +1210,7 @@ select:focus {
   height: 76px;
   place-items: center;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) calc(var(--value) * 1%), #E5E7EB 0);
+  background: conic-gradient(var(--accent) calc(var(--value) * 1%), #ede0db 0);
 }
 
 .progress-circle strong {
@@ -1228,7 +1228,7 @@ select:focus {
   overflow: hidden;
   height: 7px;
   border-radius: 999px;
-  background: #E5E7EB;
+  background: #ede0db;
 }
 
 .thin-progress span,
@@ -1257,8 +1257,8 @@ select:focus {
   place-items: center;
   border: 2px solid #fff;
   border-radius: 50%;
-  background: #FFFFFF;
-  color: #1A1A1A;
+  background: #e8eef8;
+  color: #334155;
   font-size: 0.72rem;
   font-weight: 800;
 }
@@ -1325,9 +1325,9 @@ select:focus {
 
 .kanban-column {
   min-height: 460px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #dde4ee;
   border-radius: 8px;
-  background: #FFFFFF;
+  background: #f8fafc;
 }
 
 .kanban-column header {
@@ -1335,7 +1335,7 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   min-height: 44px;
-  border-bottom: 1px solid #E5E7EB;
+  border-bottom: 1px solid #dde4ee;
   padding: 10px 12px;
 }
 
@@ -1360,7 +1360,7 @@ select:focus {
 .task-card {
   display: grid;
   gap: 8px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: #fff;
   padding: 12px;
@@ -1368,7 +1368,7 @@ select:focus {
 }
 
 .task-card:hover {
-  border-color: #6B7280;
+  border-color: #b8c7dc;
   transform: translateY(-1px);
 }
 
@@ -1392,19 +1392,19 @@ select:focus {
 }
 
 .priority-high {
-  background: #FFFFFF;
-  color: #C55418;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .priority-medium {
-  background: #E5E7EB;
-  color: #C55418;
+  background: #fef3c7;
+  color: #92400e;
 }
 
 .priority-low,
 .priority-done {
-  background: #E5E7EB;
-  color: #C55418;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .invoice-preview {
@@ -1430,7 +1430,7 @@ select:focus {
 }
 
 .client-hero {
-  border: 1px solid #E5E7EB;
+  border: 1px solid #dde4ee;
   border-radius: 8px;
   background: #fff;
   padding: 22px;
@@ -1455,17 +1455,17 @@ select:focus {
 .timeline-row span {
   width: 14px;
   height: 14px;
-  border: 2px solid #E5E7EB;
+  border: 2px solid #cbd5e1;
   border-radius: 50%;
 }
 
 .timeline-row.is-done span {
-  border-color: #C55418;
-  background: #C55418;
+  border-color: #22c55e;
+  background: #22c55e;
 }
 
 .timeline-row.is-done em {
-  color: #C55418;
+  color: #15803d;
 }
 
 @media (max-width: 900px) {
@@ -1496,7 +1496,7 @@ select:focus {
     flex-direction: row;
     overflow-x: auto;
     border-right: 0;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid #d9e0ea;
   }
 
   .admin-brand,

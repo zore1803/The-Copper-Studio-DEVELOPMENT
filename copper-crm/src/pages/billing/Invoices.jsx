@@ -45,12 +45,12 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#C55418]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
           <Icon size={17} />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-          <p className="mt-0.5 text-lg font-bold text-[#1A1A1A]">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
@@ -60,9 +60,9 @@ function Metric({ label, value, icon: Icon }) {
 function Field({ label, value, onChange, type = "text", options, disabled = false, hint = "" }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] disabled:bg-[#FFFFFF] disabled:text-[#6b7280]">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] disabled:bg-[#f3f4f6] disabled:text-[#6b7280]">
           {options.map((opt) => (
             typeof opt === "string"
               ? <option key={opt} value={opt}>{opt}</option>
@@ -70,9 +70,9 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
           ))}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 disabled:bg-[#FFFFFF] disabled:text-[#6b7280]" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 disabled:bg-[#f3f4f6] disabled:text-[#6b7280]" />
       )}
-      {hint && <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>}
+      {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
   );
 }
@@ -216,16 +216,16 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
       {/* Existing-client picker: search by name / email / company. Selecting one
           auto-fills the client + company so a new project is created under them. */}
       <div className="relative mb-5">
-        <label className="text-xs font-semibold text-[#1A1A1A]">Bill an Existing Client</label>
+        <label className="text-xs font-semibold text-[#374151]">Bill an Existing Client</label>
         <div className="relative mt-1.5">
-          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9ca3af]" />
           <input
             value={clientQuery}
             onChange={(e) => { setClientQuery(e.target.value); setClientOpen(true); }}
             onFocus={() => setClientOpen(true)}
             onBlur={() => setTimeout(() => setClientOpen(false), 150)}
             placeholder="Search clients by name, email, or company…"
-            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
           {clientOpen && clientMatches.length > 0 && (
             <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
@@ -234,9 +234,9 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
                   <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); selectClient(contact); }}
-                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#E5E7EB]"
+                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#fff1ec]"
                   >
-                    <span className="text-sm font-semibold text-[#1A1A1A]">{contact.name || "Unnamed client"}</span>
+                    <span className="text-sm font-semibold text-[#111827]">{contact.name || "Unnamed client"}</span>
                     <span className="text-[11px] text-[#6b7280]">{[contact.email, contact.company].filter(Boolean).join(" · ") || "No details"}</span>
                   </button>
                 </li>
@@ -244,21 +244,21 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
             </ul>
           )}
         </div>
-        <p className="mt-1 text-[11px] text-[#6B7280]">Or just fill in the details below for a new client.</p>
+        <p className="mt-1 text-[11px] text-[#9ca3af]">Or just fill in the details below for a new client.</p>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 rounded-lg bg-[#FFFFFF] p-1">
+      <div className="mb-6 grid grid-cols-2 rounded-lg bg-[#f3f4f6] p-1">
         <button
           type="button"
           onClick={() => setMode("existing")}
-          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "existing" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#6b7280] hover:text-[#1A1A1A]"}`}
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "existing" ? "bg-white text-[#111827] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
         >
           Existing Company
         </button>
         <button
           type="button"
           onClick={() => setMode("new")}
-          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "new" ? "bg-white text-[#1A1A1A] shadow-sm" : "text-[#6b7280] hover:text-[#1A1A1A]"}`}
+          className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${mode === "new" ? "bg-white text-[#111827] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
         >
           New Company
         </button>
@@ -276,9 +276,9 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
 
         {/* Client details are always collected here: a manual invoice has no
             checkout form to pull them from. */}
-        <div className="sm:col-span-2 mt-2 border-t border-[#FFFFFF] pt-4">
-          <p className="text-sm font-bold text-[#1A1A1A]">Client Information</p>
-          <p className="text-[11px] text-[#6B7280]">Entered manually since the client did not go through checkout.</p>
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Client Information</p>
+          <p className="text-[11px] text-[#9ca3af]">Entered manually since the client did not go through checkout.</p>
         </div>
         <Field label="Customer Full Name" value={form.customerName} onChange={set("customerName")} />
         <Field label="Customer Email" type="email" value={form.customerEmail} onChange={set("customerEmail")} />
@@ -286,8 +286,8 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
         <Field label="GSTIN" value={form.companyGstin} onChange={set("companyGstin")} hint="Optional" />
         <Field label="Website" value={form.companyWebsite} onChange={set("companyWebsite")} hint="Optional" />
 
-        <div className="sm:col-span-2 mt-2 border-t border-[#FFFFFF] pt-4">
-          <p className="text-sm font-bold text-[#1A1A1A]">Billing Address</p>
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Billing Address</p>
         </div>
         <div className="sm:col-span-2"><Field label="Address Line 1" value={form.billingAddressLine1} onChange={set("billingAddressLine1")} /></div>
         <div className="sm:col-span-2"><Field label="Address Line 2" value={form.billingAddressLine2} onChange={set("billingAddressLine2")} hint="Optional" /></div>
@@ -295,8 +295,8 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
         <Field label="State" value={form.state} onChange={set("state")} />
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} />
 
-        <div className="sm:col-span-2 mt-2 border-t border-[#FFFFFF] pt-4">
-          <p className="text-sm font-bold text-[#1A1A1A]">Project & Invoice Details</p>
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Project & Invoice Details</p>
         </div>
         <div className="sm:col-span-2">
           {mode === "existing" ? (
@@ -428,10 +428,10 @@ export default function Invoices() {
 
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
-      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#1A1A1A]">Invoices</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">Legal billing documents, PDF generation, customer mapping, and payment mapping.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Invoices</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Legal billing documents, PDF generation, customer mapping, and payment mapping.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus size={14} /> Generate Invoice</Button>
       </div>
@@ -445,14 +445,14 @@ export default function Invoices() {
       </div>
 
       <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-        <div className="flex flex-col gap-3 border-b border-[#FFFFFF] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {["All", ...INVOICE_STATUSES].map((item) => (
-              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#C55418] text-white" : "bg-[#FFFFFF] text-[#6b7280]"}`}>{item}</button>
+              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
             ))}
           </div>
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3">
-            <Search size={14} className="text-[#6B7280]" />
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
+            <Search size={14} className="text-[#9ca3af]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search invoices" className="w-64 bg-transparent text-sm outline-none" />
           </div>
         </div>
@@ -460,23 +460,23 @@ export default function Invoices() {
         {filtered.length ? (
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
+              <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                 <tr>
-                  {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#6B7280]">{head}</th>)}
+                  {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#FFFFFF]">
+              <tbody className="divide-y divide-[#f3f4f6]">
                 {filtered.map((invoice) => (
-                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="hover:bg-[#E5E7EB]">
+                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="hover:bg-[#fafafa]">
                     <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{invoice.invoiceNumber || invoice.id || invoice._id}</td>
-                    <td className="px-4 py-3 text-sm text-[#1A1A1A]">{invoice.company || invoice.client || "Not linked"}</td>
-                    <td className="px-4 py-3 text-sm text-[#1A1A1A]">{invoice.project || "Not linked"}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-[#1A1A1A]">{money(parseMoney(invoice.total || invoice.amount))}</td>
-                    <td className="px-4 py-3 text-sm text-[#1A1A1A]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
-                    <td className="px-4 py-3 text-sm text-[#1A1A1A]">{formatDate(invoice.issueDate || invoice.date)}</td>
-                    <td className="px-4 py-3 text-sm text-[#1A1A1A]">{formatDate(invoice.dueDate)}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.company || invoice.client || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
+                    <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
                     <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
-                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#C55418] hover:underline"><Download size={15} /></button></td>
+                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -484,7 +484,7 @@ export default function Invoices() {
           </div>
         ) : (
           <div className="p-10 text-center">
-            <p className="text-sm font-semibold text-[#1A1A1A]">No invoices yet.</p>
+            <p className="text-sm font-semibold text-[#111827]">No invoices yet.</p>
             <p className="mt-1 text-sm text-[#6b7280]">Invoices should be generated from successful payments and stored as PDFs in Document Center.</p>
           </div>
         )}
@@ -503,7 +503,7 @@ function statusTone(value) {
       ? "bg-red-50 text-red-600"
       : value === "Sent"
         ? "bg-blue-50 text-blue-700"
-        : "bg-[#FFFFFF] text-[#6b7280]";
+        : "bg-[#f3f4f6] text-[#6b7280]";
 }
 
 function InvoiceStatus({ invoice, onChange }) {
@@ -521,7 +521,7 @@ function StatusSelect({ value, onChange }) {
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#C55418]/30 ${statusTone(value)}`}
+      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
       aria-label="Invoice status"
     >
       {UNPAID_STATUS_ACTIONS.map((status) => (

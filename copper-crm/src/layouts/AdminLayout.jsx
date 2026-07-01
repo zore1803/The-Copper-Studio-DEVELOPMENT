@@ -164,7 +164,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
         onClick={() => onNavigate(item.to)}
         title={item.label}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-          active ? "bg-white border-[#E5E7EB] text-[#C55418] shadow-sm" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
+          active ? "bg-white border-[#E5E5E5] text-[#B25A34] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
         }`}
       >
         <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
@@ -174,7 +174,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
   return (
     <button
       onClick={() => onNavigate(item.to)}
-      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E7EB] text-[#C55418] shadow-sm" : "text-[#1A1A1A] hover:bg-white/70"}`}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E5E5] text-[#B25A34] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
     >
       <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
       <span className="truncate text-sm font-medium">{item.label}</span>
@@ -193,7 +193,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
         <button
           title={item.label}
           className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-            active ? "bg-white border-[#E5E7EB] text-[#C55418]" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
+            active ? "bg-white border-[#E5E5E5] text-[#B25A34]" : "border-transparent text-[#374151] hover:bg-white/70"
           }`}
         >
           <item.icon size={20} strokeWidth={1.8} />
@@ -206,7 +206,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
     <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#C55418]" : "text-[#1A1A1A] hover:bg-white/70"}`}
+        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#B25A34]" : "text-[#374151] hover:bg-white/70"}`}
       >
         <span className="flex items-center gap-3">
           <item.icon size={16} strokeWidth={1.8} />
@@ -371,11 +371,11 @@ export default function AdminLayout() {
       <aside
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FFFFFF] border-r border-[#E5E7EB] transition-all duration-200"
+        className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
         {/* Logo */}
-        <div className={`flex items-center justify-center border-b border-[#E5E7EB] ${collapsed ? "px-1 py-3" : "px-4 py-5"}`}>
+        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed ? "px-1 py-3" : "px-4 py-5"}`}>
           <img
             src="/copper-studio-wordmark.png"
             alt="Copper Studio"
@@ -410,11 +410,11 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className={`border-t border-[#E5E7EB] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
             onClick={() => setPinned((v) => !v)}
             title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
-            className={`flex items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white text-sm font-semibold text-[#6B7280] hover:bg-[#E5E7EB] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
             {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
             {!collapsed && "Collapse"}
@@ -425,16 +425,16 @@ export default function AdminLayout() {
       {/* Main */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: baseW }}>
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E5E7EB] bg-white px-6 gap-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-1.5 text-sm min-w-0 flex-shrink-0">
             {breadcrumbs.map((crumb, i) => (
               <div key={crumb.to} className="flex items-center gap-1.5">
-                {i > 0 && <ChevronRight size={13} className="text-[#6B7280] shrink-0" />}
+                {i > 0 && <ChevronRight size={13} className="text-[#9ca3af] shrink-0" />}
                 {i < breadcrumbs.length - 1 ? (
                   <button
                     onClick={() => navigate(crumb.to)}
-                    className="text-[#6B7280] hover:text-black font-medium transition-colors whitespace-nowrap"
+                    className="text-[#525252] hover:text-black font-medium transition-colors whitespace-nowrap"
                   >
                     {crumb.label}
                   </button>
@@ -449,8 +449,8 @@ export default function AdminLayout() {
           <div className="flex items-center gap-4 flex-1 justify-end">
             {/* Search */}
             <div className="relative w-72">
-              <div className="flex h-8 items-center gap-2 rounded-full border border-[#E5E7EB] px-3">
-                <Search size={14} className="text-[#6B7280] shrink-0" />
+              <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+                <Search size={14} className="text-[#525866] shrink-0" />
                 <input
                   ref={searchRef}
                   value={searchQuery}
@@ -462,7 +462,7 @@ export default function AdminLayout() {
                     if (e.key === "Escape") { setSearchQuery(""); setSearchFocused(false); }
                   }}
                   placeholder="Search Companies, Deals, Contacts"
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#6B7280]"
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
                 />
               </div>
               {searchFocused && searchQuery.trim() && (
@@ -474,13 +474,13 @@ export default function AdminLayout() {
                           key={`${r.type}-${r.label}`}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => openResult(r)}
-                          className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#E5E7EB]"
+                          className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#f9fafb]"
                         >
                           <span className="min-w-0">
-                            <span className="block text-sm font-medium text-[#1A1A1A] truncate">{r.label}</span>
+                            <span className="block text-sm font-medium text-[#111827] truncate">{r.label}</span>
                             {r.sublabel && <span className="block text-xs text-[#6b7280] truncate">{r.sublabel}</span>}
                           </span>
-                          <span className="shrink-0 rounded bg-[#FFFFFF] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#6b7280]">{r.type}</span>
+                          <span className="shrink-0 rounded bg-[#f3f4f6] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#6b7280]">{r.type}</span>
                         </button>
                       ))}
                     </div>
@@ -495,11 +495,11 @@ export default function AdminLayout() {
             <div ref={notifRef} className="relative">
               <button
                 onClick={() => { setNotifOpen((v) => !v); markAllRead(); }}
-                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E5E7EB] text-black hover:bg-[#E5E7EB] transition-colors"
+                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#C55418] text-[9px] font-bold text-white">
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DF120B] text-[9px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -507,31 +507,31 @@ export default function AdminLayout() {
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
-                    <p className="font-semibold text-sm text-[#1A1A1A]">Notifications</p>
+                    <p className="font-semibold text-sm text-[#111827]">Notifications</p>
                     {notifHistory.length > 0 && (
-                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#6B7280] hover:text-red-500 transition-colors">
+                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#9ca3af] hover:text-red-500 transition-colors">
                         Clear all
                       </button>
                     )}
                   </div>
-                  <div className="max-h-96 overflow-y-auto divide-y divide-[#FFFFFF]">
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#f3f4f6]">
                     {notifHistory.length ? (
                       notifHistory.map((n) => {
                         const dotColor = n.type === "error" ? "bg-red-400" : n.type === "info" ? "bg-blue-400" : "bg-emerald-400";
                         const timeStr = n.ts ? new Date(n.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) + ", " + new Date(n.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
                         return (
-                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#E5E7EB] transition-colors">
+                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#fafafa] transition-colors">
                             <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
                             <div className="min-w-0 flex-1">
-                              <p className="text-xs font-semibold text-[#1A1A1A]">{n.title}</p>
+                              <p className="text-xs font-semibold text-[#111827]">{n.title}</p>
                               {n.message && <p className="mt-0.5 text-xs text-[#6b7280] leading-relaxed">{n.message}</p>}
-                              <p className="mt-1 text-[10px] text-[#6B7280]">{timeStr}</p>
+                              <p className="mt-1 text-[10px] text-[#9ca3af]">{timeStr}</p>
                             </div>
                           </div>
                         );
                       })
                     ) : (
-                      <p className="px-4 py-6 text-center text-xs text-[#6B7280]">No notifications yet.</p>
+                      <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No notifications yet.</p>
                     )}
                   </div>
                 </div>
@@ -542,7 +542,7 @@ export default function AdminLayout() {
             <div ref={quickAddRef} className="relative">
               <button
                 onClick={() => setQuickAddOpen((v) => !v)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C55418] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#6B7280] transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B25A34] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#B25A34] transition-colors"
               >
                 <Plus size={16} />
               </button>
@@ -552,9 +552,9 @@ export default function AdminLayout() {
                     <button
                       key={item.label}
                       onClick={() => quickAdd(item)}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
-                      <item.icon size={14} className="text-[#6B7280]" />
+                      <item.icon size={14} className="text-[#9ca3af]" />
                       {item.label}
                     </button>
                   ))}
@@ -566,23 +566,23 @@ export default function AdminLayout() {
             <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white p-1 hover:ring-2 hover:ring-[#C55418]/20 transition-all"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#8D3118]/20 transition-all"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#C55418] text-white text-xs font-medium">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#B25A34] text-white text-xs font-medium">
                   {initials}
                 </span>
               </button>
               {avatarOpen && (
                 <div className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
                   <div className="px-3 py-2 border-b border-[#FFFFFF]">
-                    <p className="text-xs font-semibold text-[#1A1A1A] truncate">{name}</p>
+                    <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
                     <p className="text-[11px] text-[#6b7280] truncate">{auth.user?.role || "Admin"}</p>
                   </div>
                   <button
                     onClick={() => { setAvatarOpen(false); navigate("/admin/settings"); }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                   >
-                    <Settings size={14} className="text-[#6B7280]" />
+                    <Settings size={14} className="text-[#9ca3af]" />
                     Settings
                   </button>
                   <button

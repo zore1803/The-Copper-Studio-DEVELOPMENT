@@ -51,8 +51,8 @@ const CONTACT_ROLE_OPTIONS = [
 
 function FormSection({ title, children, cols = 3 }) {
   return (
-    <div className="space-y-3 border-t border-[#FFFFFF] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#C55418]">{title}</h4>
+    <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className={`grid gap-4 ${cols === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>{children}</div>
     </div>
   );
@@ -61,7 +61,7 @@ function FormSection({ title, children, cols = 3 }) {
 function Input({ label, value, onChange, type = "text", placeholder = "", disabled = false, span = false, error = "", hint }) {
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
         value={value || ""}
@@ -70,12 +70,12 @@ function Input({ label, value, onChange, type = "text", placeholder = "", disabl
         onChange={(event) => onChange?.(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
-        } ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
+        } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
       {error
         ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
-        : hint ? <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span> : null}
+        : hint ? <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span> : null}
     </label>
   );
 }
@@ -84,11 +84,11 @@ function Select({ label, value, onChange, options = [], span = false, placeholde
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">{placeholder}</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -100,12 +100,12 @@ function Select({ label, value, onChange, options = [], span = false, placeholde
 function Textarea({ label, value, onChange, span = false }) {
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <textarea
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -113,12 +113,12 @@ function Textarea({ label, value, onChange, span = false }) {
 
 function Checkbox({ label, checked, onChange, span = false }) {
   return (
-    <label className={`flex items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 py-2.5 text-sm font-medium text-[#1A1A1A] cursor-pointer hover:bg-[#E5E7EB] ${span ? "sm:col-span-3" : ""}`}>
+    <label className={`flex items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 py-2.5 text-sm font-medium text-[#374151] cursor-pointer hover:bg-[#f9fafb] ${span ? "sm:col-span-3" : ""}`}>
       <input
         type="checkbox"
         checked={!!checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-[#E5E7EB] accent-[#C55418]"
+        className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]"
       />
       {label}
     </label>
@@ -142,25 +142,25 @@ function RoleDropdown({ form, setRole }) {
 
   return (
     <div className="relative sm:col-span-3" ref={ref}>
-      <span className="text-xs font-semibold text-[#1A1A1A]">Contact roles</span>
+      <span className="text-xs font-semibold text-[#374151]">Contact roles</span>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-[#E5E7EB] focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-[#f9fafb] focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
-        <span className={selectedRoles.length ? "text-[#1A1A1A]" : "text-[#6B7280]"}>{summary}</span>
+        <span className={selectedRoles.length ? "text-[#111827]" : "text-[#9ca3af]"}>{summary}</span>
         <ChevronDown size={16} className={`shrink-0 text-[#6b7280] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="absolute z-30 mt-2 w-full overflow-hidden rounded-lg border border-[#e5e7eb] bg-white shadow-lg">
           {CONTACT_ROLE_OPTIONS.map((role) => (
-            <label key={role.key} className="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#1A1A1A] hover:bg-[#E5E7EB]">
+            <label key={role.key} className="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#374151] hover:bg-[#f9fafb]">
               <input
                 type="checkbox"
                 checked={!!form[role.key]}
                 onChange={(event) => setRole(role.key)(event.target.checked)}
-                className="h-4 w-4 rounded border-[#E5E7EB] accent-[#C55418]"
+                className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]"
               />
               {role.label}
             </label>
@@ -303,14 +303,14 @@ export default function ContactFormPanel({ contact, company = null, companies = 
             // yet, so there's nothing to pick — this contact is linked to the
             // company being created once it's saved.
             company?.name ? (
-              <p className="sm:col-span-3 -mt-1 text-[11px] text-[#6B7280]">
+              <p className="sm:col-span-3 -mt-1 text-[11px] text-[#9ca3af]">
                 This contact will be added under <span className="font-semibold text-[#6b7280]">{company.name}</span>.
               </p>
             ) : null
           ) : companies.length === 0 ? (
             <label className="block sm:col-span-3">
-              <span className="text-xs font-semibold text-[#1A1A1A]">Associated company</span>
-              <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 py-2 text-sm text-[#6B7280]">
+              <span className="text-xs font-semibold text-[#374151]">Associated company</span>
+              <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">
                 Loading companies… or create a company first
               </div>
             </label>
@@ -334,7 +334,7 @@ export default function ContactFormPanel({ contact, company = null, companies = 
             checked={form.sendPortalInvite}
             onChange={set("sendPortalInvite")}
           />
-          <p className="-mt-1 text-[11px] leading-5 text-[#6B7280] sm:col-span-3">
+          <p className="-mt-1 text-[11px] leading-5 text-[#9ca3af] sm:col-span-3">
             A contact is a client. When checked, saving emails{" "}
             {form.email ? <span className="font-semibold text-[#6b7280]">{form.email}</span> : "this contact"}{" "}
             a secure link to set a password and access the client portal — needs an email address, and the link expires in 48 hours.

@@ -109,7 +109,7 @@ function randomCode() {
 function CouponField({ label, value, onChange, error = "", required = false, type = "text", placeholder = "", maxLength, inputMode }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#1A1A1A]">{label}{required && <span className="text-red-500"> *</span>}</span>
+      <span className="text-xs font-semibold text-[#374151]">{label}{required && <span className="text-red-500"> *</span>}</span>
       <input
         type={type}
         value={value}
@@ -118,7 +118,7 @@ function CouponField({ label, value, onChange, error = "", required = false, typ
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
@@ -146,7 +146,7 @@ function DrumColumn({ items, selected, onSelect }) {
   return (
     <div className="relative flex-1">
       {/* selection highlight */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-lg bg-[#C55418]/10 border border-[#C55418]/20 z-10" style={{ height: ITEM_H }} />
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-lg bg-[#8D3118]/10 border border-[#8D3118]/20 z-10" style={{ height: ITEM_H }} />
       {/* fade top */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white to-transparent z-10" />
       {/* fade bottom */}
@@ -167,7 +167,7 @@ function DrumColumn({ items, selected, onSelect }) {
               if (ref.current) ref.current.scrollTop = items.indexOf(item) * ITEM_H;
             }}
             style={{ height: ITEM_H, scrollSnapAlign: "center" }}
-            className={`flex cursor-pointer items-center justify-center text-sm font-semibold transition-colors select-none ${item === selected ? "text-[#C55418]" : "text-[#6B7280]"}`}
+            className={`flex cursor-pointer items-center justify-center text-sm font-semibold transition-colors select-none ${item === selected ? "text-[#8D3118]" : "text-[#9ca3af]"}`}
           >
             {item}
           </div>
@@ -211,25 +211,25 @@ function ClockPicker({ value, onChange, onClose }) {
   return (
     <div className="absolute right-0 bottom-full z-50 mb-1 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-2xl shadow-black/15">
       {/* Header */}
-      <div className="bg-[#C55418] px-3 py-2 text-center">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#C55418]">Select Time</p>
+      <div className="bg-[#8D3118] px-3 py-2 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#e2c4b4]">Select Time</p>
         <p className="text-2xl font-bold text-white tracking-wide">
-          {h12str}<span className="text-[#C55418]">:</span>{minStr}
-          <span className="ml-1.5 text-base font-semibold text-[#C55418]">{merStr}</span>
+          {h12str}<span className="text-[#e2c4b4]">:</span>{minStr}
+          <span className="ml-1.5 text-base font-semibold text-[#e2c4b4]">{merStr}</span>
         </p>
       </div>
 
       {/* Drum scrollers */}
       <div className="flex items-center gap-0 px-2 pt-1">
         <DrumColumn items={hours12} selected={h12str} onSelect={onHourSelect} />
-        <span className="text-lg font-bold text-[#C55418]">:</span>
+        <span className="text-lg font-bold text-[#8D3118]">:</span>
         <DrumColumn items={minutes} selected={minStr} onSelect={onMinuteSelect} />
         <DrumColumn items={meridiem} selected={merStr} onSelect={onMerSelect} />
       </div>
 
       <div className="flex gap-2 px-2 pb-2 pt-1">
-        <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#E5E7EB] transition-colors">Cancel</button>
-        <button onClick={apply} className="flex-1 rounded-lg bg-[#C55418] py-1.5 text-xs font-semibold text-white hover:bg-[#C55418] transition-colors">Set</button>
+        <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
+        <button onClick={apply} className="flex-1 rounded-lg bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
       </div>
     </div>
   );
@@ -256,8 +256,8 @@ function ValidFromField({ value, onChange, error }) {
 
   return (
     <div ref={wrapRef} className="relative">
-      <span className="text-xs font-semibold text-[#1A1A1A]">Active from <span className="text-red-500">*</span></span>
-      <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#C55418] focus-within:ring-[#C55418]/20"}`}>
+      <span className="text-xs font-semibold text-[#374151]">Active from <span className="text-red-500">*</span></span>
+      <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#8D3118] focus-within:ring-[#8D3118]/20"}`}>
         <input
           type="datetime-local"
           value={value}
@@ -268,7 +268,7 @@ function ValidFromField({ value, onChange, error }) {
           type="button"
           onClick={() => setClockOpen((v) => !v)}
           title="Pick time with clock"
-          className={`-ml-1 mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#C55418]" : "text-[#6B7280] hover:text-[#C55418]"}`}
+          className={`-ml-1 mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#8D3118]" : "text-[#c4c9d4] hover:text-[#8D3118]"}`}
         >
           <Clock size={14} />
         </button>
@@ -325,14 +325,14 @@ function CouponFormPanel({ onClose, onCreate }) {
       }
     >
       {/* Preview */}
-      <div className="mb-4 rounded-xl border border-dashed border-[#C55418] bg-[#FFFFFF] p-4 text-center">
-        <Tag size={20} className="mx-auto text-[#C55418]" />
-        <p className="mt-2 font-mono text-lg font-bold text-[#1A1A1A]">XXX-XXXX-XXX</p>
+      <div className="mb-4 rounded-xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-4 text-center">
+        <Tag size={20} className="mx-auto text-[#8D3118]" />
+        <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">XXX-XXXX-XXX</p>
         <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">
           {discountLabel} · {coupon.category ? `${coupon.category}` : "Any category"}{coupon.packageName ? ` · ${(PACKAGES_BY_CATEGORY[coupon.category] || []).find(p => p.id === coupon.packageName)?.name || coupon.packageName}` : " · Any package"}
         </p>
         <p className="mt-1 text-[11px] font-semibold text-[#6B7280]">Active from {formatDateTime(coupon.validFrom) || "—"}</p>
-        <p className="mt-0.5 text-[11px] font-semibold text-[#C55418]">Valid till {validityDisplay}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-[#8D3118]">Valid till {validityDisplay}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -340,8 +340,8 @@ function CouponFormPanel({ onClose, onCreate }) {
         <div className="grid grid-cols-[1fr_auto] gap-2">
           <CouponField label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
           <label className="block">
-            <span className="text-xs font-semibold text-[#1A1A1A]">Type</span>
-            <select value={coupon.amountType} onChange={(e) => setField("amountType")(e.target.value)} className="mt-1.5 h-[38px] w-full rounded-lg border border-[#e5e7eb] px-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20">
+            <span className="text-xs font-semibold text-[#374151]">Type</span>
+            <select value={coupon.amountType} onChange={(e) => setField("amountType")(e.target.value)} className="mt-1.5 h-[38px] w-full rounded-lg border border-[#e5e7eb] px-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20">
               <option value="percentage">%</option>
               <option value="fixed">Rs</option>
             </select>
@@ -354,7 +354,7 @@ function CouponFormPanel({ onClose, onCreate }) {
         {/* Category */}
         <div>
           <label className="block">
-            <span className="text-xs font-semibold text-[#1A1A1A]">Category <span className="text-[#6B7280] font-normal">(optional)</span></span>
+            <span className="text-xs font-semibold text-[#374151]">Category <span className="text-[#9ca3af] font-normal">(optional)</span></span>
             <select
               value={coupon.category}
               onChange={(e) => {
@@ -362,7 +362,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 setCoupon((prev) => ({ ...prev, category: cat, packageName: "" }));
                 setErrors((prev) => ({ ...prev, packageName: "" }));
               }}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               <option value="">Any category</option>
               {PACKAGE_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
@@ -373,16 +373,16 @@ function CouponFormPanel({ onClose, onCreate }) {
         {/* Package — only shown when category selected */}
         <div>
           <label className="block">
-            <span className="text-xs font-semibold text-[#1A1A1A]">
-              Package <span className="text-[#6B7280] font-normal">(optional)</span>
+            <span className="text-xs font-semibold text-[#374151]">
+              Package <span className="text-[#9ca3af] font-normal">(optional)</span>
             </span>
             <select
               value={coupon.packageName}
               onChange={(e) => { setField("packageName")(e.target.value); }}
               disabled={!coupon.category}
               className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                errors.packageName ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
-              } disabled:bg-[#FFFFFF] disabled:text-[#6B7280]`}
+                errors.packageName ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
+              } disabled:bg-[#f9fafb] disabled:text-[#9ca3af]`}
             >
               <option value="">{coupon.category ? "Select a package" : "Select a category first"}</option>
               {(PACKAGES_BY_CATEGORY[coupon.category] || []).map((pkg) => (
@@ -403,7 +403,7 @@ function CouponFormPanel({ onClose, onCreate }) {
         {/* Validity dropdown */}
         <div>
           <label className="block">
-            <span className="text-xs font-semibold text-[#1A1A1A]">Valid for <span className="text-red-500">*</span></span>
+            <span className="text-xs font-semibold text-[#374151]">Valid for <span className="text-red-500">*</span></span>
             <select
               value={coupon.validityHours}
               onChange={(e) => {
@@ -411,7 +411,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 setField("validityHours")(val);
                 setErrors((prev) => ({ ...prev, validity: "" }));
               }}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               {VALIDITY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -424,7 +424,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 type="datetime-local"
                 value={coupon.customValidity}
                 onChange={(e) => setField("customValidity")(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"}`}
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"}`}
               />
               {errors.validity && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validity}</span>}
             </div>
@@ -445,10 +445,10 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-[#ffffff] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#C55418]"><Icon size={17} /></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]"><Icon size={17} /></div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
-          <p className="mt-0.5 text-lg font-bold text-[#1A1A1A]">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
@@ -458,14 +458,14 @@ function Metric({ label, value, icon: Icon }) {
 function Detail({ label, value }) {
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{label}</p>
-      <p className="mt-0.5 text-sm text-[#1A1A1A]">{value || <span className="text-[#6B7280]">—</span>}</p>
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-0.5 text-sm text-[#374151]">{value || <span className="text-[#c4c9d4]">—</span>}</p>
     </div>
   );
 }
 
 function Status({ value }) {
-  const tone = value === "Active" ? "bg-emerald-50 text-emerald-700" : value === "Redeemed" ? "bg-blue-50 text-blue-700" : /expired|cancel|revoked/i.test(value) ? "bg-red-50 text-red-600" : "bg-[#FFFFFF] text-[#6b7280]";
+  const tone = value === "Active" ? "bg-emerald-50 text-emerald-700" : value === "Redeemed" ? "bg-blue-50 text-blue-700" : /expired|cancel|revoked/i.test(value) ? "bg-red-50 text-red-600" : "bg-[#f3f4f6] text-[#6b7280]";
   return <span className={`h-fit rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
 }
 
@@ -476,8 +476,8 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-mono text-sm font-bold text-[#1A1A1A] truncate">{coupon.code || "NO-CODE"}</p>
-            <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#C55418]"><Copy size={13} /></button>
+            <p className="font-mono text-sm font-bold text-[#111827] truncate">{coupon.code || "NO-CODE"}</p>
+            <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#9ca3af] hover:text-[#8D3118]"><Copy size={13} /></button>
             {copied === coupon.code && <span className="text-xs font-semibold text-emerald-600">Copied</span>}
           </div>
           <p className="mt-0.5 text-xs text-[#6b7280]">
@@ -488,7 +488,7 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
           <Status value={coupon.status || "Draft"} />
           <button
             onClick={() => onDelete(coupon)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
             title="Delete coupon"
           >
             <Trash2 size={14} />
@@ -514,22 +514,22 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
 function CouponRow({ coupon, copied, onCopy, onDelete }) {
   const displayAmount = coupon.amount || (coupon.amountType === "percentage" ? `${coupon.discount}%` : `Rs ${coupon.discount}`);
   return (
-    <div className="flex items-center gap-3 border-b border-[#FFFFFF] px-4 py-3 last:border-0 hover:bg-[#E5E7EB]">
+    <div className="flex items-center gap-3 border-b border-[#f3f4f6] px-4 py-3 last:border-0 hover:bg-[#fafafa]">
       <div className="min-w-0 flex-1 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 items-center text-sm">
         <div className="flex items-center gap-2">
-          <p className="font-mono font-bold text-[#1A1A1A] truncate">{coupon.code || "NO-CODE"}</p>
-          <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#C55418]"><Copy size={12} /></button>
+          <p className="font-mono font-bold text-[#111827] truncate">{coupon.code || "NO-CODE"}</p>
+          <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#9ca3af] hover:text-[#8D3118]"><Copy size={12} /></button>
           {copied === coupon.code && <span className="text-[11px] font-semibold text-emerald-600">Copied</span>}
         </div>
-        <span className="text-[#1A1A1A] truncate">{coupon.assignedCompany || coupon.companyName || <span className="text-[#6B7280]">—</span>}</span>
-        <span className="text-[#1A1A1A] truncate">{coupon.assignedContact || coupon.clientName || <span className="text-[#6B7280]">—</span>}</span>
-        <span className="text-[#1A1A1A]">{displayAmount} off</span>
-        <span className="text-[#1A1A1A] truncate">{coupon.validUntil ? formatDateTime(coupon.validUntil) : (coupon.validity || <span className="text-[#6B7280]">—</span>)}</span>
+        <span className="text-[#374151] truncate">{coupon.assignedCompany || coupon.companyName || <span className="text-[#c4c9d4]">—</span>}</span>
+        <span className="text-[#374151] truncate">{coupon.assignedContact || coupon.clientName || <span className="text-[#c4c9d4]">—</span>}</span>
+        <span className="text-[#374151]">{displayAmount} off</span>
+        <span className="text-[#374151] truncate">{coupon.validUntil ? formatDateTime(coupon.validUntil) : (coupon.validity || <span className="text-[#c4c9d4]">—</span>)}</span>
         <Status value={coupon.status || "Draft"} />
       </div>
       <button
         onClick={() => onDelete(coupon)}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#6B7280] hover:bg-red-50 hover:text-red-500 transition-colors"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
         title="Delete coupon"
       >
         <Trash2 size={14} />
@@ -638,12 +638,12 @@ export default function Coupons() {
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-[#FFFFFF]">
+    <div className="flex flex-col min-h-full bg-[#f5f6fa]">
       {/* Strip header */}
-      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#1A1A1A]">Coupons</h1>
-          <p className="text-xs text-[#6B7280] mt-0.5">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
+          <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
+          <p className="text-xs text-[#525866] mt-0.5">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
         </div>
         <Button onClick={() => setCreating(true)}><Plus size={14} /> Create Coupon</Button>
       </div>
@@ -660,10 +660,10 @@ export default function Coupons() {
 
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
           {/* Toolbar */}
-          <div className="flex flex-col gap-3 border-b border-[#FFFFFF] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
             {/* Search */}
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 w-full lg:w-72">
-              <svg className="text-[#6B7280] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 w-full lg:w-72">
+              <svg className="text-[#9ca3af] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search coupons" className="w-full bg-transparent text-sm outline-none" />
             </div>
 
@@ -687,15 +687,15 @@ export default function Coupons() {
 
               {/* View switcher */}
               <div className="flex items-center rounded-lg border border-[#e5e7eb] overflow-hidden">
-                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#C55418] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><Grid2x2 size={15} /></button>
-                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#C55418] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><List size={15} /></button>
+                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><Grid2x2 size={15} /></button>
+                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><List size={15} /></button>
               </div>
             </div>
           </div>
 
           {/* List header */}
           {viewMode === "list" && filtered.length > 0 && (
-            <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-[#FFFFFF] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">
+            <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-[#f3f4f6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
               <span>Code</span><span>Company</span><span>Contact</span><span>Amount</span><span>Validity</span><span>Status</span>
             </div>
           )}
@@ -715,16 +715,16 @@ export default function Coupons() {
                   ))}
                 </div>
               )}
-              <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E5E7EB]">
+              <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
                   <p className="text-sm text-[#6b7280]">
-                    Showing <span className="font-semibold text-[#1A1A1A]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
-                    <span className="font-semibold text-[#1A1A1A]">{filtered.length}</span> Coupons
+                    Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
+                    <span className="font-semibold text-[#111827]">{filtered.length}</span> Coupons
                   </p>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -732,7 +732,7 @@ export default function Coupons() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#C55418] text-white" : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
@@ -740,7 +740,7 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={14} />
                     </button>
@@ -749,7 +749,7 @@ export default function Coupons() {
             </>
           ) : (
             <div className="p-10 text-center">
-              <p className="text-sm font-semibold text-[#1A1A1A]">No coupons yet.</p>
+              <p className="text-sm font-semibold text-[#111827]">No coupons yet.</p>
               <p className="mt-1 text-sm text-[#6b7280]">Create a coupon to assign to a company, contact, or deal and track order conversion.</p>
             </div>
           )}
@@ -761,7 +761,7 @@ export default function Coupons() {
         {confirmDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-              <p className="font-bold text-[#1A1A1A]">Delete coupon?</p>
+              <p className="font-bold text-[#111827]">Delete coupon?</p>
               <p className="mt-1 text-sm text-[#6b7280]">
                 <span className="font-mono font-semibold">{confirmDelete.code}</span> will be permanently removed. This action cannot be undone.
               </p>
