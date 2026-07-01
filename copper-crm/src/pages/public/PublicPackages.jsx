@@ -75,7 +75,12 @@ export default function PublicPackages() {
 
   useEffect(() => {
     apiGet("/api/packages")
-      .then((data) => { if (Array.isArray(data) && data.length) setPackages(data); })
+      .then((data) => {
+        // Only use API data if it has the category field (new format)
+        if (Array.isArray(data) && data.length && data.some((p) => p.category)) {
+          setPackages(data);
+        }
+      })
       .catch(() => {});
   }, []);
 
