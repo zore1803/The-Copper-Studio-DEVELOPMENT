@@ -42,7 +42,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#8D3118]">
           <Icon size={17} />
         </div>
         <div>
@@ -57,7 +57,7 @@ function Metric({ label, value, icon: Icon }) {
 function EmptyState({ title, text }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#8D3118]">
         <PackageCheck size={20} />
       </div>
       <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
@@ -71,11 +71,11 @@ function Field({ label, value, onChange, type = "text", options }) {
     <label className="block">
       <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118]">
           {options.map((opt) => <option key={opt}>{opt}</option>)}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20" />
       )}
     </label>
   );
@@ -206,7 +206,7 @@ export default function Payments() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#FFFFFF] text-[#8D3118]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -217,7 +217,7 @@ export default function Payments() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#5A1A14]" : "text-[#1A1A1A]"}`}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#1A1A1A]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -237,7 +237,7 @@ export default function Payments() {
           />
           <button
             onClick={() => setCreating(true)}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#5A1A14] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
           >
             <Plus size={16} /> New Payment
           </button>
@@ -297,7 +297,7 @@ export default function Payments() {
                     onClick={() => setPage(p)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                       p === page
-                        ? "bg-[#5A1A14] text-white"
+                        ? "bg-[#8D3118] text-white"
                         : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
                     }`}
                   >

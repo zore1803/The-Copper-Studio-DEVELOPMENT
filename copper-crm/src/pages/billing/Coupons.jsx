@@ -118,7 +118,7 @@ function CouponField({ label, value, onChange, error = "", required = false, typ
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
@@ -146,7 +146,7 @@ function DrumColumn({ items, selected, onSelect }) {
   return (
     <div className="relative flex-1">
       {/* selection highlight */}
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-lg bg-[#5A1A14]/10 border border-[#5A1A14]/20 z-10" style={{ height: ITEM_H }} />
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-lg bg-[#8D3118]/10 border border-[#8D3118]/20 z-10" style={{ height: ITEM_H }} />
       {/* fade top */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-white to-transparent z-10" />
       {/* fade bottom */}
@@ -167,7 +167,7 @@ function DrumColumn({ items, selected, onSelect }) {
               if (ref.current) ref.current.scrollTop = items.indexOf(item) * ITEM_H;
             }}
             style={{ height: ITEM_H, scrollSnapAlign: "center" }}
-            className={`flex cursor-pointer items-center justify-center text-sm font-semibold transition-colors select-none ${item === selected ? "text-[#5A1A14]" : "text-[#6B7280]"}`}
+            className={`flex cursor-pointer items-center justify-center text-sm font-semibold transition-colors select-none ${item === selected ? "text-[#8D3118]" : "text-[#6B7280]"}`}
           >
             {item}
           </div>
@@ -211,25 +211,25 @@ function ClockPicker({ value, onChange, onClose }) {
   return (
     <div className="absolute right-0 bottom-full z-50 mb-1 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-2xl shadow-black/15">
       {/* Header */}
-      <div className="bg-[#5A1A14] px-3 py-2 text-center">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#5A1A14]">Select Time</p>
+      <div className="bg-[#8D3118] px-3 py-2 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#8D3118]">Select Time</p>
         <p className="text-2xl font-bold text-white tracking-wide">
-          {h12str}<span className="text-[#5A1A14]">:</span>{minStr}
-          <span className="ml-1.5 text-base font-semibold text-[#5A1A14]">{merStr}</span>
+          {h12str}<span className="text-[#8D3118]">:</span>{minStr}
+          <span className="ml-1.5 text-base font-semibold text-[#8D3118]">{merStr}</span>
         </p>
       </div>
 
       {/* Drum scrollers */}
       <div className="flex items-center gap-0 px-2 pt-1">
         <DrumColumn items={hours12} selected={h12str} onSelect={onHourSelect} />
-        <span className="text-lg font-bold text-[#5A1A14]">:</span>
+        <span className="text-lg font-bold text-[#8D3118]">:</span>
         <DrumColumn items={minutes} selected={minStr} onSelect={onMinuteSelect} />
         <DrumColumn items={meridiem} selected={merStr} onSelect={onMerSelect} />
       </div>
 
       <div className="flex gap-2 px-2 pb-2 pt-1">
         <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#E5E7EB] transition-colors">Cancel</button>
-        <button onClick={apply} className="flex-1 rounded-lg bg-[#5A1A14] py-1.5 text-xs font-semibold text-white hover:bg-[#5A1A14] transition-colors">Set</button>
+        <button onClick={apply} className="flex-1 rounded-lg bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
       </div>
     </div>
   );
@@ -257,7 +257,7 @@ function ValidFromField({ value, onChange, error }) {
   return (
     <div ref={wrapRef} className="relative">
       <span className="text-xs font-semibold text-[#1A1A1A]">Active from <span className="text-red-500">*</span></span>
-      <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#5A1A14] focus-within:ring-[#5A1A14]/20"}`}>
+      <div className={`mt-1.5 flex items-center rounded-lg border transition-all focus-within:ring-2 ${error ? "border-red-300 focus-within:ring-red-100" : "border-[#e5e7eb] focus-within:border-[#8D3118] focus-within:ring-[#8D3118]/20"}`}>
         <input
           type="datetime-local"
           value={value}
@@ -268,7 +268,7 @@ function ValidFromField({ value, onChange, error }) {
           type="button"
           onClick={() => setClockOpen((v) => !v)}
           title="Pick time with clock"
-          className={`-ml-1 mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#5A1A14]" : "text-[#6B7280] hover:text-[#5A1A14]"}`}
+          className={`-ml-1 mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${clockOpen ? "text-[#8D3118]" : "text-[#6B7280] hover:text-[#8D3118]"}`}
         >
           <Clock size={14} />
         </button>
@@ -325,14 +325,14 @@ function CouponFormPanel({ onClose, onCreate }) {
       }
     >
       {/* Preview */}
-      <div className="mb-4 rounded-xl border border-dashed border-[#5A1A14] bg-[#FFFFFF] p-4 text-center">
-        <Tag size={20} className="mx-auto text-[#5A1A14]" />
+      <div className="mb-4 rounded-xl border border-dashed border-[#8D3118] bg-[#FFFFFF] p-4 text-center">
+        <Tag size={20} className="mx-auto text-[#8D3118]" />
         <p className="mt-2 font-mono text-lg font-bold text-[#1A1A1A]">XXX-XXXX-XXX</p>
         <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">
           {discountLabel} · {coupon.category ? `${coupon.category}` : "Any category"}{coupon.packageName ? ` · ${(PACKAGES_BY_CATEGORY[coupon.category] || []).find(p => p.id === coupon.packageName)?.name || coupon.packageName}` : " · Any package"}
         </p>
         <p className="mt-1 text-[11px] font-semibold text-[#6B7280]">Active from {formatDateTime(coupon.validFrom) || "—"}</p>
-        <p className="mt-0.5 text-[11px] font-semibold text-[#5A1A14]">Valid till {validityDisplay}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-[#8D3118]">Valid till {validityDisplay}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -341,7 +341,7 @@ function CouponFormPanel({ onClose, onCreate }) {
           <CouponField label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
           <label className="block">
             <span className="text-xs font-semibold text-[#1A1A1A]">Type</span>
-            <select value={coupon.amountType} onChange={(e) => setField("amountType")(e.target.value)} className="mt-1.5 h-[38px] w-full rounded-lg border border-[#e5e7eb] px-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20">
+            <select value={coupon.amountType} onChange={(e) => setField("amountType")(e.target.value)} className="mt-1.5 h-[38px] w-full rounded-lg border border-[#e5e7eb] px-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20">
               <option value="percentage">%</option>
               <option value="fixed">Rs</option>
             </select>
@@ -362,7 +362,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 setCoupon((prev) => ({ ...prev, category: cat, packageName: "" }));
                 setErrors((prev) => ({ ...prev, packageName: "" }));
               }}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               <option value="">Any category</option>
               {PACKAGE_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
@@ -381,7 +381,7 @@ function CouponFormPanel({ onClose, onCreate }) {
               onChange={(e) => { setField("packageName")(e.target.value); }}
               disabled={!coupon.category}
               className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                errors.packageName ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
+                errors.packageName ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
               } disabled:bg-[#FFFFFF] disabled:text-[#6B7280]`}
             >
               <option value="">{coupon.category ? "Select a package" : "Select a category first"}</option>
@@ -411,7 +411,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 setField("validityHours")(val);
                 setErrors((prev) => ({ ...prev, validity: "" }));
               }}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               {VALIDITY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -424,7 +424,7 @@ function CouponFormPanel({ onClose, onCreate }) {
                 type="datetime-local"
                 value={coupon.customValidity}
                 onChange={(e) => setField("customValidity")(e.target.value)}
-                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"}`}
+                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${errors.validity ? "border-red-300 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"}`}
               />
               {errors.validity && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.validity}</span>}
             </div>
@@ -445,7 +445,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-[#ffffff] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]"><Icon size={17} /></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#8D3118]"><Icon size={17} /></div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
           <p className="mt-0.5 text-lg font-bold text-[#1A1A1A]">{value}</p>
@@ -477,7 +477,7 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <p className="font-mono text-sm font-bold text-[#1A1A1A] truncate">{coupon.code || "NO-CODE"}</p>
-            <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#5A1A14]"><Copy size={13} /></button>
+            <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#8D3118]"><Copy size={13} /></button>
             {copied === coupon.code && <span className="text-xs font-semibold text-emerald-600">Copied</span>}
           </div>
           <p className="mt-0.5 text-xs text-[#6b7280]">
@@ -518,7 +518,7 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
       <div className="min-w-0 flex-1 grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 items-center text-sm">
         <div className="flex items-center gap-2">
           <p className="font-mono font-bold text-[#1A1A1A] truncate">{coupon.code || "NO-CODE"}</p>
-          <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#5A1A14]"><Copy size={12} /></button>
+          <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#6B7280] hover:text-[#8D3118]"><Copy size={12} /></button>
           {copied === coupon.code && <span className="text-[11px] font-semibold text-emerald-600">Copied</span>}
         </div>
         <span className="text-[#1A1A1A] truncate">{coupon.assignedCompany || coupon.companyName || <span className="text-[#6B7280]">—</span>}</span>
@@ -687,8 +687,8 @@ export default function Coupons() {
 
               {/* View switcher */}
               <div className="flex items-center rounded-lg border border-[#e5e7eb] overflow-hidden">
-                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#5A1A14] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><Grid2x2 size={15} /></button>
-                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#5A1A14] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><List size={15} /></button>
+                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><Grid2x2 size={15} /></button>
+                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#E5E7EB]"}`}><List size={15} /></button>
               </div>
             </div>
           </div>
@@ -732,7 +732,7 @@ export default function Coupons() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#5A1A14] text-white" : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
                       >
                         {p}
                       </button>

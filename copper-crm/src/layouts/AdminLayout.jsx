@@ -164,7 +164,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
         onClick={() => onNavigate(item.to)}
         title={item.label}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-          active ? "bg-white border-[#E5E7EB] text-[#5A1A14] shadow-sm" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
+          active ? "bg-white border-[#E5E7EB] text-[#8D3118] shadow-sm" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
         }`}
       >
         <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
@@ -174,7 +174,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
   return (
     <button
       onClick={() => onNavigate(item.to)}
-      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E7EB] text-[#5A1A14] shadow-sm" : "text-[#1A1A1A] hover:bg-white/70"}`}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E7EB] text-[#8D3118] shadow-sm" : "text-[#1A1A1A] hover:bg-white/70"}`}
     >
       <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
       <span className="truncate text-sm font-medium">{item.label}</span>
@@ -193,7 +193,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
         <button
           title={item.label}
           className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-            active ? "bg-white border-[#E5E7EB] text-[#5A1A14]" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
+            active ? "bg-white border-[#E5E7EB] text-[#8D3118]" : "border-transparent text-[#1A1A1A] hover:bg-white/70"
           }`}
         >
           <item.icon size={20} strokeWidth={1.8} />
@@ -206,7 +206,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
     <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#5A1A14]" : "text-[#1A1A1A] hover:bg-white/70"}`}
+        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#8D3118]" : "text-[#1A1A1A] hover:bg-white/70"}`}
       >
         <span className="flex items-center gap-3">
           <item.icon size={16} strokeWidth={1.8} />
@@ -499,7 +499,7 @@ export default function AdminLayout() {
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#5A1A14] text-[9px] font-bold text-white">
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#8D3118] text-[9px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -542,7 +542,7 @@ export default function AdminLayout() {
             <div ref={quickAddRef} className="relative">
               <button
                 onClick={() => setQuickAddOpen((v) => !v)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5A1A14] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#6B7280] transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#6B7280] transition-colors"
               >
                 <Plus size={16} />
               </button>
@@ -566,9 +566,9 @@ export default function AdminLayout() {
             <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white p-1 hover:ring-2 hover:ring-[#5A1A14]/20 transition-all"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E7EB] bg-white p-1 hover:ring-2 hover:ring-[#8D3118]/20 transition-all"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5A1A14] text-white text-xs font-medium">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white text-xs font-medium">
                   {initials}
                 </span>
               </button>

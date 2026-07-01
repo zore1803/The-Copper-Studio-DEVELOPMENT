@@ -31,7 +31,7 @@ const PROJECT_VIEWS = ["Table", "Board", "Timeline", "Gantt"];
 function LinkedInGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#5A1A14" />
+      <circle cx="28" cy="28" r="28" fill="#8D3118" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -47,11 +47,11 @@ function InstagramGlyph(props) {
     <svg viewBox="0 0 56 56" {...props}>
       <defs>
         <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#5A1A14" />
-          <stop offset="25%" stopColor="#5A1A14" />
-          <stop offset="50%" stopColor="#5A1A14" />
-          <stop offset="75%" stopColor="#5A1A14" />
-          <stop offset="100%" stopColor="#5A1A14" />
+          <stop offset="0%" stopColor="#8D3118" />
+          <stop offset="25%" stopColor="#8D3118" />
+          <stop offset="50%" stopColor="#8D3118" />
+          <stop offset="75%" stopColor="#8D3118" />
+          <stop offset="100%" stopColor="#8D3118" />
         </linearGradient>
       </defs>
       <rect width="56" height="56" rx="14" fill="url(#igGradient)" />
@@ -65,7 +65,7 @@ function InstagramGlyph(props) {
 function FacebookGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#5A1A14" />
+      <circle cx="28" cy="28" r="28" fill="#8D3118" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -110,8 +110,8 @@ function SocialIconLink({ href, icon: Icon, label }) {
 }
 
 const WEBSITE_BRAND_STYLES = {
-  Website: { color: "#5A1A14", bg: "#FFFFFF" },
-  "Personal site": { color: "#5A1A14", bg: "#FFFFFF" },
+  Website: { color: "#8D3118", bg: "#FFFFFF" },
+  "Personal site": { color: "#8D3118", bg: "#FFFFFF" },
 };
 
 function WebsiteIconLink({ href, icon: Icon, label }) {
@@ -143,7 +143,7 @@ function WebsiteTextLink({ href }) {
       target="_blank"
       rel="noopener noreferrer"
       title={href}
-      className="inline-flex items-center gap-1.5 rounded-full border border-[#6B7280] bg-white px-2.5 py-1 text-xs font-semibold text-[#5A1A14] shadow-sm transition-colors hover:bg-[#E5E7EB]"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#6B7280] bg-white px-2.5 py-1 text-xs font-semibold text-[#8D3118] shadow-sm transition-colors hover:bg-[#E5E7EB]"
     >
       <Globe size={12} className="shrink-0" />
       {label}
@@ -173,7 +173,7 @@ function formatINR(value) {
 function EmptyState({ icon: Icon, title, text, action }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#8D3118]">
         <Icon size={20} />
       </div>
       <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
@@ -258,7 +258,7 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
   }
 
   return (
-    <div className="rounded-xl border-2 border-[#5A1A14] bg-white p-4">
+    <div className="rounded-xl border-2 border-[#8D3118] bg-white p-4">
       <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactName}</p>
       <p className="truncate text-xs text-[#6b7280]">{contact.email}</p>
 
@@ -271,10 +271,10 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}
               >
                 <span className="font-semibold text-[#1A1A1A]">{project.name}</span>
-                <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#E5E7EB] accent-[#5A1A14]" />
+                <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#E5E7EB] accent-[#8D3118]" />
               </label>
             );
           })
@@ -371,7 +371,7 @@ function InvoicePanel({ invoice, onClose, onDownload, onMarkPaid }) {
         <div className="mt-4 rounded-lg border border-dashed border-[#6B7280] bg-[#FFFFFF] p-5">
           <p className="text-lg font-bold text-[#1A1A1A]">The Copper Studio</p>
           <p className="mt-1 text-sm text-[#6b7280]">Invoice {invoice.invoiceId || invoice.id || invoice._id}</p>
-          <p className="mt-5 text-2xl font-bold text-[#5A1A14]">{formatINR(parseMoney(invoice.total || invoice.amount))}</p>
+          <p className="mt-5 text-2xl font-bold text-[#8D3118]">{formatINR(parseMoney(invoice.total || invoice.amount))}</p>
         </div>
       </div>
       <div className="space-y-4">
@@ -452,7 +452,7 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
         value={value || ""}
         disabled={disabled}
         onChange={(event) => onChange?.(event.target.value)}
-        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20 ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
+        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
       />
       {hint && <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>}
     </label>
@@ -467,7 +467,7 @@ function Textarea({ label, value, onChange, span = false }) {
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -481,7 +481,7 @@ function Select({ label, value, onChange, options = [], span = false }) {
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">Select…</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -677,7 +677,7 @@ export default function CompanyDetail() {
     return (
       <div className="m-6 rounded-xl border border-[#e5e7eb] bg-white p-12 text-center">
         <p className="text-sm font-semibold text-[#6b7280]">Company not found.</p>
-        <button onClick={() => navigate("/admin/companies")} className="mt-4 text-sm font-semibold text-[#5A1A14] hover:underline">
+        <button onClick={() => navigate("/admin/companies")} className="mt-4 text-sm font-semibold text-[#8D3118] hover:underline">
           Back to Companies
         </button>
       </div>
@@ -965,7 +965,7 @@ export default function CompanyDetail() {
                 {company.logo ? (
                   <img src={company.logo} alt={`${company.name} logo`} className="h-full w-full object-cover" />
                 ) : (
-                  <Building2 size={24} className="text-[#5A1A14]" />
+                  <Building2 size={24} className="text-[#8D3118]" />
                 )}
               </div>
               <div className="min-w-0">
@@ -1061,7 +1061,7 @@ export default function CompanyDetail() {
                 onClick={() => setCompanyDetailsOpen((open) => !open)}
                 aria-expanded={companyDetailsOpen}
                 title={companyDetailsOpen ? "Hide company details" : "Show company details"}
-                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#E5E7EB] bg-white text-[#5A1A14] transition-colors hover:bg-[#E5E7EB] sm:col-start-3 lg:col-start-auto"
+                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#E5E7EB] bg-white text-[#8D3118] transition-colors hover:bg-[#E5E7EB] sm:col-start-3 lg:col-start-auto"
               >
                 <ChevronDown size={18} className={`transition-transform ${companyDetailsOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1090,7 +1090,7 @@ export default function CompanyDetail() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${activeTab === tab ? "bg-[#5A1A14] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${activeTab === tab ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
               >
                 {tab}
                 {Boolean(tabCounts[tab]) && (
@@ -1323,7 +1323,7 @@ function ActivityTimeline({ items, full = false }) {
             const Icon = item.icon || MessageSquare;
             return (
               <div key={`${item.type}-${item.title}-${index}`} className="flex gap-3">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#FFFFFF] text-[#8D3118]">
                   <Icon size={15} />
                 </div>
                 <div className="min-w-0">
@@ -1396,7 +1396,7 @@ function WorkspaceToggle({ options, value, onChange }) {
         <button
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#5A1A14] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
+          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"}`}
         >
           {option}
         </button>
@@ -1463,7 +1463,7 @@ function ProjectTimeline({ projects }) {
     <div className="space-y-3">
       {projects.map((project) => (
         <div key={project.id || project._id} className="flex gap-3 rounded-xl border border-[#e5e7eb] bg-white p-4">
-          <div className="mt-1 h-3 w-3 rounded-full bg-[#5A1A14]" />
+          <div className="mt-1 h-3 w-3 rounded-full bg-[#8D3118]" />
           <div>
             <p className="font-semibold text-[#1A1A1A]">{project.name}</p>
             <p className="text-sm text-[#6b7280]">{project.startDate || "No start"} to {project.dueDate || project.expectedEndDate || "No due date"} / {project.status || project.currentPhase || "Not started"}</p>
@@ -1487,7 +1487,7 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
           <button
             key={project.id || project._id}
             onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)}
-            className="rounded-xl border border-[#e5e7eb] bg-white p-5 text-left hover:border-[#5A1A14]/40 hover:shadow-sm"
+            className="rounded-xl border border-[#e5e7eb] bg-white p-5 text-left hover:border-[#8D3118]/40 hover:shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -1510,7 +1510,7 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
                 <span>{progress}%</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-[#FFFFFF]">
-                <div className="h-full rounded-full bg-[#5A1A14]" style={{ width: `${Math.min(progress, 100)}%` }} />
+                <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${Math.min(progress, 100)}%` }} />
               </div>
             </div>
           </button>
@@ -1561,12 +1561,12 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
               <td className="py-3 pr-4 text-[#1A1A1A]"><span className="inline-flex items-center gap-1"><Mail size={12} /> {contact.email || "No email"}</span></td>
               <td className="py-3 pr-4 text-[#1A1A1A]"><span className="inline-flex items-center gap-1"><Phone size={12} /> {contact.phone || "No phone"}</span></td>
               <td className="py-3 pr-4 text-[#1A1A1A]">{contact.whatsapp || "No WhatsApp"}</td>
-              <td className="py-3 pr-4 text-[#1A1A1A]">{contact.linkedin ? <a className="text-[#5A1A14] hover:underline" href={contact.linkedin} target="_blank" rel="noreferrer">Open</a> : "No LinkedIn"}</td>
+              <td className="py-3 pr-4 text-[#1A1A1A]">{contact.linkedin ? <a className="text-[#8D3118] hover:underline" href={contact.linkedin} target="_blank" rel="noreferrer">Open</a> : "No LinkedIn"}</td>
               <td className="py-3 pr-4"><StatusBadge status={contact.status || "Active"} /></td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]"><Eye size={14} /></button>
-                  <button onClick={() => onEdit(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]"><Edit2 size={14} /></button>
+                  <button onClick={() => onView(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onEdit(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#8D3118]"><Edit2 size={14} /></button>
                   <button onClick={() => onPrimary(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
                   <button onClick={() => onDelete(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
                 </div>
@@ -1607,8 +1607,8 @@ function InvoicesTable({ invoices, onView, onDownload }) {
               <td className="py-3 pr-4 font-mono text-xs text-[#6b7280]">{invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked"}</td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]"><Eye size={14} /></button>
-                  <button onClick={() => onDownload(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]"><Download size={14} /></button>
+                  <button onClick={() => onView(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onDownload(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#8D3118]"><Download size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1669,7 +1669,7 @@ function TaskGantt({ tasks, projects }) {
               </div>
               <div className="relative h-9 rounded-lg bg-[#FFFFFF]">
                 <div
-                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#5A1A14] px-1.5 text-[10px] font-bold text-white"
+                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#8D3118] px-1.5 text-[10px] font-bold text-white"
                   style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
                   title={dateRange}
                 >
@@ -1731,7 +1731,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             <button
               type="button"
               onClick={() => setView("Grid")}
-              className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#FFFFFF] text-[#5A1A14]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
+              className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#FFFFFF] text-[#8D3118]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
               title="Grid view"
             >
               <LayoutGrid size={15} />
@@ -1739,7 +1739,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             <button
               type="button"
               onClick={() => setView("List")}
-              className={`rounded-full p-1.5 ${view === "List" ? "bg-[#FFFFFF] text-[#5A1A14]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
+              className={`rounded-full p-1.5 ${view === "List" ? "bg-[#FFFFFF] text-[#8D3118]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
               title="List view"
             >
               <ListIcon size={15} />
@@ -1757,7 +1757,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             placeholder="Group name, e.g. Client Onboarding"
-            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
           <p className="mt-3 text-xs font-semibold text-[#1A1A1A]">Select folders to include in this group</p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
@@ -1786,7 +1786,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenGroup(group)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenGroup(group)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#5A1A14]/40"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <button
                   type="button"
@@ -1797,7 +1797,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                   <Trash2 size={13} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#5A1A14]"><Layers size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
                   <div>
                     <p className="font-bold text-[#1A1A1A]">{group.name}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files · {group.folders.join(", ")}</p>
@@ -1815,10 +1815,10 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 tabIndex={0}
                 onClick={() => onOpenFolder(category)}
                 onKeyDown={(e) => e.key === "Enter" && onOpenFolder(category)}
-                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#5A1A14]/40"
+                className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#5A1A14]"><FolderOpen size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
                   <div>
                     <p className="font-bold text-[#1A1A1A]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>
@@ -1860,7 +1860,7 @@ function DocumentList({ documents, onDelete }) {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {canOpen ? (
-                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#5A1A14] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
+                <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
                   View
                 </a>
               ) : (
@@ -1898,7 +1898,7 @@ function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload })
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {canOpen ? (
-                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#5A1A14] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
+                    <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280]">
                       View
                     </a>
                   ) : (
@@ -1962,7 +1962,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                             {...prov.draggableProps}
                             {...prov.dragHandleProps}
                             className={`cursor-grab rounded-lg border bg-white p-3 shadow-sm transition-[box-shadow,border-color] duration-200 active:cursor-grabbing ${
-                              snap.isDragging ? "border-[#5A1A14]/40 shadow-lg" : "border-[#e5e7eb] hover:border-[#5A1A14]/30 hover:shadow-md"
+                              snap.isDragging ? "border-[#8D3118]/40 shadow-lg" : "border-[#e5e7eb] hover:border-[#8D3118]/30 hover:shadow-md"
                             }`}
                             style={{
                               ...prov.draggableProps.style,
@@ -2206,15 +2206,15 @@ function CalendarTaskView({ tasks, onCreate }) {
                   onClick={() => setSelectedDay(cell.date)}
                   className="aspect-square border border-[#FFFFFF] bg-white p-1.5 text-left transition-colors hover:bg-[#E5E7EB]"
                 >
-                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#5A1A14] text-white" : "text-[#1A1A1A]"}`}>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-[#1A1A1A]"}`}>
                     {cell.date.getDate()}
                   </span>
                   {cell.tasks.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-0.5">
                       {cell.tasks.slice(0, 3).map((task) => (
-                        <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#5A1A14]" />
+                        <span key={task.id || task._id} className="h-1.5 w-1.5 rounded-full bg-[#8D3118]" />
                       ))}
-                      {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#5A1A14]">+{cell.tasks.length - 3}</span>}
+                      {cell.tasks.length > 3 && <span className="text-[9px] font-bold text-[#8D3118]">+{cell.tasks.length - 3}</span>}
                     </div>
                   )}
                 </button>
@@ -2232,15 +2232,15 @@ function CalendarTaskView({ tasks, onCreate }) {
               <button
                 key={date.toISOString()}
                 onClick={() => setSelectedDay(date)}
-                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#5A1A14]/40 ${isToday ? "border-[#5A1A14]/40" : "border-[#e5e7eb]"}`}
+                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#8D3118]/40 ${isToday ? "border-[#8D3118]/40" : "border-[#e5e7eb]"}`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{WEEKDAY_LABELS[date.getDay()]}</p>
-                <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#5A1A14] text-white" : "text-[#1A1A1A]"}`}>{date.getDate()}</span>
+                <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-[#1A1A1A]"}`}>{date.getDate()}</span>
                 <div className="mt-2 space-y-1">
                   {dayTasksList.slice(0, 3).map((task) => (
-                    <p key={task.id || task._id} className="truncate rounded bg-[#FFFFFF] px-1.5 py-1 text-[10px] font-semibold text-[#5A1A14]">{task.title || task.taskName || "Task"}</p>
+                    <p key={task.id || task._id} className="truncate rounded bg-[#FFFFFF] px-1.5 py-1 text-[10px] font-semibold text-[#8D3118]">{task.title || task.taskName || "Task"}</p>
                   ))}
-                  {dayTasksList.length > 3 && <p className="text-[10px] font-bold text-[#5A1A14]">+{dayTasksList.length - 3} more</p>}
+                  {dayTasksList.length > 3 && <p className="text-[10px] font-bold text-[#8D3118]">+{dayTasksList.length - 3} more</p>}
                 </div>
               </button>
             );
@@ -2394,13 +2394,13 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           type="date"
           value={dateFilter}
           onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
-          className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+          className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
         <button
           type="button"
           onClick={cycleSort}
           className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-            sortDir ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"
+            sortDir ? "border-[#8D3118] bg-[#FFFFFF] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"
           }`}
           title="Sort by created date"
         >
@@ -2411,7 +2411,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           <button
             type="button"
             onClick={() => { setSearch(""); setDateFilter(""); setSortDir(null); setPage(1); }}
-            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#5A1A14] hover:bg-[#E5E7EB]"
+            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#E5E7EB]"
           >
             Clear
           </button>
@@ -2431,7 +2431,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               onMouseEnter={(event) => showPreview(event, note)}
               onMouseLeave={scheduleHidePreview}
               className={`relative rounded-xl border bg-white p-4 transition-shadow ${
-                dragIndex === localIndex ? "opacity-50" : overIndex === localIndex ? "border-[#5A1A14]/50 shadow-md" : "border-[#e5e7eb]"
+                dragIndex === localIndex ? "opacity-50" : overIndex === localIndex ? "border-[#8D3118]/50 shadow-md" : "border-[#e5e7eb]"
               }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -2446,7 +2446,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
                   />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
-                  <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]" title="Edit note">
+                  <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#8D3118]" title="Edit note">
                     <Edit2 size={14} />
                   </button>
                   <button type="button" onClick={() => onDelete(note)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete note">
@@ -2536,7 +2536,7 @@ function NotePanel({ company, note, onClose, onSave }) {
             rows={1}
             onChange={(event) => set("title")(event.target.value)}
             placeholder="e.g. Pricing discussion"
-            className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+            className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             onInput={(event) => { event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }}
             ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
           />
@@ -2578,7 +2578,7 @@ function CalendlyBookingModal({ url, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] shadow hover:text-[#5A1A14]"
+          className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] shadow hover:text-[#8D3118]"
         >
           <X size={16} />
         </button>

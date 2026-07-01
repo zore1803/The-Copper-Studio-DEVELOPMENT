@@ -72,7 +72,7 @@ body[data-page="success"] .top-nav a {
 }
 
 body[data-page="success"] .top-nav a:hover {
-  color: #5A1A14;
+  color: #8D3118;
   background: rgba(255, 255, 255, 0.5);
 }
 
@@ -182,7 +182,7 @@ body[data-page="payment"] .top-nav a {
 
 body[data-page="checkout"] .top-nav a:hover,
 body[data-page="payment"] .top-nav a:hover {
-  color: #5A1A14;
+  color: #8D3118;
   background: rgba(255, 255, 255, 0.5);
 }
 
@@ -246,7 +246,7 @@ body[data-page="payment"] .two-column {
 }
 
 .checkout-step.is-active .checkout-step-num {
-  background: #5A1A14;
+  background: #8D3118;
 }
 
 /* Completed step (left of the active one) */
@@ -255,7 +255,7 @@ body[data-page="payment"] .two-column {
 }
 
 .checkout-step.is-done .checkout-step-num {
-  background: #5A1A14;
+  background: #8D3118;
 }
 
 .checkout-step-divider {
@@ -361,7 +361,7 @@ body[data-page="payment"] input:focus,
 body[data-page="payment"] select:focus,
 .phone-field:focus-within,
 .plain-phone:focus-within {
-  border-color: #5A1A14;
+  border-color: #8D3118;
   box-shadow: 0 0 0 3px rgba(150, 77, 10, 0.12);
 }
 
@@ -378,7 +378,7 @@ body[data-page="payment"] select:focus,
 }
 
 .verify-badge {
-  color: #5A1A14;
+  color: #8D3118;
   border: 0;
   background: transparent;
   padding: 0;
@@ -393,7 +393,7 @@ body[data-page="payment"] select:focus,
 }
 
 .verify-field.is-verified .verify-badge {
-  color: #5A1A14;
+  color: #8D3118;
 }
 
 .verify-field.is-verified .verify-badge::before {
@@ -412,7 +412,7 @@ body[data-page="payment"] select:focus,
   gap: 4px;
   border: 0;
   background: transparent;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -595,7 +595,7 @@ body[data-page="checkout"] select:disabled {
   min-height: 58px;
   border: 0;
   border-radius: 12px;
-  background: #5A1A14;
+  background: #8D3118;
   color: #ffffff;
   font-size: 0.78rem;
   font-weight: 800;
@@ -735,7 +735,7 @@ body[data-page="checkout"] select:disabled {
 }
 
 .trust-item .material-symbols-outlined {
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 1rem;
 }
 
@@ -812,7 +812,7 @@ body[data-page="checkout"] select:disabled {
   align-items: center;
   gap: 4px;
   margin-left: 8px;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.72rem;
   font-weight: 700;
 }
@@ -821,7 +821,7 @@ body[data-page="checkout"] select:disabled {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -891,7 +891,7 @@ body[data-page="checkout"] select:disabled {
 
 .pay-chip .material-symbols-outlined {
   font-size: 0.95rem;
-  color: #5A1A14;
+  color: #8D3118;
 }
 
 /* Full-width Pay button inside the order-summary card */
@@ -901,7 +901,7 @@ body[data-page="checkout"] select:disabled {
   min-height: 58px;
   border: 0;
   border-radius: 12px;
-  background: #5A1A14;
+  background: #8D3118;
   color: #ffffff;
   font-size: 0.82rem;
   font-weight: 800;
@@ -948,7 +948,7 @@ body[data-page="checkout"] select:disabled {
 
 .gateway-note .material-symbols-outlined {
   font-size: 1rem;
-  color: #5A1A14;
+  color: #8D3118;
 }
 
 /* ============================================================
@@ -969,7 +969,7 @@ body[data-page="checkout"] select:disabled {
   border-radius: 999px;
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -982,7 +982,7 @@ body[data-page="checkout"] select:disabled {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #5A1A14;
+  background: #8D3118;
   color: #ffffff;
 }
 
@@ -1028,7 +1028,7 @@ body[data-page="checkout"] select:disabled {
 }
 
 .emailed-list li .material-symbols-outlined {
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 1.15rem;
 }
 
@@ -1044,7 +1044,7 @@ body[data-page="checkout"] select:disabled {
 }
 
 .support-callout .material-symbols-outlined {
-  color: #5A1A14;
+  color: #8D3118;
 }
 
 .support-callout strong {
@@ -1066,7 +1066,7 @@ body[data-page="checkout"] select:disabled {
   padding: 5px 11px;
   border-radius: 999px;
   background: #FFFFFF;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -1271,7 +1271,7 @@ body[data-page="packages"] .page-shell {
 .hero-eyebrow {
   display: inline-block;
   margin-bottom: 14px;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -1329,7 +1329,7 @@ body[data-page="packages"] .page-shell {
 }
 
 .hero-included li .material-symbols-outlined {
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 1.1rem;
 }
 
@@ -1379,8 +1379,8 @@ body[data-page="packages"] .package-card:hover {
 }
 
 body[data-page="packages"] .package-card.is-selected {
-  border-color: #5A1A14;
-  box-shadow: 0 0 0 1px #5A1A14 inset, 0 18px 40px rgba(150, 77, 10, 0.12);
+  border-color: #8D3118;
+  box-shadow: 0 0 0 1px #8D3118 inset, 0 18px 40px rgba(150, 77, 10, 0.12);
 }
 
 body[data-page="packages"] .package-card header {
@@ -1409,7 +1409,7 @@ body[data-page="packages"] .package-card h3 {
 }
 
 body[data-page="packages"] .package-card header .material-symbols-outlined {
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 1.3rem;
 }
 
@@ -1445,7 +1445,7 @@ body[data-page="packages"] .package-card li {
 
 body[data-page="packages"] .package-card li::before {
   content: "✓";
-  color: #5A1A14;
+  color: #8D3118;
   font-weight: 700;
   font-family: inherit;
 }
@@ -1463,7 +1463,7 @@ body[data-page="packages"] .package-card .btn {
 
 body[data-page="packages"] .package-card .btn-primary {
   border: 0;
-  background: #5A1A14;
+  background: #8D3118;
   color: #ffffff;
 }
 
@@ -1540,13 +1540,13 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   white-space: nowrap;
 }
 .category-switcher .category-tab.is-active {
-  background: #5A1A14;
+  background: #8D3118;
   color: #fff;
   box-shadow: 0 2px 8px rgba(136,76,45,0.22);
 }
 .category-switcher .category-tab:hover:not(.is-active) {
   background: #FFFFFF;
-  color: #5A1A14;
+  color: #8D3118;
 }
 
 /* ── Custom package banner ──────────────────────────────────────────────── */
@@ -1566,7 +1566,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #5A1A14;
+  color: #8D3118;
   margin: 0 0 6px;
 }
 .custom-package-body h3 {
@@ -1625,7 +1625,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
 .discount-pill {
   display: flex;
   align-items: center;
-  background: #5A1A14;
+  background: #8D3118;
   border-radius: 100px;
   padding: 4px;
   box-shadow: 0 8px 28px rgba(0,0,0,0.22);
@@ -1647,11 +1647,11 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   transition: background 0.15s, color 0.15s;
 }
 .discount-icon-btn:hover {
-  background: #5A1A14;
+  background: #8D3118;
   color: #fff;
 }
 .discount-icon-btn.active {
-  background: #5A1A14;
+  background: #8D3118;
   color: #fff;
 }
 
@@ -1672,7 +1672,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
 .discount-popup-symbol {
   font-size: 13px;
   font-weight: 800;
-  color: #5A1A14;
+  color: #8D3118;
   min-width: 12px;
 }
 .discount-input-popup input {
@@ -1688,7 +1688,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   background: #FFFFFF;
 }
 .discount-input-popup input:focus {
-  border-color: #5A1A14;
+  border-color: #8D3118;
   background: #fff;
 }
 #discountApplyBtn {
@@ -1699,7 +1699,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   font-weight: 700;
   cursor: pointer;
   border: none;
-  background: #5A1A14;
+  background: #8D3118;
   color: #fff;
   display: flex;
   align-items: center;
@@ -1708,7 +1708,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   flex-shrink: 0;
 }
 #discountApplyBtn:hover {
-  background: #5A1A14;
+  background: #8D3118;
 }
 #discountClearBtn {
   width: 30px;
@@ -1727,8 +1727,8 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   flex-shrink: 0;
 }
 #discountClearBtn:hover {
-  border-color: #5A1A14;
-  color: #5A1A14;
+  border-color: #8D3118;
+  color: #8D3118;
 }
 
 /* Discounted price display inside package cards */
@@ -1751,7 +1751,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
 .price-badge {
   display: inline-block;
   background: #E5E7EB;
-  color: #5A1A14;
+  color: #8D3118;
   font-size: 11px;
   font-weight: 700;
   padding: 2px 7px;

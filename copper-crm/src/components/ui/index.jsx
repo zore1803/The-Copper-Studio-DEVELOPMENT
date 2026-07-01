@@ -3,7 +3,7 @@
 export function Badge({ children, color = "gray" }) {
   const colors = {
     gray:   "bg-[#E5E7EB] text-[#6B7280]",
-    blue:   "bg-[#FFFFFF] text-[#5A1A14]",
+    blue:   "bg-[#FFFFFF] text-[#8D3118]",
     green:  "bg-emerald-50 text-emerald-700",
     red:    "bg-red-50 text-red-600",
     orange: "bg-amber-50 text-amber-700",
@@ -19,7 +19,7 @@ export function Badge({ children, color = "gray" }) {
 
 export function Card({ children, className = "" }) {
   return (
-    <div className={`bg-white rounded-xl border border-[#6B7280] shadow-sm shadow-[#5A1A14]/5 ${className}`}>
+    <div className={`bg-white rounded-xl border border-[#6B7280] shadow-sm shadow-[#8D3118]/5 ${className}`}>
       {children}
     </div>
   );
@@ -29,7 +29,7 @@ export function Button({ children, variant = "primary", size = "md", onClick, cl
   const base = "inline-flex items-center gap-1.5 font-semibold rounded-xl transition-all disabled:opacity-50";
   const sizes = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-xs", lg: "px-5 py-2.5 text-sm" };
   const variants = {
-    primary:   "bg-[#5A1A14] text-white hover:bg-[#6B7280] shadow-sm shadow-[#5A1A14]/20",
+    primary:   "bg-[#8D3118] text-white hover:bg-[#6B7280] shadow-sm shadow-[#8D3118]/20",
     secondary: "bg-white text-[#1A1A1A] border border-[#6B7280] hover:bg-[#E5E7EB]",
     ghost:     "text-[#6B7280] hover:bg-[#E5E7EB]",
     danger:    "bg-red-50 text-red-600 border border-red-100 hover:bg-red-100",
@@ -50,7 +50,7 @@ export function Input({ label, placeholder, value, onChange, type = "text", clas
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="w-full px-3 py-2 text-sm border border-[#6B7280] rounded-xl outline-none focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#5A1A14] transition-all placeholder:text-[#6B7280]"
+        className="w-full px-3 py-2 text-sm border border-[#6B7280] rounded-xl outline-none focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#8D3118] transition-all placeholder:text-[#6B7280]"
       />
     </div>
   );
@@ -58,7 +58,7 @@ export function Input({ label, placeholder, value, onChange, type = "text", clas
 
 export function Avatar({ name, size = "md" }) {
   const sizes = { sm: "w-7 h-7 text-[10px]", md: "w-8 h-8 text-xs", lg: "w-10 h-10 text-sm" };
-  const colors = ["#5A1A14","#5A1A14","#1A1A1A","#5A1A14","#6B7280","#1A1A1A"];
+  const colors = ["#8D3118","#8D3118","#1A1A1A","#8D3118","#6B7280","#1A1A1A"];
   const idx = name ? name.charCodeAt(0) % colors.length : 0;
   return (
     <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`} style={{ background: colors[idx] }}>
@@ -91,7 +91,7 @@ export function PageHeader({ title, subtitle, action }) {
 
 export function SectionCard({ title, action, children, className = "" }) {
   return (
-    <div className={`border border-[#6B7280] rounded-xl bg-white shadow-sm shadow-[#5A1A14]/5 overflow-hidden ${className}`}>
+    <div className={`border border-[#6B7280] rounded-xl bg-white shadow-sm shadow-[#8D3118]/5 overflow-hidden ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between px-5 py-4 bg-[#FFFFFF] border-b border-[#E5E7EB]">
           {title && <p className="font-display text-sm font-bold text-[#1A1A1A]">{title}</p>}

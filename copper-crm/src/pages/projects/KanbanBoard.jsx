@@ -25,7 +25,7 @@ const priorityConfig = {
   Low: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
-const assigneeColor = ["bg-[#5A1A14]", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"];
+const assigneeColor = ["bg-[#8D3118]", "bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"];
 function assigneeIdx(letter = "A") { return String(letter || "A").charCodeAt(0) % assigneeColor.length; }
 
 function reorder(list, startIndex, endIndex) {

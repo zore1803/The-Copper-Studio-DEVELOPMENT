@@ -111,13 +111,13 @@ function MeetingCalendarView({ meetings }) {
                 onClick={() => setSelectedDay(cell.date)}
                 className={`aspect-square border border-gray-100 p-1.5 text-left transition-colors hover:bg-blue-50 ${isToday ? "bg-blue-50/60" : "bg-white"}`}
               >
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#5A1A14] text-white" : "text-gray-700"}`}>
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-gray-700"}`}>
                   {cell.date.getDate()}
                 </span>
                 {cell.meetings.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-0.5">
-                    {cell.meetings.slice(0, 3).map((m) => <span key={m.id || m._id} className="h-1.5 w-1.5 rounded-full bg-[#5A1A14]" />)}
-                    {cell.meetings.length > 3 && <span className="text-[9px] font-bold text-[#5A1A14]">+{cell.meetings.length - 3}</span>}
+                    {cell.meetings.slice(0, 3).map((m) => <span key={m.id || m._id} className="h-1.5 w-1.5 rounded-full bg-[#8D3118]" />)}
+                    {cell.meetings.length > 3 && <span className="text-[9px] font-bold text-[#8D3118]">+{cell.meetings.length - 3}</span>}
                   </div>
                 )}
               </button>
@@ -255,7 +255,7 @@ export function TasksPage() {
         </div>
         <div className="flex items-center gap-2">
           {tab === "Tasks" && (
-            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#5A1A14] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-9 items-center gap-1.5 rounded-lg bg-[#8D3118] px-3 text-xs font-semibold text-white hover:bg-blue-600">
               <Plus size={14} /> New Activity
             </button>
           )}
@@ -266,7 +266,7 @@ export function TasksPage() {
         <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
           <div className="flex gap-1">
             {["Tasks", "Meetings"].map((t) => (
-              <button key={t} onClick={() => switchTab(t)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t ? "border-b-2 border-[#5A1A14] text-[#5A1A14] rounded-none pb-1" : "text-gray-500 hover:text-gray-700"}`}>{t}</button>
+              <button key={t} onClick={() => switchTab(t)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t ? "border-b-2 border-[#8D3118] text-[#8D3118] rounded-none pb-1" : "text-gray-500 hover:text-gray-700"}`}>{t}</button>
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -275,7 +275,7 @@ export function TasksPage() {
               <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
             </div>
             <div className="relative">
-              <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${statusFilter !== "All" ? "border-[#5A1A14] bg-blue-50 text-[#5A1A14]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>
+              <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${statusFilter !== "All" ? "border-[#8D3118] bg-blue-50 text-[#8D3118]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>
                 <SlidersHorizontal size={13} />
               </button>
               {filtersOpen && (
@@ -285,7 +285,7 @@ export function TasksPage() {
                     <button
                       key={status}
                       onClick={() => { setStatusFilter(status); setPage(1); setFiltersOpen(false); }}
-                      className={`flex w-full items-center rounded-lg px-2 py-1.5 text-left text-xs font-semibold capitalize ${statusFilter === status ? "bg-blue-50 text-[#5A1A14]" : "text-gray-600 hover:bg-gray-50"}`}
+                      className={`flex w-full items-center rounded-lg px-2 py-1.5 text-left text-xs font-semibold capitalize ${statusFilter === status ? "bg-blue-50 text-[#8D3118]" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                       {status}
                     </button>
@@ -293,10 +293,10 @@ export function TasksPage() {
                 </div>
               )}
             </div>
-            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#5A1A14] bg-blue-50 text-[#5A1A14]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
-            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#5A1A14] bg-blue-50 text-[#5A1A14]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
+            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "list" ? "border-[#8D3118] bg-blue-50 text-[#8D3118]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
+            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${view === "kanban" ? "border-[#8D3118] bg-blue-50 text-[#8D3118]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
             {tab === "Meetings" && (
-              <button onClick={() => setView("calendar")} className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${view === "calendar" ? "border-[#5A1A14] bg-blue-50 text-[#5A1A14]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
+              <button onClick={() => setView("calendar")} className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${view === "calendar" ? "border-[#8D3118] bg-blue-50 text-[#8D3118]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
                 <Calendar size={12} /> View in Calendar
               </button>
             )}
@@ -378,7 +378,7 @@ export function TasksPage() {
                                 </>
                               )}
                               {mtg.status === "confirmed" && (
-                                <button onClick={() => updateMeetingStatus(mtg, "completed")} className="rounded-lg bg-[#5A1A14] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-blue-600">Mark Done</button>
+                                <button onClick={() => updateMeetingStatus(mtg, "completed")} className="rounded-lg bg-[#8D3118] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-blue-600">Mark Done</button>
                               )}
                               <button onClick={() => handleDeleteMeeting(mtg)} className="text-gray-400 hover:text-red-500" title="Delete"><Trash2 size={14} /></button>
                             </div>
@@ -396,7 +396,7 @@ export function TasksPage() {
               <div className="flex items-center gap-1">
                 <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#5A1A14] bg-[#5A1A14] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
+                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-lg border text-xs font-semibold ${p === page ? "border-[#8D3118] bg-[#8D3118] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
                 ))}
                 <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
               </div>
@@ -497,7 +497,7 @@ function SettingsField({ label, value, onChange, type = "text", placeholder, err
         disabled={disabled}
         aria-invalid={Boolean(error)}
         className={`h-9 w-full rounded-lg border bg-white px-3 text-sm text-[#1A1A1A] outline-none transition-all focus:ring-2 disabled:cursor-not-allowed disabled:bg-[#FFFFFF] disabled:text-[#6B7280] ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {hint && !error && <span className="text-[11px] text-[#6B7280]">{hint}</span>}
@@ -513,7 +513,7 @@ function SettingsSelect({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-2xl border border-[#6B7280] bg-[#FFFFFF] px-4 py-3 text-sm text-[#1A1A1A] outline-none transition-all focus:border-[#5A1A14] focus:ring-4 focus:ring-[#E5E7EB]"
+        className="mt-2 w-full rounded-2xl border border-[#6B7280] bg-[#FFFFFF] px-4 py-3 text-sm text-[#1A1A1A] outline-none transition-all focus:border-[#8D3118] focus:ring-4 focus:ring-[#E5E7EB]"
       >
         {options.map((option) => (
           <option key={option} value={option}>{option}</option>
@@ -533,7 +533,7 @@ function SettingsToggle({ title, description, checked, onChange }) {
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#5A1A14]" : "bg-[#6B7280]"}`}
+        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#8D3118]" : "bg-[#6B7280]"}`}
       >
         <span
           className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-6" : "left-1"}`}
@@ -559,14 +559,14 @@ function SettingsSecretField({ label, value, onChange, placeholder, error = "", 
           placeholder={placeholder}
           aria-invalid={Boolean(error)}
           className={`w-full rounded-2xl border bg-[#FFFFFF] px-4 py-3 pr-11 text-sm text-[#1A1A1A] outline-none transition-all focus:ring-4 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#6B7280] focus:border-[#5A1A14] focus:ring-[#E5E7EB]"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#6B7280] focus:border-[#8D3118] focus:ring-[#E5E7EB]"
           }`}
         />
         <button
           type="button"
           onClick={() => setRevealed((current) => !current)}
           title={revealed ? "Hide value" : "Reveal value"}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] transition-colors hover:text-[#5A1A14]"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] transition-colors hover:text-[#8D3118]"
         >
           {revealed ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -605,7 +605,7 @@ function SecurityGate({ onUnlock }) {
 
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#E5E7EB] text-[#5A1A14]"><LockKeyhole size={22} /></div>
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#E5E7EB] text-[#8D3118]"><LockKeyhole size={22} /></div>
       <h3 className="mt-4 text-lg font-semibold text-[#1A1A1A]">Confirm it's you</h3>
       <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#6B7280]">
         This area holds account credentials — your password, SMTP access, and the payment gateway endpoint. Re-enter your password to unlock it.
@@ -619,7 +619,7 @@ function SecurityGate({ onUnlock }) {
           placeholder="Current password"
           aria-invalid={Boolean(error)}
           className={`w-full rounded-2xl border bg-[#FFFFFF] px-4 py-3 text-sm text-[#1A1A1A] outline-none transition-all focus:ring-4 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#6B7280] focus:border-[#5A1A14] focus:ring-[#E5E7EB]"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#6B7280] focus:border-[#8D3118] focus:ring-[#E5E7EB]"
           }`}
         />
         {error && <p className="text-[11px] font-semibold text-red-500">{error}</p>}
@@ -657,7 +657,7 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
           }`}
         >
           <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
-            activeSection === section.key ? "bg-[#E5E7EB] text-[#5A1A14]" : "bg-[#E5E7EB] text-[#6B7280]"
+            activeSection === section.key ? "bg-[#E5E7EB] text-[#8D3118]" : "bg-[#E5E7EB] text-[#6B7280]"
           }`}>
             <section.icon size={17} />
           </div>
@@ -713,9 +713,9 @@ function DataFieldList({ label, hint, values, onChange }) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addValue(); } }}
           placeholder="Add option…"
-          className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 text-xs text-[#1A1A1A] outline-none transition-all focus:border-[#5A1A14] focus:bg-white focus:ring-2 focus:ring-[#5A1A14]/20"
+          className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 text-xs text-[#1A1A1A] outline-none transition-all focus:border-[#8D3118] focus:bg-white focus:ring-2 focus:ring-[#8D3118]/20"
         />
-        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#1A1A1A] hover:border-[#5A1A14] hover:text-[#5A1A14] transition-colors">
+        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#1A1A1A] hover:border-[#8D3118] hover:text-[#8D3118] transition-colors">
           <Plus size={12} /> Add
         </button>
       </div>
@@ -758,10 +758,10 @@ function DataFieldsSection({ onSave, saving }) {
             <button
               key={group.label}
               onClick={() => setActiveGroup(group.label)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#FFFFFF] font-semibold text-[#5A1A14]" : "text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#FFFFFF] font-semibold text-[#8D3118]" : "text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <span>{group.label}</span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#5A1A14]/10 text-[#5A1A14]" : "bg-[#FFFFFF] text-[#6B7280]"}`}>{totalOptions}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#FFFFFF] text-[#6B7280]"}`}>{totalOptions}</span>
             </button>
           );
         })}
@@ -798,12 +798,12 @@ function IconProfile() {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="ig-body" x1="24" y1="28" x2="24" y2="46" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5A1A14" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop stopColor="#8D3118" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
         <linearGradient id="ig-face" x1="24" y1="10" x2="24" y2="26" gradientUnits="userSpaceOnUse">
           <stop stopColor="#E5E7EB" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
         <radialGradient id="ig-shine" cx="20" cy="14" r="5" gradientUnits="userSpaceOnUse">
           <stop stopColor="white" stopOpacity="0.6" />
@@ -819,12 +819,12 @@ function IconProfile() {
       {/* shine on head */}
       <circle cx="20" cy="14" r="4" fill="url(#ig-shine)" />
       {/* eyes */}
-      <circle cx="21" cy="17" r="1.2" fill="#5A1A14" />
-      <circle cx="27" cy="17" r="1.2" fill="#5A1A14" />
+      <circle cx="21" cy="17" r="1.2" fill="#8D3118" />
+      <circle cx="27" cy="17" r="1.2" fill="#8D3118" />
       {/* smile */}
-      <path d="M21 21.5q3 2.5 6 0" stroke="#5A1A14" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      <path d="M21 21.5q3 2.5 6 0" stroke="#8D3118" strokeWidth="1.2" strokeLinecap="round" fill="none" />
       {/* badge / checkmark ring */}
-      <circle cx="36" cy="12" r="5.5" fill="#5A1A14" />
+      <circle cx="36" cy="12" r="5.5" fill="#8D3118" />
       <path d="M33.5 12l2 2 3.5-3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
@@ -835,21 +835,21 @@ function IconTemplates() {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="tg-email" x1="6" y1="14" x2="30" y2="34" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5A1A14" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop stopColor="#8D3118" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
         <linearGradient id="tg-chat" x1="18" y1="20" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5A1A14" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop stopColor="#8D3118" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
       </defs>
       {/* email envelope back */}
       <rect x="5" y="13" width="28" height="20" rx="3" fill="url(#tg-email)" />
       {/* envelope flap */}
-      <path d="M5 16l14 10 14-10" stroke="#5A1A14" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      <path d="M5 16l14 10 14-10" stroke="#8D3118" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       {/* lines in email body */}
-      <rect x="10" y="23" width="12" height="1.5" rx="0.75" fill="#5A1A14" opacity="0.4" />
-      <rect x="10" y="26.5" width="8" height="1.5" rx="0.75" fill="#5A1A14" opacity="0.4" />
+      <rect x="10" y="23" width="12" height="1.5" rx="0.75" fill="#8D3118" opacity="0.4" />
+      <rect x="10" y="26.5" width="8" height="1.5" rx="0.75" fill="#8D3118" opacity="0.4" />
       {/* whatsapp bubble */}
       <path d="M18 22h18a4 4 0 014 4v10a4 4 0 01-4 4H18l-4 4v-4a4 4 0 01-4-4V26a4 4 0 014-4z" fill="url(#tg-chat)" />
       {/* chat dots */}
@@ -865,12 +865,12 @@ function IconDataFields() {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="df-bg" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5A1A14" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop stopColor="#8D3118" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
         <linearGradient id="df-track" x1="0" y1="0" x2="1" y2="0">
           <stop stopColor="#E5E7EB" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
       </defs>
       {/* background pill */}
@@ -878,15 +878,15 @@ function IconDataFields() {
       {/* slider track 1 */}
       <rect x="10" y="14" width="28" height="3" rx="1.5" fill="#E5E7EB" opacity="0.5" />
       <rect x="10" y="14" width="18" height="3" rx="1.5" fill="white" />
-      <circle cx="28" cy="15.5" r="4.5" fill="white" stroke="#5A1A14" strokeWidth="2" />
+      <circle cx="28" cy="15.5" r="4.5" fill="white" stroke="#8D3118" strokeWidth="2" />
       {/* slider track 2 */}
       <rect x="10" y="23" width="28" height="3" rx="1.5" fill="#E5E7EB" opacity="0.5" />
       <rect x="10" y="23" width="10" height="3" rx="1.5" fill="white" />
-      <circle cx="20" cy="24.5" r="4.5" fill="white" stroke="#5A1A14" strokeWidth="2" />
+      <circle cx="20" cy="24.5" r="4.5" fill="white" stroke="#8D3118" strokeWidth="2" />
       {/* slider track 3 */}
       <rect x="10" y="32" width="28" height="3" rx="1.5" fill="#E5E7EB" opacity="0.5" />
       <rect x="10" y="32" width="22" height="3" rx="1.5" fill="white" />
-      <circle cx="32" cy="33.5" r="4.5" fill="white" stroke="#5A1A14" strokeWidth="2" />
+      <circle cx="32" cy="33.5" r="4.5" fill="white" stroke="#8D3118" strokeWidth="2" />
     </svg>
   );
 }
@@ -896,8 +896,8 @@ function IconPricing() {
     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="pr-tag" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5A1A14" />
-          <stop offset="1" stopColor="#5A1A14" />
+          <stop stopColor="#8D3118" />
+          <stop offset="1" stopColor="#8D3118" />
         </linearGradient>
         <linearGradient id="pr-shine" x1="8" y1="8" x2="20" y2="20" gradientUnits="userSpaceOnUse">
           <stop stopColor="white" stopOpacity="0.4" />
@@ -913,7 +913,7 @@ function IconPricing() {
       {/* rupee ₹ symbol */}
       <text x="21" y="32" fontSize="16" fontWeight="bold" fill="white" fontFamily="system-ui,sans-serif">₹</text>
       {/* star burst top-right */}
-      <path d="M39 5l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill="#5A1A14" />
+      <path d="M39 5l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill="#8D3118" />
     </svg>
   );
 }
@@ -974,7 +974,7 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#E5E7EB] text-[#5A1A14]"><Icon size={17} /></div>
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#E5E7EB] text-[#8D3118]"><Icon size={17} /></div>
           <div className="min-w-0">
             <h1 className="text-base font-medium text-[#1A1A1A]">{title}</h1>
             {description && <p className="mt-0.5 truncate text-xs text-[#6B7280]">{description}</p>}
@@ -1095,7 +1095,7 @@ export function SettingsTriggerTemplatePage() {
           onClick={() => navigate("/admin/communication/email-templates")}
           className="flex items-start gap-3 rounded-2xl border border-[#E5E7EB] bg-white p-5 text-left transition-colors hover:bg-[#E5E7EB]"
         >
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#E5E7EB] text-[#5A1A14]"><Mail size={18} /></div>
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#E5E7EB] text-[#8D3118]"><Mail size={18} /></div>
           <div>
             <p className="text-sm font-bold text-[#1A1A1A]">Email Templates</p>
             <p className="mt-1 text-xs leading-5 text-[#6B7280]">Create and edit the email templates sent to clients.</p>
@@ -1106,7 +1106,7 @@ export function SettingsTriggerTemplatePage() {
           onClick={() => navigate("/admin/communication/whatsapp-templates")}
           className="flex items-start gap-3 rounded-2xl border border-[#E5E7EB] bg-white p-5 text-left transition-colors hover:bg-[#E5E7EB]"
         >
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#E5E7EB] text-[#5A1A14]"><MessageCircle size={18} /></div>
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#E5E7EB] text-[#8D3118]"><MessageCircle size={18} /></div>
           <div>
             <p className="text-sm font-bold text-[#1A1A1A]">WhatsApp Templates</p>
             <p className="mt-1 text-xs leading-5 text-[#6B7280]">Create and edit the WhatsApp message templates.</p>
@@ -1167,7 +1167,7 @@ function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
                     border: 0, cursor: "pointer", borderRadius: 12,
                     padding: "8px 18px", fontSize: "0.82rem", fontWeight: 600,
                     background: active ? "#fff" : "transparent",
-                    color: active ? "#5A1A14" : "#6B7280",
+                    color: active ? "#8D3118" : "#6B7280",
                     boxShadow: active ? "0 2px 8px rgba(0,0,0,0.06)" : "none",
                   }}
                 >
@@ -1203,7 +1203,7 @@ function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
                     {pkg.name}
                   </h3>
                 </div>
-                <Circle size={20} style={{ color: "#5A1A14", flexShrink: 0, marginTop: 2 }} />
+                <Circle size={20} style={{ color: "#8D3118", flexShrink: 0, marginTop: 2 }} />
               </div>
               <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "2.1rem", fontWeight: 500, color: "#1A1A1A" }}>
                 {money(e.price ?? pkg.price)}
@@ -1214,7 +1214,7 @@ function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
               <ul style={{ listStyle: "none", display: "grid", gap: 11, margin: "6px 0", padding: "16px 0", borderTop: "1px solid #FFFFFF", flex: 1 }}>
                 {inclusions.map((item) => (
                   <li key={item} style={{ display: "flex", gap: 10, color: "#1A1A1A", fontSize: "0.89rem", lineHeight: 1.4 }}>
-                    <span style={{ color: "#5A1A14", fontWeight: 700, flexShrink: 0 }}>{"\u2713"}</span>
+                    <span style={{ color: "#8D3118", fontWeight: 700, flexShrink: 0 }}>{"\u2713"}</span>
                     {item}
                   </li>
                 ))}
@@ -1276,10 +1276,10 @@ function PricingSection({ onSave, saving }) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#FFFFFF] font-semibold text-[#5A1A14]" : "text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#FFFFFF] font-semibold text-[#8D3118]" : "text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <span>{cat}</span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#5A1A14]/10 text-[#5A1A14]" : "bg-[#FFFFFF] text-[#6B7280]"}`}>{count}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#FFFFFF] text-[#6B7280]"}`}>{count}</span>
             </button>
           );
         })}
@@ -1317,12 +1317,12 @@ function PricingSection({ onSave, saving }) {
               const e = edits[pkg.id] || {};
               return (
                 <div key={pkg.id} className="rounded-xl border border-[#E5E7EB] bg-[#FFFFFF] p-5">
-                  <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#5A1A14]">{pkg.name}</p>
+                  <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#8D3118]">{pkg.name}</p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="mb-1 block text-xs font-medium text-[#6B7280]">Plan label</label>
                       <input
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#5A1A14] focus:outline-none focus:ring-2 focus:ring-[#5A1A14]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.label ?? ""}
                         onChange={(ev) => set(pkg.id, "label", ev.target.value)}
                         placeholder="e.g. Most popular"
@@ -1332,7 +1332,7 @@ function PricingSection({ onSave, saving }) {
                       <label className="mb-1 block text-xs font-medium text-[#6B7280]">Price (₹)</label>
                       <input
                         type="number"
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#5A1A14] focus:outline-none focus:ring-2 focus:ring-[#5A1A14]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.price ?? ""}
                         onChange={(ev) => set(pkg.id, "price", ev.target.value)}
                         placeholder="0"
@@ -1341,7 +1341,7 @@ function PricingSection({ onSave, saving }) {
                     <div className="sm:col-span-2">
                       <label className="mb-1 block text-xs font-medium text-[#6B7280]">Duration / timeline</label>
                       <input
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#5A1A14] focus:outline-none focus:ring-2 focus:ring-[#5A1A14]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.duration ?? ""}
                         onChange={(ev) => set(pkg.id, "duration", ev.target.value)}
                         placeholder="e.g. 20 days delivery"
@@ -1351,7 +1351,7 @@ function PricingSection({ onSave, saving }) {
                       <label className="mb-1 block text-xs font-medium text-[#6B7280]">Inclusions <span className="font-normal text-[#6B7280]">(one per line)</span></label>
                       <textarea
                         rows={5}
-                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#5A1A14] focus:outline-none focus:ring-2 focus:ring-[#5A1A14]/20 resize-none"
+                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1A1A1A] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 resize-none"
                         value={e.includes ?? ""}
                         onChange={(ev) => set(pkg.id, "includes", ev.target.value)}
                         placeholder={"Logo design (3 concepts)\nBrand colour palette\n…"}

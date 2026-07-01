@@ -172,7 +172,7 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
             onClick={(e) => e.stopPropagation()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-[#5A1A14] hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-[#8D3118] hover:underline"
           >
             <Globe size={12} />
             {company.website.replace(/^https?:\/\//, "").slice(0, 22)}…
@@ -229,10 +229,10 @@ function FolderCard({ folder, count, active, onClick }) {
     <button
       onClick={onClick}
       className={`flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
-        active ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#E5E7EB] bg-white hover:bg-[#E5E7EB]"
+        active ? "border-[#8D3118] bg-[#FFFFFF]" : "border-[#E5E7EB] bg-white hover:bg-[#E5E7EB]"
       }`}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#5A1A14] text-[#5A1A14]" : "border-[#E5E7EB] text-[#6B7280]"}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#8D3118] text-[#8D3118]" : "border-[#E5E7EB] text-[#6B7280]"}`}>
         <FolderIcon size={18} />
       </div>
       <div>
@@ -273,7 +273,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <FolderOpen size={18} className="text-[#5A1A14]" />
+            <FolderOpen size={18} className="text-[#8D3118]" />
             <div>
               <p className="text-base font-medium text-[#1A1A1A]">{folder}</p>
               <p className="text-xs text-[#6B7280]">{companies.length} {companies.length === 1 ? "company" : "companies"}</p>
@@ -282,7 +282,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         </div>
         <button
           onClick={onAdd}
-          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#5A1A14] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto"
+          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto"
         >
           <Plus size={15} />
           Add companies
@@ -294,7 +294,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
           <p className="text-sm text-[#6b7280]">No companies in this folder yet.</p>
           <button
             onClick={onAdd}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#5A1A14] px-3.5 py-2 text-xs font-medium text-[#5A1A14] transition-colors hover:bg-[#E5E7EB]"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#8D3118] px-3.5 py-2 text-xs font-medium text-[#8D3118] transition-colors hover:bg-[#E5E7EB]"
           >
             <Plus size={14} /> Add companies
           </button>
@@ -323,7 +323,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
                 <DocSignedBadge status={docStatusOf(c)} onChange={(next) => onVerifyDocument(c, next)} />
                 <button
                   onClick={() => onOpenCompany(c)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#5A1A14] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[#8D3118] hover:underline"
                 >
                   <Eye size={13} /> Open
                 </button>
@@ -358,7 +358,7 @@ function FolderModal({ onClose, onCreate }) {
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") onCreate(name); }}
           placeholder="e.g. Q3 Targets"
-          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
+          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
       </label>
     </SidePanel>
@@ -413,14 +413,14 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
             <label
               key={id}
               className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
-                checked ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"
+                checked ? "border-[#8D3118] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"
               }`}
             >
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(id)}
-                className="rounded border-[#E5E7EB] accent-[#5A1A14]"
+                className="rounded border-[#E5E7EB] accent-[#8D3118]"
               />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[#1A1A1A]">{c.name}</p>
@@ -705,7 +705,7 @@ export default function Companies() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#FFFFFF] text-[#8D3118]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -716,7 +716,7 @@ export default function Companies() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#5A1A14]" : "text-[#1A1A1A]"}`}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#1A1A1A]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -739,16 +739,16 @@ export default function Companies() {
           {/* View toggle */}
           <button
             onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#5A1A14]/20" : "bg-[#F0EDE4]"}`}
+            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#8D3118]/20" : "bg-[#F0EDE4]"}`}
           >
             <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
-              <Grid2x2 size={16} className={view === "hotlist" ? "text-[#5A1A14]" : "text-[#1A1A1A]"} />
-              <span className={view === "hotlist" ? "text-[#5A1A14]" : "text-[#1A1A1A]"}>Hotlist</span>
+              <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1A1A1A]"} />
+              <span className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1A1A1A]"}>Hotlist</span>
             </span>
           </button>
           <button
             onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#5A1A14] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
           >
             <Plus size={16} />
             Add Company
@@ -846,7 +846,7 @@ export default function Companies() {
                     onClick={() => setPage(p)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                       p === page
-                        ? "bg-[#5A1A14] text-white"
+                        ? "bg-[#8D3118] text-white"
                         : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
                     }`}
                   >
@@ -883,7 +883,7 @@ export default function Companies() {
                 </div>
                 <button
                   onClick={() => setCreatingFolder(true)}
-                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#5A1A14] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors"
+                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors"
                 >
                   <FolderPlus size={15} />
                   New Folder
@@ -912,7 +912,7 @@ export default function Companies() {
                         onClick={() => setFolderView("list")}
                         title="List view"
                         className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                          folderView === "list" ? "bg-[#5A1A14] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
+                          folderView === "list" ? "bg-[#8D3118] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         <List size={15} />
@@ -921,7 +921,7 @@ export default function Companies() {
                         onClick={() => setFolderView("grid")}
                         title="Icon view"
                         className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                          folderView === "grid" ? "bg-[#5A1A14] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
+                          folderView === "grid" ? "bg-[#8D3118] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         <Grid2x2 size={15} />
@@ -939,7 +939,7 @@ export default function Companies() {
                         key={p}
                         onClick={() => setFolderPage(p)}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                          p === folderPage ? "bg-[#5A1A14] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"
+                          p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         {p}

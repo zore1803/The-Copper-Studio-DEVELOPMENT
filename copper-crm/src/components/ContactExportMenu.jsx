@@ -143,10 +143,10 @@ export default function ContactExportMenu({ contact, companyName, className = ""
             <MessageCircle size={14} className="text-emerald-600" /> Share via WhatsApp
           </button>
           <button onClick={openLinkedIn} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
-            <Link2 size={14} className="text-[#5A1A14]" /> Open LinkedIn profile
+            <Link2 size={14} className="text-[#8D3118]" /> Open LinkedIn profile
           </button>
           <button onClick={shareEmail} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
-            <Mail size={14} className="text-[#5A1A14]" /> Share via Email
+            <Mail size={14} className="text-[#8D3118]" /> Share via Email
           </button>
           <button onClick={downloadVCard} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
             <Download size={14} /> Download as vCard

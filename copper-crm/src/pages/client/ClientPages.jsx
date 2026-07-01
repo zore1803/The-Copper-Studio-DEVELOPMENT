@@ -33,11 +33,11 @@ const CS = {
 const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
 const GANTT_STATUS_COLOR = {
   Backlog: "#6B7280",
-  "To Do": "#5A1A14",
-  "In Progress": "#5A1A14",
-  Review: "#5A1A14",
-  Completed: "#5A1A14",
-  Blocked: "#5A1A14",
+  "To Do": "#8D3118",
+  "In Progress": "#8D3118",
+  Review: "#8D3118",
+  Completed: "#8D3118",
+  Blocked: "#8D3118",
 };
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
@@ -70,8 +70,8 @@ function Card({ children, className = "" }) {
 function Badge({ label, type = "neutral" }) {
   const styles = {
     neutral: { background: CS.surfaceContainer, color: CS.secondary },
-    success: { background: "#FFFFFF", color: "#5A1A14" },
-    warning: { background: "#FFFFFF", color: "#5A1A14" },
+    success: { background: "#FFFFFF", color: "#8D3118" },
+    warning: { background: "#FFFFFF", color: "#8D3118" },
     primary: { background: CS.primaryFixed, color: CS.primary },
     error: { background: "#FFFFFF", color: CS.error },
   };
@@ -247,7 +247,7 @@ function ClientTaskGantt({ tasks }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#FFFFFF", color: "#5A1A14" }}>
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#FFFFFF", color: "#8D3118" }}>
             <CheckCircle2 size={14} /> {completionPct}% complete
           </span>
           {summary.blocked > 0 && (
@@ -379,7 +379,7 @@ export function ClientTimelinePage() {
   };
 
   const stageBadge = (s) => {
-    if (s === "completed") return { icon: "check_circle", color: "#5A1A14" };
+    if (s === "completed") return { icon: "check_circle", color: "#8D3118" };
     if (s === "in_progress") return { icon: "radio_button_checked", color: CS.primary };
     return { icon: "radio_button_unchecked", color: CS.outlineVariant };
   };
@@ -498,7 +498,7 @@ export function ClientTimelinePage() {
                               )}
                               {stage.status === "completed" && (
                                 <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ background: "#FFFFFF", color: "#5A1A14" }}>
+                                  style={{ background: "#FFFFFF", color: "#8D3118" }}>
                                   <CheckCircle2 size={12} />
                                   Completed
                                 </span>
@@ -732,7 +732,7 @@ export function ClientMeetingsPage() {
                   />
                 </div>
                 {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#FFFFFF", color: CS.error }}>{error}</p>}
-                {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#FFFFFF", color: "#5A1A14" }}>{success}</p>}
+                {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#FFFFFF", color: "#8D3118" }}>{success}</p>}
                 <div className="flex justify-end">
                   <CsBtn type="submit" disabled={submitting} loading={submitting} icon={Send}>
                     {submitting ? "Sending…" : "Request Meeting"}
@@ -991,8 +991,8 @@ export function ClientBillingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {[
               { Icon: Wallet, label: "Total Paid", value: `₹${totalPaid.toLocaleString("en-IN")}`, color: CS.primary },
-              { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#5A1A14" },
-              { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#5A1A14" },
+              { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#8D3118" },
+              { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#8D3118" },
             ].map(s => (
               <div key={s.label} className="rounded-xl border p-5 flex items-center gap-4"
                 style={{ background: CS.surfaceLowest, borderColor: CS.outlineVariant }}>
@@ -1224,7 +1224,7 @@ export function ClientSettingsPage() {
         ))}
       </div>
 
-      {success && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#FFFFFF", color: "#5A1A14" }}>{success}</p>}
+      {success && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#FFFFFF", color: "#8D3118" }}>{success}</p>}
       {error && <p className="text-xs font-medium px-4 py-3 rounded-lg mb-4" style={{ background: "#FFFFFF", color: CS.error }}>{error}</p>}
 
       <div className="max-w-3xl space-y-5">
