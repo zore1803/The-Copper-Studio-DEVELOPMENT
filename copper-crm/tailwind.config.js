@@ -11,7 +11,7 @@ export default {
       colors: {
         primary: { DEFAULT: "#C55418", dark: "#C55418", light: "#FFFFFF", container: "#C55418", fixed: "#E5E7EB" },
         studio: {
-          background: "#F1F1F5",
+          background: "#FFFFFF",
           surface: "#FFFFFF",
           card: "#E5E7EB",
           border: "#6B7280",

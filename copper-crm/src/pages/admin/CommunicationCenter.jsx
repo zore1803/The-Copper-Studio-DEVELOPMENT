@@ -425,7 +425,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
           </div>
 
           {/* Right — live preview */}
-          <div className="flex flex-1 flex-col overflow-y-auto bg-[#F1F1F5] p-6">
+          <div className="flex flex-1 flex-col overflow-y-auto bg-[#FFFFFF] p-6">
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#6B7280]">Live Preview</p>
             <TemplatePreview subject={isEmail ? form.subject : null} body={form.body} type={type} />
           </div>
@@ -646,7 +646,7 @@ export default function CommunicationCenter({ mode = "email" }) {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+    <div className="flex min-h-full flex-col bg-[#FFFFFF]">
       {/* Header strip — matches Companies / Projects style */}
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-2.5">

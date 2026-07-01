@@ -133,7 +133,7 @@ export default function ClientLayout() {
 
   return (
    <ClientProjectProvider>
-    <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
+    <div className="flex h-screen overflow-hidden bg-[#FFFFFF]">
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />

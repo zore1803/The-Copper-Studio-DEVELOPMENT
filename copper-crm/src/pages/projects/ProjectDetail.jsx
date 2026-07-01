@@ -270,7 +270,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
           </select>
         </div>
 
-        <div className="rounded-xl bg-[#F1F1F5] p-5 shadow-sm">
+        <div className="rounded-xl bg-[#FFFFFF] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-[#1A1A1A]">Project Stages</h3>
             <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#C55418] shadow-sm">

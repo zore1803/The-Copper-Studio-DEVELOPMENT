@@ -141,7 +141,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
       <div className="flex gap-4 overflow-x-auto pb-2">
         {TASK_STATUSES.map((status) => (
           <section key={status} className="flex w-[260px] shrink-0 flex-col rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
-            <div className="flex items-center justify-between gap-2 border-b border-[#F1F1F5] px-3.5 py-3">
+            <div className="flex items-center justify-between gap-2 border-b border-[#FFFFFF] px-3.5 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_DOT[status]}`} />
                 <h3 className="truncate text-sm font-semibold text-[#1A1A1A]">{status}</h3>
@@ -177,7 +177,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                             <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${priorityConfig[task.priority] || priorityConfig.Medium}`}>{task.priority || "Medium"}</span>
                             <span className="text-[10px] font-semibold text-[#6B7280]">{task.dueDate || task.deadline || "No due date"}</span>
                           </div>
-                          <div className="mt-2 flex items-center justify-between border-t border-[#F1F1F5] pt-2">
+                          <div className="mt-2 flex items-center justify-between border-t border-[#FFFFFF] pt-2">
                             <span className="inline-flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[#6B7280]">
                               <span className="inline-flex items-center gap-1"><CalendarRange size={11} /> {task.startDate || "No start"}</span>
                               {(() => {
@@ -374,7 +374,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#F1F1F5] bg-[#FFFFFF] px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#FFFFFF] bg-[#FFFFFF] px-5 py-4">
         <div>
           <div className="flex items-center gap-2">
             <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFFFFF] text-[#C55418]">
@@ -396,7 +396,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           {summary.unscheduled > 0 && (
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{summary.unscheduled} need dates</span>
           )}
-          <div className="flex items-center gap-1.5 rounded-lg bg-[#F1F1F5] p-1">
+          <div className="flex items-center gap-1.5 rounded-lg bg-[#FFFFFF] p-1">
             <button
               type="button"
               onClick={zoomOut}
@@ -430,12 +430,12 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#F1F1F5] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
-          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#F1F1F5] bg-[#FFFFFF] px-4">
+        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#FFFFFF] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
+          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#FFFFFF] bg-[#FFFFFF] px-4">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Stage / Task</span>
           </div>
           {groups.map((group) => (
-            <div key={group.id} className="border-b border-[#F1F1F5]">
+            <div key={group.id} className="border-b border-[#FFFFFF]">
               <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#FFFFFF] px-3 text-left">
                 <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#C55418]"}`} />
                 <span className="truncate text-sm font-semibold text-[#1A1A1A]">{group.title}</span>
@@ -464,9 +464,9 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
 
         <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="sticky top-0 z-20 flex h-11 border-b border-[#F1F1F5] bg-white">
+            <div className="sticky top-0 z-20 flex h-11 border-b border-[#FFFFFF] bg-white">
               {timeCols.map((col, index) => (
-                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#F1F1F5] text-[10px] font-bold uppercase text-[#6B7280] even:bg-[#FFFFFF]">
+                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#FFFFFF] text-[10px] font-bold uppercase text-[#6B7280] even:bg-[#FFFFFF]">
                   {col.label}
                 </div>
               ))}
@@ -480,14 +480,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
               )}
               {groups.map((group) => (
                 <div key={group.id}>
-                  <div className="h-10 border-b border-[#F1F1F5] bg-[#FFFFFF]/60" />
+                  <div className="h-10 border-b border-[#FFFFFF] bg-[#FFFFFF]/60" />
                   {!collapsed[group.id] && group.tasks.map((task) => {
                     const left = dateToPx(task.start);
                     // +1 day so the bar covers the end date inclusively; clamp so a single-day stage stays visible.
                     const width = Math.max(pxPerDay, dateToPx(task.end) - left + pxPerDay);
                     const isDone = task.status === "Done";
                     return (
-                      <div key={task.id || task._id} className="relative h-12 border-b border-[#F1F1F5] odd:bg-white/65 even:bg-[#FFFFFF]/65">
+                      <div key={task.id || task._id} className="relative h-12 border-b border-[#FFFFFF] odd:bg-white/65 even:bg-[#FFFFFF]/65">
                         <button
                           type="button"
                           onClick={() => onOpenEdit(group.id, task)}

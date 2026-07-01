@@ -226,7 +226,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <SearchableSelectField label="Company owner" value={form.owner} onChange={set("owner")} options={companyOwners} allowCustom placeholder="Select company owner…" />
         <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={LEAD_SOURCES} allowCustom placeholder="Select or type…" />
 
-        <div className="sm:col-span-3 mt-1 border-t border-[#F1F1F5] pt-3">
+        <div className="sm:col-span-3 mt-1 border-t border-[#FFFFFF] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">Address</span>
         </div>
         <Field span label="Address line 1" value={form.addressLine1} onChange={set("addressLine1")} />
@@ -235,7 +235,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <SearchableSelectField label="State" value={form.state} onChange={set("state")} options={INDIAN_STATES} placeholder="Select state…" />
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
 
-        <div className="sm:col-span-3 mt-1 border-t border-[#F1F1F5] pt-3">
+        <div className="sm:col-span-3 mt-1 border-t border-[#FFFFFF] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">Social profiles</span>
         </div>
         <Field label="LinkedIn" value={form.linkedin} onChange={set("linkedin")} placeholder="https://linkedin.com/company/…" error={errors.linkedin} />

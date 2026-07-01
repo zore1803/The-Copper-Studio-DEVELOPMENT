@@ -175,7 +175,7 @@ export default function ProjectsList() {
   ];
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+    <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#1A1A1A]">All Projects</h1>

@@ -20,7 +20,7 @@ function Card({ children, className = "" }) {
 
 function PageShell({ title, subtitle, action, children }) {
   return (
-    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
+    <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#1A1A1A]">{title}</h1>
@@ -385,7 +385,7 @@ export function ProposalGeneratorPage() {
               </button>
             </div>
           </div>
-          <div className="max-h-[640px] overflow-auto bg-[#F1F1F5] p-6">
+          <div className="max-h-[640px] overflow-auto bg-[#FFFFFF] p-6">
             <div
               className="mx-auto origin-top bg-[#ffffff] shadow-lg"
               style={{ width: 480, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
@@ -420,7 +420,7 @@ export function ProposalGeneratorPage() {
 
                 <div className="mt-4 space-y-3">
                   {sections.map((section) => (
-                    <div key={section.title} className="rounded-lg bg-[#F1F1F5] p-4">
+                    <div key={section.title} className="rounded-lg bg-[#FFFFFF] p-4">
                       <p className="text-[12px] font-bold text-[#1A1A1A]">{section.title}</p>
                       <p className="mt-1.5 text-[11px] leading-5 text-[#6B7280]">{section.body}</p>
                     </div>
@@ -594,7 +594,7 @@ export function ServicesPage() {
             </div>
             <div className="max-h-72 space-y-2 overflow-y-auto p-3">
               {savedCoupons.length ? savedCoupons.slice(0, 8).map((item) => (
-                <div key={item._id || item.code} className="rounded-xl border border-[#E5E7EB] bg-[#F1F1F5] px-3 py-2">
+                <div key={item._id || item.code} className="rounded-xl border border-[#E5E7EB] bg-[#FFFFFF] px-3 py-2">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-xs font-bold text-[#1A1A1A]">{item.code}</span>
                     <span className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">{item.status}</span>
@@ -633,7 +633,7 @@ function DataTablePreview({ type, title }) {
           <Table2 size={16} className="text-[#C55418]" />
           <h3 className="text-sm font-bold text-[#1A1A1A]">{title}</h3>
         </div>
-        <span className="rounded-full bg-[#F1F1F5] px-2 py-1 text-[11px] font-bold text-[#6B7280]">{loading ? "Loading" : `${records.length} rows`}</span>
+        <span className="rounded-full bg-[#FFFFFF] px-2 py-1 text-[11px] font-bold text-[#6B7280]">{loading ? "Loading" : `${records.length} rows`}</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[620px]">

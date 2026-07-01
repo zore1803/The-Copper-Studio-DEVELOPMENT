@@ -366,7 +366,7 @@ export default function AdminLayout() {
   const baseW = pinned ? 264 : 66;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F1F1F5]">
+    <div className="flex h-screen overflow-hidden bg-[#FFFFFF]">
       {/* Sidebar */}
       <aside
         onMouseEnter={() => setHovering(true)}
@@ -574,7 +574,7 @@ export default function AdminLayout() {
               </button>
               {avatarOpen && (
                 <div className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
-                  <div className="px-3 py-2 border-b border-[#F1F1F5]">
+                  <div className="px-3 py-2 border-b border-[#FFFFFF]">
                     <p className="text-xs font-semibold text-[#1A1A1A] truncate">{name}</p>
                     <p className="text-[11px] text-[#6b7280] truncate">{auth.user?.role || "Admin"}</p>
                   </div>

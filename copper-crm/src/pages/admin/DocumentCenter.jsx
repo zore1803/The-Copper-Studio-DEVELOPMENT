@@ -469,7 +469,7 @@ export default function DocumentCenter() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+    <div className="flex min-h-full flex-col bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
           <nav className="flex items-center gap-1.5 text-xs text-[#6B7280]">

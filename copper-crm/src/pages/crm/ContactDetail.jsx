@@ -473,7 +473,7 @@ export default function ContactDetail() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#F1F1F5] bg-[#FFFFFF] p-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#FFFFFF] bg-[#FFFFFF] p-4 sm:grid-cols-3 lg:grid-cols-5">
             <InfoLine label="Company" value={companyName} />
             <InfoLine label="Designation" value={contact.designation} />
             <InfoLine label="Email" value={contact.email} />
@@ -531,7 +531,7 @@ export default function ContactDetail() {
                 <Detail label="Alternative Number" value={contact.alternatePhone} />
               </div>
               {contact.preferences && (
-                <div className="mt-5 border-t border-[#F1F1F5] pt-4">
+                <div className="mt-5 border-t border-[#FFFFFF] pt-4">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Preferences</p>
                   <p className="text-sm text-gray-600">{contact.preferences}</p>
                 </div>
