@@ -29,6 +29,7 @@ import { syncFinanceForOrder } from "./services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "./services/projectNaming.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
 import { htmlToPdfBuffer } from "./services/pdf.js";
+import { seedEmailTemplates } from "./scripts/seedEmailTemplates.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -787,6 +788,8 @@ async function start() {
     throw new Error("MONGO_URI is missing. Add it to .env.");
   }
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 20000 });
+
+  await seedEmailTemplates();
 
   if (process.env.SUPERADMIN_EMAIL && process.env.SUPERADMIN_PASSWORD) {
     const bcrypt = await import("bcryptjs");
