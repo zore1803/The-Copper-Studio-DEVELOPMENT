@@ -3,6 +3,8 @@ import { ChevronDown, Copy, Mail, MessageCircle, Pencil, Plus, Save, Search, Set
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import { useAuth } from "../../auth/useAuth";
+import { apiPost } from "../../lib/api";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const EMAIL_CATEGORIES = [
@@ -210,24 +212,39 @@ function TemplatePreview({ subject, body, type }) {
 
 // ── Template modal ────────────────────────────────────────────────────────────
 
+// Extract unique {{variable}} tokens from a string
+function extractVars(text = "") {
+  const matches = text.match(/\{\{(\w+)\}\}/g) || [];
+  return [...new Set(matches.map((m) => m.slice(2, -2)))];
+}
+
 function TemplateModal({ type, categories, template, onClose, onSave }) {
+  const { token } = useAuth();
+  const { showToast } = useToast();
   const [form, setForm] = useState(template);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
   const isEmail = type === "email";
   const [jsonError, setJsonError] = useState("");
+  const [testOpen, setTestOpen] = useState(false);
+  const [testVars, setTestVars] = useState({});
+  const [testing, setTesting] = useState(false);
 
   // bodyMode: "text" or "json" — auto-detect from stored body
   const [bodyMode, setBodyMode] = useState(() => isJsonBody(template.body || "") ? "json" : "text");
+
+  // Variables present in this template's subject + body
+  const templateVars = [...new Set([
+    ...extractVars(form.subject || ""),
+    ...extractVars(form.body || ""),
+  ])];
 
   function switchMode(nextMode) {
     if (nextMode === bodyMode) return;
     setJsonError("");
     if (nextMode === "json") {
-      // If already valid JSON keep it; otherwise convert from text
       const converted = isJsonBody(form.body || "") ? form.body : textToJson(form.body || "");
       set("body")(converted);
     } else {
-      // json → text
       set("body")(jsonToText(form.body || ""));
     }
     setBodyMode(nextMode);
@@ -238,6 +255,23 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
     if (bodyMode === "json") {
       try { JSON.parse(val); setJsonError(""); }
       catch (e) { setJsonError(e.message); }
+    }
+  }
+
+  async function sendTest() {
+    setTesting(true);
+    try {
+      const result = await apiPost("/admin/settings/test-email", {
+        subject: form.subject || "",
+        body: form.body || "",
+        vars: testVars,
+      }, token);
+      showToast({ title: "Test email sent", message: `Delivered to ${result.sentTo}` });
+      setTestOpen(false);
+    } catch (err) {
+      showToast({ type: "error", title: "Send failed", message: err.message || "Could not send test email." });
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -253,6 +287,41 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
             <p className="mt-0.5 text-xs text-gray-500">Use <code className="rounded bg-gray-100 px-1 py-0.5 font-mono">{"{{variable}}"}</code> tokens for dynamic content. Body can be plain text or a JSON block array.</p>
           </div>
           <div className="flex items-center gap-2">
+            {/* Test template popover */}
+            <div className="relative">
+              <Button variant="secondary" onClick={() => setTestOpen((v) => !v)}>
+                <Sparkles size={14} /> Test Template
+              </Button>
+              {testOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-xl">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-sm font-bold text-[#111827]">Send Test Email</p>
+                    <button onClick={() => setTestOpen(false)} className="text-[#9ca3af] hover:text-[#374151]"><X size={14} /></button>
+                  </div>
+                  <p className="mb-3 text-xs text-[#6b7280]">Fill in test values for each variable. The email will be sent to your admin address.</p>
+                  {templateVars.length === 0 ? (
+                    <p className="text-xs text-[#9ca3af] italic">No variables in this template.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {templateVars.map((v) => (
+                        <label key={v} className="block">
+                          <span className="text-[11px] font-semibold text-[#374151]">{`{{${v}}}`}</span>
+                          <input
+                            value={testVars[v] || ""}
+                            onChange={(e) => setTestVars((prev) => ({ ...prev, [v]: e.target.value }))}
+                            placeholder={`Test value for ${v}`}
+                            className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  <Button className="mt-3 w-full justify-center" onClick={sendTest} disabled={testing}>
+                    <Sparkles size={13} /> {testing ? "Sending…" : "Send Test Email"}
+                  </Button>
+                </div>
+              )}
+            </div>
             <Button variant="secondary" onClick={onClose}>Cancel</Button>
             <Button onClick={() => onSave(form)}><Save size={14} /> Save</Button>
             <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>

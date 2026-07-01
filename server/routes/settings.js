@@ -3,6 +3,7 @@ import express from "express";
 import User from "../models/User.js";
 import Settings from "../models/Settings.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { sendTestEmail } from "../services/email.js";
 
 const router = express.Router();
 
@@ -173,6 +174,48 @@ router.post("/verify-password", async (req, res, next) => {
     const ok = await bcrypt.compare(password, user.passwordHash || "");
     if (!ok) return res.status(401).json({ message: "Incorrect password." });
     res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Send a test email using the current template body/subject with filled-in vars.
+// Sends to the logged-in admin's own email address.
+router.post("/test-email", async (req, res, next) => {
+  try {
+    const { subject = "", body = "", vars = {} } = req.body;
+    const user = await User.findById(req.auth.sub).select("email name");
+    if (!user?.email) return res.status(400).json({ message: "Admin email not found." });
+
+    // Replace {{variable}} tokens with provided test values
+    function interpolate(text) {
+      return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+    }
+
+    // For JSON body, interpolate each block's text fields
+    function interpolateBody(raw) {
+      const s = raw.trim();
+      if (s.startsWith("[") && s.endsWith("]")) {
+        try {
+          const blocks = JSON.parse(s);
+          return JSON.stringify(blocks.map((b) => ({
+            ...b,
+            ...(b.text ? { text: interpolate(b.text) } : {}),
+            ...(b.title ? { title: interpolate(b.title) } : {}),
+            ...(b.href ? { href: interpolate(b.href) } : {}),
+          })));
+        } catch { /* fall through */ }
+      }
+      return interpolate(raw);
+    }
+
+    await sendTestEmail({
+      to: user.email,
+      subject: interpolate(subject),
+      body: interpolateBody(body),
+    });
+
+    res.json({ ok: true, sentTo: user.email });
   } catch (error) {
     next(error);
   }

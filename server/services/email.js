@@ -269,6 +269,15 @@ export async function sendContactCreatedEmail({ name, email, phone, company }) {
   });
 }
 
+export async function sendTestEmail({ to, subject, body }) {
+  const bodyHtml = bodyAnyToHtml(body || "");
+  return sendMail({
+    to,
+    subject: subject || "Test Email",
+    html: `<div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">${bodyHtml}${signatureHtml()}</div>`,
+  });
+}
+
 export async function sendForgotPasswordOtpEmail({ to, name, otp }) {
   return sendMail({
     to,
