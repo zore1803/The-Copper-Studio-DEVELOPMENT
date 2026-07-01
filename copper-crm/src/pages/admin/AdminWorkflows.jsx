@@ -1152,7 +1152,7 @@ function money(n) {
 // exactly so the admin preview looks identical to what customers see.
 function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
   return (
-    <div style={{ background: "#f9f6f3", padding: "8px 4px 4px", fontFamily: "'Inter','Segoe UI',sans-serif" }}>
+    <div style={{ background: "#f9f6f3", padding: "8px 4px 4px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       {/* Floating pill category switcher \u2014 same as the live page */}
       {onCategory && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
@@ -1199,13 +1199,13 @@ function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
                   <p style={{ margin: "0 0 6px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                     {e.label ?? pkg.label}
                   </p>
-                  <h3 style={{ margin: 0, fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
+                  <h3 style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
                     {pkg.name}
                   </h3>
                 </div>
                 <Circle size={20} style={{ color: "#964d0a", flexShrink: 0, marginTop: 2 }} />
               </div>
-              <div style={{ fontFamily: "Georgia,'Times New Roman',serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
+              <div style={{ fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
                 {money(e.price ?? pkg.price)}
               </div>
               <p style={{ margin: "-8px 0 0", color: "#646464", fontSize: "0.84rem" }}>

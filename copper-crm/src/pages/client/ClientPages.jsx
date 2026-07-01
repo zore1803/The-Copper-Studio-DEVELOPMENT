@@ -48,7 +48,7 @@ function PageShell({ title, subtitle, children, action }) {
     <div className="p-5 xl:p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{title}</h1>
+          <h1 className="text-lg font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h1>
           {subtitle && <p className="mt-0.5 text-xs" style={{ color: CS.secondary }}>{subtitle}</p>}
         </div>
         {action && <div className="shrink-0">{action}</div>}
@@ -85,7 +85,7 @@ function Badge({ label, type = "neutral" }) {
 function CsInput({ label, value, onChange, type = "text", disabled, placeholder, required, wrapperClass = "" }) {
   return (
     <div className={`flex flex-col gap-1.5 ${wrapperClass}`}>
-      {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "Inter, sans-serif" }}>{label}</label>}
+      {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{label}</label>}
       <input
         type={type}
         value={value}
@@ -94,7 +94,7 @@ function CsInput({ label, value, onChange, type = "text", disabled, placeholder,
         placeholder={placeholder}
         required={required}
         className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none transition-all copper-focus"
-        style={{ background: disabled ? CS.surfaceLow : "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "Inter, sans-serif", opacity: disabled ? 0.7 : 1 }}
+        style={{ background: disabled ? CS.surfaceLow : "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif", opacity: disabled ? 0.7 : 1 }}
       />
     </div>
   );
@@ -103,12 +103,12 @@ function CsInput({ label, value, onChange, type = "text", disabled, placeholder,
 function CsSelect({ label, value, onChange, options }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "Inter, sans-serif" }}>{label}</label>}
+      {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{label}</label>}
       <select
         value={value}
         onChange={e => onChange?.(e.target.value)}
         className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none transition-all copper-focus"
-        style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "Inter, sans-serif" }}
+        style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
       >
         {options.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>
@@ -141,7 +141,7 @@ function CsBtn({ children, onClick, type = "button", variant = "primary", disabl
       onClick={onClick}
       disabled={disabled}
       className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95 ${disabled ? "opacity-60 cursor-not-allowed" : "hover:opacity-90"} ${className}`}
-      style={{ ...variants[variant], fontFamily: "Inter, sans-serif" }}
+      style={{ ...variants[variant], fontFamily: "'DM Sans', system-ui, sans-serif" }}
     >
       {ShownIcon && <ShownIcon size={16} className={loading ? "animate-spin" : ""} />}
       {children}
@@ -153,7 +153,7 @@ function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       {Icon && <Icon size={40} strokeWidth={1.5} className="mb-3" style={{ color: CS.outlineVariant }} />}
-      <p className="text-base font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{title}</p>
+      <p className="text-base font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</p>
       <p className="text-sm" style={{ color: CS.secondary }}>{description}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -216,7 +216,7 @@ function ClientTaskGantt({ tasks }) {
   if (!groups.length) {
     return (
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
+        <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Task Timeline</h3>
         <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
           <CalendarDays size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />
           <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>No scheduled tasks yet.</p>
@@ -242,7 +242,7 @@ function ClientTaskGantt({ tasks }) {
             <CalendarDays size={18} />
           </div>
           <div>
-            <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
+            <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Task Timeline</h3>
             <p className="text-xs" style={{ color: CS.secondary }}>{formatRange(minDate, maxDate)} · {summary.total} scheduled task{summary.total === 1 ? "" : "s"}</p>
           </div>
         </div>
@@ -401,7 +401,7 @@ export function ClientTimelinePage() {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
                     <div>
                       <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: CS.secondary }}>Current Project</p>
-                      <h2 className="text-2xl font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{selected.name}</h2>
+                      <h2 className="text-2xl font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{selected.name}</h2>
                       {selected.description && <p className="text-sm mt-1" style={{ color: CS.secondary }}>{selected.description}</p>}
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -435,7 +435,7 @@ export function ClientTimelinePage() {
                         style={{ background: CS.primaryFixed, color: CS.primary }}>
                         <StickyNote size={20} />
                       </div>
-                      <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Notes from The Copper Studio</h3>
+                      <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Notes from The Copper Studio</h3>
                     </div>
                     <p className="text-sm leading-relaxed" style={{ color: CS.secondary }}>{selected.adminNotes}</p>
                     <div className="grid sm:grid-cols-2 gap-4 mt-4 pt-4 border-t" style={{ borderColor: CS.outlineVariant }}>
@@ -461,7 +461,7 @@ export function ClientTimelinePage() {
                 {/* Stages timeline */}
                 {selected.stages?.length > 0 && (
                   <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Engagement Roadmap</h3>
+                    <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
                     <div className="relative space-y-5 ml-3">
                       <div className="absolute left-[11px] top-3 bottom-3 w-0.5" style={{ background: CS.outlineVariant }} />
                       {selected.stages.map((stage, i) => {
@@ -481,7 +481,7 @@ export function ClientTimelinePage() {
                             </div>
                             <div className="flex-1 pb-1">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                                <h4 className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{stage.name}</h4>
+                                <h4 className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{stage.name}</h4>
                                 {stage.startDate && (
                                   <span className="text-xs" style={{ color: CS.secondary }}>
                                     {new Date(stage.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
@@ -620,7 +620,7 @@ export function ClientMeetingsPage() {
               <Card className="p-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
                   <div>
-                    <h3 className="text-lg font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Book a Meeting</h3>
+                    <h3 className="text-lg font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
                     <p className="text-sm mt-1" style={{ color: CS.secondary }}>Choose an available Calendly slot. Confirmed bookings will appear here automatically.</p>
                   </div>
                 </div>
@@ -635,7 +635,7 @@ export function ClientMeetingsPage() {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{eventType.name}</p>
+                          <p className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{eventType.name}</p>
                           <p className="text-xs mt-1" style={{ color: CS.secondary }}>{eventType.durationMinutes || 30} minutes</p>
                         </div>
                         <CalendarPlus size={18} style={{ color: eventType.color || CS.primary }} />
@@ -650,7 +650,7 @@ export function ClientMeetingsPage() {
               <Card>
                 <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: CS.outlineVariant }}>
                   <div>
-                    <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{bookingEvent.name}</h3>
+                    <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{bookingEvent.name}</h3>
                     <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time and complete the Calendly booking form.</p>
                   </div>
                   <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors" style={{ color: CS.secondary }} title="Close booking">
@@ -669,7 +669,7 @@ export function ClientMeetingsPage() {
             {meetings.length > 0 && (
               <Card>
                 <div className="px-6 py-4 border-b" style={{ borderColor: CS.outlineVariant }}>
-                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>All Meetings</h3>
+                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>All Meetings</h3>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -687,7 +687,7 @@ export function ClientMeetingsPage() {
                           className="cursor-pointer transition-colors"
                           onClick={() => setSelected(m)}
                           style={{ background: selected?._id === m._id ? CS.surfaceLow : "transparent" }}>
-                          <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{m.title}</td>
+                          <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{m.title}</td>
                           <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>{meetingTypelabel(m.type)}</td>
                           <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>
                             {m.scheduledAt
@@ -707,7 +707,7 @@ export function ClientMeetingsPage() {
 
             {/* Request form */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Request a Meeting</h3>
+              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Request a Meeting</h3>
               <form onSubmit={handleRequest} className="space-y-4">
                 <CsInput label="Meeting Title *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="e.g. Brand strategy review" required />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -721,14 +721,14 @@ export function ClientMeetingsPage() {
                   <CsInput label="Preferred Time" type="time" value={form.preferredTime} onChange={v => setForm(f => ({ ...f, preferredTime: v }))} />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "Inter, sans-serif" }}>Message (Optional)</label>
+                  <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Message (Optional)</label>
                   <textarea
                     value={form.agenda}
                     onChange={e => setForm(f => ({ ...f, agenda: e.target.value }))}
                     placeholder="Tell us about the meeting goals..."
                     rows={3}
                     className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none resize-none copper-focus"
-                    style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "Inter, sans-serif" }}
+                    style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
                   />
                 </div>
                 {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#fde8e8", color: CS.error }}>{error}</p>}
@@ -747,7 +747,7 @@ export function ClientMeetingsPage() {
             {selected ? (
               <Card>
                 <div className="px-5 py-4 border-b" style={{ borderColor: CS.outlineVariant, background: `${CS.surfaceLow}80` }}>
-                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{selected.title}</h3>
+                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{selected.title}</h3>
                   <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: CS.secondary }}>
                     <Clock size={15} />
                     {selected.scheduledAt
@@ -881,7 +881,7 @@ export function ClientDocumentsPage() {
             onChange={e => setSearch(e.target.value)}
             placeholder="Search documents..."
             className="w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm outline-none copper-focus"
-            style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "Inter, sans-serif" }}
+            style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
           />
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -915,7 +915,7 @@ export function ClientDocumentsPage() {
                   {(() => { const FIcon = fileIcon(doc.fileType); return <FIcon size={24} />; })()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{doc.name}</p>
+                  <p className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{doc.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>
                     {doc.fileType?.toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} · v{doc.version || "1.0"}
                   </p>
@@ -1001,7 +1001,7 @@ export function ClientBillingPage() {
                   <s.Icon size={22} style={{ color: s.color }} />
                 </div>
                 <div>
-                  <p className="text-xl font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{s.value}</p>
+                  <p className="text-xl font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{s.value}</p>
                   <p className="text-xs" style={{ color: CS.secondary }}>{s.label}</p>
                 </div>
               </div>
@@ -1012,7 +1012,7 @@ export function ClientBillingPage() {
             <div className="lg:col-span-2">
               <Card>
                 <div className="px-6 py-4 border-b" style={{ borderColor: CS.outlineVariant }}>
-                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Invoice History</h3>
+                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Invoice History</h3>
                 </div>
                 {orders.length === 0 ? (
                   <EmptyState icon={ReceiptText} title="No invoices" description="Your invoices will appear here after purchasing a package." />
@@ -1037,7 +1037,7 @@ export function ClientBillingPage() {
                               borderColor: CS.outlineVariant,
                               background: selectedOrder?._id === o._id ? CS.surfaceLow : "transparent",
                             }}>
-                            <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.primary, fontFamily: "Inter, sans-serif" }}>
+                            <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.primary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                               #{o.payment?.invoiceId || "—"}
                             </td>
                             <td className="px-6 py-4 text-sm" style={{ color: CS.onSurface }}>{o.package?.name}</td>
@@ -1072,7 +1072,7 @@ export function ClientBillingPage() {
                 <Card>
                   <div className="px-5 py-4 border-b" style={{ borderColor: CS.outlineVariant, background: `${CS.surfaceLow}80` }}>
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>
+                      <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                         Invoice #{selectedOrder.payment?.invoiceId}
                       </h3>
                       <Badge
@@ -1125,7 +1125,7 @@ export function ClientBillingPage() {
                             )
                           }
                           className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                          style={{ background: CS.primary, fontFamily: "Inter, sans-serif" }}>
+                          style={{ background: CS.primary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                           <Download size={18} />
                           Download Invoice (PDF)
                         </button>
@@ -1217,7 +1217,7 @@ export function ClientSettingsPage() {
             style={{
               borderColor: tab === t ? CS.primary : "transparent",
               color: tab === t ? CS.primary : CS.secondary,
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "'DM Sans', system-ui, sans-serif",
             }}>
             {t}
           </button>
@@ -1232,7 +1232,7 @@ export function ClientSettingsPage() {
           <>
             {/* Profile */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Profile Settings</h3>
+              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Profile Settings</h3>
               <form onSubmit={saveProfile} className="space-y-5">
                 <div className="flex flex-col sm:flex-row gap-5 items-start">
                   {/* Avatar */}
@@ -1260,7 +1260,7 @@ export function ClientSettingsPage() {
 
             {/* Account Preferences */}
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Account Preferences</h3>
+              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Account Preferences</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <CsSelect label="Language" value="en" onChange={() => {}} options={[
                   { value: "en", label: "English - US" },
@@ -1279,7 +1279,7 @@ export function ClientSettingsPage() {
 
         {tab === "Notifications" && (
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Notification Preferences</h3>
+            <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Notification Preferences</h3>
             <div className="space-y-4">
               {[
                 { key: "email", label: "Email Notifications", description: "Receive updates via email" },
@@ -1290,7 +1290,7 @@ export function ClientSettingsPage() {
               ].map((item, i) => (
                 <div key={item.key} className={`flex items-center justify-between py-3.5 ${i > 0 ? "border-t" : ""}`} style={{ borderColor: CS.outlineVariant + "50" }}>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{item.label}</p>
+                    <p className="text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{item.label}</p>
                     <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>{item.description}</p>
                   </div>
                   <Toggle checked={prefs[item.key]} onChange={v => setPrefs(p => ({ ...p, [item.key]: v }))} />
@@ -1308,7 +1308,7 @@ export function ClientSettingsPage() {
         {tab === "Security" && (
           <>
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Change Password</h3>
+              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Change Password</h3>
               <form onSubmit={changePassword} className="space-y-4">
                 <CsInput label="Current Password" type="password" value={pwForm.currentPassword} onChange={v => setPwForm(f => ({ ...f, currentPassword: v }))} required />
                 <CsInput label="New Password (min 8 chars)" type="password" value={pwForm.newPassword} onChange={v => setPwForm(f => ({ ...f, newPassword: v }))} required />
@@ -1322,7 +1322,7 @@ export function ClientSettingsPage() {
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Active Sessions</h3>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Active Sessions</h3>
               <p className="text-sm mb-4" style={{ color: CS.secondary }}>Devices currently logged into your account.</p>
               <div className="rounded-lg p-4 flex items-center gap-4" style={{ background: CS.surfaceLow }}>
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center border"
@@ -1331,7 +1331,7 @@ export function ClientSettingsPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Current Browser</p>
+                    <p className="text-sm font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Current Browser</p>
                     <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase" style={{ background: CS.primaryFixed, color: CS.primary }}>Current</span>
                   </div>
                   <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>
@@ -1343,7 +1343,7 @@ export function ClientSettingsPage() {
 
             {/* Danger zone */}
             <div className="rounded-xl border p-6" style={{ borderColor: `${CS.error}30`, background: "#fde8e810" }}>
-              <h3 className="text-lg font-semibold mb-1" style={{ color: CS.error, fontFamily: "Inter, sans-serif" }}>Danger Zone</h3>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: CS.error, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Danger Zone</h3>
               <p className="text-sm mb-4" style={{ color: CS.secondary }}>
                 Deactivating your account will archive all your data and revoke portal access immediately.
               </p>
@@ -1376,7 +1376,7 @@ export function ClientSupportPage() {
             <Headset size={24} />
           </div>
           <div>
-            <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Get in Touch</h3>
+            <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Get in Touch</h3>
             <p className="text-sm" style={{ color: CS.secondary }}>Our team typically responds within 24 hours.</p>
           </div>
         </div>

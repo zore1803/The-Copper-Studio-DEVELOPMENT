@@ -5,8 +5,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["DM Sans", "system-ui", "sans-serif"],
-        display: ["Syne", "DM Sans", "system-ui", "sans-serif"],
-        inter: ["Inter", "system-ui", "sans-serif"],
+        display: ["DM Sans", "system-ui", "sans-serif"],
+        inter: ["DM Sans", "system-ui", "sans-serif"],
       },
       colors: {
         primary: { DEFAULT: "#894d0d", dark: "#6f381a", light: "#fff1ec", container: "#a76526", fixed: "#ffdcc2" },

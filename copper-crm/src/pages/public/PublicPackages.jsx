@@ -81,7 +81,7 @@ export default function PublicPackages() {
     visible[1]?.id;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f9f6f3", fontFamily: "'Inter', 'Segoe UI', sans-serif", color: "#111" }}>
+    <div style={{ minHeight: "100vh", background: "#f9f6f3", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#111" }}>
 
       {/* Logo */}
       <div style={{ display: "flex", justifyContent: "center", padding: "32px 0 28px" }}>
@@ -114,7 +114,7 @@ export default function PublicPackages() {
             <span style={{ display: "inline-block", marginBottom: 12, color: "#964d0a", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
               Step 1 — Select a package
             </span>
-            <h1 style={{ margin: "0 0 12px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#111" }}>
+            <h1 style={{ margin: "0 0 12px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#111" }}>
               Choose a package to get started.
             </h1>
             <p style={{ margin: 0, maxWidth: 500, color: "#555", fontSize: "0.95rem", lineHeight: 1.55 }}>
@@ -142,7 +142,7 @@ export default function PublicPackages() {
 
         {/* Section head */}
         <div style={{ marginBottom: 22 }}>
-          <h2 style={{ margin: "0 0 5px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", color: "#111" }}>
+          <h2 style={{ margin: "0 0 5px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", color: "#111" }}>
             Our packages
           </h2>
           <p style={{ margin: 0, color: "#646464", fontSize: "0.9rem" }}>
@@ -208,7 +208,7 @@ export default function PublicPackages() {
                     <p style={{ margin: "0 0 5px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                       {activeCategory}
                     </p>
-                    <h3 style={{ margin: 0, fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
+                    <h3 style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
                       {pkg.name}
                     </h3>
                   </div>
@@ -221,7 +221,7 @@ export default function PublicPackages() {
 
                 {/* Price */}
                 <div>
-                  <p style={{ margin: 0, fontFamily: "Georgia,'Times New Roman',serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
+                  <p style={{ margin: 0, fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
                     {money(pkg.price)}
                   </p>
                   <p style={{ margin: "4px 0 0", color: "#646464", fontSize: "0.84rem" }}>
@@ -295,7 +295,7 @@ export default function PublicPackages() {
             <p style={{ margin: "0 0 6px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
               Custom Package Plan
             </p>
-            <h3 style={{ margin: "0 0 8px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
+            <h3 style={{ margin: "0 0 8px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
               Need something tailored to your business?
             </h3>
             <p style={{ margin: 0, color: "#555", fontSize: "0.9rem", lineHeight: 1.55 }}>

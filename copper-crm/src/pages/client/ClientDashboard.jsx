@@ -17,7 +17,7 @@ function StatCard({ icon: Icon, label, value, color }) {
         <Icon size={22} style={{ color }} />
       </div>
       <div>
-        <p className="text-2xl font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>{value}</p>
+        <p className="text-2xl font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{value}</p>
         <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>{label}</p>
       </div>
     </div>
@@ -75,7 +75,7 @@ export default function ClientDashboard() {
     <div className="p-5 xl:p-6 max-w-7xl mx-auto">
       {/* Welcome header */}
       <div className="mb-6">
-        <h1 className="text-lg font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>Hello, {name} 👋</h1>
+        <h1 className="text-lg font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Hello, {name} 👋</h1>
         <p className="mt-0.5 text-xs" style={{ color: "var(--cs-secondary)" }}>Here's an overview of your current engagement with The Copper Studio.</p>
       </div>
 
@@ -92,7 +92,7 @@ export default function ClientDashboard() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: "var(--cs-secondary)" }}>Current Project</p>
-                <h3 className="text-xl font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>
+                <h3 className="text-xl font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                   {activeProject?.name || "No active project"}
                 </h3>
                 {activeProject?.packageName && (
@@ -157,7 +157,7 @@ export default function ClientDashboard() {
           {/* Orders */}
           <div className="rounded-xl border" style={{ background: "var(--cs-surface-container-lowest)", borderColor: "var(--cs-outline-variant)" }}>
             <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--cs-outline-variant)" }}>
-              <h3 className="font-semibold" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>My Purchases</h3>
+              <h3 className="font-semibold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>My Purchases</h3>
               <Link to="/client/invoices" className="text-xs font-semibold flex items-center gap-1 hover:underline"
                 style={{ color: "var(--cs-primary)" }}>
                 View invoices <ArrowRight size={14} />
@@ -204,7 +204,7 @@ export default function ClientDashboard() {
         <div className="space-y-5">
           {/* Next meeting */}
           <div className="rounded-xl border p-5" style={{ background: "var(--cs-surface-container-lowest)", borderColor: "var(--cs-outline-variant)" }}>
-            <h3 className="font-semibold mb-3" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>Next Meeting</h3>
+            <h3 className="font-semibold mb-3" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Next Meeting</h3>
             {upcomingMeeting ? (
               <div>
                 <div className="flex items-start gap-3">
@@ -243,7 +243,7 @@ export default function ClientDashboard() {
 
           {/* Recent activity */}
           <div className="rounded-xl border p-5" style={{ background: "var(--cs-surface-container-lowest)", borderColor: "var(--cs-outline-variant)" }}>
-            <h3 className="font-semibold mb-4" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>Recent Activity</h3>
+            <h3 className="font-semibold mb-4" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Recent Activity</h3>
             <div className="relative space-y-4">
               <div className="absolute left-[9px] top-2 bottom-2 w-0.5" style={{ background: "var(--cs-outline-variant)" }} />
               {loading ? (
@@ -283,7 +283,7 @@ export default function ClientDashboard() {
 
           {/* Quick links */}
           <div className="rounded-xl border p-5" style={{ background: "var(--cs-surface-container-lowest)", borderColor: "var(--cs-outline-variant)" }}>
-            <h3 className="font-semibold mb-3" style={{ color: "var(--cs-on-surface)", fontFamily: "Inter, sans-serif" }}>Quick Actions</h3>
+            <h3 className="font-semibold mb-3" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Quick Actions</h3>
             <div className="space-y-2">
               {[
                 { Icon: Video, label: "Request a meeting", to: "/client/meetings" },
@@ -292,7 +292,7 @@ export default function ClientDashboard() {
               ].map((link) => (
                 <Link key={link.to} to={link.to}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium"
-                  style={{ color: "var(--cs-secondary)", fontFamily: "Inter, sans-serif" }}
+                  style={{ color: "var(--cs-secondary)", fontFamily: "'DM Sans', system-ui, sans-serif" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "var(--cs-surface-container-low)"; e.currentTarget.style.color = "var(--cs-primary)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--cs-secondary)"; }}>
                   <link.Icon size={18} />

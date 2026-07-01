@@ -196,11 +196,11 @@ function TemplatePreview({ subject, body, type }) {
       )}
       <div className="flex-1 overflow-auto rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-inner">
         <div
-          style={{ fontFamily: "Inter,Arial,sans-serif", lineHeight: 1.6, color: "#111827", maxWidth: "100%" }}
+          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: 1.6, color: "#111827", maxWidth: "100%" }}
           dangerouslySetInnerHTML={{ __html: previewHtml || `<p style="color:#9ca3af">Preview will appear here…</p>` }}
         />
         {type === "email" && (
-          <div style={{ marginTop: 26, borderTop: "1px solid #e5e7eb", paddingTop: 14, fontFamily: "Inter,Arial,sans-serif", color: "#111827" }}>
+          <div style={{ marginTop: 26, borderTop: "1px solid #e5e7eb", paddingTop: 14, fontFamily: "'DM Sans', system-ui, sans-serif", color: "#111827" }}>
             <p style={{ margin: 0, fontWeight: 700 }}>The Copper Studio Team</p>
             <p style={{ margin: "2px 0 0", fontSize: 13, color: "#6b7280" }}>contact@thecopperstudio.com</p>
           </div>
