@@ -37,8 +37,17 @@ function loadLogoDataUri() {
 // Authorized-signatory signature image. Drop the file in as assets/signature.png
 // (or .jpg/.jpeg). A white background is handled at render time via
 // mix-blend-mode: multiply, so it disappears against the white invoice/email.
+function assetUrl(filename) {
+  const base = process.env.SITE_URL || process.env.PUBLIC_URL || "";
+  return base ? `${base.replace(/\/$/, "")}/assets/${filename}` : "";
+}
+
 function loadSignatureDataUri() {
   if (process.env.SELLER_SIGNATURE_URL) return process.env.SELLER_SIGNATURE_URL;
+  // Prefer a URL reference over base64 embedding — base64 images bloat emails
+  // past Gmail's 102KB clip limit. If SITE_URL is set, use it.
+  const url = assetUrl("signature.png");
+  if (url) return url;
   return (
     assetDataUri("signature.png", "image/png") ||
     assetDataUri("signature.jpg", "image/jpeg") ||
