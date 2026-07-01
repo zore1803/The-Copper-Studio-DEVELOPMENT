@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Building2, Calendar, ChevronRight, Edit3, Eye, EyeOff,
+  ArrowLeft, Building2, Calendar, CheckCircle2, ChevronRight, Edit3, Eye, EyeOff,
   LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
   Plus, Save, Search,
   Settings as SettingsIcon, ShieldCheck, SlidersHorizontal, Tag,
@@ -1144,12 +1144,61 @@ export function SettingsDataFieldsPage() {
 
 const PRICING_CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
 
+function money(n) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(n) || 0);
+}
+
+function PricingPreviewCards({ visible, edits }) {
+  const featuredId = visible.find((p) => /most|popular|advance/i.test(`${edits[p.id]?.label ?? p.label} ${p.name}`))?.id || visible[1]?.id;
+  return (
+    <div className="grid gap-4 sm:grid-cols-3">
+      {visible.map((pkg) => {
+        const e = edits[pkg.id] || {};
+        const featured = pkg.id === featuredId;
+        const inclusions = (e.includes || "").split("\n").map((s) => s.trim()).filter(Boolean);
+        return (
+          <div
+            key={pkg.id}
+            className={`flex flex-col rounded-xl border bg-white p-5 shadow-sm ${featured ? "border-[#884c2d] ring-2 ring-[#884c2d]/10" : "border-[#e5d8d1]"}`}
+          >
+            <div className="mb-4 flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#884c2d]">{pkg.category}</p>
+                <h3 className="mt-0.5 text-base font-bold text-[#111827]">{pkg.name}</h3>
+              </div>
+              {featured && (
+                <span className="shrink-0 rounded-full bg-[#fff1ec] px-2 py-0.5 text-[10px] font-bold text-[#884c2d]">Popular</span>
+              )}
+            </div>
+            <div className="mb-4">
+              <p className="text-2xl font-bold text-[#111827]">{money(e.price ?? pkg.price)}</p>
+              <p className="mt-0.5 text-xs text-[#6c6355]">{e.duration || pkg.duration}</p>
+            </div>
+            <ul className="mb-5 flex-1 space-y-2">
+              {inclusions.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-xs text-[#374151]">
+                  <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-emerald-500" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className={`rounded-lg px-4 py-2.5 text-center text-xs font-bold ${featured ? "bg-[#884c2d] text-white" : "border border-[#d8c2b9] text-[#6f381a]"}`}>
+              Continue to Checkout →
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function PricingSection({ onSave, saving }) {
   const { token } = useAuth();
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(PRICING_CATEGORIES[0]);
   const [edits, setEdits] = useState({});
+  const [mode, setMode] = useState("edit"); // "edit" | "preview"
 
   useEffect(() => {
     apiGet("/api/packages")
@@ -1192,58 +1241,85 @@ function PricingSection({ onSave, saving }) {
         })}
       </nav>
 
-      {/* Right — editable packages */}
+      {/* Right panel */}
       <div className="flex min-h-0 flex-1 flex-col pl-6">
-        <div className="flex-1 overflow-y-auto space-y-6 pr-1">
-          {visible.map((pkg) => {
-            const e = edits[pkg.id] || {};
-            return (
-              <div key={pkg.id} className="rounded-xl border border-[#f0e6e0] bg-[#fdfaf9] p-5">
-                <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#884c2d]">{pkg.name}</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Plan label</label>
-                    <input
-                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
-                      value={e.label ?? ""}
-                      onChange={(ev) => set(pkg.id, "label", ev.target.value)}
-                      placeholder="e.g. Most popular"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Price (₹)</label>
-                    <input
-                      type="number"
-                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
-                      value={e.price ?? ""}
-                      onChange={(ev) => set(pkg.id, "price", ev.target.value)}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Duration / timeline</label>
-                    <input
-                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
-                      value={e.duration ?? ""}
-                      onChange={(ev) => set(pkg.id, "duration", ev.target.value)}
-                      placeholder="e.g. 20 days delivery"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Inclusions <span className="font-normal text-[#9ca3af]">(one per line)</span></label>
-                    <textarea
-                      rows={5}
-                      className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 resize-none"
-                      value={e.includes ?? ""}
-                      onChange={(ev) => set(pkg.id, "includes", ev.target.value)}
-                      placeholder={"Logo design (3 concepts)\nBrand colour palette\n…"}
-                    />
+        {/* Mode strip */}
+        <div className="mb-4 flex shrink-0 items-center justify-between">
+          <p className="text-xs font-semibold text-[#6c6355]">{activeCategory} packages</p>
+          <div className="inline-flex rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-0.5">
+            <button
+              onClick={() => setMode("edit")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${mode === "edit" ? "bg-white text-[#111827] shadow-sm" : "text-[#6c6355] hover:text-[#111827]"}`}
+            >
+              <Edit3 size={12} /> Edit
+            </button>
+            <button
+              onClick={() => setMode("preview")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${mode === "preview" ? "bg-white text-[#111827] shadow-sm" : "text-[#6c6355] hover:text-[#111827]"}`}
+            >
+              <Eye size={12} /> Preview
+            </button>
+          </div>
+        </div>
+
+        {mode === "preview" ? (
+          <div className="flex-1 overflow-y-auto rounded-xl border border-[#f0e6e0] bg-[#f7f2ef] p-5">
+            <p className="mb-4 text-center text-xs font-medium text-[#9ca3af]">Preview — reflects your unsaved edits</p>
+            <PricingPreviewCards visible={visible} edits={edits} />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto space-y-6 pr-1">
+            {visible.map((pkg) => {
+              const e = edits[pkg.id] || {};
+              return (
+                <div key={pkg.id} className="rounded-xl border border-[#f0e6e0] bg-[#fdfaf9] p-5">
+                  <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#884c2d]">{pkg.name}</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-[#6c6355]">Plan label</label>
+                      <input
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        value={e.label ?? ""}
+                        onChange={(ev) => set(pkg.id, "label", ev.target.value)}
+                        placeholder="e.g. Most popular"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-[#6c6355]">Price (₹)</label>
+                      <input
+                        type="number"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        value={e.price ?? ""}
+                        onChange={(ev) => set(pkg.id, "price", ev.target.value)}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1 block text-xs font-medium text-[#6c6355]">Duration / timeline</label>
+                      <input
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        value={e.duration ?? ""}
+                        onChange={(ev) => set(pkg.id, "duration", ev.target.value)}
+                        placeholder="e.g. 20 days delivery"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="mb-1 block text-xs font-medium text-[#6c6355]">Inclusions <span className="font-normal text-[#9ca3af]">(one per line)</span></label>
+                      <textarea
+                        rows={5}
+                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 resize-none"
+                        value={e.includes ?? ""}
+                        onChange={(ev) => set(pkg.id, "includes", ev.target.value)}
+                        placeholder={"Logo design (3 concepts)\nBrand colour palette\n…"}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="flex shrink-0 justify-end border-t border-[#f3f4f6] pt-4 mt-4">
           <Button disabled={saving} onClick={() => onSave(edits)}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
         </div>
