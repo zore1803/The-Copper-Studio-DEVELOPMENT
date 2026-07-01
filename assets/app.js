@@ -65,6 +65,14 @@ let packages = [
 
 let activeCategory = "CopperBrand";
 
+// Pricing is DB-driven. `packagesLoaded` gates the packages grid so the page
+// never flashes the stale hardcoded fallback: it shows the last-known DB prices
+// (cached in localStorage) instantly, or a brief loading state on a cold first
+// load, and only ever renders the hardcoded fallback if the API is unreachable
+// and there is no cache.
+let packagesLoaded = false;
+const PACKAGES_CACHE_KEY = "tcs-packages-cache";
+
 const STORAGE_KEY = "tcs-order";
 // The Express server serves these static pages and /api from the same origin in
 // production. The "npm run static" workflow serves this page on a separate port
@@ -455,6 +463,14 @@ function renderPackagesPage() {
 
   // Render package cards for active category
   const packageGrid = document.getElementById("packageGrid");
+
+  // Cold first load with no cache yet — show a loading state rather than the
+  // stale hardcoded prices while the live pricing is fetched from the database.
+  if (!packagesLoaded) {
+    packageGrid.innerHTML = `<p class="package-loading" style="grid-column:1/-1;text-align:center;color:#8a6a55;padding:48px 0;font-size:0.95rem;">Loading packages…</p>`;
+    return;
+  }
+
   const visible = packages.filter((pkg) => pkg.category === activeCategory);
   packageGrid.innerHTML = visible
     .map((pkg) => {
@@ -1300,21 +1316,45 @@ const pageRenderers = {
   admin: renderAdminPage
 };
 
+// On the packages page, seed from the localStorage cache (last-known DB prices)
+// before the first render so a reload shows the correct prices instantly with no
+// flash of the hardcoded fallback.
+if (page === "packages") {
+  try {
+    const cached = JSON.parse(localStorage.getItem(PACKAGES_CACHE_KEY) || "null");
+    if (Array.isArray(cached) && cached.length && cached.some((p) => p.category)) {
+      packages = cached;
+      packagesLoaded = true;
+    }
+  } catch { /* ignore malformed cache */ }
+}
+
 pageRenderers[page]?.();
 
-// The packages page first renders the fallback list instantly, then pulls the
-// live pricing from the database so admin edits (Settings > Pricing) show up
-// without changing any code. Only replace the fallback with a well-formed
-// response (array of category-tagged packages).
+// Pull the live pricing from the database so admin edits (Settings > Pricing)
+// show up without a redeploy, and refresh the cache for next time.
 if (page === "packages") {
   apiRequest("/packages")
     .then((data) => {
       if (Array.isArray(data) && data.length && data.some((p) => p.category)) {
         packages = data;
+        packagesLoaded = true;
+        try { localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(data)); } catch { /* quota/full — non-fatal */ }
+        renderPackagesPage();
+      } else if (!packagesLoaded) {
+        // API returned nothing usable and there was no cache — reveal the
+        // hardcoded fallback rather than leaving the loading state stuck.
+        packagesLoaded = true;
         renderPackagesPage();
       }
     })
-    .catch(() => {});
+    .catch(() => {
+      // Offline / API down with no cache — fall back to the hardcoded list.
+      if (!packagesLoaded) {
+        packagesLoaded = true;
+        renderPackagesPage();
+      }
+    });
 }
 
 // ── Discount display tool (packages page only, Ctrl+Z to toggle) ──────────
