@@ -74,6 +74,12 @@ export default function App() {
               <Route path="contacts" element={<Contacts />} />
               <Route path="contacts/:contactId" element={<ContactDetail />} />
               <Route path="projects" element={<ProjectsList />} />
+              {/* Same project pages, reachable under /projects so the sidebar stays
+                  on "Projects" when opened from the Projects list (company is
+                  derived from the project record). */}
+              <Route path="projects/:projectId" element={<ProjectDetail />} />
+              <Route path="projects/:projectId/tasks" element={<ProjectTimeline />} />
+              <Route path="projects/:projectId/files" element={<ProjectFiles />} />
               <Route path="timeline" element={<TimelinePage />} />
               <Route path="kanban" element={<KanbanBoard />} />
               <Route path="tasks" element={<TasksPage />} />

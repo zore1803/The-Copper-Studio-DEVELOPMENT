@@ -12,8 +12,6 @@ import Note from "../models/Note.js";
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
-import EmailTemplate from "../models/EmailTemplate.js";
-import WhatsappTemplate from "../models/WhatsappTemplate.js";
 import User from "../models/User.js";
 import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "../services/projectNaming.js";
@@ -48,9 +46,7 @@ const models = {
   notes: Note,
   orders: Order,
   payments: Payment,
-  invoices: Invoice,
-  emailTemplates: EmailTemplate,
-  whatsappTemplates: WhatsappTemplate
+  invoices: Invoice
 };
 
 const companyLinkedTypes = new Set(["projects", "documents", "meetings", "notes"]);
@@ -276,7 +272,8 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
   }
 });
 
-// Find() then delete each by id, and unlink array references by loading,
+// Kept driver-agnostic (works on both Mongo and the Supabase fallback): we
+// find() then delete each by id, and unlink array references by loading,
 // modifying, and saving the parent record.
 async function deleteEachById(Model, records) {
   await Promise.all(

@@ -115,7 +115,39 @@ router.get("/orders", async (req, res, next) => {
     // toggle only governs the client Documents section, not billing. An invoice
     // is a record of a real purchase, so it must stay here regardless.
     const orders = await Order.find({ "customer.customerEmail": user.email }).sort({ createdAt: -1 });
-    res.json(orders);
+
+    // Manual / admin-created projects produce an Invoice but NO Order, so those
+    // purchases never showed up in the client's billing (it counted only orders).
+    // Surface such invoices as order-shaped entries. To avoid double-counting the
+    // online flow, only include invoices whose project has no order behind it.
+    const invoices = await Invoice.find({ $or: [{ clientId: user._id }, { customerEmail: user.email }] }).sort({ createdAt: -1 });
+    const standaloneProjectIds = invoices.map((inv) => inv.projectId).filter(Boolean);
+    const projects = standaloneProjectIds.length
+      ? await Project.find({ _id: { $in: standaloneProjectIds } }).select("_id name orderId").catch(() => [])
+      : [];
+    const projectById = new Map(projects.map((p) => [String(p._id), p]));
+    const invoiceOrders = invoices
+      .filter((inv) => {
+        const proj = inv.projectId ? projectById.get(String(inv.projectId)) : null;
+        return !proj?.orderId; // keep only invoices with no Order (order-based ones are already listed)
+      })
+      .map((inv) => {
+        const proj = inv.projectId ? projectById.get(String(inv.projectId)) : null;
+        return {
+          _id: inv._id,
+          projectName: proj?.name || inv.project || "",
+          package: { name: inv.package || inv.project || "Invoice", total: inv.total ?? inv.amount ?? 0 },
+          customer: { customerEmail: user.email, projectName: proj?.name || inv.project || "" },
+          payment: {
+            status: inv.paymentStatus || inv.status || "paid",
+            invoiceId: inv.invoiceNumber || inv.invoiceId,
+            paidAt: inv.paidAt || inv.issueDate || inv.date || inv.createdAt,
+          },
+          createdAt: inv.issueDate || inv.date || inv.createdAt,
+        };
+      });
+
+    res.json([...orders, ...invoiceOrders]);
   } catch (error) {
     next(error);
   }

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Save, Building2, Upload, X } from "lucide-react";
+import { Save, Building2, Upload, X, UserPlus, Pencil } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
 import SearchableSelectField from "./SearchableSelect";
+import ContactFormPanel from "./ContactFormPanel";
 import { useToast } from "./useToast";
 import { isGstin } from "../lib/validators";
-import { REGISTRATION_TYPES, INDIAN_STATES } from "../lib/companyOptions";
-import { useDataFields } from "../lib/dataFields";
-import { useAuth } from "../auth/useAuth";
+import { INDUSTRIES, LEAD_SOURCES, REGISTRATION_TYPES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
+import { loadCompanyOwners } from "../lib/companyOwners";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
@@ -47,7 +47,7 @@ function matchesSocialDomain(value, key) {
 }
 
 const EMPLOYEE_RANGES = ["1–10", "11–50", "51–200", "201–500", "501–1000", "1001–5000", "5000+"];
-const DOCUMENT_SIGNED_OPTIONS = ["Pending", "Accepted", "Rejected"];
+const COMPANY_STATUS_OPTIONS = ["Active", "Prospect", "Inactive"];
 
 function Field({ label, value, onChange, placeholder = "", type = "text", error = "", span = false }) {
   return (
@@ -95,9 +95,12 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
   }));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const { token } = useAuth();
-  const dataFields = useDataFields(token);
-  const companyOwners = dataFields.companyOwner;
+  // A primary contact captured via the contact form. It can't be persisted yet
+  // (the company has no id until saved), so it's held here and created right
+  // after the company is saved — see saveCompany in Companies.jsx.
+  const [primaryContact, setPrimaryContact] = useState(company.__primaryContact || null);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const companyOwners = loadCompanyOwners();
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
@@ -134,7 +137,13 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
     if (Object.keys(next).length) return;
     setSaving(true);
     try {
-      await onSave({ ...form, gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin, address: form.addressLine1 });
+      await onSave({
+        ...form,
+        gstin: form.gstin ? String(form.gstin).toUpperCase() : form.gstin,
+        address: form.addressLine1,
+        // Picked up by saveCompany to create a real contact under the new company.
+        ...(primaryContact ? { __primaryContact: primaryContact } : {}),
+      });
     } finally {
       setSaving(false);
     }
@@ -185,22 +194,44 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
         <Field label="Company name *" value={form.name} onChange={set("name")} error={errors.name} />
         <Field label="GSTIN number" value={form.gstin} onChange={set("gstin")} placeholder="27ABCDE1234F1Z5" error={errors.gstin} />
         <SearchableSelectField label="Registration type" value={form.registrationType} onChange={set("registrationType")} options={REGISTRATION_TYPES} placeholder="Select or type…" />
-        <SearchableSelectField label="Industry" value={form.industry} onChange={set("industry")} options={dataFields.companyIndustry} allowCustom placeholder="Select or type…" />
+        <SearchableSelectField label="Industry" value={form.industry} onChange={set("industry")} options={INDUSTRIES} allowCustom placeholder="Select or type…" />
         <SelectField label="Employees" value={form.employees} onChange={set("employees")} options={EMPLOYEE_RANGES} placeholder="Select range…" />
-        <Field label="Primary contact" value={form.contact} onChange={set("contact")} />
+        <label className="block">
+          <span className="text-xs font-semibold text-[#374151]">Primary contact</span>
+          {primaryContact ? (
+            <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm">
+              <span className="truncate text-[#111827]">{form.contact || primaryContact.name || "Contact"}</span>
+              <span className="flex shrink-0 items-center gap-1">
+                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#884c2d] hover:text-[#6f381a]" title="Edit contact">
+                  <Pencil size={13} />
+                </button>
+                <button type="button" onClick={() => { setPrimaryContact(null); set("contact")(""); }} className="text-[#9ca3af] hover:text-[#6b7280]" title="Remove">
+                  <X size={13} />
+                </button>
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowContactForm(true)}
+              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#884c2d] hover:bg-[#fff1ec]"
+            >
+              <UserPlus size={14} /> Add primary contact
+            </button>
+          )}
+        </label>
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />
-        <SelectField label="Status" value={form.status} onChange={set("status")} options={dataFields.companyStatus} placeholder="Select status…" />
-        <SelectField label="Document signed" value={form.documentSigned} onChange={set("documentSigned")} options={DOCUMENT_SIGNED_OPTIONS} placeholder="Select status…" />
+        <SelectField label="Status" value={form.status} onChange={set("status")} options={COMPANY_STATUS_OPTIONS} placeholder="Select status…" />
         <Field label="Website" value={form.website} onChange={set("website")} error={errors.website} />
         <SearchableSelectField label="Company owner" value={form.owner} onChange={set("owner")} options={companyOwners} allowCustom placeholder="Select company owner…" />
-        <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={dataFields.leadSource} allowCustom placeholder="Select or type…" />
+        <SearchableSelectField label="Lead source" value={form.leadSource} onChange={set("leadSource")} options={LEAD_SOURCES} allowCustom placeholder="Select or type…" />
 
         <div className="sm:col-span-3 mt-1 border-t border-[#f1f1f5] pt-3">
           <span className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Address</span>
         </div>
         <Field span label="Address line 1" value={form.addressLine1} onChange={set("addressLine1")} />
         <Field span label="Address line 2" value={form.addressLine2} onChange={set("addressLine2")} />
-        <SearchableSelectField label="City" value={form.city} onChange={set("city")} options={dataFields.companyCity} allowCustom placeholder="Select or type…" />
+        <SearchableSelectField label="City" value={form.city} onChange={set("city")} options={INDIAN_CITIES} allowCustom placeholder="Select or type…" />
         <SearchableSelectField label="State" value={form.state} onChange={set("state")} options={INDIAN_STATES} placeholder="Select state…" />
         <Field label="Pincode" value={form.pincode} onChange={set("pincode")} placeholder="e.g. 400001" />
 
@@ -221,6 +252,23 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
           />
         </label>
       </div>
+
+      {showContactForm && (
+        <ContactFormPanel
+          contact={primaryContact}
+          company={{ name: form.name }}
+          companies={[]}
+          hideCompany
+          deferInvite
+          onClose={() => setShowContactForm(false)}
+          onSave={(payload) => {
+            // Hold the contact locally; it's created once the company is saved.
+            setPrimaryContact({ ...payload, isPrimary: true });
+            set("contact")(payload.name || "");
+            setShowContactForm(false);
+          }}
+        />
+      )}
     </SidePanel>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
@@ -228,16 +228,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   const zoomIn = () => updateZoom((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
   const [collapsed, setCollapsed] = useState({});
 
-  // The visible window starts a generous distance before/after the stages and
-  // keeps growing as the user scrolls toward either edge — so the timeline runs
-  // on and on in both directions instead of stopping at the last stage.
-  const INITIAL_PAD_DAYS = 60;
-  const EXTEND_DAYS = 90;
-  const [pad, setPad] = useState({ left: INITIAL_PAD_DAYS, right: INITIAL_PAD_DAYS });
-  // px we still need to add to scrollLeft after a left-side extension so the
-  // content doesn't visually jump when new days are prepended.
-  const pendingLeftPx = useRef(0);
-
   // Pinch / Ctrl+scroll over the chart zooms the timeline instead of the whole page.
   // Plain two-finger scrolling (no Ctrl) is left alone so the chart still scrolls.
   useEffect(() => {
@@ -255,7 +245,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
     return () => el.removeEventListener("wheel", onWheel);
   }, [stages.length]);
 
-  const { groups, minDate, maxDate, baseMinTime, baseMaxTime, weeks, summary } = useMemo(() => {
+  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
     const TODAY = today();
     const referenceYear = new Date().getFullYear();
     // First pass: parse whatever dates a stage has, and flag the ones missing them.
@@ -287,20 +277,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status, isDanger: false };
     });
     const unscheduled = parsed.filter((p) => !p.hasDates).length;
-    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, baseMinTime: TODAY.getTime(), baseMaxTime: TODAY.getTime(), weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    // Raw extent of the real stages — used to decide where to re-center on Today.
-    const rawMin = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime()))) : new Date(TODAY.getTime());
-    const rawMax = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime()))) : new Date(TODAY.getTime());
-    rawMin.setHours(0, 0, 0, 0);
-    rawMax.setHours(23, 59, 59, 999);
-    // Apply the scroll-driven padding so the window can run far past the stages.
-    const min = new Date(rawMin.getTime() - pad.left * DAY_MS);
-    const max = new Date(rawMax.getTime() + pad.right * DAY_MS);
+    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(TODAY.getTime() - 3 * DAY_MS);
+    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(TODAY.getTime() + 14 * DAY_MS);
     min.setHours(0, 0, 0, 0);
     max.setHours(23, 59, 59, 999);
-
+    
     const groupList = groupCategories
       ? groupCategories.map(cat => ({
           id: cat.id,
@@ -328,8 +312,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       groups: groupList,
       minDate: min,
       maxDate: max,
-      baseMinTime: rawMin.getTime(),
-      baseMaxTime: rawMax.getTime(),
       weeks: weekCols,
       summary: {
         total: mapped.length,
@@ -338,13 +320,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
         unscheduled,
       },
     };
-  }, [stages, groupBy, groupCategories, pad]);
-
-  // Reset the scroll padding whenever the underlying stage range changes, so a
-  // fresh project doesn't inherit a giant window scrolled far from its stages.
-  useEffect(() => {
-    setPad({ left: INITIAL_PAD_DAYS, right: INITIAL_PAD_DAYS });
-  }, [baseMinTime, baseMaxTime]);
+  }, [stages, groupBy, groupCategories]);
 
   // Auto-scroll the timeline to TODAY (or the nearest date) when it loads, when the date range changes,
   // or when zooming (to keep Today in view per user request).
@@ -360,18 +336,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       // Scroll so the target date is slightly offset from the left edge (e.g. roughly 1 column)
       scrollRef.current.scrollLeft = Math.max(0, targetPx - colWidth);
     }
-    // Re-center only when the underlying data or zoom changes — NOT on every
-    // scroll-driven pad extension (that would yank the view back to Today).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseMinTime, baseMaxTime, colWidth]);
-
-  // Keep the scroll position stable after prepending days on the left edge.
-  useLayoutEffect(() => {
-    if (pendingLeftPx.current && scrollRef.current) {
-      scrollRef.current.scrollLeft += pendingLeftPx.current;
-      pendingLeftPx.current = 0;
-    }
-  }, [pad.left]);
+  }, [minDate, maxDate, colWidth]);
 
   if (!groups.length) {
     return (
@@ -400,20 +365,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   const dateToPx = (date) => ((date - minDate) / DAY_MS) * pxPerDay;
   const TODAY = today();
   const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
-
-  // As the user scrolls toward either edge, grow the window in that direction so
-  // the dates keep going on and on. A left-side extension records how many px were
-  // prepended so useLayoutEffect can keep the viewport from jumping.
-  function handleTimelineScroll(e) {
-    const el = e.currentTarget;
-    const edge = pxPerDay * 7; // trigger within ~one week of an edge
-    if (el.scrollLeft <= edge) {
-      pendingLeftPx.current += EXTEND_DAYS * pxPerDay;
-      setPad((p) => ({ ...p, left: p.left + EXTEND_DAYS }));
-    } else if (el.scrollWidth - (el.scrollLeft + el.clientWidth) <= edge) {
-      setPad((p) => ({ ...p, right: p.right + EXTEND_DAYS }));
-    }
-  }
 
   function toggleGroup(id) {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
@@ -511,7 +462,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           ))}
         </div>
 
-        <div ref={scrollRef} onScroll={handleTimelineScroll} className="flex-1 overflow-x-auto">
+        <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="sticky top-0 z-20 flex h-11 border-b border-[#f1f1f5] bg-white">
               {timeCols.map((col, index) => (
@@ -569,16 +520,22 @@ export default function ProjectTimeline() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { records: companies } = useCrmRecords("companies");
-  const { records: projects, save: saveProject } = useCrmRecords("projects");
-  const [view, setView] = useState("kanban");
+  const { records: companies, loading: companiesLoading } = useCrmRecords("companies");
+  const { records: projects, save: saveProject, loading: projectsLoading } = useCrmRecords("projects");
+  const [view, setView] = useState("gantt");
   const [stageEditor, setStageEditor] = useState(null);
 
-  const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const project = useMemo(
-    () => projects.find((p) => String(p.id || p._id) === projectId && (String(p.companyId) === companyId || true)),
-    [projects, companyId, projectId]
+    () => projects.find((p) => String(p.id || p._id) === projectId),
+    [projects, projectId]
   );
+  // companyId is absent under /admin/projects/:id — derive the company from the
+  // project. Match against BOTH the company's local id and Mongo _id, since
+  // project.companyId is the _id while c.id is the local id.
+  const company = useMemo(() => {
+    const wanted = [companyId, project?.companyId].filter(Boolean).map(String);
+    return companies.find((c) => [c.id, c._id].filter(Boolean).map(String).some((cid) => wanted.includes(cid)));
+  }, [companies, companyId, project]);
 
   // The board is driven entirely by the project's stages — each stage renders as one
   // card on the Kanban / Gantt. There is no separate "task" concept here, so anything
@@ -598,6 +555,18 @@ export default function ProjectTimeline() {
       description: stage.notes || "",
     }));
   }, [project]);
+
+  // While the records are still loading on first mount, show a spinner instead of
+  // the "not found" message — otherwise it flashes for a moment before the data
+  // arrives (e.g. when navigating in from the Overview tab).
+  if ((!company || !project) && (companiesLoading || projectsLoading)) {
+    return (
+      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#884c2d]" />
+        <p className="mt-4 text-sm font-semibold text-[#6b7280]">Loading timeline…</p>
+      </div>
+    );
+  }
 
   if (!company || !project) {
     return (
@@ -718,16 +687,16 @@ export default function ProjectTimeline() {
         <h3 className="text-base font-semibold text-[#111827]">Project Timeline</h3>
         <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
           <button
-            onClick={() => setView("kanban")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
-          >
-            <Columns3 size={13} /> Kanban
-          </button>
-          <button
             onClick={() => setView("gantt")}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
           >
             <CalendarRange size={13} /> Gantt
+          </button>
+          <button
+            onClick={() => setView("kanban")}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+          >
+            <Columns3 size={13} /> Kanban
           </button>
         </div>
       </div>

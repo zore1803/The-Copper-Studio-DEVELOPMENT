@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, Download,
   Edit2, Eye, FileText, Filter, FolderKanban, FolderOpen, FolderPlus, Globe, GripVertical,
-  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Loader2, Mail, MessageSquare, Phone, Plus, ReceiptText,
+  Layers, LayoutGrid, Link as LinkIcon, List as ListIcon, Mail, MessageSquare, Phone, Plus, ReceiptText,
   Save, Search, Send, StickyNote, Target, Trash2, Unlink, Users, X
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -14,15 +14,14 @@ import { useToast } from "../../components/useToast";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
-import { useDataFields } from "../../lib/dataFields";
 import { isSameLocalDay } from "../../lib/dates";
 import SidePanel from "../../components/SidePanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
+import DocumentUploadPanel from "../../components/DocumentUploadPanel";
 import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/RichTextEditor";
 import FilterButton from "../../components/FilterButton";
-import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -103,9 +102,9 @@ function SocialIconLink({ href, icon: Icon, label }) {
       target="_blank"
       rel="noopener noreferrer"
       title={label}
-      className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform hover:scale-110"
+      className="flex h-7 w-7 items-center justify-center transition-transform hover:scale-110"
     >
-      <Icon className="h-full w-full rounded-full" />
+      <Icon className="h-full w-full" />
     </a>
   );
 }
@@ -126,9 +125,9 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
       rel="noopener noreferrer"
       title={label}
       style={{ color: brand.color, backgroundColor: brand.bg }}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-transparent shadow-sm ring-1 ring-black/5 transition-transform hover:scale-110"
+      className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent transition-transform hover:scale-110"
     >
-      <Icon size={15} />
+      <Icon size={13} />
     </a>
   );
 }
@@ -321,136 +320,6 @@ function LinkClientPanel({ company, contacts, projects, clients, loading, onClos
   );
 }
 
-
-function fileExt(filename) {
-  return (filename || "").split(".").pop().toLowerCase();
-}
-
-function readFileAsDataUrl(file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onprogress = (event) => {
-      if (onProgress && event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
-    };
-    reader.onload = () => { onProgress?.(100); resolve(reader.result); };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
-
-function DocumentUploadPanel({ company, onClose, onSave, defaultCategory = "" }) {
-  const { showToast } = useToast();
-  const dataFields = useDataFields();
-  const [form, setForm] = useState({ name: "", category: defaultCategory || "Contracts", fileType: "pdf", fileUrl: "", fileSize: "", notes: "" });
-  const [fileReady, setFileReady] = useState(false);
-  const [reading, setReading] = useState(false);
-  const [readPct, setReadPct] = useState(0);
-  const [saving, setSaving] = useState(false);
-  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
-
-  async function handleBrowse(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (file.size > MAX_UPLOAD_BYTES) {
-      showToast({ type: "error", title: "File too large", message: "Files must be 8 MB or smaller. Paste a hosted file URL instead for larger files." });
-      event.target.value = "";
-      return;
-    }
-    setFileReady(false);
-    setReadPct(0);
-    setReading(true);
-    try {
-      const dataUrl = await readFileAsDataUrl(file, setReadPct);
-      setForm((prev) => ({
-        ...prev,
-        name: prev.name || file.name,
-        fileType: fileExt(file.name) || prev.fileType,
-        fileUrl: dataUrl,
-        fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-      }));
-      setFileReady(true);
-    } finally {
-      setReading(false);
-      event.target.value = "";
-    }
-  }
-
-  async function handleSave() {
-    if (saving) return;
-    setSaving(true);
-    try {
-      await onSave(form);
-    } catch (err) {
-      showToast({ type: "error", title: "Upload failed", message: err?.message || "Could not upload the document. Please try again." });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <SidePanel
-      title="Upload Document"
-      subtitle={`Attach a file to ${company.name}.`}
-      onClose={onClose}
-      footer={
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!form.name.trim() || reading || saving}>
-            {saving ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : <><Save size={14} /> Save Document</>}
-          </Button>
-        </div>
-      }
-    >
-      <div className="space-y-4">
-        <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">File *</span>
-          <div className="mt-1.5 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
-            <div className="flex items-center gap-3">
-              <input id="doc-browse" type="file" className="hidden" onChange={handleBrowse} disabled={reading || saving} />
-              <label
-                htmlFor="doc-browse"
-                className={`rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
-              >
-                Browse…
-              </label>
-              <span className="truncate text-xs text-[#6b7280]">
-                {fileReady ? `${form.name} (${form.fileSize})` : reading ? "Reading file…" : "No file selected"}
-              </span>
-            </div>
-            {reading && (
-              <div className="mt-2.5">
-                <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
-                  <span>Reading file</span><span>{readPct}%</span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${readPct}%` }} />
-                </div>
-              </div>
-            )}
-            {saving && (
-              <div className="mt-2.5">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#884c2d]">
-                  <Loader2 size={11} className="animate-spin" /> Uploading to server…
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#884c2d]" />
-                </div>
-              </div>
-            )}
-          </div>
-        </label>
-        <Input span label="File name *" value={form.name} onChange={set("name")} />
-        <Select label="Category" value={form.category} onChange={set("category")} options={dataFields.documentCategory} />
-        <Select label="File type" value={form.fileType} onChange={set("fileType")} options={dataFields.documentFileType} />
-        <Input span label="...or paste a file URL" value={fileReady ? "" : form.fileUrl} onChange={set("fileUrl")} disabled={fileReady} hint="Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above." />
-        <Textarea span label="Notes" value={form.notes} onChange={set("notes")} />
-      </div>
-    </SidePanel>
-  );
-}
-
 function TaskPanel({ company, projects, onClose, onSave, defaultDueDate = "" }) {
   const [form, setForm] = useState({ title: "", projectId: "", priority: "Medium", status: "Backlog", assignedTo: "", dueDate: defaultDueDate, description: "" });
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -516,8 +385,8 @@ function InvoicePanel({ invoice, onClose, onDownload, onMarkPaid }) {
         <DetailRow label="Payment ID" value={invoice.paymentId || invoice.razorpayPaymentId || "Not linked"} />
         <DetailRow label="Transaction ID" value={invoice.transactionId || invoice.paymentId || "Not linked"} />
         <DetailRow label="Order ID" value={invoice.orderId || "Not linked"} />
-        <DetailRow label="Issue Date" value={formatDate(invoice.date || invoice.issueDate || invoice.createdAt)} />
-        <DetailRow label="Due Date" value={formatDate(invoice.dueDate)} />
+        <DetailRow label="Issue Date" value={invoice.date || invoice.createdAt || "Not added"} />
+        <DetailRow label="Due Date" value={invoice.dueDate || "Not added"} />
         <DetailRow label="History" value={invoice.history || "Generated / Sent / Paid events will appear here."} />
       </div>
     </SidePanel>
@@ -631,14 +500,8 @@ function DetailRow({ label, value }) {
 }
 
 function formatDate(value) {
-  if (!value) return "No date";
-  const isoDate = String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (isoDate) {
-    const [, year, month, day] = isoDate;
-    return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  }
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "No date";
+  if (Number.isNaN(date.getTime())) return value || "No date";
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
@@ -719,8 +582,6 @@ export default function CompanyDetail() {
   const [projectPackageFilter, setProjectPackageFilter] = useState("All");
   const [projectManagerFilter, setProjectManagerFilter] = useState("All");
   const [projectTimelineFilter, setProjectTimelineFilter] = useState("All");
-  const [pendingProjectDelete, setPendingProjectDelete] = useState(null);
-  const [deletingProject, setDeletingProject] = useState(false);
   const { records: companies, loading: companiesLoading, save: saveCompany } = useCrmRecords("companies");
   const { records: projects, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: contacts, save: saveContact, remove: removeContact } = useCrmRecords("contacts");
@@ -798,33 +659,9 @@ export default function CompanyDetail() {
     return matchesQuery && matchesStatus && matchesDesignation;
   }), [contactQuery, contactStatusFilter, contactDesignationFilter, linked.contacts]);
   const filteredInvoices = useMemo(() => linked.invoices.filter((invoice) => {
-    const amount = parseMoney(invoice.total || invoice.amount);
-    const date = invoice.date || invoice.issueDate || invoice.createdAt;
-    const dueDate = invoice.dueDate;
-    const haystack = [
-      invoice.invoiceId,
-      invoice.invoiceNumber,
-      invoice.id,
-      invoice._id,
-      invoice.transactionId,
-      invoice.paymentId,
-      invoice.razorpayPaymentId,
-      invoice.status,
-      invoice.paymentStatus,
-      invoice.company,
-      invoice.client,
-      invoice.project,
-      invoice.package,
-      invoice.customerEmail,
-      amount,
-      formatINR(amount),
-      date,
-      dueDate,
-      formatDate(date),
-      formatDate(dueDate),
-    ].filter(Boolean).join(" ").toLowerCase();
-    const matchesQuery = haystack.includes(invoiceQuery.trim().toLowerCase());
-    const matchesStatus = invoiceStatusFilter === "All" || String(invoice.status || "Pending").toLowerCase() === invoiceStatusFilter.toLowerCase();
+    const matchesQuery = `${invoice.invoiceId || invoice.id || invoice._id || ""} ${invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || ""}`
+      .toLowerCase().includes(invoiceQuery.toLowerCase());
+    const matchesStatus = invoiceStatusFilter === "All" || (invoice.status || "Pending") === invoiceStatusFilter;
     return matchesQuery && matchesStatus;
   }), [invoiceQuery, invoiceStatusFilter, linked.invoices]);
 
@@ -1066,19 +903,9 @@ export default function CompanyDetail() {
   }
 
   async function handleDeleteProject(project) {
-    setPendingProjectDelete(project);
-  }
-
-  async function confirmDeleteProject() {
-    if (!pendingProjectDelete || deletingProject) return;
-    setDeletingProject(true);
-    try {
-      await removeProject(pendingProjectDelete);
-      showToast({ title: "Project deleted", message: `${pendingProjectDelete.name || "Project"} removed from ${company.name}.` });
-      setPendingProjectDelete(null);
-    } finally {
-      setDeletingProject(false);
-    }
+    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+    await removeProject(project);
+    showToast({ title: "Project deleted", message: `${project.name || "Project"} removed from ${company.name}.` });
   }
 
   async function handleMarkInvoicePaid(invoice) {
@@ -1115,8 +942,8 @@ export default function CompanyDetail() {
       ["Status", invoice.status || "Pending"],
       ["Payment ID", invoice.paymentId || invoice.razorpayPaymentId || "-"],
       ["Order ID", invoice.orderId || "-"],
-      ["Issue Date", formatDate(invoice.date || invoice.issueDate || invoice.createdAt)],
-      ["Due Date", formatDate(invoice.dueDate)],
+      ["Issue Date", invoice.date || invoice.createdAt || "-"],
+      ["Due Date", invoice.dueDate || "-"],
     ];
     rows.forEach(([label, value], index) => {
       const y = 205 + index * 28;
@@ -1343,7 +1170,7 @@ export default function CompanyDetail() {
             }
             flush={Boolean(filteredInvoices.length)}
           >
-            <InvoicesTable invoices={filteredInvoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} />
+            {filteredInvoices.length ? <InvoicesTable invoices={filteredInvoices} onView={setSelectedInvoice} onDownload={downloadInvoicePdf} /> : <EmptyState icon={FileText} title="No invoices linked." />}
           </Section>
         )}
         {activeTab === "Documents" && (
@@ -1421,20 +1248,10 @@ export default function CompanyDetail() {
       {uploadingDocument && (
         <DocumentUploadPanel
           company={company}
+          projects={linked.projects}
           defaultCategory={typeof uploadingDocument === "string" ? uploadingDocument : ""}
           onClose={() => setUploadingDocument(false)}
           onSave={handleUploadDocument}
-        />
-      )}
-      {pendingProjectDelete && (
-        <ConfirmDeleteModal
-          title="Delete project?"
-          name={pendingProjectDelete.name || "this project"}
-          message="This cannot be undone."
-          confirmLabel="Delete Project"
-          loading={deletingProject}
-          onCancel={() => setPendingProjectDelete(null)}
-          onConfirm={confirmDeleteProject}
         />
       )}
     </div>
@@ -1779,12 +1596,12 @@ function InvoicesTable({ invoices, onView, onDownload }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6] bg-white">
-          {invoices.length ? invoices.map((invoice) => (
+          {invoices.map((invoice) => (
             <tr key={invoice.id || invoice._id}>
               <td className="py-3 pl-5 pr-4 font-mono text-xs text-[#6b7280]">{invoice.invoiceId || invoice.id || invoice._id}</td>
               <td className="py-3 pr-4 font-semibold text-[#111827]">{formatINR(parseMoney(invoice.total || invoice.amount))}</td>
-              <td className="py-3 pr-4 text-[#374151]">{formatDate(invoice.date || invoice.issueDate || invoice.createdAt)}</td>
-              <td className="py-3 pr-4 text-[#374151]">{formatDate(invoice.dueDate)}</td>
+              <td className="py-3 pr-4 text-[#374151]">{invoice.date || invoice.createdAt || "No date"}</td>
+              <td className="py-3 pr-4 text-[#374151]">{invoice.dueDate || "No due date"}</td>
               <td className="py-3 pr-4"><StatusBadge status={invoice.status || "Pending"} /></td>
               <td className="py-3 pr-4"><StatusBadge status={invoice.paymentStatus || invoice.status || "Pending"} /></td>
               <td className="py-3 pr-4 font-mono text-xs text-[#6b7280]">{invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked"}</td>
@@ -1795,17 +1612,7 @@ function InvoicesTable({ invoices, onView, onDownload }) {
                 </div>
               </td>
             </tr>
-          )) : (
-            <tr>
-              <td colSpan={8} className="px-5 py-10 text-center">
-                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
-                  <FileText size={20} />
-                </div>
-                <p className="text-sm font-semibold text-[#111827]">No invoices match your search.</p>
-                <p className="mt-1 text-sm text-[#6b7280]">Try searching by invoice ID, amount, status, payment, date, or transaction ID.</p>
-              </td>
-            </tr>
-          )}
+          ))}
         </tbody>
       </table>
     </div>
@@ -1882,7 +1689,6 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupFolders, setGroupFolders] = useState([]);
-  const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
   const projectDocs = projects.flatMap((project) =>
     (project.documents || []).map((doc, index) => ({
       ...doc,
@@ -1892,6 +1698,10 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
     }))
   );
   const allDocs = [...documents, ...projectDocs];
+
+  const baseCategories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", "Internal"];
+  const dynamicCategories = Array.from(new Set(allDocs.map((doc) => doc.category).filter(Boolean)));
+  const categories = Array.from(new Set([...baseCategories, ...dynamicCategories])).sort();
 
   function docsForFolders(folders) {
     return allDocs.filter((doc) => {

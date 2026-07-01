@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { FolderKanban, Calendar, Clock3, AlertCircle } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { FolderKanban, Calendar, Clock3, AlertCircle, CalendarCheck, Package } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
 import { isRoadmapComplete } from "../../lib/stageProgress";
 
@@ -26,8 +26,7 @@ const priorityPill = {
   "on-track": { label: "On Time", color: "teal", icon: Calendar },
 };
 
-function tabsFor(company, project) {
-  const base = `/admin/companies/${company.id || company._id}/projects/${project.id || project._id}`;
+function tabsFor(base) {
   return [
     { label: "Overview", to: base },
     { label: "Timeline", to: `${base}/tasks` },
@@ -37,9 +36,25 @@ function tabsFor(company, project) {
 
 export default function ProjectHeader({ company, project, activeTab, actionLabel, actionIcon: ActionIcon, onAction }) {
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
-  const tabs = tabsFor(company, project);
+  const location = useLocation();
+  // Keep the tabs (and thus the active sidebar section) in whichever section the
+  // project was opened from: the Projects list uses /admin/projects/:id, a company
+  // uses /admin/companies/:cid/projects/:id.
+  const inProjectsSection = location.pathname.startsWith("/admin/projects/");
+  const base = inProjectsSection
+    ? `/admin/projects/${project.id || project._id}`
+    : `/admin/companies/${company.id || company._id}/projects/${project.id || project._id}`;
+  const tabs = tabsFor(base);
   const team = project.team || project.assignedTeam || [];
   const liveStatus = liveProjectStatus(project);
+
+  // Key project metadata shown as small chips beside the title/tags (moved here
+  // from the old side "Project Metadata" box).
+  const fmtDate = (value) => (value ? new Date(value).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "—");
+  const startDate = project.startDate ? fmtDate(project.startDate) : "—";
+  const expectedRaw = project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate;
+  const expectedDate = expectedRaw ? fmtDate(expectedRaw) : "—";
+  const packageName = project.packagePurchased || project.packageName || "";
 
   return (
     <div className="border-b border-[#e5e7eb] bg-white">
@@ -73,6 +88,19 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
                       </div>
                     )}
                   </div>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-[#6b7280]">
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={13} className="text-[#884c2d]" /> Start: <span className="font-semibold text-[#111827]">{startDate}</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CalendarCheck size={13} className="text-[#884c2d]" /> Expected: <span className="font-semibold text-[#111827]">{expectedDate}</span>
+                </span>
+                {packageName && (
+                  <span className="flex items-center gap-1.5">
+                    <Package size={13} className="text-[#884c2d]" /> Package: <span className="font-semibold text-[#111827]">{packageName}</span>
+                  </span>
                 )}
               </div>
             </div>

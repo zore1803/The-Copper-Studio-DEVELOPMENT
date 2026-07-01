@@ -855,6 +855,12 @@ async function start() {
 
   app.listen(port, () => {
     console.log(`API running at http://localhost:${port} (DB: mongo)`);
+    // Warm the headless browser in the background so the first invoice-PDF
+    // download isn't a slow (often failing) cold start — Chromium can take 25s+
+    // to launch the first time, which times out the browser tab.
+    htmlToPdfBuffer("<!doctype html><html><body>warmup</body></html>")
+      .then(() => console.log("PDF engine warmed up and ready."))
+      .catch((error) => console.warn("PDF warmup skipped:", error.message));
   });
 }
 
