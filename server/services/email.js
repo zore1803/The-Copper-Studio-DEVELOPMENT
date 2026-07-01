@@ -1,5 +1,6 @@
 import sgMail from "@sendgrid/mail";
 import Settings from "../models/Settings.js";
+import EmailTemplate from "../models/EmailTemplate.js";
 import { seller, signatory } from "../data/sellerConfig.js";
 
 // Email signature block. The signature image uses mix-blend-mode:multiply so a
@@ -78,6 +79,40 @@ async function sendMail(message) {
   }
 }
 
+// Replace {{variable}} tokens in a string with the given vars map.
+function interpolate(text = "", vars = {}) {
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? `{{${key}}}`);
+}
+
+// Convert a plain-text template body (newlines) to simple HTML paragraphs.
+function bodyToHtml(text = "") {
+  return text
+    .split(/\n\n+/)
+    .map((para) => `<p style="margin:0 0 12px">${para.replace(/\n/g, "<br/>")}</p>`)
+    .join("");
+}
+
+// Look up an Active (or any) EmailTemplate by category, apply variable
+// substitution, and return { subject, html }. Returns null if no template found.
+async function resolveEmailTemplate(category, vars = {}) {
+  try {
+    const tpl = await EmailTemplate.findOne({ category, status: "Active" })
+      || await EmailTemplate.findOne({ category });
+    if (!tpl || !tpl.body) return null;
+    return {
+      subject: interpolate(tpl.subject || category, vars),
+      html: `
+        <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+          ${bodyToHtml(interpolate(tpl.body, vars))}
+          ${signatureHtml()}
+        </div>
+      `,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function portalInviteCopy(packageName) {
   if (packageName) {
     return `Your payment for <strong>${packageName}</strong> is complete. Please set your password to access your client portal.`;
@@ -86,6 +121,12 @@ function portalInviteCopy(packageName) {
 }
 
 export async function sendPortalInviteEmail({ to, name, setPasswordUrl, packageName }) {
+  const vars = { client_name: name || "", company_name: packageName || "", portal_link: setPasswordUrl || "" };
+  const resolved = await resolveEmailTemplate("Welcome", vars);
+  if (resolved) {
+    return sendMail({ to, subject: resolved.subject, html: resolved.html });
+  }
+  // Fallback to hardcoded
   return sendMail({
     to,
     subject: "Your DataCircles CRM portal is ready",
@@ -105,8 +146,25 @@ export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, t
     ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(total)
     : total;
 
-  // Short, friendly confirmation. The tax invoice is the PDF attachment — the
-  // invoice document is never rendered inline in the email body.
+  const vars = {
+    client_name: name || "",
+    company_name: packageName || "",
+    invoice_id: invoiceNumber || "",
+    payment_amount: amount || "",
+  };
+
+  const resolved = await resolveEmailTemplate("Invoice Generated", vars)
+    || await resolveEmailTemplate("Payment Success", vars);
+
+  const attachments = pdfBuffer
+    ? [{ filename: `${String(invoiceNumber || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`, content: pdfBuffer, contentType: "application/pdf" }]
+    : undefined;
+
+  if (resolved) {
+    return sendMail({ to, subject: resolved.subject, html: resolved.html, attachments });
+  }
+
+  // Fallback to hardcoded
   const invoiceLine = pdfBuffer
     ? `Please find your tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} attached to this email as a PDF.`
     : `Your tax invoice <strong>${invoiceNumber}</strong>${amount ? ` for <strong>${amount}</strong>` : ""} is available to download from your client portal.`;
@@ -123,9 +181,7 @@ export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, t
         ${signatureHtml()}
       </div>
     `,
-    attachments: pdfBuffer
-      ? [{ filename: `${String(invoiceNumber || "invoice").replace(/[^a-z0-9-]/gi, "-")}.pdf`, content: pdfBuffer, contentType: "application/pdf" }]
-      : undefined
+    attachments,
   });
 }
 
@@ -133,6 +189,10 @@ export async function sendPaymentCancelledEmail({ to, name, packageName, amount,
   const formattedAmount = typeof amount === "number" && Number.isFinite(amount)
     ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(amount)
     : amount;
+
+  const vars = { client_name: name || "", company_name: packageName || "", payment_amount: formattedAmount || "" };
+  const resolved = await resolveEmailTemplate("Payment Cancelled", vars);
+  if (resolved) return sendMail({ to, subject: resolved.subject, html: resolved.html });
   const referenceRows = [
     packageName && `<strong>Package:</strong> ${packageName}`,
     formattedAmount && `<strong>Amount attempted:</strong> ${formattedAmount}`,

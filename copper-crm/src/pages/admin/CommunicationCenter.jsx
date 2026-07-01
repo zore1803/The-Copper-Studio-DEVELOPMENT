@@ -8,7 +8,7 @@ import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const EMAIL_CATEGORIES = [
   "Welcome", "Consultation Booked", "Proposal Sent", "Proposal Reminder",
-  "Coupon Issued", "Payment Success", "Invoice Generated", "Project Started",
+  "Coupon Issued", "Payment Success", "Payment Cancelled", "Invoice Generated", "Project Started",
   "Project Update", "Testing Started", "Project Delivered", "Support Follow-up",
 ];
 
@@ -30,6 +30,8 @@ const DEFAULT_EMAIL_TEMPLATES = [
     body: "Hi {{client_name}},\n\nAs promised, here's your coupon code: {{coupon_code}}. Apply it at checkout to redeem your discount.\n\nThanks for choosing The Copper Studio,\nThe Copper Studio Team" },
   { category: "Payment Success", name: "Payment Received", subject: "Payment received - thank you, {{client_name}}",
     body: "Hi {{client_name}},\n\nWe've received your payment of {{payment_amount}}. Thank you! A receipt will follow shortly.\n\nBest,\nThe Copper Studio Team" },
+  { category: "Payment Cancelled", name: "Payment Not Completed", subject: "Payment not completed | The Copper Studio",
+    body: "Hi {{client_name}},\n\nYour payment for {{company_name}} was cancelled or could not be completed successfully.\n\nNo successful order has been created from this payment attempt. If any amount was deducted, it is usually reversed by your payment provider within a few working days. Please do not make a duplicate payment — contact us with your payment reference if needed.\n\nBest,\nThe Copper Studio Team" },
   { category: "Invoice Generated", name: "New Invoice", subject: "Invoice {{invoice_id}} for {{company_name}}",
     body: "Hi {{client_name}},\n\nPlease find invoice {{invoice_id}} attached for {{company_name}}. Let us know if you have any questions about the charges.\n\nThanks,\nThe Copper Studio Team" },
   { category: "Project Started", name: "Project Kickoff", subject: "{{project_name}} has officially started",
