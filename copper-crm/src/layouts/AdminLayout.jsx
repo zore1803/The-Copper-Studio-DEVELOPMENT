@@ -1,30 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Bell, BarChart2, Building2, ChevronDown,
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
-  FileText, FolderKanban, FolderOpen, LayoutDashboard, ClipboardList,
-  LogOut, Mail, MessageCircle, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, Tag, UserRound, Wallet, Package,
+  FolderKanban, FolderOpen, LayoutDashboard,
+  LogOut, Plus, ReceiptText, Search, Settings,
+  ShoppingCart, UserRound, Wallet, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { storeGet } from "../lib/store";
 import { useCrmRecords } from "../hooks/useCrmRecords";
+import { useToast } from "../components/useToast";
 
 const NAV_SECTIONS = [
   {
     label: "CRM",
     items: [
-      { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
+      { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: UserRound, to: "/admin/contacts", label: "Contacts" },
-      {
-        icon: ClipboardList, label: "Activity",
-        children: [
-          { icon: Mail, to: "/admin/communication/email-templates", label: "Email Templates" },
-          { icon: MessageCircle, to: "/admin/communication/whatsapp-templates", label: "WhatsApp Templates" },
-        ],
-      },
     ],
   },
   {
@@ -41,7 +36,6 @@ const NAV_SECTIONS = [
         icon: Package, label: "Products & Services",
         children: [
           { icon: FileSignature, to: "/admin/services/proposal-generator", label: "Proposal Generator" },
-          { icon: Tag, to: "/admin/services/coupon-generator", label: "Coupon Generator" },
           { icon: Wallet, to: "/admin/coupons", label: "Coupons" },
         ],
       },
@@ -51,27 +45,15 @@ const NAV_SECTIONS = [
           { icon: FolderKanban, to: "/admin/projects", label: "Projects" },
           { icon: LayoutDashboard, to: "/admin/kanban", label: "Kanban Board" },
           { icon: BarChart2, to: "/admin/timeline", label: "Timeline" },
-          { icon: FileText, to: "/admin/tasks", label: "Tasks" },
         ],
       },
-      {
-        icon: FolderOpen, label: "Documents",
-        children: [
-          { icon: Building2, to: "/admin/documents/company-folders", label: "Company Folders" },
-          { icon: FolderOpen, to: "/admin/documents/project-folders", label: "Project Folders" },
-        ],
-      },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { icon: Settings, to: "/admin/settings", label: "Settings" },
+      { icon: FolderOpen, label: "Documents", to: "/admin/documents" },
     ],
   },
 ];
 
 const pageNames = {
+  "/admin": "Analytics",
   "/admin/analytics": "Analytics",
   "/admin/timeline": "Timeline",
   "/admin/payments": "Payments",
@@ -87,8 +69,7 @@ const pageNames = {
   "/admin/services/communications": "Communication",
   "/admin/communication/email-templates": "Email Templates",
   "/admin/communication/whatsapp-templates": "WhatsApp Templates",
-  "/admin/documents/company-folders": "Company Folders",
-  "/admin/documents/project-folders": "Project Folders",
+  "/admin/documents": "Documents",
   "/admin/database": "Database",
   "/admin/settings": "Settings",
 };
@@ -106,25 +87,34 @@ const searchablePages = [
   { label: "Coupons", to: "/admin/coupons", keywords: "coupons discount codes finance" },
   { label: "Coupon Generator", to: "/admin/services/coupon-generator", keywords: "coupon code discount" },
   { label: "Proposal Generator", to: "/admin/services/proposal-generator", keywords: "proposal pdf client" },
-  { label: "Company Folders", to: "/admin/documents/company-folders", keywords: "documents company folders files" },
-  { label: "Project Folders", to: "/admin/documents/project-folders", keywords: "documents project folders files" },
+  { label: "Documents", to: "/admin/documents", keywords: "documents company project folders files" },
   { label: "Email Templates", to: "/admin/communication/email-templates", keywords: "email templates communication" },
   { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates", keywords: "whatsapp templates communication" },
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
 ];
 
-function getBreadcrumbs(pathname, companies = [], projects = []) {
+// Friendly labels for project sub-page segments (the route says "tasks" but the
+// tab/label is "Timeline").
+const SUBPAGE_LABELS = { tasks: "Timeline", files: "Files" };
+
+function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) {
   const segments = pathname.split("/").filter(Boolean);
-  const crumbs = [{ label: "Analytics", to: "/admin/analytics" }];
+  const crumbs = [{ label: "Analytics", to: "/admin" }];
   let path = "";
-  for (const seg of segments.slice(1)) {
+  const rest = segments.slice(1);
+  for (let i = 0; i < rest.length; i++) {
+    const seg = rest[i];
     path += "/" + seg;
     const fullPath = "/admin" + path;
-    let name = pageNames[fullPath];
+    // ".../projects/:id" routes require the id — the bare ".../projects" segment isn't navigable on its own, so skip its link.
+    if (seg === "projects" && rest[i + 1] && !pageNames[fullPath]) continue;
+    let name = pageNames[fullPath] || SUBPAGE_LABELS[seg];
     if (!name) {
       const company = companies.find((c) => String(c.id) === seg || String(c._id) === seg);
       const project = projects.find((p) => String(p.id) === seg || String(p._id) === seg);
-      name = company?.name || project?.name || (seg.length > 8 ? seg.slice(0, 8) + "…" : seg.charAt(0).toUpperCase() + seg.slice(1));
+      const contact = contacts.find((c) => String(c.id) === seg || String(c._id) === seg);
+      const contactName = contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : null;
+      name = company?.name || project?.name || contactName || (seg.length > 8 ? seg.slice(0, 8) + "â€¦" : seg.charAt(0).toUpperCase() + seg.slice(1));
     }
     crumbs.push({ label: name, to: fullPath });
   }
@@ -132,10 +122,11 @@ function getBreadcrumbs(pathname, companies = [], projects = []) {
 }
 
 function initialsOf(name) {
-  return (name || "").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "—";
+  return (name || "").trim().split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "â€”";
 }
 
 function isLeafActive(item, pathname) {
+  if (item.to === "/admin/analytics" && pathname === "/admin") return true;
   return item.end ? pathname === item.to : pathname.startsWith(item.to);
 }
 
@@ -144,16 +135,29 @@ function isGroupActive(item, pathname) {
 }
 
 function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
+  // Collapsed leaves use the same fixed boxed icon as NavGroup so every item in
+  // the rail shares one consistent square covering (instead of a thinner,
+  // full-width hit area for the top-level links).
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => onNavigate(item.to)}
+        title={item.label}
+        className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+          active ? "bg-white border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
+        }`}
+      >
+        <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
+      </button>
+    );
+  }
   return (
     <button
       onClick={() => onNavigate(item.to)}
-      title={collapsed ? item.label : undefined}
-      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors ${
-        collapsed ? "justify-center px-0 py-2.5" : `py-2 ${indent ? "pl-9 pr-3" : "px-3"}`
-      } ${active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E5E5] text-[#C57E5B] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
     >
-      <item.icon size={collapsed ? 20 : 16} strokeWidth={1.8} className="shrink-0" />
-      {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+      <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
+      <span className="truncate text-sm font-medium">{item.label}</span>
     </button>
   );
 }
@@ -162,10 +166,26 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   const [userOpen, setUserOpen] = useState(null);
   const open = userOpen === null ? active : userOpen;
   const [flyoutOpen, setFlyoutOpen] = useState(false);
+  const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef(null);
+  const closeTimer = useRef(null);
+
+  function openFlyout() {
+    clearTimeout(closeTimer.current);
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) setFlyoutPos({ top: rect.top, left: rect.right + 8 });
+    setFlyoutOpen(true);
+  }
+
+  function scheduleCloseFlyout() {
+    closeTimer.current = setTimeout(() => setFlyoutOpen(false), 150);
+  }
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   if (collapsed) {
     return (
-      <div className="relative" onMouseEnter={() => setFlyoutOpen(true)} onMouseLeave={() => setFlyoutOpen(false)}>
+      <div ref={triggerRef} className="relative" onMouseEnter={openFlyout} onMouseLeave={scheduleCloseFlyout}>
         <button
           title={item.label}
           className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
@@ -174,20 +194,26 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
         >
           <item.icon size={20} strokeWidth={1.8} />
         </button>
-        {flyoutOpen && (
-          <div className="absolute left-full top-0 ml-2 w-56 rounded-xl border border-[#E5E5E5] bg-white shadow-lg py-1.5 z-50">
+        {flyoutOpen && createPortal(
+          <div
+            style={{ position: "fixed", top: flyoutPos.top, left: flyoutPos.left }}
+            className="w-56 rounded-xl border border-[#E5E5E5] bg-white shadow-lg py-1.5 z-[100]"
+            onMouseEnter={openFlyout}
+            onMouseLeave={scheduleCloseFlyout}
+          >
             <p className="px-3 pb-1 pt-0.5 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
             {item.children.map((child) => (
               <button
                 key={child.to}
-                onClick={() => onNavigate(child.to)}
+                onClick={() => { setFlyoutOpen(false); onNavigate(child.to); }}
                 className={`flex w-full items-center gap-2.5 px-3 py-2 text-sm hover:bg-[#f9fafb] ${isLeafActive(child, location) ? "text-[#C57E5B] font-semibold" : "text-[#374151]"}`}
               >
                 <child.icon size={15} className="shrink-0" />
                 <span className="truncate">{child.label}</span>
               </button>
             ))}
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );
@@ -216,27 +242,64 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   );
 }
 
-
 export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const auth = useAuth();
   const { records: companies } = useCrmRecords("companies");
+  const { records: contacts } = useCrmRecords("contacts");
   const { records: projects } = useCrmRecords("projects");
-  const [collapsed, setCollapsed] = useState(false);
+  const { records: tasks } = useCrmRecords("tasks");
+  const { records: invoices } = useCrmRecords("invoices");
+  const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
+  // Always start collapsed on every load/reload; the sidebar only expands when
+  // the user explicitly clicks the collapse/expand toggle.
+  const [collapsed, setCollapsed] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [recordIndex, setRecordIndex] = useState([]);
   const searchRef = useRef(null);
   const quickAddRef = useRef(null);
+  const notifRef = useRef(null);
+  const avatarRef = useRef(null);
 
   useEffect(() => {
-    function onOutside(e) { if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false); }
+    function onOutside(e) {
+      if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
+    }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
   }, []);
+
+  const notifications = useMemo(() => {
+    const today = new Date();
+    const overdueTasks = tasks.filter((t) => {
+      const due = t.dueDate || t.deadline;
+      if (!due) return false;
+      const d = new Date(due);
+      return !Number.isNaN(d.getTime()) && d < today && !["completed", "done"].includes(String(t.status || "").toLowerCase());
+    });
+    const outstandingInvoices = invoices.filter((i) => String(i.status || "").toLowerCase() !== "paid");
+    return [
+      ...overdueTasks.slice(0, 5).map((t) => ({
+        id: `task-${t.id || t._id}`,
+        text: `Task overdue: ${t.title || t.taskName || "Untitled task"}`,
+        time: t.dueDate || t.deadline,
+        to: "/admin/tasks",
+      })),
+      ...outstandingInvoices.slice(0, 5).map((i) => ({
+        id: `invoice-${i.id || i._id}`,
+        text: `Invoice ${i.invoiceNumber || i.id || i._id} is unpaid`,
+        time: i.dueDate ? `Due ${i.dueDate}` : "Pending",
+        to: "/admin/invoices",
+      })),
+    ];
+  }, [tasks, invoices]);
 
   const QUICK_ADD = [
     { icon: Building2, label: "New Company", to: "/admin/companies" },
@@ -247,7 +310,7 @@ export default function AdminLayout() {
 
   const name = auth.user?.name || "Admin";
   const initials = initialsOf(name);
-  const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects);
+  const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects, contacts);
 
   useEffect(() => {
     function buildIndex() {
@@ -261,7 +324,7 @@ export default function AdminLayout() {
         ...contacts.map((c) => ({ type: "Contact", label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim(), sublabel: c.company, to: `/admin/contacts/${c.id || c._id}` })),
         ...projects.map((p) => ({ type: "Project", label: p.name || p.projectName, sublabel: p.client, to: `/admin/companies/${p.companyId}/projects/${p.id || p._id}` })),
         ...invoices.map((i) => ({ type: "Invoice", label: i.invoiceNumber || i.id || i._id, sublabel: i.company || i.client, to: "/admin/invoices" })),
-        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents/project-folders" })),
+        ...documents.map((d) => ({ type: "Document", label: d.fileName || d.name, sublabel: d.visibility || d.fileType, to: "/admin/documents" })),
       ].filter((item) => item.label));
     }
     buildIndex();
@@ -314,24 +377,18 @@ export default function AdminLayout() {
         className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
         style={{ width: sidebarW }}
       >
-        <div className={`flex h-14 items-center border-b border-[#ECECEC] ${collapsed ? "justify-center" : "justify-end px-3"}`}>
-          <button
-            onClick={() => setCollapsed((v) => !v)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#525252] hover:bg-[#f9fafb] transition-colors"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
-          </button>
+        {/* Logo */}
+        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed ? "px-1 py-3" : "px-4 py-5"}`}>
+          <img
+            src="/copper-studio-wordmark.png"
+            alt="Copper Studio"
+            className={`object-contain ${collapsed ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
+          />
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-3 space-y-4 ${collapsed ? "flex flex-col items-center" : "px-3"}`}>
+        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? "flex flex-col items-center gap-2.5" : "space-y-4 px-3"}`}>
           {NAV_SECTIONS.map((section) => (
             <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
-              {!collapsed && (
-                <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#9ca3af]">
-                  {section.label}
-                </p>
-              )}
               {section.items.map((item) =>
                 item.children ? (
                   <NavGroup
@@ -356,25 +413,14 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center gap-2 py-3" : "p-3"}`}>
-          {!collapsed && (
-            <div className="mb-2 flex items-center gap-2.5 px-1">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C57E5B] text-white text-xs font-medium">
-                {initials}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-semibold text-[#111827]">{name}</p>
-                <p className="truncate text-[11px] text-[#6b7280]">{auth.user?.role || "Admin"}</p>
-              </div>
-            </div>
-          )}
+        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
-            onClick={() => { auth.logout(); navigate("/login", { replace: true }); }}
-            title="Log out"
-            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+            onClick={() => setCollapsed((v) => !v)}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
-            <LogOut size={14} />
-            {!collapsed && "Log out"}
+            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+            {!collapsed && "Collapse"}
           </button>
         </div>
       </aside>
@@ -449,10 +495,51 @@ export default function AdminLayout() {
             </div>
 
             {/* Bell */}
-            <button className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors">
-              <Bell size={16} />
-              <span className="absolute top-1 right-1.5 h-[5px] w-[5px] rounded-full bg-[#DF120B]" />
-            </button>
+            <div ref={notifRef} className="relative">
+              <button
+                onClick={() => { setNotifOpen((v) => !v); markAllRead(); }}
+                className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
+              >
+                <Bell size={16} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DF120B] text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
+                    <p className="font-semibold text-sm text-[#111827]">Notifications</p>
+                    {notifHistory.length > 0 && (
+                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#9ca3af] hover:text-red-500 transition-colors">
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#f3f4f6]">
+                    {notifHistory.length ? (
+                      notifHistory.map((n) => {
+                        const dotColor = n.type === "error" ? "bg-red-400" : n.type === "info" ? "bg-blue-400" : "bg-emerald-400";
+                        const timeStr = n.ts ? new Date(n.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) + ", " + new Date(n.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+                        return (
+                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#fafafa] transition-colors">
+                            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-[#111827]">{n.title}</p>
+                              {n.message && <p className="mt-0.5 text-xs text-[#6b7280] leading-relaxed">{n.message}</p>}
+                              <p className="mt-1 text-[10px] text-[#9ca3af]">{timeStr}</p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No notifications yet.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* + New */}
             <div ref={quickAddRef} className="relative">
@@ -479,7 +566,7 @@ export default function AdminLayout() {
             </div>
 
             {/* Avatar */}
-            <div className="relative">
+            <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#884c2d]/20 transition-all"
