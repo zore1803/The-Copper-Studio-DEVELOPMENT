@@ -20,7 +20,7 @@ export default function ConfirmDeleteModal({
               <AlertTriangle size={20} />
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8D3118]">{eyebrow}</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#C55418]">{eyebrow}</p>
               <h2 className="mt-1 text-lg font-bold text-[#111827]">{title}</h2>
             </div>
           </div>

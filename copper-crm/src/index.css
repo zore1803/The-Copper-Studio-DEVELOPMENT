@@ -40,7 +40,7 @@ body {
   /* Copper Studio OS design tokens — aligned to the admin design system so the
      client portal shares the same copper palette, neutrals and surfaces. */
   --cs-primary: #8D3118;
-  --cs-primary-container: #B25A34;
+  --cs-primary-container: #D2743F;
   --cs-on-primary: #ffffff;
   --cs-primary-fixed: #fff1ec;
   --cs-primary-fixed-dim: #F5D5C6;
@@ -93,11 +93,11 @@ h1, h2, h3, .font-display {
 
 /* Color remaps for legacy admin pages */
 .bg-\[\#2563EB\] { background-color: var(--studio-copper) !important; }
-.hover\:bg-blue-700:hover { background-color: #6E2412 !important; }
+.hover\:bg-blue-700:hover { background-color: #9A4113 !important; }
 .text-\[\#2563EB\] { color: var(--studio-copper) !important; }
 .border-\[\#2563EB\] { border-color: var(--studio-copper) !important; }
 .bg-blue-50 { background-color: #fff1ec !important; }
-.text-blue-700 { color: #6E2412 !important; }
+.text-blue-700 { color: #9A4113 !important; }
 .text-blue-600 { color: var(--studio-copper) !important; }
 .border-blue-50, .border-blue-100, .border-blue-200 { border-color: #F5D5C6 !important; }
 .focus\:border-blue-300:focus, .focus-within\:border-blue-300:focus-within { border-color: #E7A98C !important; }

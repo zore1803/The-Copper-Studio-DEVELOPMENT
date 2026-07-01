@@ -55,10 +55,10 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#C55418] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
               >
                 <span className="font-semibold text-[#111827]">{project.name}</span>
-                <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]" />
+                <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#C55418]" />
               </label>
             );
           })}
@@ -81,7 +81,7 @@ function NoteInput({ label, value, onChange, placeholder }) {
         rows={1}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+        className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
         onInput={(event) => { event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }}
         ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
       />
@@ -235,7 +235,7 @@ function KpiChip({ label, value, icon: Icon }) {
 function EmptyTab({ icon: Icon, text }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#C55418]">
         <Icon size={20} />
       </div>
       <p className="text-sm text-[#6b7280]">{text}</p>
@@ -432,7 +432,7 @@ export default function ContactDetail() {
                 {roles.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {roles.map((role) => (
-                      <span key={role} className="rounded-full bg-[#fff1ec] px-2 py-0.5 text-[11px] font-semibold text-[#8D3118]">{role}</span>
+                      <span key={role} className="rounded-full bg-[#fff1ec] px-2 py-0.5 text-[11px] font-semibold text-[#C55418]">{role}</span>
                     ))}
                   </div>
                 )}
@@ -457,7 +457,7 @@ export default function ContactDetail() {
               />
               <button
                 onClick={() => setManagingAccess(true)}
-                className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#8D3118] hover:bg-[#F8E3D8]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
+                className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#C55418] hover:bg-[#F8E3D8]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
               >
                 <LinkIcon size={14} /> Project Access
               </button>
@@ -495,13 +495,13 @@ export default function ContactDetail() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#B25A34] text-[#B25A34]" : "border-transparent text-[#1D1E22] hover:text-[#8D3118]"}`}
+              className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#D2743F] text-[#D2743F]" : "border-transparent text-[#1D1E22] hover:text-[#C55418]"}`}
             >
               {tab}
               {Boolean(tabCounts[tab]) && (
                 <span
                   className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
-                    activeTab === tab ? "bg-[#B25A34] text-white" : "bg-[#e5e7eb] text-[#374151]"
+                    activeTab === tab ? "bg-[#D2743F] text-white" : "bg-[#e5e7eb] text-[#374151]"
                   }`}
                 >
                   {tabCounts[tab]}
@@ -576,7 +576,7 @@ export default function ContactDetail() {
                   className="rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-all hover:border-[#cda88f] hover:shadow-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <FolderKanban size={15} className="shrink-0 text-[#8D3118]" />
+                    <FolderKanban size={15} className="shrink-0 text-[#C55418]" />
                     <p className="truncate font-semibold text-[#111827]">{p.name || "Untitled project"}</p>
                   </div>
                   <p className="mt-1 text-xs text-[#6b7280]">{p.status || p.currentPhase || "—"}</p>
@@ -592,7 +592,7 @@ export default function ContactDetail() {
               {linkedMeetings.map((m) => (
                 <div key={m._id || m.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <Calendar size={15} className="text-[#8D3118]" />
+                    <Calendar size={15} className="text-[#C55418]" />
                     <p className="text-sm font-semibold text-[#111827]">{m.title || m.subject || "Meeting"}</p>
                   </div>
                   <span className="text-xs text-[#6b7280]">{formatDate(m.scheduled || m.scheduledAt || m.createdAt)}</span>
@@ -608,7 +608,7 @@ export default function ContactDetail() {
               {linkedDocuments.map((d) => (
                 <div key={d._id || d.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <FileText size={15} className="shrink-0 text-[#8D3118]" />
+                    <FileText size={15} className="shrink-0 text-[#C55418]" />
                     <p className="truncate text-sm font-semibold text-[#111827]">{d.name || d.fileName || "Document"}</p>
                   </div>
                   <span className="text-xs text-[#6b7280]">{d.category || d.fileType || "—"}</span>
@@ -639,13 +639,13 @@ export default function ContactDetail() {
                   type="date"
                   value={noteDateFilter}
                   onChange={(event) => { setNoteDateFilter(event.target.value); setNotePage(1); }}
-                  className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+                  className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
                 />
                 <button
                   type="button"
                   onClick={() => { setNoteSortDir((prev) => (prev === null ? "desc" : prev === "desc" ? "asc" : null)); setNotePage(1); }}
                   className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-                    noteSortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+                    noteSortDir ? "border-[#C55418] bg-[#fff8f6] text-[#C55418]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
                   }`}
                   title="Sort by created date"
                 >
@@ -656,7 +656,7 @@ export default function ContactDetail() {
                   <button
                     type="button"
                     onClick={() => { setNoteSearch(""); setNoteDateFilter(""); setNoteSortDir(null); setNotePage(1); }}
-                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
+                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#C55418] hover:bg-[#fff1ec]"
                   >
                     Clear
                   </button>
@@ -715,7 +715,7 @@ export default function ContactDetail() {
                                   {...prov.draggableProps}
                                   onMouseEnter={(event) => showNotePreview(event, n)}
                                   onMouseLeave={scheduleHideNotePreview}
-                                  className={`relative overflow-hidden rounded-xl border bg-white transition-shadow ${snap.isDragging ? "border-[#8D3118]/40 shadow-lg" : "border-[#e5e7eb]"}`}
+                                  className={`relative overflow-hidden rounded-xl border bg-white transition-shadow ${snap.isDragging ? "border-[#C55418]/40 shadow-lg" : "border-[#e5e7eb]"}`}
                                   style={prov.draggableProps.style}
                                 >
                                   <div className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
@@ -724,7 +724,7 @@ export default function ContactDetail() {
                                     </span>
                                     <p className="min-w-0 flex-1 text-sm font-bold text-gray-700">{n.title || "Note"}</p>
                                     <div className="flex shrink-0 items-center gap-1">
-                                      <button type="button" onClick={() => setEditingNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
+                                      <button type="button" onClick={() => setEditingNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#C55418]" title="Edit note">
                                         <Pencil size={14} />
                                       </button>
                                       <button type="button" onClick={() => handleDeleteNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">

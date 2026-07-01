@@ -103,11 +103,11 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       <button
         ref={buttonRef}
         onClick={() => setOpen((value) => !value)}
-        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-9 w-9"}`}
+        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#C55418] bg-[#fff8f6] text-[#C55418]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-9 w-9"}`}
       >
         <Filter size={16} />
         {activeCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#8D3118] text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#C55418] text-[10px] font-bold text-white">
             {activeCount}
           </span>
         )}
@@ -131,13 +131,13 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
                     value={draft[field.key] ?? ""}
                     onChange={(event) => setDraftValue(field.key, event.target.value)}
                     placeholder={field.placeholder}
-                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
                   />
                 ) : (
                   <select
                     value={draft[field.key] ?? defaultValueFor(field)}
                     onChange={(event) => setDraftValue(field.key, event.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#8D3118]"
+                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#C55418]"
                   >
                     {(field.options || []).map((option) => {
                       const optValue = typeof option === "object" ? option.value : option;

@@ -910,7 +910,7 @@ body[data-page="checkout"] select:disabled {
 }
 
 .pay-button-block:hover {
-  background: #6E2412;
+  background: #9A4113;
 }
 
 .pay-button-block:disabled {
@@ -1468,7 +1468,7 @@ body[data-page="packages"] .package-card .btn-primary {
 }
 
 body[data-page="packages"] .package-card .btn-primary:hover {
-  background: #6E2412;
+  background: #9A4113;
 }
 
 body[data-page="packages"] .package-card .btn-secondary {
@@ -1708,7 +1708,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   flex-shrink: 0;
 }
 #discountApplyBtn:hover {
-  background: #6E2412;
+  background: #9A4113;
 }
 #discountClearBtn {
   width: 30px;

@@ -97,7 +97,7 @@ export default function TimelinePage() {
           <select
             value={selectedPackage}
             onChange={(e) => setSelectedPackage(e.target.value)}
-            className="h-9 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#8D3118]"
+            className="h-9 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#C55418]"
           >
             {packages.map(pkg => (
               <option key={pkg} value={pkg}>{pkg === "All" ? "All Packages" : pkg}</option>
@@ -111,7 +111,7 @@ export default function TimelinePage() {
         <div className="flex justify-center py-20 text-sm text-[#6b7280]">Loading timeline...</div>
       ) : !filteredProjects.length ? (
         <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-16 text-center">
-          <FolderKanban size={28} className="mx-auto mb-3 text-[#8D3118]" />
+          <FolderKanban size={28} className="mx-auto mb-3 text-[#C55418]" />
           <p className="text-sm font-semibold text-[#111827]">No projects found.</p>
           <p className="mt-1 text-sm text-[#6b7280]">Try adjusting your search or package filter.</p>
         </div>

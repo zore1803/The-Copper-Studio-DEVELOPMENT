@@ -9,7 +9,7 @@ export default {
         inter: ["DM Sans", "system-ui", "sans-serif"],
       },
       colors: {
-        primary: { DEFAULT: "#8D3118", dark: "#6E2412", light: "#fff1ec", container: "#8D3118", fixed: "#ffdcc2" },
+        primary: { DEFAULT: "#8D3118", dark: "#9A4113", light: "#fff1ec", container: "#8D3118", fixed: "#ffdcc2" },
         studio: {
           background: "#f0ede4",
           surface: "#fff8f6",

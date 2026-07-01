@@ -146,7 +146,7 @@ export default function ContactExportMenu({ contact, companyName, className = ""
             <Link2 size={14} className="text-[#0a66c2]" /> Open LinkedIn profile
           </button>
           <button onClick={shareEmail} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
-            <Mail size={14} className="text-[#8D3118]" /> Share via Email
+            <Mail size={14} className="text-[#C55418]" /> Share via Email
           </button>
           <button onClick={downloadVCard} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
             <Download size={14} /> Download as vCard
