@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Archive, ChevronDown, Copy, Mail, MessageCircle, Pencil, Plus, Save, Search, Settings2, Sparkles, Trash2, X } from "lucide-react";
+import { ChevronDown, Copy, Mail, MessageCircle, Pencil, Plus, Save, Search, Settings2, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -167,7 +167,7 @@ function VariablesModal({ onClose }) {
   );
 }
 
-function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onArchive, onDelete }) {
+function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onDelete }) {
   const [query, setQuery] = useState("");
   const filtered = records.filter((record) =>
     `${record.name || ""} ${record.category || ""} ${record.subject || ""}`.toLowerCase().includes(query.toLowerCase())
@@ -208,7 +208,6 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onA
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
                     <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
-                    <button onClick={() => onArchive(template)} title={template.status === "Archived" ? "Unarchive" : "Archive"} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Archive size={13} /></button>
                     <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
                   </div>
                 </div>
@@ -316,12 +315,6 @@ export default function CommunicationCenter({ mode = "email" }) {
     showToast({ title: "Template duplicated", message: `Created a copy of ${template.name || "the template"}.` });
   }
 
-  async function handleArchiveTemplate(template) {
-    const nextStatus = template.status === "Archived" ? "Draft" : "Archived";
-    await saveTemplate({ ...template, status: nextStatus });
-    showToast({ title: nextStatus === "Archived" ? "Template archived" : "Template restored", message: `${template.name || "Template"} is now ${nextStatus}.` });
-  }
-
   async function handleDeleteTemplate() {
     if (!deletingTemplate) return;
     setDeleting(true);
@@ -393,7 +386,6 @@ export default function CommunicationCenter({ mode = "email" }) {
           onCreate={() => setEditingTemplate({ name: "", category: "", body: "", status: "Draft" })}
           onEdit={setEditingTemplate}
           onCopy={handleCopyTemplate}
-          onArchive={handleArchiveTemplate}
           onDelete={setDeletingTemplate}
         />
       ) : (
@@ -404,7 +396,6 @@ export default function CommunicationCenter({ mode = "email" }) {
           onCreate={() => setEditingTemplate({ name: "", category: "", subject: "", body: "", status: "Draft" })}
           onEdit={setEditingTemplate}
           onCopy={handleCopyTemplate}
-          onArchive={handleArchiveTemplate}
           onDelete={setDeletingTemplate}
         />
       )}
