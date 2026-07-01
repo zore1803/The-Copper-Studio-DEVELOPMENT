@@ -1304,6 +1304,7 @@ if (page === "packages") {
   let discountToolbarVisible = false;
   let discountMode = null; // "rs" | "pct"
   let discountAmount = 0;
+  let badgeAlt = false; // toggles badge between primary and alternate display
 
   const toolbar = document.getElementById("discountToolbar");
   const popup = document.getElementById("discountPopup");
@@ -1389,6 +1390,7 @@ if (page === "packages") {
   function applyDiscount() {
     const val = parseFloat(valueInput.value) || 0;
     discountAmount = val;
+    badgeAlt = false; // reset toggle on fresh apply
     renderDiscountedPrices();
     updateGstLines(); // recalculate GST on new effective price
     // hide toolbar after applying — discount + GST stay on cards
@@ -1401,6 +1403,17 @@ if (page === "packages") {
     rsBtn.classList.remove("active");
     pctBtn.classList.remove("active");
     renderDiscountedPrices();
+  }
+
+  function badgeLabel(pkg) {
+    // Primary: show what the user entered. Alt: show the other format.
+    if (discountMode === "rs") {
+      const pct = ((discountAmount / pkg.price) * 100).toFixed(1);
+      return badgeAlt ? `−${pct}%` : `−${formatCurrency(discountAmount)}`;
+    } else {
+      const rsAmount = Math.round(pkg.price * discountAmount / 100);
+      return badgeAlt ? `−${formatCurrency(rsAmount)}` : `−${discountAmount}%`;
+    }
   }
 
   function renderDiscountedPrices() {
@@ -1416,18 +1429,23 @@ if (page === "packages") {
         return;
       }
 
-      let discounted;
-      if (discountMode === "rs") {
-        discounted = Math.max(0, pkg.price - discountAmount);
-      } else {
-        discounted = Math.max(0, pkg.price * (1 - discountAmount / 100));
-      }
+      const discounted = discountMode === "rs"
+        ? Math.max(0, pkg.price - discountAmount)
+        : Math.max(0, pkg.price * (1 - discountAmount / 100));
 
       priceEl.innerHTML = `
         <span class="price-original">${formatCurrency(pkg.price)}</span>
         ${formatCurrency(Math.round(discounted))}
-        <span class="price-badge">${discountMode === "rs" ? `−${formatCurrency(discountAmount)}` : `−${discountAmount}%`}</span>
+        <span class="price-badge" data-pkg="${pkg.id}" style="cursor:pointer" title="Click to toggle display">${badgeLabel(pkg)}</span>
       `;
+    });
+
+    // Wire badge click — toggles all badges at once
+    document.querySelectorAll(".price-badge[data-pkg]").forEach((badge) => {
+      badge.addEventListener("click", () => {
+        badgeAlt = !badgeAlt;
+        renderDiscountedPrices();
+      }, { once: true });
     });
   }
 }

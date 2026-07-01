@@ -1758,4 +1758,9 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   border-radius: 20px;
   margin-left: 6px;
   vertical-align: middle;
+  transition: background 0.15s, color 0.15s;
+}
+.price-badge[data-pkg]:hover {
+  background: #bbf7d0;
+  color: #166534;
 }
