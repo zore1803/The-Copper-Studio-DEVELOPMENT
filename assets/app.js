@@ -1339,13 +1339,13 @@ if (page === "packages") {
   clearBtn.addEventListener("click", () => {
     valueInput.value = "";
     clearDiscount();
-    popup.classList.remove("is-visible");
+    // keep popup open so user can type a new value immediately
   });
 
   function applyDiscount() {
     const val = parseFloat(valueInput.value) || 0;
     discountAmount = val;
-    popup.classList.remove("is-visible");
+    // keep popup open — don't hide after apply
     renderDiscountedPrices();
   }
 
