@@ -1509,3 +1509,42 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
     padding: 26px 22px;
   }
 }
+
+/* ── Category switcher on packages page ─────────────────────────────────── */
+.category-switcher {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 28px;
+}
+.category-switcher .category-tab {
+  padding: 9px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #e5d8d1;
+  background: #fff;
+  color: #6c6355;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.category-switcher .category-tab:first-child {
+  border-radius: 10px 0 0 10px;
+  border-right: none;
+}
+.category-switcher .category-tab:last-child {
+  border-radius: 0 10px 10px 0;
+  border-left: none;
+}
+.category-switcher .category-tab:not(:first-child):not(:last-child) {
+  border-left: none;
+  border-right: none;
+}
+.category-switcher .category-tab.is-active {
+  background: #884c2d;
+  color: #fff;
+  border-color: #884c2d;
+}
+.category-switcher .category-tab:hover:not(.is-active) {
+  background: #fff8f5;
+  color: #884c2d;
+}
