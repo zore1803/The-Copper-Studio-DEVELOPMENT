@@ -155,7 +155,7 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
           <button
             type="button"
             onClick={() => openStoredFile(doc.fileUrl)}
-            className="text-xs font-bold text-[#8D3118] hover:underline"
+            className="text-xs font-bold text-[#C55418] hover:underline"
           >
             View
           </button>
@@ -473,11 +473,11 @@ export default function DocumentCenter() {
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
           <nav className="flex items-center gap-1.5 text-xs text-[#6B7280]">
-            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#8D3118]">Companies</button>
+            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#C55418]">Companies</button>
             {selectedCompanyId && (
               <>
                 <span>/</span>
-                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#8D3118] truncate max-w-[180px]">
+                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#C55418] truncate max-w-[180px]">
                   {currentCompany?.name || currentCompany?.companyName || "Company"}
                 </button>
               </>
@@ -496,7 +496,7 @@ export default function DocumentCenter() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
             >
               <option value="All">All Categories</option>
               {availableCategories.map((c) => (
@@ -508,8 +508,8 @@ export default function DocumentCenter() {
             <Search size={14} className="text-[#6B7280]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
           </div>
-          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#C55418] text-[#C55418]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#C55418] text-[#C55418]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
           <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
         </div>
       </div>
@@ -578,7 +578,7 @@ export default function DocumentCenter() {
                   <p className="mt-0.5 text-xs text-[#6B7280]">{currentCompany?.name || currentCompany?.companyName || currentProject.companyName}</p>
                 </div>
                 {currentProject.projectId && (
-                  <span className="shrink-0 rounded-full bg-[#FFFFFF] px-3 py-1 text-xs font-bold text-[#8D3118]">{currentProject.projectId}</span>
+                  <span className="shrink-0 rounded-full bg-[#FFFFFF] px-3 py-1 text-xs font-bold text-[#C55418]">{currentProject.projectId}</span>
                 )}
               </div>
               <div className="mt-4 flex gap-1">
@@ -587,7 +587,7 @@ export default function DocumentCenter() {
                     key={key}
                     type="button"
                     onClick={() => setProjectTab(key)}
-                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#8D3118] text-[#8D3118]" : "border-transparent text-[#6b7280] hover:text-[#1A1A1A]"}`}
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#C55418] text-[#C55418]" : "border-transparent text-[#6b7280] hover:text-[#1A1A1A]"}`}
                   >
                     {label}
                   </button>

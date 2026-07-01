@@ -7,11 +7,11 @@
   --ink: #1A1A1A;
   --muted: #6B7280;
   --line: #6B7280;
-  --primary: #8D3118;
-  --accent: #8D3118;
+  --primary: #C55418;
+  --accent: #C55418;
   --accent-dark: #6B7280;
-  --success: #8D3118;
-  --danger: #8D3118;
+  --success: #C55418;
+  --danger: #C55418;
   --shadow: 0 18px 45px rgba(54, 47, 44, 0.10);
 }
 
@@ -687,7 +687,7 @@ select:focus {
   gap: 16px;
   padding: 20px 22px;
   color: #fff;
-  background: #8D3118;
+  background: #C55418;
 }
 
 .razorpay-logo {
@@ -1198,7 +1198,7 @@ select:focus {
   width: max-content;
   border-radius: 999px;
   background: #FFFFFF;
-  color: #8D3118;
+  color: #C55418;
   padding: 5px 8px;
   font-size: 0.72rem;
   font-weight: 750;
@@ -1393,18 +1393,18 @@ select:focus {
 
 .priority-high {
   background: #FFFFFF;
-  color: #8D3118;
+  color: #C55418;
 }
 
 .priority-medium {
   background: #E5E7EB;
-  color: #8D3118;
+  color: #C55418;
 }
 
 .priority-low,
 .priority-done {
   background: #E5E7EB;
-  color: #8D3118;
+  color: #C55418;
 }
 
 .invoice-preview {
@@ -1460,12 +1460,12 @@ select:focus {
 }
 
 .timeline-row.is-done span {
-  border-color: #8D3118;
-  background: #8D3118;
+  border-color: #C55418;
+  background: #C55418;
 }
 
 .timeline-row.is-done em {
-  color: #8D3118;
+  color: #C55418;
 }
 
 @media (max-width: 900px) {

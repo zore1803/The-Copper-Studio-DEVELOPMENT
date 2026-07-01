@@ -897,7 +897,7 @@ function renderPaymentPage() {
           packageName: pkg.name
         },
         theme: {
-          color: "#8D3118"
+          color: "#C55418"
         },
         handler: async (response) => {
           // Razorpay calls this after a successful charge. Wrap it so a failing

@@ -65,7 +65,7 @@ export default function SearchableSelectField({
           onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
           aria-invalid={Boolean(error)}
           className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm outline-none transition-all focus:ring-2 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
           } ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
         />
         {(selected || (allowCustom && value)) && !disabled ? (
@@ -87,7 +87,7 @@ export default function SearchableSelectField({
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => { onChange(query.trim()); setOpen(false); setQuery(""); }}
-                className="block w-full truncate border-b border-[#FFFFFF] px-3 py-2 text-left text-sm text-[#8D3118] hover:bg-[#E5E7EB]"
+                className="block w-full truncate border-b border-[#FFFFFF] px-3 py-2 text-left text-sm text-[#C55418] hover:bg-[#E5E7EB]"
               >
                 Use "{query.trim()}"
               </button>
@@ -102,7 +102,7 @@ export default function SearchableSelectField({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => pick(option)}
                   className={`block w-full truncate px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${
-                    String(option.value) === String(value || "") ? "bg-[#FFFFFF] font-semibold text-[#8D3118]" : "text-[#1A1A1A]"
+                    String(option.value) === String(value || "") ? "bg-[#FFFFFF] font-semibold text-[#C55418]" : "text-[#1A1A1A]"
                   }`}
                 >
                   {option.label}

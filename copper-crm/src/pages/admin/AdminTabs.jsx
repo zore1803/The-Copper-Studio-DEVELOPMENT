@@ -52,7 +52,7 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
         className={`mt-1.5 w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-4 ${
           error
             ? "border-red-300 focus:border-red-400 focus:ring-red-50"
-            : "border-[#E5E7EB] focus:border-[#8D3118] focus:ring-[#FFFFFF]"
+            : "border-[#E5E7EB] focus:border-[#C55418] focus:ring-[#FFFFFF]"
         }`}
       />
       {error
@@ -147,10 +147,10 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 const ANALYTICS = {
-  copper: "#8D3118",
-  copperLight: "#8D3118",
-  green: "#8D3118",
-  amber: "#8D3118",
+  copper: "#C55418",
+  copperLight: "#C55418",
+  green: "#C55418",
+  amber: "#C55418",
   grid: "#E5E7EB",
 };
 
@@ -390,7 +390,7 @@ export function ProposalGeneratorPage() {
               className="mx-auto origin-top bg-[#ffffff] shadow-lg"
               style={{ width: 480, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
             >
-              <div className="bg-[#8D3118] px-7 py-6 text-white">
+              <div className="bg-[#C55418] px-7 py-6 text-white">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-lg font-bold">The Copper Studio</p>
@@ -427,8 +427,8 @@ export function ProposalGeneratorPage() {
                   ))}
                 </div>
 
-                <div className="mt-5 border-t-2 border-[#8D3118] pt-3">
-                  <p className="text-[11px] font-bold text-[#8D3118]">The Copper Studio</p>
+                <div className="mt-5 border-t-2 border-[#C55418] pt-3">
+                  <p className="text-[11px] font-bold text-[#C55418]">The Copper Studio</p>
                   <p className="mt-0.5 text-[10px] text-[#6B7280]">Contact us for package confirmation, onboarding, and next steps.</p>
                 </div>
               </div>
@@ -555,7 +555,7 @@ export function ServicesPage() {
               <Field label="Discount" required type="number" inputMode="decimal" value={coupon.discount} onChange={setField("discount")} error={errors.discount} placeholder={coupon.amountType === "percentage" ? "10" : "500"} />
               <label className="block">
                 <span className="text-xs font-bold text-[#6B7280]">Type</span>
-                <select value={coupon.amountType} onChange={(event) => setField("amountType")(event.target.value)} className="mt-1.5 h-[38px] w-full rounded-xl border border-[#E5E7EB] px-2 text-sm outline-none focus:border-[#8D3118] focus:ring-4 focus:ring-[#FFFFFF]">
+                <select value={coupon.amountType} onChange={(event) => setField("amountType")(event.target.value)} className="mt-1.5 h-[38px] w-full rounded-xl border border-[#E5E7EB] px-2 text-sm outline-none focus:border-[#C55418] focus:ring-4 focus:ring-[#FFFFFF]">
                   <option value="percentage">%</option>
                   <option value="fixed">Rs</option>
                 </select>
@@ -580,11 +580,11 @@ export function ServicesPage() {
         </Card>
 
         <div className="space-y-5">
-          <div className="rounded-2xl border border-dashed border-[#8D3118] bg-[#FFFFFF] p-5 text-center">
-            <Tag size={22} className="mx-auto text-[#8D3118]" />
+          <div className="rounded-2xl border border-dashed border-[#C55418] bg-[#FFFFFF] p-5 text-center">
+            <Tag size={22} className="mx-auto text-[#C55418]" />
             <p className="mt-3 font-mono text-xl font-bold text-[#1A1A1A]">{previewCode}</p>
             <p className="mt-1 text-xs font-semibold text-[#6B7280]">{discountLabel} off on {coupon.packageName || "selected package"}</p>
-            <p className="mt-1 text-[11px] font-semibold text-[#8D3118]">Valid till {formatDateTime(coupon.validity)}</p>
+            <p className="mt-1 text-[11px] font-semibold text-[#C55418]">Valid till {formatDateTime(coupon.validity)}</p>
             <p className="mt-2 text-[10px] text-[#6B7280]">A unique code is generated on create.</p>
           </div>
 
@@ -630,7 +630,7 @@ function DataTablePreview({ type, title }) {
     <Card>
       <div className="flex items-center justify-between border-b border-[#E5E7EB] px-4 py-3">
         <div className="flex items-center gap-2">
-          <Table2 size={16} className="text-[#8D3118]" />
+          <Table2 size={16} className="text-[#C55418]" />
           <h3 className="text-sm font-bold text-[#1A1A1A]">{title}</h3>
         </div>
         <span className="rounded-full bg-[#F1F1F5] px-2 py-1 text-[11px] font-bold text-[#6B7280]">{loading ? "Loading" : `${records.length} rows`}</span>
@@ -666,7 +666,7 @@ export function DatabaseTablesPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {Object.keys(tableColumns).map((type) => (
             <Card key={type} className="p-4">
-              <Table2 size={18} className="text-[#8D3118]" />
+              <Table2 size={18} className="text-[#C55418]" />
               <p className="mt-3 text-lg font-bold capitalize text-[#1A1A1A]">{type}</p>
               <p className="text-xs font-semibold text-[#6B7280]">Dedicated collection</p>
             </Card>

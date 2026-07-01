@@ -62,7 +62,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#FFFFFF]">
-              <FolderKanban size={24} className="text-[#8D3118]" />
+              <FolderKanban size={24} className="text-[#C55418]" />
             </div>
             <div className="min-w-0">
               <h2 className="truncate text-2xl font-bold text-[#1A1A1A]">{project.name}</h2>
@@ -92,14 +92,14 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-[#6b7280]">
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={13} className="text-[#8D3118]" /> Start: <span className="font-semibold text-[#1A1A1A]">{startDate}</span>
+                  <Calendar size={13} className="text-[#C55418]" /> Start: <span className="font-semibold text-[#1A1A1A]">{startDate}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CalendarCheck size={13} className="text-[#8D3118]" /> Expected: <span className="font-semibold text-[#1A1A1A]">{expectedDate}</span>
+                  <CalendarCheck size={13} className="text-[#C55418]" /> Expected: <span className="font-semibold text-[#1A1A1A]">{expectedDate}</span>
                 </span>
                 {packageName && (
                   <span className="flex items-center gap-1.5">
-                    <Package size={13} className="text-[#8D3118]" /> Package: <span className="font-semibold text-[#1A1A1A]">{packageName}</span>
+                    <Package size={13} className="text-[#C55418]" /> Package: <span className="font-semibold text-[#1A1A1A]">{packageName}</span>
                   </span>
                 )}
               </div>
@@ -123,7 +123,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               key={tab.label}
               to={tab.to}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                tab.label === activeTab ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"
+                tab.label === activeTab ? "bg-[#C55418] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"
               }`}
             >
               {tab.label}

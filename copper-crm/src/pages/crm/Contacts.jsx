@@ -190,14 +190,14 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <FolderOpen size={18} className="text-[#8D3118]" />
+            <FolderOpen size={18} className="text-[#C55418]" />
             <div>
               <p className="text-base font-medium text-[#1A1A1A]">{folder}</p>
               <p className="text-xs text-[#6B7280]">{contacts.length} {contacts.length === 1 ? "contact" : "contacts"}</p>
             </div>
           </div>
         </div>
-        <button onClick={onAdd} className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto">
+        <button onClick={onAdd} className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#C55418] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto">
           <Plus size={15} /> Add contacts
         </button>
       </div>
@@ -205,7 +205,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
       {contacts.length === 0 ? (
         <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white py-12 text-center">
           <p className="text-sm text-[#6b7280]">No contacts in this folder yet.</p>
-          <button onClick={onAdd} className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#8D3118] px-3.5 py-2 text-xs font-medium text-[#8D3118] transition-colors hover:bg-[#E5E7EB]">
+          <button onClick={onAdd} className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#C55418] px-3.5 py-2 text-xs font-medium text-[#C55418] transition-colors hover:bg-[#E5E7EB]">
             <Plus size={14} /> Add contacts
           </button>
         </div>
@@ -228,7 +228,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="rounded-full bg-[#FFFFFF] px-2 py-1 text-[11px] font-semibold text-[#1A1A1A]">{c.status || "Active"}</span>
-                  <button onClick={() => onOpenContact(c)} className="inline-flex items-center gap-1 text-xs font-medium text-[#8D3118] hover:underline">
+                  <button onClick={() => onOpenContact(c)} className="inline-flex items-center gap-1 text-xs font-medium text-[#C55418] hover:underline">
                     <Eye size={13} /> Open
                   </button>
                 </div>
@@ -263,7 +263,7 @@ function FolderModal({ onClose, onCreate }) {
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") onCreate(name); }}
           placeholder="e.g. Q3 Decision Makers"
-          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
         />
       </label>
     </SidePanel>
@@ -311,8 +311,8 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
           const id = idOf(c);
           const checked = selected.has(id);
           return (
-            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${checked ? "border-[#8D3118] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}>
-              <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#E5E7EB] accent-[#8D3118]" />
+            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${checked ? "border-[#C55418] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}>
+              <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#E5E7EB] accent-[#C55418]" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[#1A1A1A]">{contactFullName(c)}</p>
                 <p className="truncate text-xs text-[#6B7280]">
@@ -504,7 +504,7 @@ export default function Contacts() {
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen((value) => !value)}
-                className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#FFFFFF] text-[#8D3118]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
+                className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#C55418] bg-[#FFFFFF] text-[#C55418]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
               >
                 <ArrowUpDown size={15} />
                 <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -515,7 +515,7 @@ export default function Contacts() {
                     <button
                       key={opt.value}
                       onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#1A1A1A]"}`}
+                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#C55418]" : "text-[#1A1A1A]"}`}
                     >
                       {opt.label}
                       {sortBy === opt.value && <Check size={14} />}
@@ -539,17 +539,17 @@ export default function Contacts() {
             {/* View toggle */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#8D3118]/20" : "bg-[#F1F1F5]"}`}
+              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#C55418]/20" : "bg-[#F1F1F5]"}`}
             >
               <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
-                <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1A1A1A]"} />
-                <span className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1A1A1A]"}>Hotlist</span>
+                <Grid2x2 size={16} className={view === "hotlist" ? "text-[#C55418]" : "text-[#1A1A1A]"} />
+                <span className={view === "hotlist" ? "text-[#C55418]" : "text-[#1A1A1A]"}>Hotlist</span>
               </span>
             </button>
 
             <button
               onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}
-              className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
+              className="flex h-11 items-center gap-1.5 rounded-full bg-[#C55418] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
             >
               <Plus size={16} /> New Contact
             </button>
@@ -598,7 +598,7 @@ export default function Contacts() {
                       onClick={() => setPage(p)}
                       className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                         p === page
-                          ? "bg-[#8D3118] text-white"
+                          ? "bg-[#C55418] text-white"
                           : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
                       }`}
                     >
@@ -633,7 +633,7 @@ export default function Contacts() {
                     onChange={(e) => { setFolderSearch(e.target.value); setFolderPage(1); }}
                   />
                 </div>
-                <button onClick={() => setCreatingFolder(true)} className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors">
+                <button onClick={() => setCreatingFolder(true)} className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#C55418] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors">
                   <FolderPlus size={15} /> New Folder
                 </button>
               </div>
@@ -668,7 +668,7 @@ export default function Contacts() {
                       <button
                         key={p}
                         onClick={() => setFolderPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#C55418] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"}`}
                       >
                         {p}
                       </button>

@@ -67,8 +67,8 @@ export default function ClientDashboard() {
 
   const stats = [
     { icon: Package, label: "Packages Purchased", value: allOrders.length || "—", color: "var(--cs-primary)" },
-    { icon: Activity, label: "Projects", value: projects.length || "—", color: "#8D3118" },
-    { icon: Video, label: "Upcoming Meetings", value: allMeetings.filter(m => m.status === "confirmed").length || "—", color: "#8D3118" },
+    { icon: Activity, label: "Projects", value: projects.length || "—", color: "#C55418" },
+    { icon: Video, label: "Upcoming Meetings", value: allMeetings.filter(m => m.status === "confirmed").length || "—", color: "#C55418" },
   ];
 
   return (
@@ -127,7 +127,7 @@ export default function ClientDashboard() {
                       <div key={i} className="flex items-center gap-3">
                         {(() => {
                           const StageIcon = stage.status === "completed" ? CheckCircle2 : stage.status === "in_progress" ? CircleDot : Circle;
-                          return <StageIcon size={18} style={{ color: stage.status === "completed" ? "#8D3118" : stage.status === "in_progress" ? "var(--cs-primary)" : "var(--cs-outline-variant)" }} />;
+                          return <StageIcon size={18} style={{ color: stage.status === "completed" ? "#C55418" : stage.status === "in_progress" ? "var(--cs-primary)" : "var(--cs-outline-variant)" }} />;
                         })()}
                         <span className="text-sm" style={{
                           color: stage.status === "completed" ? "var(--cs-on-surface)" : stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
@@ -135,7 +135,7 @@ export default function ClientDashboard() {
                         }}>{stage.name}</span>
                         {stage.status === "completed" && (
                           <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
-                            style={{ background: "#FFFFFF", color: "#8D3118" }}>Done</span>
+                            style={{ background: "#FFFFFF", color: "#C55418" }}>Done</span>
                         )}
                         {stage.status === "in_progress" && (
                           <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
@@ -188,7 +188,7 @@ export default function ClientDashboard() {
                       <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                         style={{
                           background: o.payment?.status === "paid" ? "#FFFFFF" : "var(--cs-primary-fixed)",
-                          color: o.payment?.status === "paid" ? "#8D3118" : "var(--cs-primary)"
+                          color: o.payment?.status === "paid" ? "#C55418" : "var(--cs-primary)"
                         }}>
                         {o.payment?.status === "paid" ? "Paid" : "Pending"}
                       </span>

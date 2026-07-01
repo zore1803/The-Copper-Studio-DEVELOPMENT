@@ -65,10 +65,10 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 const ANALYTICS = {
-  copper: "#8D3118",
-  copperLight: "#8D3118",
-  green: "#8D3118",
-  amber: "#8D3118",
+  copper: "#C55418",
+  copperLight: "#C55418",
+  green: "#C55418",
+  amber: "#C55418",
   grid: "#E5E7EB",
 };
 
@@ -175,7 +175,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
       <div className="p-5">
         <p className="text-xl font-bold text-[#1A1A1A]">{formatMoneyCompact(totalRevenue)}</p>
         <p className="text-xs text-[#6B7280]">{Math.abs(growth)}% {growth >= 0 ? "↑" : "↓"} from last quarter</p>
-        {growth > 0 && <p className="text-xs font-semibold text-[#8D3118] mt-1">Outperforming previous quarter</p>}
+        {growth > 0 && <p className="text-xs font-semibold text-[#C55418] mt-1">Outperforming previous quarter</p>}
         
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-[#6B7280] border-t border-[#E5E7EB] pt-4">
           <div>
@@ -191,7 +191,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
           {revenue.map((m, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div
-                className="w-full rounded-t bg-[#8D3118]/80 transition-all duration-300"
+                className="w-full rounded-t bg-[#C55418]/80 transition-all duration-300"
                 style={{ height: `${Math.max(Math.round((m.revenue / maxR) * 40), m.revenue > 0 ? 2 : 0)}px` }}
               />
               <span className="text-[9px] text-[#6B7280]">{m.month}</span>
@@ -226,12 +226,12 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1A1A1A] mb-3 border-b border-[#E5E7EB] pb-2">Orders ({orders.length})</h3>
             <div className="flex flex-col gap-2">
               {orders.map((o, i) => (
-                <div key={o._id || o.id || i} onClick={() => navigate(`/admin/companies/${o.companyId || o.customer?.companyId || o.client || ''}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#8D3118] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={o._id || o.id || i} onClick={() => navigate(`/admin/companies/${o.companyId || o.customer?.companyId || o.client || ''}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#C55418] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold text-[#1A1A1A]">{safeString(o.customer?.customerName || o.client || o.companyName || "Unknown Client")}</p>
                       <p className="text-xs text-[#6B7280]">{safeString(o.customer?.customerEmail || o.contactName || o.email)}</p>
-                      <p className="text-xs text-[#8D3118] mt-1 font-medium">Package: {safeString(o.package?.name || o.packageId || o.projectType || "Custom")}</p>
+                      <p className="text-xs text-[#C55418] mt-1 font-medium">Package: {safeString(o.package?.name || o.packageId || o.projectType || "Custom")}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-[#1A1A1A]">Rs {moneyValue(o.amount ?? o.package?.total ?? o.total).toLocaleString("en-IN")}</p>
@@ -249,7 +249,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1A1A1A] mb-3 border-b border-[#E5E7EB] pb-2">Payments ({payments.length})</h3>
             <div className="flex flex-col gap-2">
               {payments.map((p, i) => (
-                <div key={p._id || p.id || i} onClick={() => navigate('/admin/payments')} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#8D3118] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={p._id || p.id || i} onClick={() => navigate('/admin/payments')} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#C55418] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold text-[#1A1A1A]">{safeString(p.companyName || p.clientName || p.client || "Unknown Client")}</p>
@@ -271,7 +271,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1A1A1A] mb-3 border-b border-[#E5E7EB] pb-2">Users Created ({users.length})</h3>
             <div className="flex flex-col gap-2">
               {users.map((u, i) => (
-                <div key={u._id || u.id || i} onClick={() => navigate(`/admin/companies/${u._id || u.id}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#8D3118] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={u._id || u.id || i} onClick={() => navigate(`/admin/companies/${u._id || u.id}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#C55418] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-bold text-[#1A1A1A]">{safeString(u.name || u.company || "Unknown")}</p>
@@ -290,7 +290,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1A1A1A] mb-3 border-b border-[#E5E7EB] pb-2">Projects Created ({projects.length})</h3>
             <div className="flex flex-col gap-2">
               {projects.map((p, i) => (
-                <div key={p._id || p.id || i} onClick={() => navigate(`/admin/companies/${p.companyId || p.client}/projects/${p._id || p.id}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#8D3118] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={p._id || p.id || i} onClick={() => navigate(`/admin/companies/${p.companyId || p.client}/projects/${p._id || p.id}`)} className="cursor-pointer p-3 border border-[#E5E7EB] rounded-lg hover:border-[#C55418] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-bold text-[#1A1A1A]">{safeString(p.name || p.projectName || "Unknown Project")}</p>
@@ -1021,7 +1021,7 @@ export function AnalyticsPage() {
                 </div>
                 <div className="flex gap-2">
                   {["All", "Revenue", "Users", "Projects"].map(m => (
-                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#8D3118] text-white' : 'bg-[#F1F1F5] text-[#6B7280] hover:bg-gray-200'}`}>
+                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#C55418] text-white' : 'bg-[#F1F1F5] text-[#6B7280] hover:bg-gray-200'}`}>
                       {m}
                     </button>
                   ))}
@@ -1058,8 +1058,8 @@ export function AnalyticsPage() {
                         <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} tickFormatter={formatMoneyCompact} width={64} />
                         <Tooltip content={<ChartTooltip />} />
                         <Area yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke={ANALYTICS.copper} strokeWidth={2.5} fill="url(#chartFill)" activeDot={{ r: 4 }} />
-                        <Area yAxisId="left" type="monotone" dataKey="users" name="Users" stroke="#8D3118" strokeWidth={2.5} fill="none" activeDot={{ r: 4 }} />
-                        <Area yAxisId="left" type="monotone" dataKey="projects" name="Projects" stroke="#8D3118" strokeWidth={2.5} fill="none" activeDot={{ r: 4 }} />
+                        <Area yAxisId="left" type="monotone" dataKey="users" name="Users" stroke="#C55418" strokeWidth={2.5} fill="none" activeDot={{ r: 4 }} />
+                        <Area yAxisId="left" type="monotone" dataKey="projects" name="Projects" stroke="#C55418" strokeWidth={2.5} fill="none" activeDot={{ r: 4 }} />
                       </>
                     ) : (
                       <>
@@ -1137,12 +1137,12 @@ export function AnalyticsPage() {
                   {(data.packageRevenue.length ? data.packageRevenue : [{ name: "No packages yet", revenue: 0, count: 0 }]).map((item) => (
                     <div 
                       key={item.name} 
-                      className={`rounded-xl border bg-[#F1F1F5] p-3 transition-all ${item.count > 0 ? "cursor-pointer hover:border-[#8D3118] hover:shadow-sm" : "border-[#E5E7EB]"}`}
+                      className={`rounded-xl border bg-[#F1F1F5] p-3 transition-all ${item.count > 0 ? "cursor-pointer hover:border-[#C55418] hover:shadow-sm" : "border-[#E5E7EB]"}`}
                       onClick={() => item.count > 0 && setSelectedPackage(item.name)}
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-bold text-[#1A1A1A]">{item.name}</p>
-                        <p className={`text-xs font-bold ${item.count > 0 ? "text-[#8D3118] underline decoration-[#8D3118]/30 underline-offset-2" : "text-[#6B7280]"}`}>
+                        <p className={`text-xs font-bold ${item.count > 0 ? "text-[#C55418] underline decoration-[#C55418]/30 underline-offset-2" : "text-[#6B7280]"}`}>
                           {item.count} {item.count === 1 ? "order" : "orders"}
                         </p>
                       </div>
@@ -1191,7 +1191,7 @@ export function AnalyticsPage() {
                 <div className="relative border-l border-[#E5E7EB] ml-3 space-y-6">
                   {data.allActivities.map((activity) => (
                     <div key={activity.id} className="relative pl-5">
-                      <span className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-white bg-[#8D3118]" />
+                      <span className="absolute -left-1.5 top-1 h-3 w-3 rounded-full border-2 border-white bg-[#C55418]" />
                       <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">
                         {new Date(activity.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
@@ -1313,7 +1313,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
               placeholder="Search projects..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
+              className="pl-8 pr-4 py-1.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C55418]/20 focus:border-[#C55418] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
@@ -1359,7 +1359,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
                       <span className="font-medium text-[#1A1A1A]">Due:</span> {new Date(p.expected).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                     {p.priorityLevel !== "Completed" && (
-                      <p className={`text-[10px] font-bold ${p.daysRemaining < 0 ? "text-red-600" : "text-[#8D3118]"}`}>
+                      <p className={`text-[10px] font-bold ${p.daysRemaining < 0 ? "text-red-600" : "text-[#C55418]"}`}>
                         {p.daysRemaining < 0 ? `${Math.abs(p.daysRemaining)} days late` : `${p.daysRemaining} days left`}
                       </p>
                     )}
@@ -1368,7 +1368,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
                     <div className="w-full max-w-[100px] bg-gray-200 rounded-full h-1.5">
-                      <div className="bg-[#8D3118] h-1.5 rounded-full" style={{ width: `${p.progress}%` }}></div>
+                      <div className="bg-[#C55418] h-1.5 rounded-full" style={{ width: `${p.progress}%` }}></div>
                     </div>
                     <span className="text-xs font-bold text-[#1A1A1A]">{p.progress}%</span>
                   </div>
@@ -1452,7 +1452,7 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
               placeholder="Search payments..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
+              className="pl-8 pr-4 py-1.5 text-sm border border-[#E5E7EB] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C55418]/20 focus:border-[#C55418] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
