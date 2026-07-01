@@ -1,4 +1,4 @@
-﻿import EmailTemplate from "../models/EmailTemplate.js";
+import EmailTemplate from "../models/EmailTemplate.js";
 
 const DEFAULT_EMAIL_TEMPLATES = [
   {
