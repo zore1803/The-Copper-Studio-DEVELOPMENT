@@ -441,9 +441,7 @@ function renderPackagesPage() {
   // Render category switcher
   const switcher = document.getElementById("categorySwitcher");
   if (switcher) {
-    switcher.innerHTML = CATEGORIES.map((cat) => `
-      <button class="category-tab${cat === activeCategory ? " is-active" : ""}" data-category="${cat}">${cat}</button>
-    `).join("");
+    switcher.innerHTML = `<div class="category-switcher-inner">${CATEGORIES.map((cat) => `<button class="category-tab${cat === activeCategory ? " is-active" : ""}" data-category="${cat}">${cat}</button>`).join("")}</div>`;
     switcher.querySelectorAll("[data-category]").forEach((btn) => {
       btn.addEventListener("click", () => {
         activeCategory = btn.dataset.category;
