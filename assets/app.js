@@ -466,6 +466,7 @@ function renderPackagesPage() {
             <span class="material-symbols-outlined">${isSelected ? "radio_button_checked" : "radio_button_unchecked"}</span>
           </header>
           <div class="price">${formatCurrency(pkg.price)}</div>
+          <p class="gst-line" data-base-price="${pkg.price}" style="display:none"></p>
           <p>${pkg.duration}</p>
           <ul>${pkg.includes.map((item) => `<li>${item}</li>`).join("")}</ul>
           <button class="btn ${isSelected ? "btn-primary" : "btn-secondary"}" type="button" data-package="${pkg.id}">
@@ -488,6 +489,12 @@ function renderPackagesPage() {
       window.location.href = "checkout.html";
     });
   });
+
+  // After re-render, restore GST/discount if toolbar was active (checked via DOM)
+  const _toolbar = document.getElementById("discountToolbar");
+  if (_toolbar && _toolbar.classList.contains("is-visible")) {
+    document.querySelectorAll(".gst-line").forEach((el) => { el.style.display = ""; });
+  }
 }
 
 // Full phone string used as the verified identity for the phone channel.
@@ -1307,9 +1314,34 @@ if (page === "packages") {
   const applyBtn = document.getElementById("discountApplyBtn");
   const clearBtn = document.getElementById("discountClearBtn");
 
+  function updateGstLines() {
+    document.querySelectorAll(".gst-line").forEach((el) => {
+      const basePrice = parseFloat(el.dataset.basePrice) || 0;
+      let effectivePrice = basePrice;
+      if (discountAmount && discountMode) {
+        effectivePrice = discountMode === "rs"
+          ? Math.max(0, basePrice - discountAmount)
+          : Math.max(0, basePrice * (1 - discountAmount / 100));
+        effectivePrice = Math.round(effectivePrice);
+      }
+      const gst = Math.round(effectivePrice * 0.18);
+      el.textContent = `+GST ${formatCurrency(gst)} (18%)`;
+    });
+  }
+
+  function showGstLines() {
+    document.querySelectorAll(".gst-line").forEach((el) => { el.style.display = ""; });
+    updateGstLines();
+  }
+
+  function hideGstLines() {
+    document.querySelectorAll(".gst-line").forEach((el) => { el.style.display = "none"; });
+  }
+
   function showToolbar() {
     discountToolbarVisible = true;
     toolbar.classList.add("is-visible");
+    showGstLines();
   }
 
   function hideToolbar() {
@@ -1342,7 +1374,7 @@ if (page === "packages") {
   applyBtn.addEventListener("click", applyDiscount);
   valueInput.addEventListener("keydown", (e) => { if (e.key === "Enter") applyDiscount(); });
 
-  // ✕ — clear discount AND hide toolbar completely
+  // ✕ — clear discount AND hide toolbar + GST completely
   clearBtn.addEventListener("click", () => {
     valueInput.value = "";
     discountAmount = 0;
@@ -1350,6 +1382,7 @@ if (page === "packages") {
     rsBtn.classList.remove("active");
     pctBtn.classList.remove("active");
     renderDiscountedPrices();
+    hideGstLines();
     hideToolbar();
   });
 
@@ -1357,7 +1390,8 @@ if (page === "packages") {
     const val = parseFloat(valueInput.value) || 0;
     discountAmount = val;
     renderDiscountedPrices();
-    // hide toolbar after applying — discount stays on cards
+    updateGstLines(); // recalculate GST on new effective price
+    // hide toolbar after applying — discount + GST stay on cards
     hideToolbar();
   }
 

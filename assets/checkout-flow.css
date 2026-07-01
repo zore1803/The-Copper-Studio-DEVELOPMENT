@@ -1740,6 +1740,14 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   margin-right: 6px;
   vertical-align: middle;
 }
+.gst-line {
+  margin: -6px 0 2px;
+  font-size: 0.78rem;
+  color: #8a6a55;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .price-badge {
   display: inline-block;
   background: #dcfce7;
