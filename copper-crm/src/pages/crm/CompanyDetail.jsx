@@ -1689,7 +1689,6 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [groupFolders, setGroupFolders] = useState([]);
-  const categories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables"];
   const projectDocs = projects.flatMap((project) =>
     (project.documents || []).map((doc, index) => ({
       ...doc,
@@ -1699,6 +1698,10 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
     }))
   );
   const allDocs = [...documents, ...projectDocs];
+
+  const baseCategories = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", "Internal"];
+  const dynamicCategories = Array.from(new Set(allDocs.map((doc) => doc.category).filter(Boolean)));
+  const categories = Array.from(new Set([...baseCategories, ...dynamicCategories])).sort();
 
   function docsForFolders(folders) {
     return allDocs.filter((doc) => {

@@ -63,6 +63,8 @@ export default function DocumentUploadPanel({
     () => projects.filter((p) => String(p.companyId) === String(form.companyId)),
     [projects, form.companyId]
   );
+  
+  const isCustomCategory = Boolean(form.category.trim() && !DOCUMENT_CATEGORIES.includes(form.category.trim()));
 
   async function handleBrowse(event) {
     const file = event.target.files?.[0];
@@ -94,6 +96,10 @@ export default function DocumentUploadPanel({
   async function handleSave() {
     if (saving) return;
     if (!form.name.trim() || !form.companyId) return;
+    if (isCustomCategory && !form.projectId) {
+      showToast({ type: "error", title: "Project required", message: "When creating a new custom category, you must select a project folder for the document." });
+      return;
+    }
     setSaving(true);
     try {
       await onSave(form);
@@ -112,7 +118,7 @@ export default function DocumentUploadPanel({
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!form.name.trim() || !form.companyId || reading || saving}>
+          <Button onClick={handleSave} disabled={!form.name.trim() || !form.companyId || reading || saving || (isCustomCategory && !form.projectId)}>
             {saving ? <><Loader2 size={14} className="animate-spin" /> Uploading…</> : <><Upload size={14} /> Save Document</>}
           </Button>
         </div>
@@ -208,9 +214,19 @@ export default function DocumentUploadPanel({
 
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Category</span>
-          <select value={form.category} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
-            {DOCUMENT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
-          </select>
+          <input
+            list="doc-categories"
+            value={form.category}
+            onChange={(e) => set("category")(e.target.value)}
+            placeholder="Select or type a custom category…"
+            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          />
+          <datalist id="doc-categories">
+            {DOCUMENT_CATEGORIES.map((category) => <option key={category} value={category} />)}
+          </datalist>
+          {isCustomCategory && !form.projectId && (
+            <span className="mt-1 block text-[11px] font-semibold text-amber-600">A project must be selected for custom categories.</span>
+          )}
         </label>
 
         <label className="block">

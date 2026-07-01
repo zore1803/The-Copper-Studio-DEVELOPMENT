@@ -42,6 +42,8 @@ const VISIBILITY = {
   client: { label: "Client Visible", icon: Share2, className: "bg-emerald-50 text-emerald-700" },
 };
 
+const BASE_CATEGORIES = ["Contracts", "Invoices", "Proposals", "Design Files", "Source Code", "Deliverables", "Internal"];
+
 const TYPE_ICON = {
   pdf: FileText,
   doc: FileText,
@@ -242,6 +244,7 @@ export default function DocumentCenter() {
   const selectedProjectId = searchParams.get("project");
 
   const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [view, setView] = useState("grid");
   const [selected, setSelected] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -256,7 +259,7 @@ export default function DocumentCenter() {
   const currentProject = projects.find((p) => String(p.id) === String(selectedProjectId) || String(p._id) === String(selectedProjectId));
 
   // Always land on the Details tab when opening a different project.
-  useEffect(() => { setProjectTab("details"); }, [selectedProjectId]);
+  useEffect(() => { setProjectTab("details"); setCategoryFilter("All"); }, [selectedProjectId, selectedCompanyId]);
 
   const projectDocs = useMemo(() => {
     // 1. Fetch from the documents collection where projectId is set
@@ -333,6 +336,7 @@ export default function DocumentCenter() {
 
   const normalizedQuery = query.trim().toLowerCase();
   const filterDoc = (doc) => {
+    if (categoryFilter !== "All" && doc.category !== categoryFilter) return false;
     if (!normalizedQuery) return true;
     const haystack = `${doc.fileName || ""} ${doc.folderPath || ""} ${doc.tags?.join(" ") || ""}`.toLowerCase();
     return haystack.includes(normalizedQuery);
@@ -392,6 +396,22 @@ export default function DocumentCenter() {
     viewTitle = currentProject?.name || currentProject?.projectName || "Project";
     viewSubtitle = currentCompany?.name || currentCompany?.companyName || "";
   }
+
+  const availableCategories = useMemo(() => {
+    let rawDocs = [];
+    if (mode === "company") {
+      const pDocs = projectDocs.filter((d) => String(d.companyId) === String(selectedCompanyId));
+      const cDocs = documents
+        .filter((d) => !d.projectId && String(d.companyId) === String(selectedCompanyId))
+        .map((doc) => ({ ...doc, id: doc._id || doc.id, projectName: "Company", folderPath: "Company Files", fileName: doc.fileName || doc.name }));
+      rawDocs = [...pDocs, ...cDocs];
+    } else if (mode === "project") {
+      rawDocs = projectDocs.filter((d) => String(d.projectId) === String(selectedProjectId));
+    }
+    
+    const dynamicCats = rawDocs.map((d) => d.category).filter(Boolean);
+    return Array.from(new Set([...BASE_CATEGORIES, ...dynamicCats])).sort();
+  }, [mode, selectedCompanyId, selectedProjectId, projectDocs, documents]);
 
   const showFolders = mode === "root" || mode === "company";
 
@@ -473,6 +493,18 @@ export default function DocumentCenter() {
           <h1 className="mt-0.5 text-base font-medium text-[#0E121B] truncate">{viewTitle}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {mode !== "root" && (
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#374151] outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            >
+              <option value="All">All Categories</option>
+              {availableCategories.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          )}
           <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#9ca3af]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
