@@ -1142,16 +1142,148 @@ export function SettingsDataFieldsPage() {
   );
 }
 
-// Settings > Pricing — package plan details used across pricing, projects,
-// coupons and proposals.
-export function SettingsPricingPage() {
+const PRICING_CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
+
+function PricingSection({ onSave, saving }) {
+  const { token } = useAuth();
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(PRICING_CATEGORIES[0]);
+  const [edits, setEdits] = useState({});
+
+  useEffect(() => {
+    apiGet("/api/packages")
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPackages(data);
+          const initial = {};
+          data.forEach((p) => { initial[p.id] = { ...p, includes: (p.includes || []).join("\n") }; });
+          setEdits(initial);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  function set(id, field, value) {
+    setEdits((prev) => ({ ...prev, [id]: { ...prev[id], [field]: value } }));
+  }
+
+  if (loading) return <div className="py-16 text-center text-sm text-[#9ca3af]">Loading…</div>;
+
+  const visible = packages.filter((p) => p.category === activeCategory);
+
   return (
-    <SettingsSubPage title="Pricing" description="Package plans and their pricing." icon={Tag}>
-      <div className="rounded-2xl border border-dashed border-[#d8c2b9] bg-[#fffdfc] px-6 py-12 text-center">
-        <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><Tag size={20} /></div>
-        <p className="mt-3 text-sm font-semibold text-[#211a17]">Coming soon</p>
-        <p className="mt-1 text-xs text-[#6c6355]">Package plan management (name, price, and inclusions) will live here.</p>
+    <div className="flex min-h-0 flex-1 gap-0 divide-x divide-[#f3f4f6]">
+      {/* Left nav */}
+      <nav className="w-44 shrink-0 py-1 pr-4">
+        {PRICING_CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat;
+          const count = packages.filter((p) => p.category === cat).length;
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#884c2d]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+            >
+              <span>{cat}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#884c2d]/10 text-[#884c2d]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{count}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Right — editable packages */}
+      <div className="flex min-h-0 flex-1 flex-col pl-6">
+        <div className="flex-1 overflow-y-auto space-y-6 pr-1">
+          {visible.map((pkg) => {
+            const e = edits[pkg.id] || {};
+            return (
+              <div key={pkg.id} className="rounded-xl border border-[#f0e6e0] bg-[#fdfaf9] p-5">
+                <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#884c2d]">{pkg.name}</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Plan label</label>
+                    <input
+                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                      value={e.label ?? ""}
+                      onChange={(ev) => set(pkg.id, "label", ev.target.value)}
+                      placeholder="e.g. Most popular"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Price (₹)</label>
+                    <input
+                      type="number"
+                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                      value={e.price ?? ""}
+                      onChange={(ev) => set(pkg.id, "price", ev.target.value)}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Duration / timeline</label>
+                    <input
+                      className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                      value={e.duration ?? ""}
+                      onChange={(ev) => set(pkg.id, "duration", ev.target.value)}
+                      placeholder="e.g. 20 days delivery"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1 block text-xs font-medium text-[#6c6355]">Inclusions <span className="font-normal text-[#9ca3af]">(one per line)</span></label>
+                    <textarea
+                      rows={5}
+                      className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 resize-none"
+                      value={e.includes ?? ""}
+                      onChange={(ev) => set(pkg.id, "includes", ev.target.value)}
+                      placeholder={"Logo design (3 concepts)\nBrand colour palette\n…"}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex shrink-0 justify-end border-t border-[#f3f4f6] pt-4 mt-4">
+          <Button disabled={saving} onClick={() => onSave(edits)}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
+        </div>
       </div>
+    </div>
+  );
+}
+
+export function SettingsPricingPage() {
+  const { showToast } = useToast();
+  const { token } = useAuth();
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(edits) {
+    setSaving(true);
+    try {
+      const updates = Object.values(edits).map((e) => ({
+        id: e.id,
+        name: e.name,
+        label: e.label,
+        price: Number(e.price) || 0,
+        duration: e.duration,
+        includes: (e.includes || "").split("\n").map((s) => s.trim()).filter(Boolean),
+      }));
+      await Promise.all(
+        updates.map((u) =>
+          apiPut(`/api/admin/packages/${u.id}`, u, token)
+        )
+      );
+      showToast({ title: "Pricing updated", message: "Package details have been saved." });
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't save", message: err.message || "Something went wrong." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SettingsSubPage title="Pricing" description="Manage package plans — changes reflect on the public pricing page." icon={Tag}>
+      <PricingSection onSave={handleSave} saving={saving} />
     </SettingsSubPage>
   );
 }

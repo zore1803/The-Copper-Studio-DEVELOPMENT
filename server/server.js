@@ -21,7 +21,8 @@ import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import calendlyRoutes from "./routes/calendly.js";
 import invoiceRoutes from "./routes/invoices.js";
-import { packages } from "./data/packages.js";
+import { packages as SEED_PACKAGES } from "./data/packages.js";
+import Package from "./models/Package.js";
 import { sendInvoiceEmail } from "./services/email.js";
 import { sendPortalInvite } from "./services/portalInvite.js";
 import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
@@ -30,6 +31,7 @@ import { buildProjectCode, buildDefaultProjectName } from "./services/projectNam
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
 import { htmlToPdfBuffer } from "./services/pdf.js";
 import { seedEmailTemplates } from "./scripts/seedEmailTemplates.js";
+import { requireAuth, requireRole } from "./middleware/auth.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -354,8 +356,29 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "the-copper-studio-api" });
 });
 
-app.get("/api/packages", (_req, res) => {
-  res.json(packages);
+app.get("/api/packages", async (_req, res) => {
+  try {
+    const docs = await Package.find({}).sort({ category: 1 }).lean();
+    res.json(docs.length ? docs : SEED_PACKAGES);
+  } catch {
+    res.json(SEED_PACKAGES);
+  }
+});
+
+app.put("/api/admin/packages/:id", requireAuth, requireRole("superadmin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, label, price, duration, includes } = req.body;
+    const doc = await Package.findOneAndUpdate(
+      { id },
+      { $set: { name, label, price: Number(price) || 0, duration, includes } },
+      { new: true, runValidators: false }
+    );
+    if (!doc) return res.status(404).json({ error: "Package not found" });
+    res.json({ ok: true, package: doc });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const OTP_CHANNELS = new Set(["phone", "email"]);
@@ -790,6 +813,12 @@ async function start() {
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 20000 });
 
   await seedEmailTemplates();
+
+  // Seed packages — only inserts if collection is empty
+  const pkgCount = await Package.countDocuments();
+  if (pkgCount === 0) {
+    await Package.insertMany(SEED_PACKAGES.map((p) => ({ ...p })));
+  }
 
   if (process.env.SUPERADMIN_EMAIL && process.env.SUPERADMIN_PASSWORD) {
     const bcrypt = await import("bcryptjs");
