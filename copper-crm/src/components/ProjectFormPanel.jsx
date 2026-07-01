@@ -5,9 +5,7 @@ import SidePanel from "./SidePanel";
 import SearchableSelectField from "./SearchableSelect";
 import { generateProjectCode, generateDefaultProjectName, PROJECT_TEMPLATES } from "../lib/projectDefaults";
 
-const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
 const PROJECT_TEMPLATE_OPTIONS = Object.keys(PROJECT_TEMPLATES);
-const PACKAGE_OPTIONS = ["Starter Studio", "Growth Studio", "Enterprise Studio", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
 const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
 
@@ -91,8 +89,8 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
 }
 
 /** Rich project creation form, shared between the company workspace and the global Projects page. */
-export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], projects = [], onClose, onSave }) {
-  const [companyId, setCompanyId] = useState(() => String(company?.id || company?._id || ""));
+export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], projects = [], preselectCompanyId = "", onCreateCompany, onClose, onSave }) {
+  const [companyId, setCompanyId] = useState(() => String(company?.id || company?._id || preselectCompanyId || ""));
   const [form, setForm] = useState({
     name: "",
     projectManager: "",
@@ -106,11 +104,10 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     template: "Custom",
     budget: "",
     discount: "",
+    discountType: "amount", // "amount" (₹) or "percent" (%)
     linkedInvoiceId: "",
     paymentStatus: "Pending",
     internalNotes: "",
-    assignedTeam: "",
-    tags: "",
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -120,7 +117,31 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
-  const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
+  // Discount can be entered as a flat rupee amount or as a percentage of the
+  // package value; resolve it to the actual rupees taken off before computing
+  // the final amount.
+  const discountAmount = form.discountType === "percent"
+    ? Math.round((parseMoney(form.budget) * Math.min(parseMoney(form.discount), 100)) / 100)
+    : parseMoney(form.discount);
+  const finalAmount = Math.max(parseMoney(form.budget) - discountAmount, 0);
+
+  // Live package catalogue (name + price) so picking a package auto-fills the
+  // package value, exactly like the manual-invoice form.
+  const [livePackages, setLivePackages] = useState([]);
+  useEffect(() => {
+    const base = import.meta.env.VITE_API_BASE_URL || "";
+    fetch(`${base}/api/packages`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => setLivePackages(Array.isArray(data) ? data : []))
+      .catch(() => setLivePackages([]));
+  }, []);
+  const packageOptions = useMemo(
+    () => [
+      ...livePackages.map((p) => ({ value: p.name, label: `${p.name} — ${formatINR(p.price)}` })),
+      { value: "Custom", label: "Custom" },
+    ],
+    [livePackages]
+  );
 
   const resolvedCompany = useMemo(
     () => company || companies.find((c) => String(c.id || c._id) === companyId),
@@ -134,14 +155,58 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     if (!resolvedCompany || nameTouched.current) return;
     setForm((prev) => ({ ...prev, name: generateDefaultProjectName(resolvedCompany, projects) }));
   }, [resolvedCompany, projects]);
-  const scopedContacts = useMemo(
-    () => (company ? contacts : contacts.filter((c) => String(c.companyId) === companyId)),
-    [company, contacts, companyId]
-  );
+  // Contacts link to a company by id (companyId) or by name (company/companyName),
+  // so match on both — matching only on companyId is why the list came up empty.
+  // Before a company is picked we show every contact, so choosing a contact can
+  // back-fill its company.
+  const scopedContacts = useMemo(() => {
+    if (company) return contacts;
+    if (!companyId) return contacts;
+    const cName = resolvedCompany?.name || resolvedCompany?.companyName || "";
+    return contacts.filter((c) => {
+      const cid = String(c.companyId || "");
+      const linkName = c.company || c.companyName || "";
+      return cid === companyId || (cName && linkName === cName);
+    });
+  }, [company, contacts, companyId, resolvedCompany]);
   const scopedInvoices = useMemo(
     () => (company ? invoices : invoices.filter((i) => String(i.companyId) === companyId)),
     [company, invoices, companyId]
   );
+
+  // Resolve a contact's company to a company id, matching by id first then name.
+  function contactCompanyId(contact) {
+    if (!contact) return "";
+    if (contact.companyId) {
+      const byId = companies.find((c) => String(c.id || c._id) === String(contact.companyId));
+      if (byId) return String(byId.id || byId._id);
+    }
+    const linkName = contact.company || contact.companyName || "";
+    if (linkName) {
+      const byName = companies.find((c) => (c.name || c.companyName) === linkName);
+      if (byName) return String(byName.id || byName._id);
+    }
+    return contact.companyId ? String(contact.companyId) : "";
+  }
+
+  // Picking a package fills the package value; picking a contact back-fills its
+  // company (kept editable) so the project, contact, and company all line up.
+  function onPackageChange(val) {
+    set("packageName")(val);
+    if (PROJECT_TEMPLATE_OPTIONS.includes(val)) set("template")(val);
+    const pkg = livePackages.find((p) => p.name === val);
+    if (pkg) set("budget")(String(pkg.price));
+  }
+  function onContactChange(val) {
+    set("primaryContactId")(val);
+    if (company) return; // company is fixed on the company-scoped page
+    const contact = contacts.find((c) => String(c.id || c._id) === String(val));
+    const cid = contactCompanyId(contact);
+    if (cid) {
+      setCompanyId(cid);
+      setErrors((prev) => (prev.company ? { ...prev, company: "" } : prev));
+    }
+  }
 
   function validate() {
     const next = {};
@@ -152,7 +217,11 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
       next.expectedEndDate = "Completion date can't be before the start date.";
     }
     if (parseMoney(form.budget) < 0) next.budget = "Value can't be negative.";
-    if (parseMoney(form.discount) > parseMoney(form.budget)) next.discount = "Discount can't exceed the package value.";
+    if (form.discountType === "percent") {
+      if (parseMoney(form.discount) > 100) next.discount = "Percentage can't exceed 100%.";
+    } else if (parseMoney(form.discount) > parseMoney(form.budget)) {
+      next.discount = "Discount can't exceed the package value.";
+    }
     return next;
   }
 
@@ -169,9 +238,9 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
         projectCode,
         packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
         primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
+        // Persist the resolved rupee discount (not the raw %) so finance reads a real amount.
+        discount: discountAmount,
         finalAmount,
-        tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-        assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
       });
     } finally {
       setSaving(false);
@@ -199,21 +268,32 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           {company ? (
             <Input label="Company" value={company.name} disabled />
           ) : (
-            <Select label="Company *" value={companyId} onChange={(value) => { setCompanyId(value); setErrors((prev) => (prev.company ? { ...prev, company: "" } : prev)); }} error={errors.company}
-              options={companies.map((c) => ({ value: String(c.id || c._id), label: c.name }))} />
+            <div className="block">
+              <SearchableSelectField label="Company *" value={companyId}
+                onChange={(value) => { setCompanyId(value); setErrors((prev) => (prev.company ? { ...prev, company: "" } : prev)); }}
+                error={errors.company} placeholder="Search companies…"
+                options={companies.map((c) => ({ value: String(c.id || c._id), label: c.name || c.companyName }))} />
+              {onCreateCompany && (
+                <button type="button" onClick={onCreateCompany}
+                  className="mt-1 text-[11px] font-semibold text-[#884c2d] hover:underline">
+                  + New company
+                </button>
+              )}
+            </div>
           )}
-          <Select label="Primary contact" value={form.primaryContactId} onChange={set("primaryContactId")}
+          <SearchableSelectField label="Primary contact" value={form.primaryContactId} onChange={onContactChange}
+            placeholder="Search contacts…"
+            hint={!company && !companyId ? "Pick a contact to auto-fill its company." : undefined}
             options={scopedContacts.map((c) => ({ value: String(c.id || c._id), label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Select span label="Project manager" value={form.projectManager} onChange={set("projectManager")}
+          <SearchableSelectField span label="Project manager" value={form.projectManager} onChange={set("projectManager")}
+            placeholder="Search team…"
             options={scopedContacts.map((c) => ({ value: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email, label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Select 
-            label="Package purchased" 
-            value={form.packageName} 
-            onChange={(val) => {
-              set("packageName")(val);
-              if (PROJECT_TEMPLATE_OPTIONS.includes(val)) set("template")(val);
-            }} 
-            options={PACKAGE_OPTIONS} 
+          <Select
+            label="Package purchased"
+            value={form.packageName}
+            onChange={onPackageChange}
+            options={packageOptions}
+            hint="Selecting a package auto-fills the package value below."
           />
           {form.packageName === "Custom" && (
             <Input label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} error={errors.customPackageName} />
@@ -233,7 +313,29 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
 
         <FormSection title="Commercials">
           <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} error={errors.budget} />
-          <Input type="number" label="Discount applied" value={form.discount} onChange={set("discount")} error={errors.discount} />
+          <label className="block">
+            <span className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#374151]">Discount applied</span>
+              <span className="inline-flex overflow-hidden rounded-md border border-[#e5e7eb] text-[11px] font-semibold">
+                {["amount", "percent"].map((mode) => (
+                  <button key={mode} type="button" onClick={() => set("discountType")(mode)}
+                    className={`px-2 py-0.5 ${form.discountType === mode ? "bg-[#884c2d] text-white" : "bg-white text-[#6b7280]"}`}>
+                    {mode === "amount" ? "₹" : "%"}
+                  </button>
+                ))}
+              </span>
+            </span>
+            <input type="number" value={form.discount || ""} onChange={(e) => set("discount")(e.target.value)}
+              aria-invalid={Boolean(errors.discount)}
+              className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                errors.discount ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+              }`} />
+            {errors.discount
+              ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.discount}</span>
+              : form.discountType === "percent" && discountAmount > 0
+                ? <span className="mt-1 block text-[11px] text-[#9ca3af]">= {formatINR(discountAmount)} off</span>
+                : null}
+          </label>
           <Input label="Final amount" value={formatINR(finalAmount)} disabled />
           <SearchableSelectField label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
             options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} placeholder="Search invoices…" />
@@ -241,8 +343,6 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
         </FormSection>
 
         <FormSection title="Internal">
-          <Input span label="Assigned team (comma separated)" value={form.assignedTeam} onChange={set("assignedTeam")} />
-          <Input span label="Tags (comma separated)" value={form.tags} onChange={set("tags")} />
           <Textarea span label="Internal notes" value={form.internalNotes} onChange={set("internalNotes")} />
         </FormSection>
       </div>

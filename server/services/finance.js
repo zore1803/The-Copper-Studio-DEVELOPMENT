@@ -202,8 +202,20 @@ export async function syncStandaloneProjectInvoices() {
     const existing = existingByProject || existingByLink;
 
     const company = project.companyId
-      ? await Company.findById(project.companyId).select("_id name userId").catch(() => null)
+      ? await Company.findById(project.companyId).select("_id name userId userIds").catch(() => null)
       : null;
+
+    // Link the project to the company's portal client account when it isn't
+    // already. This covers the case where the client was invited (so the
+    // company has a userId) BEFORE this project existed — the invite-time
+    // cascade couldn't reach a project that wasn't created yet, so we connect
+    // it here. Without this, a manually-created project never shows in the
+    // client's portal because the portal filters projects by clientId.
+    const resolvedClientId = project.clientId || company?.userId || company?.userIds?.[0] || null;
+    if (resolvedClientId && !project.clientId) {
+      await Project.findByIdAndUpdate(project._id, { clientId: resolvedClientId }).catch(() => {});
+      project.clientId = resolvedClientId;
+    }
     const issuedAt = asDate(project.startDate) || asDate(project.createdAt) || new Date();
     const gst = amount ? amount - Math.round(amount / 1.18) : 0;
     const status = existing

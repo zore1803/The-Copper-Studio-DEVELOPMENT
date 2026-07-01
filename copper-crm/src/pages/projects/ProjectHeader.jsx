@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FolderKanban, Calendar, Clock3, AlertCircle } from "lucide-react";
+import { FolderKanban, Calendar, Clock3, AlertCircle, CalendarCheck, Package } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
 import { isRoadmapComplete } from "../../lib/stageProgress";
 
@@ -41,6 +41,14 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
   const team = project.team || project.assignedTeam || [];
   const liveStatus = liveProjectStatus(project);
 
+  // Key project metadata shown as small chips beside the title/tags (moved here
+  // from the old side "Project Metadata" box).
+  const fmtDate = (value) => (value ? new Date(value).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "—");
+  const startDate = project.startDate ? fmtDate(project.startDate) : "—";
+  const expectedRaw = project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate;
+  const expectedDate = expectedRaw ? fmtDate(expectedRaw) : "—";
+  const packageName = project.packagePurchased || project.packageName || "";
+
   return (
     <div className="border-b border-[#e5e7eb] bg-white">
       <div className="px-6 py-6">
@@ -73,6 +81,19 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
                       </div>
                     )}
                   </div>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-[#6b7280]">
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={13} className="text-[#884c2d]" /> Start: <span className="font-semibold text-[#111827]">{startDate}</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CalendarCheck size={13} className="text-[#884c2d]" /> Expected: <span className="font-semibold text-[#111827]">{expectedDate}</span>
+                </span>
+                {packageName && (
+                  <span className="flex items-center gap-1.5">
+                    <Package size={13} className="text-[#884c2d]" /> Package: <span className="font-semibold text-[#111827]">{packageName}</span>
+                  </span>
                 )}
               </div>
             </div>

@@ -9,6 +9,8 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import { apiPost } from "../../lib/api";
+import { useAuth } from "../../auth/useAuth";
 import SidePanel from "../../components/SidePanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 import FilterButton from "../../components/FilterButton";
@@ -443,6 +445,10 @@ export default function Companies() {
   const [editing, setEditing] = useState(() => (location.state?.openCreate
     ? { name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" }
     : null));
+  // If we were sent here from another form to create a company, remember where to
+  // return so we can hand the new company back. Captured once before the
+  // openCreate effect clears location.state.
+  const returnToRef = useRef(location.state?.returnTo || null);
   const [actionsOpen, setActionsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [industryFilter, setIndustryFilter] = useState("All");
@@ -462,6 +468,8 @@ export default function Companies() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
+  const { save: saveContact } = useCrmRecords("contacts");
+  const { token } = useAuth();
   const { showToast } = useToast();
   const actionsRef = useRef(null);
   const sortRef = useRef(null);
@@ -577,9 +585,44 @@ export default function Companies() {
   async function saveCompany(company) {
     try {
       const isNew = !company._id;
-      await save({ ...company, id: company.id || `company-${Date.now()}`, projects: Number(company.projects) || 0 });
+      // A primary contact captured in the form is created separately, under the
+      // saved company — strip it from the company payload first.
+      const { __primaryContact, ...companyFields } = company;
+      const saved = await save({ ...companyFields, id: companyFields.id || `company-${Date.now()}`, projects: Number(companyFields.projects) || 0 });
+      const savedCompanyId = saved?._id || saved?.id;
+      if (__primaryContact && savedCompanyId) {
+        // The portal-invite intent rides along but is NOT a stored contact field —
+        // strip it, save the real contact, then send the invite only now that the
+        // company + contact actually exist (prevents orphan portal accounts).
+        const { sendPortalInvite, ...contactFields } = __primaryContact;
+        await saveContact({
+          ...contactFields,
+          companyId: savedCompanyId,
+          company: companyFields.name,
+          companyName: companyFields.name,
+        });
+        if (sendPortalInvite && contactFields.email) {
+          try {
+            await apiPost("/api/admin/clients/invite", {
+              email: contactFields.email,
+              name: contactFields.name,
+              phone: contactFields.phone,
+              company: companyFields.name,
+            }, token);
+            showToast({ title: "Portal invite sent", message: `${contactFields.email} will get a secure set-password link.` });
+          } catch (inviteErr) {
+            showToast({ type: "error", title: "Invite not sent", message: inviteErr.message || "Company saved, but the portal invite failed." });
+          }
+        }
+      }
       setEditing(null);
-      showToast({ title: isNew ? "Company created" : "Company updated", message: `${company.name || "Company"} saved.` });
+      showToast({ title: isNew ? "Company created" : "Company updated", message: `${companyFields.name || "Company"} saved.` });
+      // Came from another form (e.g. New Project) → return there with the new company.
+      if (isNew && returnToRef.current) {
+        const dest = returnToRef.current;
+        returnToRef.current = null;
+        navigate(dest, { state: { openCreate: true, newCompanyId: savedCompanyId } });
+      }
     } catch (err) {
       showToast({ type: "error", title: "Could not save company", message: err.message });
     }

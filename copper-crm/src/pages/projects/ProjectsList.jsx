@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
+import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
@@ -62,6 +63,8 @@ export default function ProjectsList() {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
+  // When returning from "New company", reopen the form with that company preselected.
+  const [preselectCompanyId] = useState(() => location.state?.newCompanyId || "");
   const { records: projects, loading, save, update, remove } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
@@ -133,8 +136,21 @@ export default function ProjectsList() {
     const created = await save(payload);
     const realProjectId = created._id || created.id;
     await Promise.all(starterTasks.map((task) => saveTask({ ...task, projectId: realProjectId })));
+    // A project linked to a company with a value is a "standalone" project: the
+    // backend mints an invoice for it on the next invoices fetch
+    // (syncStandaloneProjectInvoices). Fetching here generates it immediately so
+    // the invoice exists by the time the admin lands on the project.
+    let invoiced = false;
+    if (company && Number(form.finalAmount || form.budget) > 0) {
+      invoiced = await apiGet("/api/crm/invoices").then(() => true).catch(() => false);
+    }
     setCreating(false);
-    showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
+    showToast({
+      title: "Project workspace created",
+      message: invoiced
+        ? `${created.name} is linked to ${company.name} and an invoice has been generated.`
+        : `${created.name} now has timeline, tasks, documents, and activity.`,
+    });
     navigate(`/admin/companies/${company.id || company._id}/projects/${created.id || created._id}`);
   }
 
@@ -314,6 +330,9 @@ export default function ProjectsList() {
           companies={companies}
           contacts={contacts}
           invoices={invoices}
+          projects={projects}
+          preselectCompanyId={preselectCompanyId}
+          onCreateCompany={() => navigate("/admin/companies", { state: { openCreate: true, returnTo: "/admin/projects" } })}
           onClose={() => setCreating(false)}
           onSave={handleCreate}
         />

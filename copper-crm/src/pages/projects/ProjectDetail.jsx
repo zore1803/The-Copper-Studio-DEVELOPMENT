@@ -99,34 +99,6 @@ function KpiChip({ label, value, icon: Icon }) {
   );
 }
 
-function Section({ title, action, flush = false, children }) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
-        <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
-        {action}
-      </div>
-      <div className={flush ? "bg-white" : "bg-white p-5"}>{children}</div>
-    </section>
-  );
-}
-
-function MetaRow({ icon: Icon, label, value }) {
-  return (
-    <div className="flex items-center gap-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
-        <Icon size={17} />
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-        <p className="text-sm font-bold text-[#111827]">{value || "—"}</p>
-      </div>
-    </div>
-  );
-}
-
-
-
 function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete }) {
   const { showToast } = useToast();
 
@@ -232,6 +204,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
     <SidePanel
       title="Manage Project"
       subtitle="Updates are immediately visible to the client in their portal."
+      width="max-w-none md:w-1/2"
       onClose={onClose}
       footer={
         <div className="flex items-center justify-between gap-2">
@@ -271,7 +244,6 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
         <PanelSection title="Commercials">
           <PanelField type="number" label="Package value / price" value={form.budget} onChange={set("budget")} />
           <PanelField type="number" label="Discount applied" value={form.discount} onChange={set("discount")} />
-          <PanelField type="number" label="Budget used" value={form.budgetUsed} onChange={set("budgetUsed")} />
           <PanelField label="Final amount" value={formatINR(finalAmount)} disabled />
           <SearchableSelectField label="Linked invoice" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
             options={invoices.map((invoice) => ({ value: String(invoice.id || invoice._id), label: invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id }))} placeholder="Search invoices…" />
@@ -483,7 +455,6 @@ export default function ProjectDetail() {
     if (phaseIndex === -1) phaseIndex = project.progress >= 100 ? displayPhases.length - 1 : 0;
   }
 
-  const budgetPct = Math.min(100, Math.round(((project.budgetUsed || 0) / Math.max(project.budget || 1, 1)) * 100));
   const currentCompany = company || { id: companyId, name: project.client || project.company || project.companyName || "Company" };
 
 
@@ -548,8 +519,8 @@ export default function ProjectDetail() {
           <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
         </div>
 
-        <section className="grid grid-cols-12 gap-5">
-        <div className="col-span-12 space-y-5 lg:col-span-7 xl:col-span-8">
+        <section className="space-y-5">
+        <div className="space-y-5">
           <div className="rounded-xl border border-[#e5e7eb] bg-white p-6 lg:p-8">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
@@ -644,27 +615,6 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-        </div>
-
-        <div className="col-span-12 space-y-5 lg:col-span-5 xl:col-span-4">
-          <Section
-            title="Project Metadata"
-          >
-            <div className="space-y-5">
-              <MetaRow icon={Calendar} label="Start Date" value={project.startDate ? new Date(project.startDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : "—"} />
-              <MetaRow icon={Calendar} label="Expected Completion" value={(project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate) ? new Date(project.dueDate || project.expectedEndDate || project.expectedCompletion || project.expectedCompletionDate).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" }) : new Date(new Date(project.startDate || Date.now()).getTime() + 45 * 24 * 60 * 60 * 1000).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })} />
-              <MetaRow icon={ListChecks} label="Package Purchased" value={project.packagePurchased || project.packageName} />
-              <div className="border-t border-[#e5e7eb] pt-5">
-                <div className="mb-2 flex items-center justify-between text-xs font-bold text-[#525866]">
-                  <span>Budget Usage</span>
-                  <span className="text-[#111827]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#f3f4f6]">
-                  <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${budgetPct}%` }} />
-                </div>
-              </div>
-            </div>
-          </Section>
         </div>
         </section>
       </div>

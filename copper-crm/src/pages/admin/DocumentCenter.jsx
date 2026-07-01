@@ -21,6 +21,32 @@ function readFileAsDataUrl(file, onProgress) {
   });
 }
 
+// Open a stored file in a new tab. Browsers block top-level navigation to big
+// base64 data: URLs, so convert those to a Blob object URL first (that's why
+// clicking "View" on an uploaded file did nothing). API endpoints and http(s)
+// URLs open directly.
+function openStoredFile(fileUrl) {
+  if (!fileUrl) return;
+  try {
+    if (fileUrl.startsWith("data:")) {
+      const [meta, base64] = fileUrl.split(",");
+      const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      const blobUrl = URL.createObjectURL(new Blob([bytes], { type: mime }));
+      window.open(blobUrl, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } else {
+      const base = import.meta.env.VITE_API_BASE_URL || "";
+      const url = fileUrl.startsWith("/api/") ? `${base}${fileUrl}` : fileUrl;
+      window.open(url, "_blank", "noopener");
+    }
+  } catch {
+    window.open(fileUrl, "_blank", "noopener");
+  }
+}
+
 const VISIBILITY = {
   private: { label: "Private", icon: Lock, className: "bg-gray-100 text-gray-600" },
   internal: { label: "Internal Team", icon: Users, className: "bg-blue-50 text-blue-700" },
@@ -137,7 +163,13 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
       <span className="text-[#6b7280]">{formattedDate}</span>
       <span onClick={(e) => e.stopPropagation()}>
         {doc.fileUrl ? (
-          <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#884c2d] hover:underline">View</a>
+          <button
+            type="button"
+            onClick={() => openStoredFile(doc.fileUrl)}
+            className="text-xs font-bold text-[#884c2d] hover:underline"
+          >
+            View
+          </button>
         ) : (
           <span className="text-xs text-[#9ca3af]">No file</span>
         )}

@@ -178,7 +178,7 @@ function RoleDropdown({ form, setRole }) {
  *                                 reassigned to another company.
  * @param {Array}       companies Options for the company picker.
  */
-export default function ContactFormPanel({ contact, company = null, companies = [], onClose, onSave }) {
+export default function ContactFormPanel({ contact, company = null, companies = [], hideCompany = false, deferInvite = false, onClose, onSave }) {
   const defaultCompanyId = company ? String(company.id || company._id) : "";
   const [form, setForm] = useState(() => ({
     ...BLANK_CONTACT,
@@ -244,11 +244,16 @@ export default function ContactFormPanel({ contact, company = null, companies = 
       phone: form.phone || form.whatsapp || form.alternatePhone || "",
       company: companyName,
       companyName,
+      // In deferred mode (launched from company creation) the contact isn't
+      // saved here — so we must NOT send the invite yet, or we'd create a portal
+      // account with no CRM record behind it if the company is never saved.
+      // Carry the intent up so the parent sends it after everything is saved.
+      ...(deferInvite ? { sendPortalInvite } : {}),
     };
     setSaving(true);
     try {
       await onSave(payload);
-      if (sendPortalInvite && payload.email) await invitePortalAccess(payload);
+      if (!deferInvite && sendPortalInvite && payload.email) await invitePortalAccess(payload);
     } catch (err) {
       showToast({ type: "error", title: "Contact not saved", message: err.message || "Could not save the contact." });
     } finally {
@@ -292,8 +297,17 @@ export default function ContactFormPanel({ contact, company = null, companies = 
           <PhoneInput label="Alternative number" value={form.alternatePhone} onChange={set("alternatePhone")} error={errors.alternatePhone} />
         </FormSection>
 
-        <FormSection title="Company Mapping">
-          {companies.length === 0 ? (
+        <FormSection title={hideCompany ? "Contact Roles" : "Company Mapping"}>
+          {hideCompany ? (
+            // Launched from the company-creation form: the company isn't saved
+            // yet, so there's nothing to pick — this contact is linked to the
+            // company being created once it's saved.
+            company?.name ? (
+              <p className="sm:col-span-3 -mt-1 text-[11px] text-[#9ca3af]">
+                This contact will be added under <span className="font-semibold text-[#6b7280]">{company.name}</span>.
+              </p>
+            ) : null
+          ) : companies.length === 0 ? (
             <label className="block sm:col-span-3">
               <span className="text-xs font-semibold text-[#374151]">Associated company</span>
               <div className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 py-2 text-sm text-[#9ca3af]">

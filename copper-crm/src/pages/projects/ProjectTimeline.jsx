@@ -520,9 +520,9 @@ export default function ProjectTimeline() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { records: companies } = useCrmRecords("companies");
-  const { records: projects, save: saveProject } = useCrmRecords("projects");
-  const [view, setView] = useState("kanban");
+  const { records: companies, loading: companiesLoading } = useCrmRecords("companies");
+  const { records: projects, save: saveProject, loading: projectsLoading } = useCrmRecords("projects");
+  const [view, setView] = useState("gantt");
   const [stageEditor, setStageEditor] = useState(null);
 
   const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
@@ -549,6 +549,18 @@ export default function ProjectTimeline() {
       description: stage.notes || "",
     }));
   }, [project]);
+
+  // While the records are still loading on first mount, show a spinner instead of
+  // the "not found" message — otherwise it flashes for a moment before the data
+  // arrives (e.g. when navigating in from the Overview tab).
+  if ((!company || !project) && (companiesLoading || projectsLoading)) {
+    return (
+      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#884c2d]" />
+        <p className="mt-4 text-sm font-semibold text-[#6b7280]">Loading timeline…</p>
+      </div>
+    );
+  }
 
   if (!company || !project) {
     return (
@@ -669,16 +681,16 @@ export default function ProjectTimeline() {
         <h3 className="text-base font-semibold text-[#111827]">Project Timeline</h3>
         <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
           <button
-            onClick={() => setView("kanban")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
-          >
-            <Columns3 size={13} /> Kanban
-          </button>
-          <button
             onClick={() => setView("gantt")}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
           >
             <CalendarRange size={13} /> Gantt
+          </button>
+          <button
+            onClick={() => setView("kanban")}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+          >
+            <Columns3 size={13} /> Kanban
           </button>
         </div>
       </div>
