@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
-import { useToast } from "../../components/useToast";
 import DocumentUploadPanel from "../../components/DocumentUploadPanel";
 import customFolderSvg from "../../assets/Folder.svg";
 // Open a stored file in a new tab. Browsers block top-level navigation to big

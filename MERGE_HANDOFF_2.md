@@ -4,10 +4,16 @@ This is the **second** handoff. The first one (`MERGE_HANDOFF.md`) is already me
 on your side. This file covers **only what changed after that** — do **not** redo
 the first handoff's work.
 
-- **11 files changed, no new files, no new npm packages.** Everything uses libraries
-  the project already has (`lucide-react`, existing hooks/components).
-- Read **"How to merge"** first — a git 3-way merge is far safer than hand-copying,
-  because a few files (especially `ProjectFiles.jsx`) changed a lot.
+- **No new npm packages.** One new file (`components/DocumentUploadPanel.jsx`);
+  everything else is modifications using libraries the project already has.
+- **Simplest merge: merge the whole `Abhishek` branch** (`git fetch origin` then
+  `git merge origin/Abhishek`). All the work below is already committed there.
+- This handoff has **two parts**:
+  - **Part 1 (sections A–G)** — the first batch (project form, files module, timeline,
+    client-linking, project-detail layout).
+  - **Part 2 (sections H–K)** — later work: invoice viewing reliability, invoices in
+    the client's billing, the Projects-vs-Companies section navigation, and the
+    unified document-upload form with custom categories.
 
 > 🗄️ **Data note (not code):** the dev database was wiped again (kept only the admin)
 > and one orphan client login was deleted. That's data, not code — nothing to merge,
@@ -208,6 +214,84 @@ change in this file.
 - Internal cleanup: the now-unused `Section`, `MetaRow`, and `budgetPct` helpers were
   removed from `ProjectDetail.jsx`. If you kept using any of them elsewhere, re-add as
   needed (they weren't referenced anywhere else here).
+
+---
+
+# Part 2 — later changes (sections H–K)
+
+Additional files touched in this part:
+
+| File | Area | What changed |
+|------|------|--------------|
+| `server/routes/client.js` | Backend | Client billing now also lists standalone invoices (manual projects with no order) |
+| `server/server.js` | Backend | Warms up the headless browser at startup so the first invoice-PDF isn't a cold-start failure |
+| `copper-crm/src/App.jsx` | Routing | New `/admin/projects/:projectId(/tasks|/files)` routes |
+| `copper-crm/src/layouts/AdminLayout.jsx` | Routing | Breadcrumb labels for project sub-pages (tasks → "Timeline") |
+| `copper-crm/src/pages/projects/ProjectHeader.jsx` | Routing | Header tabs are route-aware (Projects vs Companies section) |
+| `copper-crm/src/pages/projects/ProjectsList.jsx` | Routing | Opens projects under `/admin/projects/:id` |
+| `copper-crm/src/pages/projects/ProjectDetail.jsx` `ProjectFiles.jsx` `ProjectTimeline.jsx` | Routing | Derive the company from the project when there's no companyId in the URL |
+| `copper-crm/src/components/DocumentUploadPanel.jsx` | **NEW FILE** | The single shared upload form |
+| `copper-crm/src/pages/admin/DocumentCenter.jsx` | Documents | Uses the shared upload form; invoice "View" opens HTML (reliable); dynamic category filter |
+| `copper-crm/src/pages/crm/CompanyDetail.jsx` | Documents | Uses the shared upload form; folder grid reads live categories |
+
+## H — Invoice viewing reliability (PDF cold-start fix)
+
+The invoice PDF is rendered by headless Chromium (Puppeteer). On a **cold start**,
+launching Chromium takes 25–30s and **times out the browser tab** — that was the
+"localhost can't currently handle this request" when opening an invoice. Uploaded
+documents never hit this (they're blob URLs), which is why only invoices failed.
+
+- **Viewing an invoice now opens the HTML version** (`/api/invoices/{id}/html`) —
+  instant, no Chromium — in `ProjectFiles.jsx` and `DocumentCenter.jsx`. The HTML
+  invoice is identical and prints to PDF from the browser.
+- **`server/server.js` warms the browser at startup** (renders a tiny throwaway PDF)
+  so the billing page's actual PDF **download** is ready (~2s) instead of a cold fail.
+- Also (from Part 1/E) files open via a **Blob object URL** — browsers block
+  top-level navigation to big base64 `data:` URLs, which is why "View" did nothing.
+
+## I — Invoices show in the client's billing (`server/routes/client.js`)
+
+The client billing/dashboard counted **orders**, but a manual/admin-created project
+produces an **Invoice with no Order**, so billing showed 0. The client `GET /orders`
+route now **also returns the client's standalone invoices** as order-shaped entries
+(linked by `clientId`/email), while **excluding** invoices whose project already has
+an order (so online purchases aren't double-counted). Project name is set so the
+client project switcher still filters them.
+
+## J — Projects vs Companies section navigation
+
+Opening a project always used a URL under `/admin/companies/...`, so the sidebar
+jumped to **Companies** even when you opened the project from the **Projects** list.
+
+- **New routes** `/admin/projects/:projectId` (+ `/tasks`, `/files`) render the same
+  project pages, so opening from the Projects list keeps you in the **Projects**
+  section; opening from a company keeps you in **Companies**. The sidebar highlights
+  by URL prefix (already), so it now stays correct in both flows.
+- `ProjectsList` links to `/admin/projects/:id`; the company flow is unchanged.
+- `ProjectHeader` builds its tabs relative to the current section.
+- `ProjectDetail` / `ProjectFiles` / `ProjectTimeline` **derive the company from the
+  project** when there's no companyId in the URL. **Important:** the match is against
+  both the company's local `id` and its Mongo `_id` (a project's `companyId` is the
+  `_id`, while `c.id` is the local id) — matching only one of them was a real bug.
+- Breadcrumb shows "Timeline" for the `tasks` sub-page.
+
+## K — Unified document-upload form + custom categories
+
+- **`components/DocumentUploadPanel.jsx` (NEW)** — one shared "Upload Document" form
+  used everywhere. When a fixed `company` is passed it **locks/pre-fills** the
+  destination; otherwise it shows the company + project-folder pickers. It has the
+  file-with-% reader, name, category, file type, "paste a URL", and notes.
+- **`DocumentCenter.jsx` and `CompanyDetail.jsx`** dropped their own local upload
+  forms and now render this shared component (their old copies + helper functions
+  were removed). So the upload experience is identical across modules.
+- **Custom categories:** the Category field accepts a typed custom value (via a
+  `datalist`). If the category isn't one of the defaults, the user **must pick a
+  project folder** — Save is disabled with a warning until they do.
+- **Dynamic categories in the UI:** the company Documents folder grid and the Document
+  Center category filter are built from the **actual** categories present on the
+  documents, so a new custom category automatically appears as a folder / filter
+  option. The Document Center's category filter is context-aware (company-wide vs
+  the open project) and resets when you switch company/project.
 
 ---
 
