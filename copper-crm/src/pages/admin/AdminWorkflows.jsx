@@ -5,7 +5,7 @@ import {
   LayoutGrid, List, LockKeyhole, Mail, MessageCircle,
   Plus, Save, Search,
   Settings as SettingsIcon, ShieldCheck, SlidersHorizontal, Tag,
-  Trash2, UploadCloud, UserPlus
+  Trash2, UploadCloud, UserPlus, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -681,50 +681,53 @@ function DataFieldList({ label, hint, values, onChange }) {
   function addValue() {
     const trimmed = draft.trim();
     if (!trimmed) return;
-    if (values.some((v) => v.toLowerCase() === trimmed.toLowerCase())) {
-      setDraft("");
-      return;
-    }
+    if (values.some((v) => v.toLowerCase() === trimmed.toLowerCase())) { setDraft(""); return; }
     onChange([...values, trimmed]);
     setDraft("");
   }
 
   return (
-    <div className="rounded-2xl border border-[#ead8d1] bg-[#fffdfc] p-4">
-      <p className="text-sm font-bold text-[#211a17]">{label}</p>
-      {hint && <p className="mt-0.5 text-xs text-[#6c6355]">{hint}</p>}
-      <div className="mt-3 flex flex-wrap gap-2">
+    <div className="py-4 first:pt-0">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <p className="text-sm font-semibold text-[#111827]">{label}</p>
+          {hint && <p className="text-xs text-[#6b7280] mt-0.5">{hint}</p>}
+        </div>
+        <span className="shrink-0 rounded-full bg-[#f3f4f6] px-2 py-0.5 text-[11px] font-bold text-[#6b7280]">{values.length}</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5 min-h-[28px]">
         {values.length ? values.map((value) => (
-          <span key={value} className="flex items-center gap-1.5 rounded-full border border-[#ead8d1] bg-white px-3 py-1 text-xs font-semibold text-[#211a17]">
+          <span key={value} className="flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white px-2.5 py-0.5 text-xs font-medium text-[#374151]">
             {value}
-            <button type="button" onClick={() => onChange(values.filter((v) => v !== value))} className="text-[#9c8c80] hover:text-red-500">
-              <Trash2 size={12} />
+            <button type="button" onClick={() => onChange(values.filter((v) => v !== value))} className="ml-0.5 text-[#d1d5db] hover:text-red-400 transition-colors">
+              <X size={11} />
             </button>
           </span>
         )) : (
-          <span className="text-xs text-[#9c8c80]">No options yet.</span>
+          <span className="text-xs text-[#d1d5db] italic">No options yet</span>
         )}
       </div>
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2.5 flex items-center gap-1.5">
         <input
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addValue(); } }}
-          placeholder="Add an option…"
-          className="flex-1 rounded-xl border border-[#d8c2b9] bg-white px-3 py-2 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addValue(); } }}
+          placeholder="Add option…"
+          className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 text-xs text-[#111827] outline-none transition-all focus:border-[#884c2d] focus:bg-white focus:ring-2 focus:ring-[#884c2d]/20"
         />
-        <Button variant="secondary" onClick={addValue}><Plus size={14} /> Add</Button>
+        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#374151] hover:border-[#884c2d] hover:text-[#884c2d] transition-colors">
+          <Plus size={12} /> Add
+        </button>
       </div>
     </div>
   );
 }
 
-function DataFieldsSection() {
-  const { showToast } = useToast();
+function DataFieldsSection({ onSave, saving }) {
   const { token } = useAuth();
   const [values, setValues] = useState(() => getDataFields());
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [activeGroup, setActiveGroup] = useState(DATA_FIELD_GROUPS[0]?.label);
 
   useEffect(() => {
     let alive = true;
@@ -738,45 +741,49 @@ function DataFieldsSection() {
     setValues((prev) => ({ ...prev, [key]: next }));
   }
 
-  async function handleSave() {
-    setSaving(true);
-    try {
-      await saveDataFields(values, token);
-      showToast({ title: "Data fields updated", message: "Your dropdown options have been saved." });
-    } catch (err) {
-      showToast({ type: "error", title: "Couldn't save", message: err.message || "Something went wrong." });
-    } finally {
-      setSaving(false);
-    }
+  if (loading) {
+    return <div className="py-16 text-center text-sm text-[#9ca3af]">Loading…</div>;
   }
 
-  if (loading) {
-    return <div className="py-16 text-center text-sm text-[#6c6355]">Loading data fields…</div>;
-  }
+  const currentGroup = DATA_FIELD_GROUPS.find((g) => g.label === activeGroup) || DATA_FIELD_GROUPS[0];
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <p className="text-sm text-[#6c6355]">Manage the dropdown options used across the CRM. Changes apply everywhere the field is used.</p>
-        <Button disabled={saving} onClick={handleSave}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
-      </div>
-      <div className="space-y-8">
-        {DATA_FIELD_GROUPS.map((group) => (
-          <div key={group.label}>
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#7b6f63]">{group.label}</p>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {group.fields.map((field) => (
-                <DataFieldList
-                  key={field.key}
-                  label={field.label}
-                  hint={field.hint}
-                  values={values[field.key] || []}
-                  onChange={(next) => setList(field.key, next)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+    <div className="flex gap-0 divide-x divide-[#f3f4f6]">
+      {/* Left nav — group tabs */}
+      <nav className="w-44 shrink-0 py-1 pr-4">
+        {DATA_FIELD_GROUPS.map((group) => {
+          const totalOptions = group.fields.reduce((sum, f) => sum + (values[f.key]?.length || 0), 0);
+          const isActive = activeGroup === group.label;
+          return (
+            <button
+              key={group.label}
+              onClick={() => setActiveGroup(group.label)}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#884c2d]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+            >
+              <span>{group.label}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#884c2d]/10 text-[#884c2d]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{totalOptions}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Right — fields for active group */}
+      <div className="flex-1 pl-6">
+        <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">{currentGroup.label}</p>
+        <div className="divide-y divide-[#f3f4f6]">
+          {currentGroup.fields.map((field) => (
+            <DataFieldList
+              key={field.key}
+              label={field.label}
+              hint={field.hint}
+              values={values[field.key] || []}
+              onChange={(next) => setList(field.key, next)}
+            />
+          ))}
+        </div>
+        <div className="mt-5 flex justify-end border-t border-[#f3f4f6] pt-4">
+          <Button disabled={saving} onClick={() => onSave(values)}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
+        </div>
       </div>
     </div>
   );
@@ -1105,9 +1112,25 @@ export function SettingsTriggerTemplatePage() {
 
 // Settings > Data Fields — configurable dropdown option lists.
 export function SettingsDataFieldsPage() {
+  const { showToast } = useToast();
+  const { token } = useAuth();
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(values) {
+    setSaving(true);
+    try {
+      await saveDataFields(values, token);
+      showToast({ title: "Data fields updated", message: "Dropdown options have been saved." });
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't save", message: err.message || "Something went wrong." });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <SettingsSubPage title="Data Fields" description="Configurable dropdown options across the CRM." icon={SlidersHorizontal}>
-      <DataFieldsSection />
+      <DataFieldsSection onSave={handleSave} saving={saving} />
     </SettingsSubPage>
   );
 }
