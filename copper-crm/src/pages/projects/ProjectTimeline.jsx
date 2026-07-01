@@ -525,11 +525,17 @@ export default function ProjectTimeline() {
   const [view, setView] = useState("gantt");
   const [stageEditor, setStageEditor] = useState(null);
 
-  const company = useMemo(() => companies.find((c) => String(c.id || c._id) === companyId), [companies, companyId]);
   const project = useMemo(
-    () => projects.find((p) => String(p.id || p._id) === projectId && (String(p.companyId) === companyId || true)),
-    [projects, companyId, projectId]
+    () => projects.find((p) => String(p.id || p._id) === projectId),
+    [projects, projectId]
   );
+  // companyId is absent under /admin/projects/:id — derive the company from the
+  // project. Match against BOTH the company's local id and Mongo _id, since
+  // project.companyId is the _id while c.id is the local id.
+  const company = useMemo(() => {
+    const wanted = [companyId, project?.companyId].filter(Boolean).map(String);
+    return companies.find((c) => [c.id, c._id].filter(Boolean).map(String).some((cid) => wanted.includes(cid)));
+  }, [companies, companyId, project]);
 
   // The board is driven entirely by the project's stages — each stage renders as one
   // card on the Kanban / Gantt. There is no separate "task" concept here, so anything

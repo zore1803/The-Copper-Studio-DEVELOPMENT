@@ -398,17 +398,17 @@ export default function ProjectDetail() {
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
     [allProjects, projectId]
   );
-  const company = useMemo(
-    () => companies.find((c) =>
-      String(c.id) === companyId ||
-      String(c._id) === companyId ||
-      String(c.id || c._id) === String(project?.companyId) ||
+  const company = useMemo(() => {
+    // Match against BOTH the company's local id and Mongo _id — project.companyId
+    // is the _id while c.id is the local id — plus a name fallback for legacy rows.
+    const wanted = [companyId, project?.companyId].filter(Boolean).map(String);
+    return companies.find((c) =>
+      [c.id, c._id].filter(Boolean).map(String).some((cid) => wanted.includes(cid)) ||
       c.name === project?.client ||
       c.name === project?.company ||
       c.name === project?.companyName
-    ),
-    [companies, companyId, project]
-  );
+    );
+  }, [companies, companyId, project]);
 
   if (!project && projectsLoading) {
     return (

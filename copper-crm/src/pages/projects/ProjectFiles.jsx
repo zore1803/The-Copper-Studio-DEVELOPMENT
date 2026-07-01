@@ -121,14 +121,17 @@ export default function ProjectFiles() {
   const { records: allDocuments } = useCrmRecords("documents");
   const { records: allInvoices } = useCrmRecords("invoices");
 
-  const company = useMemo(
-    () => companies.find((c) => String(c.id) === companyId || String(c._id) === companyId),
-    [companies, companyId]
-  );
   const project = useMemo(
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
     [allProjects, projectId]
   );
+  // companyId is absent when opened under /admin/projects/:id — derive the company
+  // from the project. Match against BOTH the company's local id and Mongo _id,
+  // since project.companyId is the _id while c.id is the local id.
+  const company = useMemo(() => {
+    const wanted = [companyId, project?.companyId].filter(Boolean).map(String);
+    return companies.find((c) => [c.id, c._id].filter(Boolean).map(String).some((cid) => wanted.includes(cid)));
+  }, [companies, companyId, project]);
 
   // The Files view shows EVERYTHING that belongs to this project, from all three
   // stores — the same sources the Document Center aggregates — so an invoice or a
@@ -175,13 +178,16 @@ export default function ProjectFiles() {
         return {
           _source: "invoice",
           _id: inv._id || inv.id,
-          name: `Tax Invoice - ${String(num).replace(/\//g, "-")}.pdf`,
+          name: `Tax Invoice - ${String(num).replace(/\//g, "-")}`,
           category: "Invoices",
           type: "pdf",
           sizeMB: null,
           date: inv.issueDate || inv.date || inv.createdAt,
           uploadedBy: "System",
-          fileUrl: `${apiBase}/api/invoices/${inv._id || inv.id || num}/pdf`,
+          // Open the HTML invoice (instant, always works) rather than the PDF
+          // endpoint, which uses Chromium and fails on cold starts. The invoice
+          // page is fully printable to PDF from the browser if needed.
+          fileUrl: `${apiBase}/api/invoices/${inv._id || inv.id || num}/html`,
         };
       });
 

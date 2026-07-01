@@ -93,6 +93,10 @@ const searchablePages = [
   { label: "Settings", to: "/admin/settings", keywords: "profile password admin settings" },
 ];
 
+// Friendly labels for project sub-page segments (the route says "tasks" but the
+// tab/label is "Timeline").
+const SUBPAGE_LABELS = { tasks: "Timeline", files: "Files" };
+
 function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) {
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = [{ label: "Analytics", to: "/admin" }];
@@ -104,7 +108,7 @@ function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) 
     const fullPath = "/admin" + path;
     // ".../projects/:id" routes require the id — the bare ".../projects" segment isn't navigable on its own, so skip its link.
     if (seg === "projects" && rest[i + 1] && !pageNames[fullPath]) continue;
-    let name = pageNames[fullPath];
+    let name = pageNames[fullPath] || SUBPAGE_LABELS[seg];
     if (!name) {
       const company = companies.find((c) => String(c.id) === seg || String(c._id) === seg);
       const project = projects.find((p) => String(p.id) === seg || String(p._id) === seg);

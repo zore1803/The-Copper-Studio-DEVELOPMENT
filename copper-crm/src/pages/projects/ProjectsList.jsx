@@ -151,7 +151,7 @@ export default function ProjectsList() {
         ? `${created.name} is linked to ${company.name} and an invoice has been generated.`
         : `${created.name} now has timeline, tasks, documents, and activity.`,
     });
-    navigate(`/admin/companies/${company.id || company._id}/projects/${created.id || created._id}`);
+    navigate(`/admin/projects/${created.id || created._id}`);
   }
 
   async function updateProjectStatus(project, newStatus) {
@@ -255,7 +255,7 @@ export default function ProjectsList() {
                 <tr key={project.id || project._id} className="hover:bg-[#fff1ec] transition-colors">
                   <td className="px-5 py-4">
                     <Link
-                      to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
+                      to={`/admin/projects/${project.id || project._id}`}
                       className="font-bold text-[#884c2d] hover:underline"
                     >
                       {project.name}

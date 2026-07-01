@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FolderKanban, Calendar, Clock3, AlertCircle, CalendarCheck, Package } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
 import { isRoadmapComplete } from "../../lib/stageProgress";
@@ -26,8 +26,7 @@ const priorityPill = {
   "on-track": { label: "On Time", color: "teal", icon: Calendar },
 };
 
-function tabsFor(company, project) {
-  const base = `/admin/companies/${company.id || company._id}/projects/${project.id || project._id}`;
+function tabsFor(base) {
   return [
     { label: "Overview", to: base },
     { label: "Timeline", to: `${base}/tasks` },
@@ -37,7 +36,15 @@ function tabsFor(company, project) {
 
 export default function ProjectHeader({ company, project, activeTab, actionLabel, actionIcon: ActionIcon, onAction }) {
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
-  const tabs = tabsFor(company, project);
+  const location = useLocation();
+  // Keep the tabs (and thus the active sidebar section) in whichever section the
+  // project was opened from: the Projects list uses /admin/projects/:id, a company
+  // uses /admin/companies/:cid/projects/:id.
+  const inProjectsSection = location.pathname.startsWith("/admin/projects/");
+  const base = inProjectsSection
+    ? `/admin/projects/${project.id || project._id}`
+    : `/admin/companies/${company.id || company._id}/projects/${project.id || project._id}`;
+  const tabs = tabsFor(base);
   const team = project.team || project.assignedTeam || [];
   const liveStatus = liveProjectStatus(project);
 
