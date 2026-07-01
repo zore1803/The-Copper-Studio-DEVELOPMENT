@@ -2,7 +2,7 @@
 // fetched (Suspense fallback) and as a generic "page is working" indicator.
 export default function LoadingScreen({ label = "Loading…" }) {
   return (
-    <div className="flex h-full min-h-[60vh] w-full flex-col items-center justify-center gap-5 bg-[#F0EDE4]">
+    <div className="flex h-full min-h-[60vh] w-full flex-col items-center justify-center gap-5 bg-[#F1F1F5]">
       <div className="relative grid h-16 w-16 place-items-center">
         <span className="absolute inset-0 animate-ping rounded-2xl bg-[#8D3118]/20" />
         <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#1A1A1A] text-lg font-bold tracking-tight text-white shadow-[0_10px_30px_rgba(79,39,16,0.25)]">

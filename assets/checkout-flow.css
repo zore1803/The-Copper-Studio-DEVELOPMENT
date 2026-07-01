@@ -6,7 +6,7 @@
 body[data-page="checkout"],
 body[data-page="payment"],
 body[data-page="success"] {
-  background: #F0EDE4;
+  background: #F1F1F5;
   color: #1A1A1A;
 }
 
@@ -1188,7 +1188,7 @@ body[data-page="checkout"] select:disabled {
    PACKAGES (landing) PAGE — same design language as checkout
    ============================================================ */
 body[data-page="packages"] {
-  background: #F0EDE4;
+  background: #F1F1F5;
   color: #1A1A1A;
 }
 

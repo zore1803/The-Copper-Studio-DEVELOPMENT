@@ -13,7 +13,7 @@
 body {
   margin: 0;
   font-family: "DM Sans", system-ui, sans-serif;
-  background: #F0EDE4;
+  background: #F1F1F5;
   color: #1A1A1A;
   -webkit-font-smoothing: antialiased;
 }
@@ -25,7 +25,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #6B7280; border-radius: 99px; }
 
 :root {
-  --studio-bg: #F0EDE4;
+  --studio-bg: #F1F1F5;
   --studio-surface: #ffffff;
   --studio-card: #E5E7EB;
   --studio-card-soft: #FFFFFF;
@@ -44,7 +44,7 @@ body {
   --cs-on-primary: #ffffff;
   --cs-primary-fixed: #FFFFFF;
   --cs-primary-fixed-dim: #E5E7EB;
-  --cs-background: #F0EDE4;
+  --cs-background: #F1F1F5;
   --cs-surface: #ffffff;
   --cs-surface-container-lowest: #ffffff;
   --cs-surface-container-low: #FFFFFF;

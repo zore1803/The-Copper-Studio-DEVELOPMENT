@@ -81,7 +81,7 @@ export default function PublicPackages() {
     visible[1]?.id;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F0EDE4", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#1A1A1A" }}>
+    <div style={{ minHeight: "100vh", background: "#F1F1F5", fontFamily: "'DM Sans', system-ui, sans-serif", color: "#1A1A1A" }}>
 
       {/* Logo */}
       <div style={{ display: "flex", justifyContent: "center", padding: "32px 0 28px" }}>

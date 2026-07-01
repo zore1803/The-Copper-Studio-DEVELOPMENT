@@ -14,7 +14,7 @@ const roleOptions = [
 
 function AuthShell({ children, title, subtitle }) {
   return (
-    <div className="min-h-screen bg-[#f0ede4] text-[#1A1A1A] grid lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="min-h-screen bg-[#F1F1F5] text-[#1A1A1A] grid lg:grid-cols-[1.05fr_0.95fr]">
       <section className="studio-gradient hidden lg:flex flex-col justify-between border-r border-[#1A1A1A] px-10 py-9 text-white">
         <div>
           <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-24 w-80 rounded-xl object-cover shadow-2xl shadow-black/30" />

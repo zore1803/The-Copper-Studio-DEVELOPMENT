@@ -539,7 +539,7 @@ export default function Contacts() {
             {/* View toggle */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#8D3118]/20" : "bg-[#F0EDE4]"}`}
+              className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#8D3118]/20" : "bg-[#F1F1F5]"}`}
             >
               <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
                 <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1A1A1A]"} />
@@ -556,7 +556,7 @@ export default function Contacts() {
           </div>
         </div>
 
-      <main className="flex-1 overflow-auto bg-[#F0EDE4] p-6">
+      <main className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
         {view === "table" ? (
           <>
             <div className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">

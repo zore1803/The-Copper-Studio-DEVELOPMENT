@@ -20,7 +20,7 @@ function Card({ children, className = "" }) {
 
 function PageShell({ title, subtitle, action, children }) {
   return (
-    <div className="flex flex-col min-h-full bg-[#F0EDE4]">
+    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
           <h1 className="text-base font-medium text-[#1A1A1A]">{title}</h1>
@@ -165,7 +165,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
         <select 
           value={year}
           onChange={(e) => setLocalYear(Number(e.target.value))}
-          className="h-8 rounded-lg border border-[#E5E7EB] bg-[#F0EDE4] px-2 flex items-center text-xs font-bold text-[#6B7280] outline-none cursor-pointer hover:bg-[#E5E7EB]"
+          className="h-8 rounded-lg border border-[#E5E7EB] bg-[#F1F1F5] px-2 flex items-center text-xs font-bold text-[#6B7280] outline-none cursor-pointer hover:bg-[#E5E7EB]"
         >
           {[currentYear - 3, currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
             <option key={y} value={y}>{y}</option>
@@ -277,7 +277,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
                       <p className="text-sm font-bold text-[#1A1A1A]">{safeString(u.name || u.company || "Unknown")}</p>
                       <p className="text-xs text-[#6B7280]">{safeString(u.email)}</p>
                     </div>
-                    <span className="text-[10px] font-bold text-[#6B7280] bg-[#F0EDE4] px-2 py-1 rounded">CLIENT</span>
+                    <span className="text-[10px] font-bold text-[#6B7280] bg-[#F1F1F5] px-2 py-1 rounded">CLIENT</span>
                   </div>
                 </div>
               ))}
@@ -446,7 +446,7 @@ function KpiDrillDownPanel({ kpi, data, onClose }) {
 
   return (
     <SidePanel title={`${kpi} Details`} subtitle="Formula, result, and source records." onClose={onClose}>
-      <div className="min-h-full space-y-4 bg-[#F0EDE4] p-5">
+      <div className="min-h-full space-y-4 bg-[#F1F1F5] p-5">
         <KpiFormula formula={formula} result={result} />
         <div className="space-y-2">{rows}</div>
       </div>
@@ -950,30 +950,30 @@ export function AnalyticsPage() {
         <div className="flex flex-wrap items-center justify-end gap-2">
 
           <div className="flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-[#ffffff] p-1">
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none hover:bg-[#E5E7EB] focus:bg-[#F0EDE4]">
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none hover:bg-[#E5E7EB] focus:bg-[#F1F1F5]">
               {["Monthly", "Bi-Monthly", "Quarterly", "Annually", "Custom Range", "All Time"].map((item) => <option key={item}>{item}</option>)}
             </select>
             
             {filterType !== "All Time" && filterType !== "Custom Range" && (
-              <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F0EDE4]">
+              <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F1F1F5]">
                 {[currentD.getFullYear() - 3, currentD.getFullYear() - 2, currentD.getFullYear() - 1, currentD.getFullYear(), currentD.getFullYear() + 1].map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             )}
 
             {filterType === "Monthly" && (
-              <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F0EDE4]">
+              <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F1F1F5]">
                 {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             )}
 
             {filterType === "Bi-Monthly" && (
-              <select value={filterBiMonth} onChange={(e) => setFilterBiMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F0EDE4]">
+              <select value={filterBiMonth} onChange={(e) => setFilterBiMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F1F1F5]">
                 {["Jan-Feb", "Mar-Apr", "May-Jun", "Jul-Aug", "Sep-Oct", "Nov-Dec"].map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             )}
 
             {filterType === "Quarterly" && (
-              <select value={filterQuarter} onChange={(e) => setFilterQuarter(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F0EDE4]">
+              <select value={filterQuarter} onChange={(e) => setFilterQuarter(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#6B7280] outline-none border-l border-[#E5E7EB] hover:bg-[#E5E7EB] focus:bg-[#F1F1F5]">
                 {["Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"].map((q, i) => <option key={i} value={i}>{q}</option>)}
               </select>
             )}
@@ -1021,7 +1021,7 @@ export function AnalyticsPage() {
                 </div>
                 <div className="flex gap-2">
                   {["All", "Revenue", "Users", "Projects"].map(m => (
-                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#8D3118] text-white' : 'bg-[#F0EDE4] text-[#6B7280] hover:bg-gray-200'}`}>
+                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#8D3118] text-white' : 'bg-[#F1F1F5] text-[#6B7280] hover:bg-gray-200'}`}>
                       {m}
                     </button>
                   ))}
@@ -1099,7 +1099,7 @@ export function AnalyticsPage() {
               </div>
               <div className="grid grid-cols-3 gap-2 px-4 pb-4">
                 {(data.statusData.length ? data.statusData : [{ name: "No data", value: 0, color: "#e5e7eb" }]).map((item) => (
-                  <div key={item.name} className="rounded-xl bg-[#F0EDE4] p-3">
+                  <div key={item.name} className="rounded-xl bg-[#F1F1F5] p-3">
                     <span className="block h-2 w-2 rounded-full" style={{ background: item.color }} />
                     <p className="mt-2 text-[10px] font-bold text-[#1A1A1A]">{item.name}</p>
                     <p className="text-sm font-bold text-[#1A1A1A]">{item.value}<span className="ml-1 text-[11px] font-semibold text-[#6B7280]">({Math.round((item.value / data.statusTotal) * 100)}%)</span></p>
@@ -1137,7 +1137,7 @@ export function AnalyticsPage() {
                   {(data.packageRevenue.length ? data.packageRevenue : [{ name: "No packages yet", revenue: 0, count: 0 }]).map((item) => (
                     <div 
                       key={item.name} 
-                      className={`rounded-xl border bg-[#F0EDE4] p-3 transition-all ${item.count > 0 ? "cursor-pointer hover:border-[#8D3118] hover:shadow-sm" : "border-[#E5E7EB]"}`}
+                      className={`rounded-xl border bg-[#F1F1F5] p-3 transition-all ${item.count > 0 ? "cursor-pointer hover:border-[#8D3118] hover:shadow-sm" : "border-[#E5E7EB]"}`}
                       onClick={() => item.count > 0 && setSelectedPackage(item.name)}
                     >
                       <div className="flex items-center justify-between">
@@ -1223,7 +1223,7 @@ export function AnalyticsPage() {
                 <span className="text-xl leading-none">&times;</span>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-5 bg-[#F0EDE4]/50">
+            <div className="flex-1 overflow-y-auto p-5 bg-[#F1F1F5]/50">
               <div className="space-y-3">
                 {data.packagePurchases
                   .filter((purchase) => purchase.packageName === selectedPackage)
@@ -1282,8 +1282,8 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
       case "Highest": return "bg-orange-100 text-orange-700 border-orange-200";
       case "Medium": return "bg-yellow-100 text-yellow-700 border-yellow-200";
       case "Low": return "bg-green-100 text-green-700 border-green-200";
-      case "Completed": return "bg-[#F0EDE4] text-[#1A1A1A] border-[#E5E7EB]";
-      default: return "bg-[#F0EDE4] text-[#1A1A1A] border-[#E5E7EB]";
+      case "Completed": return "bg-[#F1F1F5] text-[#1A1A1A] border-[#E5E7EB]";
+      default: return "bg-[#F1F1F5] text-[#1A1A1A] border-[#E5E7EB]";
     }
   };
 
@@ -1346,7 +1346,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
                   <p className="text-xs text-[#6B7280] mt-0.5">{String(p.client || p.contactName || '-')}</p>
                 </td>
                 <td className="px-5 py-4">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#F0EDE4] text-[#1A1A1A]">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#F1F1F5] text-[#1A1A1A]">
                     {String(p.package?.name || p.packageName || p.projectType || 'Custom')}
                   </span>
                 </td>
@@ -1433,8 +1433,8 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
     if (s.includes("pending")) return "bg-orange-100 text-orange-700 border-orange-200";
     if (s.includes("overdue") || s.includes("late")) return "bg-red-100 text-red-700 border-red-200";
     if (s.includes("fail") || s.includes("decline")) return "bg-red-50 text-red-900 border-red-200";
-    if (s.includes("refund")) return "bg-[#F0EDE4] text-[#1A1A1A] border-[#E5E7EB]";
-    return "bg-[#F0EDE4] text-[#1A1A1A] border-[#E5E7EB]";
+    if (s.includes("refund")) return "bg-[#F1F1F5] text-[#1A1A1A] border-[#E5E7EB]";
+    return "bg-[#F1F1F5] text-[#1A1A1A] border-[#E5E7EB]";
   };
 
   return (

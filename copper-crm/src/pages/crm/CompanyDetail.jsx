@@ -1049,7 +1049,7 @@ export default function CompanyDetail() {
             </div>
           </div>
 
-          <div className="mt-5 rounded-xl border border-[#F0EDE4] bg-[#FFFFFF]">
+          <div className="mt-5 rounded-xl border border-[#F1F1F5] bg-[#FFFFFF]">
             <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
               <InfoLine label="GSTIN" value={company.gstin} />
               <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
@@ -1067,7 +1067,7 @@ export default function CompanyDetail() {
               </button>
             </div>
             {companyDetailsOpen && (
-              <div className="grid grid-cols-2 gap-4 border-t border-[#F0EDE4] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 border-t border-[#F1F1F5] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-4">
                 {extraCompanyDetails.map(([label, value]) => (
                   <InfoLine key={label} label={label} value={value} />
                 ))}

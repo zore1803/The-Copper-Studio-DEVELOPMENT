@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
 
 :root {
-  --bg: #F0EDE4;
+  --bg: #F1F1F5;
   --surface: #ffffff;
   --surface-soft: #FFFFFF;
   --ink: #1A1A1A;
@@ -473,7 +473,7 @@ select:focus {
 }
 
 .country-picker-trigger:hover {
-  background: #F0EDE4;
+  background: #F1F1F5;
 }
 
 .country-picker-caret {
@@ -527,7 +527,7 @@ select:focus {
 
 .country-picker-option:hover,
 .country-picker-option.is-active {
-  background: #F0EDE4;
+  background: #F1F1F5;
 }
 
 .country-picker-option .country-picker-dial {
@@ -946,7 +946,7 @@ select:focus {
 
 .admin-body {
   overflow: hidden;
-  background: #F0EDE4;
+  background: #F1F1F5;
 }
 
 .admin-shell {

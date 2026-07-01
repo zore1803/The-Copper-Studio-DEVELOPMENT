@@ -929,7 +929,7 @@ const SETTINGS_TILES = [
 export function SettingsPage() {
   const navigate = useNavigate();
   return (
-    <div className="flex h-full flex-col bg-[#F0EDE4]">
+    <div className="flex h-full flex-col bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
           <h1 className="text-base font-medium text-[#1A1A1A]">Settings</h1>
@@ -963,7 +963,7 @@ export function SettingsPage() {
 function SettingsSubPage({ title, description, icon: Icon, actions, children }) {
   const navigate = useNavigate();
   return (
-    <div className="flex h-full flex-col bg-[#F0EDE4]">
+    <div className="flex h-full flex-col bg-[#F1F1F5]">
       <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-3">
           <button
@@ -1152,11 +1152,11 @@ function money(n) {
 // exactly so the admin preview looks identical to what customers see.
 function PricingPreviewCards({ visible, edits, activeCategory, onCategory }) {
   return (
-    <div style={{ background: "#F0EDE4", padding: "8px 4px 4px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+    <div style={{ background: "#F1F1F5", padding: "8px 4px 4px", fontFamily: "'DM Sans', system-ui, sans-serif" }}>
       {/* Floating pill category switcher \u2014 same as the live page */}
       {onCategory && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 22 }}>
-          <div style={{ display: "inline-flex", gap: 4, padding: 5, background: "#F0EDE4", borderRadius: 16 }}>
+          <div style={{ display: "inline-flex", gap: 4, padding: 5, background: "#F1F1F5", borderRadius: 16 }}>
             {PRICING_CATEGORIES.map((cat) => {
               const active = cat === activeCategory;
               return (
@@ -1307,7 +1307,7 @@ function PricingSection({ onSave, saving }) {
         </div>
 
         {mode === "preview" ? (
-          <div className="flex-1 overflow-y-auto rounded-xl border border-[#E5E7EB] bg-[#F0EDE4] p-5">
+          <div className="flex-1 overflow-y-auto rounded-xl border border-[#E5E7EB] bg-[#F1F1F5] p-5">
             <p className="mb-4 text-center text-xs font-medium text-[#6B7280]">Preview — reflects your unsaved edits</p>
             <PricingPreviewCards visible={visible} edits={edits} activeCategory={activeCategory} onCategory={setActiveCategory} />
           </div>
