@@ -782,11 +782,138 @@ function DataFieldsSection() {
   );
 }
 
+// ── Illustrated SVG icons for the Settings launcher ──────────────────────────
+
+function IconProfile() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="ig-body" x1="24" y1="28" x2="24" y2="46" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#c97a4e" />
+          <stop offset="1" stopColor="#8b4a25" />
+        </linearGradient>
+        <linearGradient id="ig-face" x1="24" y1="10" x2="24" y2="26" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fde8d8" />
+          <stop offset="1" stopColor="#f5c9a8" />
+        </linearGradient>
+        <radialGradient id="ig-shine" cx="20" cy="14" r="5" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white" stopOpacity="0.6" />
+          <stop offset="1" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      {/* body / shirt */}
+      <path d="M8 46c0-8.837 7.163-16 16-16s16 7.163 16 16H8z" fill="url(#ig-body)" />
+      {/* collar white */}
+      <path d="M21 30l3 4 3-4-1.5-1.5h-3L21 30z" fill="white" opacity="0.9" />
+      {/* head */}
+      <circle cx="24" cy="18" r="9" fill="url(#ig-face)" />
+      {/* shine on head */}
+      <circle cx="20" cy="14" r="4" fill="url(#ig-shine)" />
+      {/* eyes */}
+      <circle cx="21" cy="17" r="1.2" fill="#6b3a1f" />
+      <circle cx="27" cy="17" r="1.2" fill="#6b3a1f" />
+      {/* smile */}
+      <path d="M21 21.5q3 2.5 6 0" stroke="#8b4a25" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      {/* badge / checkmark ring */}
+      <circle cx="36" cy="12" r="5.5" fill="#22c55e" />
+      <path d="M33.5 12l2 2 3.5-3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </svg>
+  );
+}
+
+function IconTemplates() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tg-email" x1="6" y1="14" x2="30" y2="34" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fbbf24" />
+          <stop offset="1" stopColor="#d97706" />
+        </linearGradient>
+        <linearGradient id="tg-chat" x1="18" y1="20" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#34d399" />
+          <stop offset="1" stopColor="#059669" />
+        </linearGradient>
+      </defs>
+      {/* email envelope back */}
+      <rect x="5" y="13" width="28" height="20" rx="3" fill="url(#tg-email)" />
+      {/* envelope flap */}
+      <path d="M5 16l14 10 14-10" stroke="#92400e" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+      {/* lines in email body */}
+      <rect x="10" y="23" width="12" height="1.5" rx="0.75" fill="#92400e" opacity="0.4" />
+      <rect x="10" y="26.5" width="8" height="1.5" rx="0.75" fill="#92400e" opacity="0.4" />
+      {/* whatsapp bubble */}
+      <path d="M18 22h18a4 4 0 014 4v10a4 4 0 01-4 4H18l-4 4v-4a4 4 0 01-4-4V26a4 4 0 014-4z" fill="url(#tg-chat)" />
+      {/* chat dots */}
+      <circle cx="26" cy="32" r="1.5" fill="white" />
+      <circle cx="31" cy="32" r="1.5" fill="white" />
+      <circle cx="36" cy="32" r="1.5" fill="white" />
+    </svg>
+  );
+}
+
+function IconDataFields() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="df-bg" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#818cf8" />
+          <stop offset="1" stopColor="#4f46e5" />
+        </linearGradient>
+        <linearGradient id="df-track" x1="0" y1="0" x2="1" y2="0">
+          <stop stopColor="#c7d2fe" />
+          <stop offset="1" stopColor="#a5b4fc" />
+        </linearGradient>
+      </defs>
+      {/* background pill */}
+      <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#df-bg)" />
+      {/* slider track 1 */}
+      <rect x="10" y="14" width="28" height="3" rx="1.5" fill="#c7d2fe" opacity="0.5" />
+      <rect x="10" y="14" width="18" height="3" rx="1.5" fill="white" />
+      <circle cx="28" cy="15.5" r="4.5" fill="white" stroke="#818cf8" strokeWidth="2" />
+      {/* slider track 2 */}
+      <rect x="10" y="23" width="28" height="3" rx="1.5" fill="#c7d2fe" opacity="0.5" />
+      <rect x="10" y="23" width="10" height="3" rx="1.5" fill="white" />
+      <circle cx="20" cy="24.5" r="4.5" fill="white" stroke="#818cf8" strokeWidth="2" />
+      {/* slider track 3 */}
+      <rect x="10" y="32" width="28" height="3" rx="1.5" fill="#c7d2fe" opacity="0.5" />
+      <rect x="10" y="32" width="22" height="3" rx="1.5" fill="white" />
+      <circle cx="32" cy="33.5" r="4.5" fill="white" stroke="#818cf8" strokeWidth="2" />
+    </svg>
+  );
+}
+
+function IconPricing() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="pr-tag" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#fb923c" />
+          <stop offset="1" stopColor="#c2410c" />
+        </linearGradient>
+        <linearGradient id="pr-shine" x1="8" y1="8" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white" stopOpacity="0.4" />
+          <stop offset="1" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* tag shape */}
+      <path d="M6 6h18a2 2 0 011.414.586l16 16a2 2 0 010 2.828l-12 12a2 2 0 01-2.828 0l-16-16A2 2 0 0110 20V8a2 2 0 012-2z" fill="url(#pr-tag)" />
+      {/* shine */}
+      <path d="M6 6h18a2 2 0 011.414.586l12 12A18 18 0 006 6z" fill="url(#pr-shine)" />
+      {/* hole */}
+      <circle cx="14" cy="14" r="2.5" fill="white" opacity="0.9" />
+      {/* rupee ₹ symbol */}
+      <text x="21" y="32" fontSize="16" fontWeight="bold" fill="white" fontFamily="system-ui,sans-serif">₹</text>
+      {/* star burst top-right */}
+      <path d="M39 5l1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill="#fbbf24" />
+    </svg>
+  );
+}
+
 const SETTINGS_TILES = [
-  { key: "profile", title: "Profile", icon: UserPlus, to: "/admin/settings/profile" },
-  { key: "templates", title: "Templates", icon: MessageCircle, to: "/admin/settings/trigger-template" },
-  { key: "dataFields", title: "Data Fields", icon: SlidersHorizontal, to: "/admin/settings/data-fields" },
-  { key: "pricing", title: "Pricing", icon: Tag, to: "/admin/settings/pricing" },
+  { key: "profile", title: "Profile", SvgIcon: IconProfile, to: "/admin/settings/profile" },
+  { key: "templates", title: "Templates", SvgIcon: IconTemplates, to: "/admin/settings/trigger-template" },
+  { key: "dataFields", title: "Data Fields", SvgIcon: IconDataFields, to: "/admin/settings/data-fields" },
+  { key: "pricing", title: "Pricing", SvgIcon: IconPricing, to: "/admin/settings/pricing" },
 ];
 
 // Settings landing: plain icons with a label underneath, like a folder grid.
@@ -810,8 +937,8 @@ export function SettingsPage() {
               onClick={() => navigate(tile.to)}
               className="group flex flex-col items-center gap-2.5 text-center"
             >
-              <div className="grid h-20 w-20 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d] transition-all group-hover:-translate-y-0.5 group-hover:bg-[#884c2d] group-hover:text-white">
-                <tile.icon size={30} strokeWidth={1.8} />
+              <div className="grid h-20 w-20 place-items-center rounded-2xl bg-white shadow-md shadow-gray-200/80 transition-all group-hover:-translate-y-1 group-hover:shadow-lg group-hover:shadow-gray-300/60">
+                <tile.SvgIcon />
               </div>
               <span className="text-sm font-semibold text-[#211a17]">{tile.title}</span>
             </button>
