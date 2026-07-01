@@ -461,7 +461,8 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
   );
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
+    <div className="grid items-start gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
+      {/* Categories — fits its own content, no stretching */}
       <aside className="rounded-xl border border-[#e5e7eb] bg-white p-4">
         <p className="text-sm font-bold text-[#111827]">Categories</p>
         <div className="mt-3 space-y-1">
@@ -474,8 +475,9 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
         </div>
       </aside>
 
-      <section className="rounded-xl border border-[#e5e7eb] bg-white">
-        <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
+      {/* Templates — fixed height, scrollable list */}
+      <section className="flex max-h-[calc(100vh-120px)] flex-col rounded-xl border border-[#e5e7eb] bg-white">
+        <div className="flex shrink-0 items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
           <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
             <Search size={14} className="text-[#9ca3af]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${type} templates`} className="w-60 bg-transparent text-sm outline-none" />
@@ -483,7 +485,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
           <Button onClick={onCreate}><Plus size={14} /> New Template</Button>
         </div>
         {filtered.length ? (
-          <div className="divide-y divide-[#f3f4f6]">
+          <div className="flex-1 overflow-y-auto divide-y divide-[#f3f4f6]">
             {filtered.map((template) => (
               <div key={template._id || template.id || template.name} className="p-4 hover:bg-[#fafafa] cursor-pointer" onClick={() => onEdit(template)}>
                 <div className="flex items-start justify-between gap-4">
@@ -506,6 +508,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
         )}
       </section>
 
+      {/* Variables — fits its own content, no stretching */}
       <aside className="rounded-xl border border-[#e5e7eb] bg-white p-4">
         <p className="text-sm font-bold text-[#111827]">Variables</p>
         <p className="mt-1 text-xs text-[#6b7280]">Use these in templates for dynamic client communication.</p>
