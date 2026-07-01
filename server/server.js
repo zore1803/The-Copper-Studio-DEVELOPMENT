@@ -325,6 +325,20 @@ async function validateCouponForPackage(code, selectedPackage) {
     throw error;
   }
 
+  // Check category restriction
+  if (coupon.category && coupon.category !== selectedPackage.category) {
+    const error = new Error(`This coupon is only valid for ${coupon.category} packages.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Check package restriction
+  if (coupon.packageName && coupon.packageName !== selectedPackage.id && coupon.packageName !== selectedPackage.name) {
+    const error = new Error(`This coupon is only valid for the ${coupon.packageName} package.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
   const discount = computeCouponDiscount(coupon, selectedPackage.price);
   const subtotal = Math.max(0, selectedPackage.price - discount);
   const total = Math.round(subtotal * 1.18);

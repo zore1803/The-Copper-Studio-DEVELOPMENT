@@ -19,6 +19,7 @@ const schema = new mongoose.Schema(
     companyName: { type: String, default: "", index: true },
     email: { type: String, lowercase: true, trim: true, default: "" },
     phone: { type: String, trim: true, default: "" },
+    category: { type: String, default: "" },
     packageName: { type: String, default: "" },
     redeemedAt: { type: Date },
     revokedAt: { type: Date }
@@ -41,6 +42,7 @@ export default defineModel({
     companyName: "",
     email: "",
     phone: "",
+    category: "",
     packageName: ""
   }
 });

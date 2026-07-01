@@ -30,6 +30,26 @@ function formatDateTime(value) {
   return date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", hour12: true });
 }
 
+const PACKAGE_CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
+
+const PACKAGES_BY_CATEGORY = {
+  CopperBrand: [
+    { id: "copperbrand-essential", name: "Essential Package Plan" },
+    { id: "copperbrand-advance",   name: "Advance Package Plan" },
+    { id: "copperbrand-ultimate",  name: "Ultimate Package Plan" },
+  ],
+  CopperWeb: [
+    { id: "copperweb-essential", name: "Essential Package Plan" },
+    { id: "copperweb-advance",   name: "Advance Package Plan" },
+    { id: "copperweb-ultimate",  name: "Ultimate Package Plan" },
+  ],
+  CopperFlow: [
+    { id: "copperflow-essential", name: "Essential Package Plan" },
+    { id: "copperflow-advance",   name: "Advance Package Plan" },
+    { id: "copperflow-ultimate",  name: "Ultimate Package Plan" },
+  ],
+};
+
 const VALIDITY_OPTIONS = [
   { label: "24 hours", value: 24 },
   { label: "48 hours", value: 48 },
@@ -43,6 +63,7 @@ const VALIDITY_OPTIONS = [
 
 const COUPON_DEFAULTS = {
   discount: "",
+  category: "",
   packageName: "",
   validFrom: toDateTimeLocal(new Date()),
   validityHours: 24,
@@ -62,7 +83,8 @@ function validateCoupon(coupon) {
   else if (amount <= 0) errors.discount = "Must be greater than 0.";
   else if (coupon.amountType === "percentage" && amount > 100) errors.discount = "Percentage can't exceed 100.";
 
-  if (!String(coupon.packageName || "").trim()) errors.packageName = "Package is required.";
+  // package is required only when a category is selected
+  if (coupon.category && !String(coupon.packageName || "").trim()) errors.packageName = "Select a package for the chosen category.";
 
   if (!coupon.validFrom) errors.validFrom = "Start date & time is required.";
 
@@ -307,7 +329,9 @@ function CouponFormPanel({ onClose, onCreate }) {
       <div className="mb-4 rounded-xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-4 text-center">
         <Tag size={20} className="mx-auto text-[#884c2d]" />
         <p className="mt-2 font-mono text-lg font-bold text-[#1F2937]">XXX-XXXX-XXX</p>
-        <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">{discountLabel} · {coupon.packageName || "selected package"}</p>
+        <p className="mt-0.5 text-xs font-semibold text-[#6B7280]">
+          {discountLabel} · {coupon.category ? `${coupon.category}` : "Any category"}{coupon.packageName ? ` · ${(PACKAGES_BY_CATEGORY[coupon.category] || []).find(p => p.id === coupon.packageName)?.name || coupon.packageName}` : " · Any package"}
+        </p>
         <p className="mt-1 text-[11px] font-semibold text-[#6B7280]">Active from {formatDateTime(coupon.validFrom) || "—"}</p>
         <p className="mt-0.5 text-[11px] font-semibold text-[#884c2d]">Valid till {validityDisplay}</p>
       </div>
@@ -328,8 +352,47 @@ function CouponFormPanel({ onClose, onCreate }) {
         {/* Usage limit */}
         <CouponField label="Usage limit" required type="number" inputMode="numeric" value={coupon.usageLimit} onChange={setField("usageLimit")} error={errors.usageLimit} placeholder="e.g. 1" />
 
-        {/* Package */}
-        <CouponField label="Package" required value={coupon.packageName} onChange={setField("packageName")} error={errors.packageName} placeholder="e.g. Growth Studio" />
+        {/* Category */}
+        <div>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">Category <span className="text-[#9ca3af] font-normal">(optional)</span></span>
+            <select
+              value={coupon.category}
+              onChange={(e) => {
+                const cat = e.target.value;
+                setCoupon((prev) => ({ ...prev, category: cat, packageName: "" }));
+                setErrors((prev) => ({ ...prev, packageName: "" }));
+              }}
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            >
+              <option value="">Any category</option>
+              {PACKAGE_CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+            </select>
+          </label>
+        </div>
+
+        {/* Package — only shown when category selected */}
+        <div>
+          <label className="block">
+            <span className="text-xs font-semibold text-[#374151]">
+              Package {coupon.category ? <span className="text-red-500">*</span> : <span className="text-[#9ca3af] font-normal">(optional)</span>}
+            </span>
+            <select
+              value={coupon.packageName}
+              onChange={(e) => { setField("packageName")(e.target.value); }}
+              disabled={!coupon.category}
+              className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                errors.packageName ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+              } disabled:bg-[#f9fafb] disabled:text-[#9ca3af]`}
+            >
+              <option value="">{coupon.category ? "Select a package" : "Select a category first"}</option>
+              {(PACKAGES_BY_CATEGORY[coupon.category] || []).map((pkg) => (
+                <option key={pkg.id} value={pkg.id}>{pkg.name}</option>
+              ))}
+            </select>
+          </label>
+          {errors.packageName && <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.packageName}</span>}
+        </div>
 
         {/* Start date/time */}
         <ValidFromField
@@ -418,7 +481,9 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
             <button onClick={() => onCopy(coupon.code)} className="shrink-0 text-[#9ca3af] hover:text-[#884c2d]"><Copy size={13} /></button>
             {copied === coupon.code && <span className="text-xs font-semibold text-emerald-600">Copied</span>}
           </div>
-          <p className="mt-0.5 text-xs text-[#6b7280]">{displayAmount} off · {coupon.packageName || "—"}</p>
+          <p className="mt-0.5 text-xs text-[#6b7280]">
+            {displayAmount} off · {coupon.category || "Any category"}{coupon.packageName ? ` · ${(PACKAGES_BY_CATEGORY[coupon.category] || []).find(p => p.id === coupon.packageName)?.name || coupon.packageName}` : " · Any package"}
+          </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Status value={coupon.status || "Draft"} />
@@ -440,7 +505,8 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
         <Detail label="Valid till" value={coupon.validUntil ? formatDateTime(coupon.validUntil) : coupon.validity} />
         <Detail label="Usage" value={`${coupon.usageCount || 0} / ${coupon.usageLimit ?? "—"}`} />
         <Detail label="Revenue Generated" value={money(coupon.revenueGenerated)} />
-        <Detail label="Package" value={coupon.packageName} />
+        <Detail label="Category" value={coupon.category || "Any category"} />
+        <Detail label="Package" value={coupon.packageName ? ((PACKAGES_BY_CATEGORY[coupon.category] || []).find(p => p.id === coupon.packageName)?.name || coupon.packageName) : "Any package"} />
       </div>
     </div>
   );
@@ -505,6 +571,7 @@ export default function Coupons() {
         companyName: coupon.companyName.trim(),
         email: coupon.email.trim(),
         phone: coupon.phone.trim(),
+        category: coupon.category.trim(),
         packageName: coupon.packageName.trim(),
         usageLimit: Number(coupon.usageLimit),
         usageCount: 0,
