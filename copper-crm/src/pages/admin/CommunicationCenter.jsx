@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Copy, Mail, MessageCircle, Pencil, Plus, Save, Search, Settings2, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -147,15 +147,15 @@ function textToHtml(text = "") {
     .join("\n\n");
 }
 
-// Strip HTML back to plain text — exactly reverses textToHtml.
+// Strip HTML → plain text. Any block-level closing tag (h1-h6, p, div, li…)
+// becomes a blank line so the round-trip is symmetric regardless of source HTML.
 function htmlToText(html = "") {
+  const BLOCK_RE = /<\/(p|h[1-6]|div|blockquote|li|tr|td|th|section|article|header|footer)>/gi;
   return html
-    .replace(/<br\s*\/?>\s*/gi, "\n")   // <br> + any trailing whitespace/newline → single \n
-    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n") // </p><p> pair → paragraph break
-    .replace(/<\/p>/gi, "")
-    .replace(/<p[^>]*>/gi, "")
+    .replace(/<br\s*\/?>\s*/gi, "\n")
+    .replace(BLOCK_RE, "\n\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -560,3 +560,4 @@ export default function CommunicationCenter({ mode = "email" }) {
     </div>
   );
 }
+
