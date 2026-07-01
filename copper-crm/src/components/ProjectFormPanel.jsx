@@ -19,8 +19,8 @@ function formatINR(value) {
 
 function FormSection({ title, children }) {
   return (
-    <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
+    <div className="space-y-3 border-t border-[#FFFFFF] pt-5 first:border-t-0 first:pt-0">
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#5A1A14]">{title}</h4>
       <div className="grid gap-4 sm:grid-cols-3">{children}</div>
     </div>
   );
@@ -29,7 +29,7 @@ function FormSection({ title, children }) {
 function Input({ label, value, onChange, type = "text", disabled = false, span = false, hint, error }) {
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       <input
         type={type}
         value={value || ""}
@@ -37,13 +37,13 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
         onChange={(event) => onChange?.(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
-        } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
+        } ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
       />
       {error
         ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
         : hint
-          ? <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>
+          ? <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>
           : null}
     </label>
   );
@@ -52,12 +52,12 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
 function Textarea({ label, value, onChange, span = false }) {
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       <textarea
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
       />
     </label>
   );
@@ -67,13 +67,13 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
         }`}
       >
         <option value="">Select…</option>
@@ -82,7 +82,7 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
       {error
         ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
         : hint
-          ? <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>
+          ? <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>
           : null}
     </label>
   );
@@ -275,7 +275,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
                 options={companies.map((c) => ({ value: String(c.id || c._id), label: c.name || c.companyName }))} />
               {onCreateCompany && (
                 <button type="button" onClick={onCreateCompany}
-                  className="mt-1 text-[11px] font-semibold text-[#884c2d] hover:underline">
+                  className="mt-1 text-[11px] font-semibold text-[#5A1A14] hover:underline">
                   + New company
                 </button>
               )}
@@ -315,11 +315,11 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} error={errors.budget} />
           <label className="block">
             <span className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#374151]">Discount applied</span>
+              <span className="text-xs font-semibold text-[#1A1A1A]">Discount applied</span>
               <span className="inline-flex overflow-hidden rounded-md border border-[#e5e7eb] text-[11px] font-semibold">
                 {["amount", "percent"].map((mode) => (
                   <button key={mode} type="button" onClick={() => set("discountType")(mode)}
-                    className={`px-2 py-0.5 ${form.discountType === mode ? "bg-[#884c2d] text-white" : "bg-white text-[#6b7280]"}`}>
+                    className={`px-2 py-0.5 ${form.discountType === mode ? "bg-[#5A1A14] text-white" : "bg-white text-[#6b7280]"}`}>
                     {mode === "amount" ? "₹" : "%"}
                   </button>
                 ))}
@@ -328,12 +328,12 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
             <input type="number" value={form.discount || ""} onChange={(e) => set("discount")(e.target.value)}
               aria-invalid={Boolean(errors.discount)}
               className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                errors.discount ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+                errors.discount ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
               }`} />
             {errors.discount
               ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.discount}</span>
               : form.discountType === "percent" && discountAmount > 0
-                ? <span className="mt-1 block text-[11px] text-[#9ca3af]">= {formatINR(discountAmount)} off</span>
+                ? <span className="mt-1 block text-[11px] text-[#6B7280]">= {formatINR(discountAmount)} off</span>
                 : null}
           </label>
           <Input label="Final amount" value={formatINR(finalAmount)} disabled />

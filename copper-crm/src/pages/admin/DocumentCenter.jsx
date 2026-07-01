@@ -60,11 +60,11 @@ function fileType(name = "") {
 
 function EmptyState({ title, text }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
         <Folder size={20} />
       </div>
-      <p className="text-sm font-semibold text-[#111827]">{title}</p>
+      <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">{text}</p>
     </div>
   );
@@ -80,12 +80,12 @@ function FolderCard({ icon: Icon, title, meta, onClick, active }) {
       {typeof Icon === "string" ? (
         <img src={Icon} alt="Folder" className="mb-3 h-[96px] w-auto object-contain drop-shadow-sm" />
       ) : (
-        <div className={`mb-3 flex h-[96px] w-[96px] items-center justify-center text-[#525866] drop-shadow-sm`}>
+        <div className={`mb-3 flex h-[96px] w-[96px] items-center justify-center text-[#6B7280] drop-shadow-sm`}>
           <Icon size={40} />
         </div>
       )}
-      <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#374151]">{title}</p>
-      <p className="mt-0.5 w-full text-[11px] text-[#9ca3af]">{meta}</p>
+      <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#1A1A1A]">{title}</p>
+      <p className="mt-0.5 w-full text-[11px] text-[#6B7280]">{meta}</p>
     </button>
   );
 }
@@ -130,18 +130,18 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
   return (
     <div
       onClick={() => onSelect(doc)}
-      className={`grid w-full grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-left text-sm hover:bg-[#fafafa] cursor-pointer ${selected ? "bg-[#fff8f6]" : "bg-white"}`}
+      className={`grid w-full grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 border-b border-[#FFFFFF] px-4 py-3 text-left text-sm hover:bg-[#E5E7EB] cursor-pointer ${selected ? "bg-[#FFFFFF]" : "bg-white"}`}
     >
       <span className="flex min-w-0 items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#6b7280]">
           <Icon size={16} />
         </span>
         <span className="min-w-0">
-          <span className="block truncate font-semibold text-[#111827]">{doc.fileName || doc.name || "Untitled document"}</span>
-          <span className="block truncate text-xs text-[#9ca3af]">{doc.tags?.join(", ") || doc.folderPath || "No tags"}</span>
+          <span className="block truncate font-semibold text-[#1A1A1A]">{doc.fileName || doc.name || "Untitled document"}</span>
+          <span className="block truncate text-xs text-[#6B7280]">{doc.tags?.join(", ") || doc.folderPath || "No tags"}</span>
         </span>
       </span>
-      <span className="text-[#374151]">{type.toUpperCase()}</span>
+      <span className="text-[#1A1A1A]">{type.toUpperCase()}</span>
       {canToggle ? (
         <VisibilityToggle visible={visible} busy={busy} onChange={(next) => onToggle(doc, next)} />
       ) : (
@@ -155,12 +155,12 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
           <button
             type="button"
             onClick={() => openStoredFile(doc.fileUrl)}
-            className="text-xs font-bold text-[#884c2d] hover:underline"
+            className="text-xs font-bold text-[#5A1A14] hover:underline"
           >
             View
           </button>
         ) : (
-          <span className="text-xs text-[#9ca3af]">No file</span>
+          <span className="text-xs text-[#6B7280]">No file</span>
         )}
       </span>
     </div>
@@ -171,15 +171,15 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
 function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
   return (
     <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-[#FFFFFF] px-4 py-3">
         <div>
-          <p className="text-sm font-bold text-[#111827]">{title}</p>
+          <p className="text-sm font-bold text-[#1A1A1A]">{title}</p>
           <p className="text-xs text-[#6b7280]">{docs.length} documents</p>
         </div>
       </div>
       {docs.length ? (
         <div>
-          <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+          <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#FFFFFF] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#6B7280]">
             <span>Name</span><span>Type</span><span>Visibility</span><span>Date</span><span>File</span>
           </div>
           {/* Documents scroll independently of the folders above. */}
@@ -206,9 +206,9 @@ function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
 
 function DetailCard({ label, value }) {
   return (
-    <div className="rounded-lg border border-[#eef0f3] bg-[#f9fafb] px-4 py-3">
-      <p className="text-xs text-[#9ca3af]">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-[#111827] break-words">{value || "—"}</p>
+    <div className="rounded-lg border border-[#FFFFFF] bg-[#FFFFFF] px-4 py-3">
+      <p className="text-xs text-[#6B7280]">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-[#1A1A1A] break-words">{value || "—"}</p>
     </div>
   );
 }
@@ -220,7 +220,7 @@ function ProjectDetails({ project, company }) {
   const status = String(project.status || "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-6">
-      <h3 className="mb-4 text-base font-bold text-[#111827]">Project Information</h3>
+      <h3 className="mb-4 text-base font-bold text-[#1A1A1A]">Project Information</h3>
       <div className="grid gap-3 sm:grid-cols-2">
         <DetailCard label="Project ID" value={project.projectId} />
         <DetailCard label="Project Name" value={project.name} />
@@ -469,15 +469,15 @@ export default function DocumentCenter() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+    <div className="flex min-h-full flex-col bg-[#F0EDE4]">
+      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
-          <nav className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
-            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#884c2d]">Companies</button>
+          <nav className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#5A1A14]">Companies</button>
             {selectedCompanyId && (
               <>
                 <span>/</span>
-                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#884c2d] truncate max-w-[180px]">
+                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#5A1A14] truncate max-w-[180px]">
                   {currentCompany?.name || currentCompany?.companyName || "Company"}
                 </button>
               </>
@@ -485,18 +485,18 @@ export default function DocumentCenter() {
             {selectedProjectId && (
               <>
                 <span>/</span>
-                <span className="font-medium text-[#374151] truncate max-w-[200px]">{currentProject?.name || "Project"}</span>
+                <span className="font-medium text-[#1A1A1A] truncate max-w-[200px]">{currentProject?.name || "Project"}</span>
               </>
             )}
           </nav>
-          <h1 className="mt-0.5 text-base font-medium text-[#0E121B] truncate">{viewTitle}</h1>
+          <h1 className="mt-0.5 text-base font-medium text-[#1A1A1A] truncate">{viewTitle}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {mode !== "root" && (
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#374151] outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#1A1A1A] outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
             >
               <option value="All">All Categories</option>
               {availableCategories.map((c) => (
@@ -504,12 +504,12 @@ export default function DocumentCenter() {
               ))}
             </select>
           )}
-          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
-            <Search size={14} className="text-[#9ca3af]" />
+          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3 sm:w-64">
+            <Search size={14} className="text-[#6B7280]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
           </div>
-          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#5A1A14] text-[#5A1A14]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#5A1A14] text-[#5A1A14]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
           <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
         </div>
       </div>
@@ -518,8 +518,8 @@ export default function DocumentCenter() {
         {showFolders && displayFolders.length > 0 && (
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between gap-2">
-              <h2 className="text-lg font-bold text-[#111827]">{!selectedCompanyId ? "Companies" : "Projects"}</h2>
-              <span className="text-xs font-medium text-[#9ca3af]">{displayFolders.length} {displayFolders.length === 1 ? "folder" : "folders"}</span>
+              <h2 className="text-lg font-bold text-[#1A1A1A]">{!selectedCompanyId ? "Companies" : "Projects"}</h2>
+              <span className="text-xs font-medium text-[#6B7280]">{displayFolders.length} {displayFolders.length === 1 ? "folder" : "folders"}</span>
             </div>
             {view === "grid" ? (
               // Cap the folders area so a company with many projects doesn't push
@@ -533,19 +533,19 @@ export default function DocumentCenter() {
               </div>
             ) : (
               <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-                <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af] border-b border-[#f3f4f6]">
+                <div className="grid grid-cols-[minmax(0,1fr)_120px] gap-4 bg-[#FFFFFF] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#6B7280] border-b border-[#FFFFFF]">
                   <span>Folder</span><span className="text-right">Items</span>
                 </div>
-                <div className="max-h-[240px] overflow-y-auto divide-y divide-[#f3f4f6]">
+                <div className="max-h-[240px] overflow-y-auto divide-y divide-[#FFFFFF]">
                   {displayFolders.map((folder) => (
                     <button
                       key={folder.id}
                       onClick={() => handleFolderClick(folder)}
-                      className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[#fafafa] bg-white"
+                      className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-[#E5E7EB] bg-white"
                     >
                       <span className="flex items-center gap-3">
-                        <FolderOpen size={18} className="text-[#9ca3af]" />
-                        <span className="text-sm font-semibold text-[#111827]">{folder.title}</span>
+                        <FolderOpen size={18} className="text-[#6B7280]" />
+                        <span className="text-sm font-semibold text-[#1A1A1A]">{folder.title}</span>
                       </span>
                       <span className="text-xs font-medium text-[#6b7280] text-right">{folder.meta}</span>
                     </button>
@@ -571,14 +571,14 @@ export default function DocumentCenter() {
             <div className="rounded-xl border border-[#e5e7eb] bg-white px-6 pt-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <h2 className="truncate text-xl font-bold text-[#111827]">{currentProject.name}</h2>
+                  <h2 className="truncate text-xl font-bold text-[#1A1A1A]">{currentProject.name}</h2>
                   {currentProject.clientProjectName && currentProject.clientProjectName !== currentProject.name && (
                     <p className="mt-0.5 truncate text-sm text-[#6b7280]">“{currentProject.clientProjectName}”</p>
                   )}
-                  <p className="mt-0.5 text-xs text-[#9ca3af]">{currentCompany?.name || currentCompany?.companyName || currentProject.companyName}</p>
+                  <p className="mt-0.5 text-xs text-[#6B7280]">{currentCompany?.name || currentCompany?.companyName || currentProject.companyName}</p>
                 </div>
                 {currentProject.projectId && (
-                  <span className="shrink-0 rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{currentProject.projectId}</span>
+                  <span className="shrink-0 rounded-full bg-[#FFFFFF] px-3 py-1 text-xs font-bold text-[#5A1A14]">{currentProject.projectId}</span>
                 )}
               </div>
               <div className="mt-4 flex gap-1">
@@ -587,7 +587,7 @@ export default function DocumentCenter() {
                     key={key}
                     type="button"
                     onClick={() => setProjectTab(key)}
-                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#111827]"}`}
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#5A1A14] text-[#5A1A14]" : "border-transparent text-[#6b7280] hover:text-[#1A1A1A]"}`}
                   >
                     {label}
                   </button>

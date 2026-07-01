@@ -59,7 +59,7 @@ const ZOOM_STEP = 28;
 function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "", min, max }) {
   return (
     <label className={`block ${className}`}>
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       <input
         type={type}
         value={value}
@@ -67,7 +67,7 @@ function TaskField({ label, value, onChange, placeholder = "", type = "text", cl
         max={max}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
       />
     </label>
   );
@@ -105,22 +105,22 @@ export function StageEditorModal({ statuses, initialStatus, stage, mode, project
       <div className="grid gap-4 sm:grid-cols-2">
         <TaskField label="Stage name" value={form.title || ""} onChange={set("title")} className="sm:col-span-2" />
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Status</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          <span className="text-xs font-semibold text-[#1A1A1A]">Status</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
             {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Priority</span>
-          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          <span className="text-xs font-semibold text-[#1A1A1A]">Priority</span>
+          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
             {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
         <TaskField label="Start date" type="date" value={form.startDate || ""} onChange={set("startDate")} min={projectDates.startDate} max={projectDates.endDate} />
         <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} min={projectDates.startDate} max={projectDates.endDate} />
         <label className="block sm:col-span-2">
-          <span className="text-xs font-semibold text-[#374151]">Notes</span>
-          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
+          <span className="text-xs font-semibold text-[#1A1A1A]">Notes</span>
+          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]" />
         </label>
       </div>
     </SidePanel>
@@ -141,13 +141,13 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
       <div className="flex gap-4 overflow-x-auto pb-2">
         {TASK_STATUSES.map((status) => (
           <section key={status} className="flex w-[260px] shrink-0 flex-col rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
-            <div className="flex items-center justify-between gap-2 border-b border-[#f1f1f5] px-3.5 py-3">
+            <div className="flex items-center justify-between gap-2 border-b border-[#F0EDE4] px-3.5 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_DOT[status]}`} />
-                <h3 className="truncate text-sm font-semibold text-[#111827]">{status}</h3>
-                <span className="rounded-md bg-[#f9fafb] px-1.5 py-0.5 text-[11px] font-bold text-[#6b7280]">{columns[status].length}</span>
+                <h3 className="truncate text-sm font-semibold text-[#1A1A1A]">{status}</h3>
+                <span className="rounded-md bg-[#FFFFFF] px-1.5 py-0.5 text-[11px] font-bold text-[#6b7280]">{columns[status].length}</span>
               </div>
-              <button onClick={() => onOpenNew(status)} className="grid h-7 w-7 place-items-center rounded-lg text-[#9ca3af] hover:bg-[#f9fafb] hover:text-[#374151]">
+              <button onClick={() => onOpenNew(status)} className="grid h-7 w-7 place-items-center rounded-lg text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#1A1A1A]">
                 <Plus size={14} />
               </button>
             </div>
@@ -156,7 +156,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className={`flex-1 space-y-2 p-2.5 ${snapshot.isDraggingOver ? "bg-[#fff8f6]" : ""}`}
+                  className={`flex-1 space-y-2 p-2.5 ${snapshot.isDraggingOver ? "bg-[#FFFFFF]" : ""}`}
                   style={{ minHeight: 140 }}
                 >
                   {columns[status].map((task, index) => (
@@ -167,24 +167,24 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                           {...prov.draggableProps}
                           {...prov.dragHandleProps}
                           onClick={() => onOpenEdit(status, task)}
-                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#884c2d] shadow-md" : "border-[#e5e7eb] hover:border-[#884c2d]/40"}`}
+                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#5A1A14] shadow-md" : "border-[#e5e7eb] hover:border-[#5A1A14]/40"}`}
                         >
                           <div className="mb-2 flex items-start gap-2">
-                            <GripVertical size={12} className="mt-0.5 shrink-0 text-[#d1d5db]" />
-                            <h4 className="min-w-0 flex-1 text-[13px] font-semibold leading-snug text-[#111827]">{task.title || task.taskName || "Untitled task"}</h4>
+                            <GripVertical size={12} className="mt-0.5 shrink-0 text-[#E5E7EB]" />
+                            <h4 className="min-w-0 flex-1 text-[13px] font-semibold leading-snug text-[#1A1A1A]">{task.title || task.taskName || "Untitled task"}</h4>
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-bold ${priorityConfig[task.priority] || priorityConfig.Medium}`}>{task.priority || "Medium"}</span>
-                            <span className="text-[10px] font-semibold text-[#9ca3af]">{task.dueDate || task.deadline || "No due date"}</span>
+                            <span className="text-[10px] font-semibold text-[#6B7280]">{task.dueDate || task.deadline || "No due date"}</span>
                           </div>
-                          <div className="mt-2 flex items-center justify-between border-t border-[#f1f1f5] pt-2">
-                            <span className="inline-flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[#9ca3af]">
+                          <div className="mt-2 flex items-center justify-between border-t border-[#F0EDE4] pt-2">
+                            <span className="inline-flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-[#6B7280]">
                               <span className="inline-flex items-center gap-1"><CalendarRange size={11} /> {task.startDate || "No start"}</span>
                               {(() => {
                                 const st = task.startDate ? parseFullDate(task.startDate) : null;
                                 const en = task.dueDate ? parseFullDate(task.dueDate) : task.endDate ? parseFullDate(task.endDate) : task.deadline ? parseShortDate(task.deadline, new Date().getFullYear()) : null;
                                 const pText = getProgressText(st, en, status, !st || !en);
-                                return pText ? <span className="text-[#884c2d]">{pText}</span> : null;
+                                return pText ? <span className="text-[#5A1A14]">{pText}</span> : null;
                               })()}
                             </span>
                             <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
@@ -197,7 +197,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                   ))}
                   {provided.placeholder}
                   {columns[status].length === 0 && (
-                    <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#9ca3af]">
+                    <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#6B7280]">
                       Drop stages here
                     </div>
                   )}
@@ -341,7 +341,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   if (!groups.length) {
     return (
       <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
-        <p className="text-sm font-semibold text-[#111827]">No scheduled stages yet.</p>
+        <p className="text-sm font-semibold text-[#1A1A1A]">No scheduled stages yet.</p>
         <p className="mt-1 text-sm text-[#6b7280]">Add start and due dates to stages to see them on the Gantt chart.</p>
       </div>
     );
@@ -374,14 +374,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#f1f1f5] bg-[#fbfaf9] px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#F0EDE4] bg-[#FFFFFF] px-5 py-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1ec] text-[#884c2d]">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#FFFFFF] text-[#5A1A14]">
               <CalendarRange size={17} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#111827]">Stage Gantt Timeline</h4>
+              <h4 className="text-sm font-bold text-[#1A1A1A]">Stage Gantt Timeline</h4>
               <p className="text-xs text-[#6b7280]">{formatRange(minDate, maxDate)} · {summary.total} scheduled stages</p>
             </div>
           </div>
@@ -396,13 +396,13 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           {summary.unscheduled > 0 && (
             <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{summary.unscheduled} need dates</span>
           )}
-          <div className="flex items-center gap-1.5 rounded-lg bg-[#F1F1F5] p-1">
+          <div className="flex items-center gap-1.5 rounded-lg bg-[#F0EDE4] p-1">
             <button
               type="button"
               onClick={zoomOut}
               disabled={colWidth <= MIN_COL_WIDTH}
               title="Zoom out"
-              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
+              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#1A1A1A] disabled:opacity-40"
             >
               <ZoomOut size={14} />
             </button>
@@ -414,14 +414,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
               value={colWidth}
               onChange={(e) => updateZoom(Number(e.target.value))}
               title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
-              className="w-24 accent-[#884c2d]"
+              className="w-24 accent-[#5A1A14]"
             />
             <button
               type="button"
               onClick={zoomIn}
               disabled={colWidth >= MAX_COL_WIDTH}
               title="Zoom in"
-              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
+              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#1A1A1A] disabled:opacity-40"
             >
               <ZoomIn size={14} />
             </button>
@@ -430,29 +430,29 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#f1f1f5] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
-          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#f1f1f5] bg-[#fafafa] px-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Stage / Task</span>
+        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#F0EDE4] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
+          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#F0EDE4] bg-[#FFFFFF] px-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Stage / Task</span>
           </div>
           {groups.map((group) => (
-            <div key={group.id} className="border-b border-[#f1f1f5]">
-              <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#884c2d]"}`} />
-                <span className="truncate text-sm font-semibold text-[#111827]">{group.title}</span>
-                <span className="ml-auto shrink-0 text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
+            <div key={group.id} className="border-b border-[#F0EDE4]">
+              <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#FFFFFF] px-3 text-left">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#5A1A14]"}`} />
+                <span className="truncate text-sm font-semibold text-[#1A1A1A]">{group.title}</span>
+                <span className="ml-auto shrink-0 text-[10px] font-bold text-[#6B7280]">{group.tasks.length}</span>
               </button>
               {!collapsed[group.id] && group.tasks.map((task) => (
-                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.id, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
+                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.id, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#E5E7EB]">
                   <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5 truncate text-xs font-semibold text-[#374151]">
+                    <span className="flex items-center gap-1.5 truncate text-xs font-semibold text-[#1A1A1A]">
                       <span className="truncate">{task.title || task.taskName}</span>
                       {task.isDanger && <AlertTriangle size={12} className="shrink-0 text-red-500" strokeWidth={2.5} />}
                     </span>
-                    <span className={`flex items-center gap-1.5 truncate text-[10px] ${task.needsDates ? "text-amber-600" : task.isDanger ? "text-red-500 font-semibold" : "text-[#9ca3af]"}`}>
+                    <span className={`flex items-center gap-1.5 truncate text-[10px] ${task.needsDates ? "text-amber-600" : task.isDanger ? "text-red-500 font-semibold" : "text-[#6B7280]"}`}>
                       <span>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
                       {(() => {
                         const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
-                        return pText ? <span className="text-[#884c2d]">{pText}</span> : null;
+                        return pText ? <span className="text-[#5A1A14]">{pText}</span> : null;
                       })()}
                     </span>
                   </span>
@@ -464,9 +464,9 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
 
         <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="sticky top-0 z-20 flex h-11 border-b border-[#f1f1f5] bg-white">
+            <div className="sticky top-0 z-20 flex h-11 border-b border-[#F0EDE4] bg-white">
               {timeCols.map((col, index) => (
-                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#f1f1f5] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
+                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#F0EDE4] text-[10px] font-bold uppercase text-[#6B7280] even:bg-[#FFFFFF]">
                   {col.label}
                 </div>
               ))}
@@ -480,14 +480,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
               )}
               {groups.map((group) => (
                 <div key={group.id}>
-                  <div className="h-10 border-b border-[#f1f1f5] bg-[#fafafa]/60" />
+                  <div className="h-10 border-b border-[#F0EDE4] bg-[#FFFFFF]/60" />
                   {!collapsed[group.id] && group.tasks.map((task) => {
                     const left = dateToPx(task.start);
                     // +1 day so the bar covers the end date inclusively; clamp so a single-day stage stays visible.
                     const width = Math.max(pxPerDay, dateToPx(task.end) - left + pxPerDay);
                     const isDone = task.status === "Done";
                     return (
-                      <div key={task.id || task._id} className="relative h-12 border-b border-[#f1f1f5] odd:bg-white/65 even:bg-[#fcfcfd]/65">
+                      <div key={task.id || task._id} className="relative h-12 border-b border-[#F0EDE4] odd:bg-white/65 even:bg-[#FFFFFF]/65">
                         <button
                           type="button"
                           onClick={() => onOpenEdit(group.id, task)}
@@ -562,7 +562,7 @@ export default function ProjectTimeline() {
   if ((!company || !project) && (companiesLoading || projectsLoading)) {
     return (
       <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#884c2d]" />
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-[#5A1A14]" />
         <p className="mt-4 text-sm font-semibold text-[#6b7280]">Loading timeline…</p>
       </div>
     );
@@ -672,7 +672,7 @@ export default function ProjectTimeline() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#f8fafc]">
+    <div className="flex min-h-full flex-col bg-[#FFFFFF]">
       <ProjectHeader
         company={company}
         project={project}
@@ -684,17 +684,17 @@ export default function ProjectTimeline() {
 
       <div className="flex-1 space-y-5 p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-[#111827]">Project Timeline</h3>
+        <h3 className="text-base font-semibold text-[#1A1A1A]">Project Timeline</h3>
         <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
           <button
             onClick={() => setView("gantt")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-[#FFFFFF] text-[#5A1A14]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
           >
             <CalendarRange size={13} /> Gantt
           </button>
           <button
             onClick={() => setView("kanban")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#FFFFFF] text-[#5A1A14]" : "text-[#6B7280] hover:text-[#1A1A1A]"}`}
           >
             <Columns3 size={13} /> Kanban
           </button>

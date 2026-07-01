@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
 
-const COLORS = ["#111827", "#dc2626", "#16a34a", "#2563eb", "#884c2d"];
+const COLORS = ["#1A1A1A", "#5A1A14", "#5A1A14", "#5A1A14", "#5A1A14"];
 
 // Plain-text rendering of a contentEditable body — used both to check for
 // emptiness (execCommand often leaves a stray "<br>" behind with no real
@@ -22,7 +22,7 @@ function ToolbarButton({ onClick, title, children, active = false }) {
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
       className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
-        active ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151]"
+        active ? "bg-[#FFFFFF] text-[#5A1A14]" : "text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#1A1A1A]"
       }`}
     >
       {children}
@@ -61,9 +61,9 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
 
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
-      {label && <span className="text-xs font-semibold text-[#374151]">{label}</span>}
-      <div className="mt-1.5 overflow-hidden rounded-lg border border-[#e5e7eb] focus-within:border-[#884c2d] focus-within:ring-2 focus-within:ring-[#884c2d]/20">
-        <div className="flex items-center gap-0.5 border-b border-[#f3f4f6] bg-[#fafafa] px-1.5 py-1">
+      {label && <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>}
+      <div className="mt-1.5 overflow-hidden rounded-lg border border-[#e5e7eb] focus-within:border-[#5A1A14] focus-within:ring-2 focus-within:ring-[#5A1A14]/20">
+        <div className="flex items-center gap-0.5 border-b border-[#FFFFFF] bg-[#FFFFFF] px-1.5 py-1">
           <ToolbarButton title="Bold" onClick={() => exec("bold")}><Bold size={13} /></ToolbarButton>
           <ToolbarButton title="Italic" onClick={() => exec("italic")}><Italic size={13} /></ToolbarButton>
           <ToolbarButton title="Underline" onClick={() => exec("underline")}><Underline size={13} /></ToolbarButton>
@@ -88,7 +88,7 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
           suppressContentEditableWarning
           onInput={handleInput}
           data-placeholder={placeholder}
-          className="rich-text-body min-h-[140px] px-3 py-2 text-sm text-[#111827] outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+          className="rich-text-body min-h-[140px] px-3 py-2 text-sm text-[#1A1A1A] outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
         />
       </div>
     </label>

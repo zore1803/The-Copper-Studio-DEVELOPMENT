@@ -96,7 +96,7 @@ function docStatusOf(company) {
 // verify/reject a signed document instead of only inferring it from the
 // company's unrelated pipeline status.
 function DocSignedBadge({ status, onChange }) {
-  const style = DOC_STATUS_STYLE[status] || "bg-[#f3f4f6] text-[#6b7280] border-[#e5e7eb]";
+  const style = DOC_STATUS_STYLE[status] || "bg-[#FFFFFF] text-[#6b7280] border-[#e5e7eb]";
   if (!onChange) {
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[11px] font-semibold ${style}`}>
@@ -150,19 +150,19 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
 
   return (
     <tr
-      className="border-b border-[#f3f4f6] hover:bg-[#fafafa] cursor-pointer transition-colors group"
+      className="border-b border-[#FFFFFF] hover:bg-[#E5E7EB] cursor-pointer transition-colors group"
       onClick={onClick}
     >
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 shrink-0 rounded-full bg-[#f3f4f6] border border-[#e5e7eb] flex items-center justify-center">
-            <Building2 size={14} className="text-[#9ca3af]" />
+          <div className="h-8 w-8 shrink-0 rounded-full bg-[#FFFFFF] border border-[#e5e7eb] flex items-center justify-center">
+            <Building2 size={14} className="text-[#6B7280]" />
           </div>
-          <span className="text-sm font-semibold text-[#111827]">{company.name}</span>
+          <span className="text-sm font-semibold text-[#1A1A1A]">{company.name}</span>
         </div>
       </td>
-      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.industry || "—"}</td>
-      <td className="px-4 py-3.5 text-sm text-[#374151] max-w-[140px] truncate">
+      <td className="px-4 py-3.5 text-sm text-[#1A1A1A]">{company.industry || "—"}</td>
+      <td className="px-4 py-3.5 text-sm text-[#1A1A1A] max-w-[140px] truncate">
         {company.address ? company.address.slice(0, 22) + (company.address.length > 22 ? "…" : "") : "—"}
       </td>
       <td className="px-4 py-3.5">
@@ -172,7 +172,7 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
             onClick={(e) => e.stopPropagation()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-[#884c2d] hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-[#5A1A14] hover:underline"
           >
             <Globe size={12} />
             {company.website.replace(/^https?:\/\//, "").slice(0, 22)}…
@@ -183,12 +183,12 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
         <DocSignedBadge status={docStatusOf(company)} onChange={(next) => onVerifyDocument(company, next)} />
       </td>
-      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.leadSource || "—"}</td>
+      <td className="px-4 py-3.5 text-sm text-[#1A1A1A]">{company.leadSource || "—"}</td>
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
         <button
           ref={btnRef}
           onClick={toggleMenu}
-          className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#E5E7EB] hover:text-[#1A1A1A] transition-colors"
         >
           <MoreVertical size={14} />
         </button>
@@ -200,13 +200,13 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
           >
             <button
               onClick={() => { setMenuOpen(false); onOpen(company); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
             >
               <Eye size={14} /> Open
             </button>
             <button
               onClick={() => { setMenuOpen(false); onEdit(company); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]"
             >
               <Edit2 size={14} /> Edit company
             </button>
@@ -229,15 +229,15 @@ function FolderCard({ folder, count, active, onClick }) {
     <button
       onClick={onClick}
       className={`flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-colors ${
-        active ? "border-[#C57E5B] bg-[#fff8f6]" : "border-[#E1E4EA] bg-white hover:bg-[#fafafa]"
+        active ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#E5E7EB] bg-white hover:bg-[#E5E7EB]"
       }`}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#C57E5B] text-[#C57E5B]" : "border-[#E1E4EA] text-[#525866]"}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#5A1A14] text-[#5A1A14]" : "border-[#E5E7EB] text-[#6B7280]"}`}>
         <FolderIcon size={18} />
       </div>
       <div>
-        <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
-        <p className="text-xs text-[#525866] mt-0.5">{count} companies</p>
+        <p className="text-sm font-semibold text-[#1A1A1A]">{folder}</p>
+        <p className="text-xs text-[#6B7280] mt-0.5">{count} companies</p>
       </div>
     </button>
   );
@@ -247,15 +247,15 @@ function FolderRow({ folder, count, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center justify-between rounded-xl border border-[#E1E4EA] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa]"
+      className="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-left transition-colors hover:bg-[#E5E7EB]"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
           <FolderIcon size={16} />
         </div>
-        <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
+        <p className="text-sm font-semibold text-[#1A1A1A]">{folder}</p>
       </div>
-      <span className="text-xs text-[#525866]">{count} companies</span>
+      <span className="text-xs text-[#6B7280]">{count} companies</span>
     </button>
   );
 }
@@ -267,22 +267,22 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] transition-colors hover:bg-[#E5E7EB]"
             title="Back to all folders"
           >
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <FolderOpen size={18} className="text-[#C57E5B]" />
+            <FolderOpen size={18} className="text-[#5A1A14]" />
             <div>
-              <p className="text-base font-medium text-[#0E121B]">{folder}</p>
-              <p className="text-xs text-[#525866]">{companies.length} {companies.length === 1 ? "company" : "companies"}</p>
+              <p className="text-base font-medium text-[#1A1A1A]">{folder}</p>
+              <p className="text-xs text-[#6B7280]">{companies.length} {companies.length === 1 ? "company" : "companies"}</p>
             </div>
           </div>
         </div>
         <button
           onClick={onAdd}
-          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#C57E5B] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#b06a48] sm:self-auto"
+          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#5A1A14] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#6B7280] sm:self-auto"
         >
           <Plus size={15} />
           Add companies
@@ -290,11 +290,11 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
       </div>
 
       {companies.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white py-12 text-center">
+        <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white py-12 text-center">
           <p className="text-sm text-[#6b7280]">No companies in this folder yet.</p>
           <button
             onClick={onAdd}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#C57E5B] px-3.5 py-2 text-xs font-medium text-[#C57E5B] transition-colors hover:bg-[#fff8f6]"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#5A1A14] px-3.5 py-2 text-xs font-medium text-[#5A1A14] transition-colors hover:bg-[#E5E7EB]"
           >
             <Plus size={14} /> Add companies
           </button>
@@ -302,28 +302,28 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {companies.map((c) => (
-            <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
+            <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E5E7EB] bg-white p-4">
               <button
                 onClick={() => onRemove(c)}
-                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
+                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#6B7280] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
                 title="Remove from folder"
               >
                 <X size={14} />
               </button>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f3f4f6]">
-                  <Building2 size={15} className="text-[#9ca3af]" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#FFFFFF]">
+                  <Building2 size={15} className="text-[#6B7280]" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-[#111827]">{c.name}</p>
-                  <p className="truncate text-xs text-[#525866]">{c.industry || "—"}</p>
+                  <p className="truncate text-sm font-semibold text-[#1A1A1A]">{c.name}</p>
+                  <p className="truncate text-xs text-[#6B7280]">{c.industry || "—"}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between">
                 <DocSignedBadge status={docStatusOf(c)} onChange={(next) => onVerifyDocument(c, next)} />
                 <button
                   onClick={() => onOpenCompany(c)}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#884c2d] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[#5A1A14] hover:underline"
                 >
                   <Eye size={13} /> Open
                 </button>
@@ -351,14 +351,14 @@ function FolderModal({ onClose, onCreate }) {
       }
     >
       <label className="block">
-        <span className="text-xs font-semibold text-[#374151]">Folder name</span>
+        <span className="text-xs font-semibold text-[#1A1A1A]">Folder name</span>
         <input
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") onCreate(name); }}
           placeholder="e.g. Q3 Targets"
-          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+          className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
         />
       </label>
     </SidePanel>
@@ -396,10 +396,10 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5">
-        <Search size={15} className="text-[#1F2937]/50 shrink-0" />
+      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5">
+        <Search size={15} className="text-[#1A1A1A]/50 shrink-0" />
         <input
-          className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[#1A1A1A]/50"
           placeholder="Search companies…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -413,18 +413,18 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
             <label
               key={id}
               className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
-                checked ? "border-[#C57E5B] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"
+                checked ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"
               }`}
             >
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(id)}
-                className="rounded border-[#d1d5db] accent-[#884c2d]"
+                className="rounded border-[#E5E7EB] accent-[#5A1A14]"
               />
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#111827]">{c.name}</p>
-                <p className="truncate text-xs text-[#525866]">
+                <p className="truncate text-sm font-semibold text-[#1A1A1A]">{c.name}</p>
+                <p className="truncate text-xs text-[#6B7280]">
                   {c.industry || "—"}
                   {c.folder && c.folder !== folder ? ` · in ${c.folder}` : ""}
                 </p>
@@ -670,32 +670,32 @@ export default function Companies() {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Sub-header */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contracts</p>
+          <h1 className="text-base font-medium text-[#1A1A1A]">Companies</h1>
+          <p className="text-xs text-[#6B7280] mt-0.5">Manage your organisation contracts</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1A1A1A]/50 shrink-0" />
             <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1A1A1A]/50"
               placeholder="Search by name, industry, or status…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
           <div className="relative" ref={actionsRef}>
-            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
+            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] transition-colors">
               <MoreVertical size={16} />
             </button>
             {actionsOpen && (
               <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
                   <Download size={14} /> Export filtered CSV
                 </button>
-                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
                   <X size={14} /> Clear filters
                 </button>
               </div>
@@ -705,7 +705,7 @@ export default function Companies() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -716,7 +716,7 @@ export default function Companies() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#884c2d]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#5A1A14]" : "text-[#1A1A1A]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -739,16 +739,16 @@ export default function Companies() {
           {/* View toggle */}
           <button
             onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#F1F1F5]"}`}
+            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#5A1A14]/20" : "bg-[#F0EDE4]"}`}
           >
             <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
-              <Grid2x2 size={16} className={view === "hotlist" ? "text-[#C57E5B]" : "text-[#1F2937]"} />
-              <span className={view === "hotlist" ? "text-[#C57E5B]" : "text-[#1F2937]"}>Hotlist</span>
+              <Grid2x2 size={16} className={view === "hotlist" ? "text-[#5A1A14]" : "text-[#1A1A1A]"} />
+              <span className={view === "hotlist" ? "text-[#5A1A14]" : "text-[#1A1A1A]"}>Hotlist</span>
             </span>
           </button>
           <button
             onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#5A1A14] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
           >
             <Plus size={16} />
             Add Company
@@ -757,45 +757,45 @@ export default function Companies() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto bg-[#F1F1F5] p-6">
+      <div className="flex-1 overflow-auto bg-[#F0EDE4] p-6">
         {view === "table" ? (
-          <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
+          <div className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
-                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
                   <tr>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Company Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Industry
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Location
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Website
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         GSTIN
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Document Signed
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                         Lead Source
                       </div>
                     </th>
@@ -827,16 +827,16 @@ export default function Companies() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E5E7EB]">
               <p className="text-sm text-[#6b7280]">
-                Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
-                <span className="font-semibold text-[#111827]">{filtered.length}</span> Companies
+                Showing <span className="font-semibold text-[#1A1A1A]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
+                <span className="font-semibold text-[#1A1A1A]">{filtered.length}</span> Companies
               </p>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -846,8 +846,8 @@ export default function Companies() {
                     onClick={() => setPage(p)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                       p === page
-                        ? "bg-[#884c2d] text-white"
-                        : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
+                        ? "bg-[#5A1A14] text-white"
+                        : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
                     }`}
                   >
                     {p}
@@ -856,7 +856,7 @@ export default function Companies() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -866,16 +866,16 @@ export default function Companies() {
         ) : (
           <div className="flex flex-col gap-4">
             {/* Company Hotlists panel */}
-            <div className="flex flex-col gap-4 rounded-lg border border-[#E1E4EA] bg-white p-6 shadow-[0_4px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 rounded-lg border border-[#E5E7EB] bg-white p-6 shadow-[0_4px_4px_rgba(0,0,0,0.05)] sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-base font-medium text-[#0E121B]">Company Hotlists</p>
-                <p className="text-xs text-[#525866] mt-0.5">Organise your companies into custom folders</p>
+                <p className="text-base font-medium text-[#1A1A1A]">Company Hotlists</p>
+                <p className="text-xs text-[#6B7280] mt-0.5">Organise your companies into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-                  <Search size={15} className="text-[#1F2937]/50 shrink-0" />
+                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5 sm:w-72">
+                  <Search size={15} className="text-[#1A1A1A]/50 shrink-0" />
                   <input
-                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1F2937]/50"
+                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1A1A1A]/50"
                     placeholder="Search folders…"
                     value={folderSearch}
                     onChange={(e) => { setFolderSearch(e.target.value); setFolderPage(1); }}
@@ -883,7 +883,7 @@ export default function Companies() {
                 </div>
                 <button
                   onClick={() => setCreatingFolder(true)}
-                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#C57E5B] px-3.5 text-xs font-medium text-white hover:bg-[#b06a48] transition-colors"
+                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#5A1A14] px-3.5 text-xs font-medium text-white hover:bg-[#6B7280] transition-colors"
                 >
                   <FolderPlus size={15} />
                   New Folder
@@ -905,14 +905,14 @@ export default function Companies() {
               <>
                 {/* View toggle + folder pagination */}
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
+                  <p className="text-sm text-[#6B7280]">{visibleFolders.length} folders</p>
                   <div className="flex items-center gap-1.5">
-                    <div className="inline-flex h-9 items-center rounded-full border border-[#EAECF0] bg-white p-1">
+                    <div className="inline-flex h-9 items-center rounded-full border border-[#E5E7EB] bg-white p-1">
                       <button
                         onClick={() => setFolderView("list")}
                         title="List view"
                         className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                          folderView === "list" ? "bg-[#C57E5B] text-white" : "text-[#525866] hover:bg-[#f9fafb]"
+                          folderView === "list" ? "bg-[#5A1A14] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         <List size={15} />
@@ -921,7 +921,7 @@ export default function Companies() {
                         onClick={() => setFolderView("grid")}
                         title="Icon view"
                         className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                          folderView === "grid" ? "bg-[#C57E5B] text-white" : "text-[#525866] hover:bg-[#f9fafb]"
+                          folderView === "grid" ? "bg-[#5A1A14] text-white" : "text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         <Grid2x2 size={15} />
@@ -930,7 +930,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.max(1, p - 1))}
                       disabled={folderPage === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -939,7 +939,7 @@ export default function Companies() {
                         key={p}
                         onClick={() => setFolderPage(p)}
                         className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                          p === folderPage ? "bg-[#C57E5B] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"
+                          p === folderPage ? "bg-[#5A1A14] text-white" : "border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB]"
                         }`}
                       >
                         {p}
@@ -948,7 +948,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))}
                       disabled={folderPage === folderTotalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={16} />
                     </button>

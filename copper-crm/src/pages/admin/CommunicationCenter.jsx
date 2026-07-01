@@ -75,14 +75,14 @@ const VARIABLES = [
 
 function KpiCard({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-xl border border-[#E1E4EA] bg-white p-4">
+    <div className="rounded-xl border border-[#E5E7EB] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
           <Icon size={16} />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
+          <p className="mt-0.5 text-lg font-bold text-[#1A1A1A]">{value}</p>
         </div>
       </div>
     </div>
@@ -91,11 +91,11 @@ function KpiCard({ label, value, icon: Icon }) {
 
 function EmptyState({ title, text, action }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280]">
         <MessageCircle size={20} />
       </div>
-      <p className="text-sm font-semibold text-[#111827]">{title}</p>
+      <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">{text}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -117,15 +117,15 @@ function blocksToHtml(blocks) {
     const t = b.text || "";
     switch (b.type) {
       case "heading":
-        return `<h2 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#111827">${t}</h2>`;
+        return `<h2 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#1A1A1A">${t}</h2>`;
       case "muted":
         return `<p style="margin:0 0 12px;font-size:13px;color:#6b7280">${t}</p>`;
       case "button":
-        return `<p style="margin:16px 0"><a href="${b.href || "#"}" style="display:inline-block;background:#2563eb;color:#fff;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${t}</a></p>`;
+        return `<p style="margin:16px 0"><a href="${b.href || "#"}" style="display:inline-block;background:#5A1A14;color:#fff;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${t}</a></p>`;
       case "otp":
-        return `<p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${t}</p>`;
+        return `<p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#5A1A14">${t}</p>`;
       case "box":
-        return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#884c2d">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#525866">${t}</p></div>`;
+        return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #E5E7EB;background:#FFFFFF;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#5A1A14">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#6B7280">${t}</p></div>`;
       case "divider":
         return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">`;
       default: // "p"
@@ -189,18 +189,18 @@ function TemplatePreview({ subject, body, type }) {
   return (
     <div className="flex h-full flex-col">
       {subject && (
-        <div className="mb-3 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Subject</span>
-          <p className="mt-0.5 text-sm font-medium text-[#111827]">{subject}</p>
+        <div className="mb-3 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Subject</span>
+          <p className="mt-0.5 text-sm font-medium text-[#1A1A1A]">{subject}</p>
         </div>
       )}
       <div className="flex-1 overflow-auto rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-inner">
         <div
-          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: 1.6, color: "#111827", maxWidth: "100%" }}
-          dangerouslySetInnerHTML={{ __html: previewHtml || `<p style="color:#9ca3af">Preview will appear here…</p>` }}
+          style={{ fontFamily: "'DM Sans', system-ui, sans-serif", lineHeight: 1.6, color: "#1A1A1A", maxWidth: "100%" }}
+          dangerouslySetInnerHTML={{ __html: previewHtml || `<p style="color:#6B7280">Preview will appear here…</p>` }}
         />
         {type === "email" && (
-          <div style={{ marginTop: 26, borderTop: "1px solid #e5e7eb", paddingTop: 14, fontFamily: "'DM Sans', system-ui, sans-serif", color: "#111827" }}>
+          <div style={{ marginTop: 26, borderTop: "1px solid #e5e7eb", paddingTop: 14, fontFamily: "'DM Sans', system-ui, sans-serif", color: "#1A1A1A" }}>
             <p style={{ margin: 0, fontWeight: 700 }}>The Copper Studio Team</p>
             <p style={{ margin: "2px 0 0", fontSize: 13, color: "#6b7280" }}>contact@thecopperstudio.com</p>
           </div>
@@ -301,31 +301,31 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
               {testOpen && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-xl">
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="text-sm font-bold text-[#111827]">{isEmail ? "Send Test Email" : "Send Test Message"}</p>
-                    <button onClick={() => setTestOpen(false)} className="text-[#9ca3af] hover:text-[#374151]"><X size={14} /></button>
+                    <p className="text-sm font-bold text-[#1A1A1A]">{isEmail ? "Send Test Email" : "Send Test Message"}</p>
+                    <button onClick={() => setTestOpen(false)} className="text-[#6B7280] hover:text-[#1A1A1A]"><X size={14} /></button>
                   </div>
                   <div className="space-y-2">
                     <label className="block">
-                      <span className="text-[11px] font-semibold text-[#374151]">{isEmail ? "Send to (email address)" : "Send to (phone number)"}</span>
+                      <span className="text-[11px] font-semibold text-[#1A1A1A]">{isEmail ? "Send to (email address)" : "Send to (phone number)"}</span>
                       <input
                         value={testRecipient}
                         onChange={(e) => setTestRecipient(e.target.value)}
                         placeholder={isEmail ? "e.g. you@example.com" : "e.g. +919876543210"}
                         type={isEmail ? "email" : "tel"}
-                        className="mt-0.5 w-full rounded-lg border border-[#884c2d] px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        className="mt-0.5 w-full rounded-lg border border-[#5A1A14] px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#5A1A14]/20"
                       />
                     </label>
                     {templateVars.length > 0 && (
                       <>
-                        <p className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">Template variables</p>
+                        <p className="pt-1 text-[11px] font-semibold uppercase tracking-wide text-[#6B7280]">Template variables</p>
                         {templateVars.map((v) => (
                           <label key={v} className="block">
-                            <span className="text-[11px] font-semibold text-[#374151]">{`{{${v}}}`}</span>
+                            <span className="text-[11px] font-semibold text-[#1A1A1A]">{`{{${v}}}`}</span>
                             <input
                               value={testVars[v] || ""}
                               onChange={(e) => setTestVars((prev) => ({ ...prev, [v]: e.target.value }))}
                               placeholder={`Test value for ${v}`}
-                              className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                              className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
                             />
                           </label>
                         ))}
@@ -345,36 +345,36 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
         </div>
 
         {/* Body: form left, preview right */}
-        <div className="flex min-h-0 flex-1 divide-x divide-[#f3f4f6]">
+        <div className="flex min-h-0 flex-1 divide-x divide-[#FFFFFF]">
           {/* Left — form */}
           <div className="flex w-[380px] shrink-0 flex-col gap-4 overflow-y-auto p-6">
             <label className="block">
-              <span className="text-xs font-semibold text-[#374151]">Template name</span>
-              <input value={form.name || ""} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+              <span className="text-xs font-semibold text-[#1A1A1A]">Template name</span>
+              <input value={form.name || ""} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20" />
             </label>
             <label className="block">
-              <span className="text-xs font-semibold text-[#374151]">Category</span>
-              <select value={form.category || ""} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              <span className="text-xs font-semibold text-[#1A1A1A]">Category</span>
+              <select value={form.category || ""} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
                 <option value="">Select…</option>
                 {categories.map((c) => <option key={c}>{c}</option>)}
               </select>
             </label>
             {isEmail && (
               <label className="block">
-                <span className="text-xs font-semibold text-[#374151]">Subject line</span>
-                <input value={form.subject || ""} onChange={(e) => set("subject")(e.target.value)} placeholder="e.g. Invoice {{invoice_id}} for {{company_name}}" className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+                <span className="text-xs font-semibold text-[#1A1A1A]">Subject line</span>
+                <input value={form.subject || ""} onChange={(e) => set("subject")(e.target.value)} placeholder="e.g. Invoice {{invoice_id}} for {{company_name}}" className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20" />
               </label>
             )}
             <div className="block flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#374151]">Body</span>
+                <span className="text-xs font-semibold text-[#1A1A1A]">Body</span>
                 {/* Text / JSON toggle */}
                 <div className="flex rounded-lg border border-[#e5e7eb] p-0.5 text-[11px] font-semibold">
                   <button type="button" onClick={() => switchMode("text")}
-                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "text" ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
+                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "text" ? "bg-[#5A1A14] text-white" : "text-[#6b7280] hover:text-[#1A1A1A]"}`}
                   >Text</button>
                   <button type="button" onClick={() => switchMode("json")}
-                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "json" ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
+                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "json" ? "bg-[#5A1A14] text-white" : "text-[#6b7280] hover:text-[#1A1A1A]"}`}
                   >JSON</button>
                 </div>
               </div>
@@ -386,16 +386,16 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                 placeholder={bodyMode === "json"
                   ? `[\n  { "type": "heading", "text": "Hello {{client_name}}" },\n  { "type": "p", "text": "Your invoice {{invoice_id}} is attached." },\n  { "type": "muted", "text": "This is auto-generated." }\n]`
                   : "Hi {{client_name}},\n\nYour invoice {{invoice_id}} is attached.\n\nThanks,\nThe Copper Studio Team"}
-                className={`mt-1.5 w-full resize-none rounded-lg border px-3 py-2 text-xs leading-relaxed outline-none font-mono focus:ring-2 focus:ring-[#884c2d]/20 ${jsonError ? "border-red-400 focus:border-red-400" : "border-[#e5e7eb] focus:border-[#884c2d]"}`}
+                className={`mt-1.5 w-full resize-none rounded-lg border px-3 py-2 text-xs leading-relaxed outline-none font-mono focus:ring-2 focus:ring-[#5A1A14]/20 ${jsonError ? "border-red-400 focus:border-red-400" : "border-[#e5e7eb] focus:border-[#5A1A14]"}`}
               />
               {jsonError && <p className="mt-1 text-[11px] text-red-500">{jsonError}</p>}
               {bodyMode === "json" && !jsonError && (
-                <div className="mt-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] p-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Block types</p>
+                <div className="mt-2 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Block types</p>
                   <div className="mt-2 space-y-1">
                     {BLOCK_TYPES.map((b) => (
                       <div key={b.type} className="flex items-baseline gap-2">
-                        <code className="shrink-0 rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 text-[10px] text-[#884c2d]">{b.type}</code>
+                        <code className="shrink-0 rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 text-[10px] text-[#5A1A14]">{b.type}</code>
                         <span className="text-[10px] text-[#6b7280]">{b.desc}</span>
                       </div>
                     ))}
@@ -404,20 +404,20 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
               )}
             </div>
             <label className="block">
-              <span className="text-xs font-semibold text-[#374151]">Status</span>
-              <select value={form.status || "Draft"} onChange={(e) => set("status")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              <span className="text-xs font-semibold text-[#1A1A1A]">Status</span>
+              <select value={form.status || "Draft"} onChange={(e) => set("status")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
                 {["Draft", "Active"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </label>
-            <div className="rounded-xl bg-[#f9fafb] p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">Available variables</p>
+            <div className="rounded-xl bg-[#FFFFFF] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">Available variables</p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {VARIABLES.map((v) => (
                   <button
                     key={v}
                     type="button"
                     onClick={() => set("body")((form.body || "") + `{{${v}}}`)}
-                    className="rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 font-mono text-[11px] text-[#374151] hover:border-[#884c2d] hover:text-[#884c2d]"
+                    className="rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 font-mono text-[11px] text-[#1A1A1A] hover:border-[#5A1A14] hover:text-[#5A1A14]"
                   >{`{{${v}}}`}</button>
                 ))}
               </div>
@@ -425,8 +425,8 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
           </div>
 
           {/* Right — live preview */}
-          <div className="flex flex-1 flex-col overflow-y-auto bg-[#f8f8fb] p-6">
-            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Live Preview</p>
+          <div className="flex flex-1 flex-col overflow-y-auto bg-[#F0EDE4] p-6">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#6B7280]">Live Preview</p>
             <TemplatePreview subject={isEmail ? form.subject : null} body={form.body} type={type} />
           </div>
         </div>
@@ -440,13 +440,13 @@ function VariablesModal({ onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-xl border border-[#e5e7eb] bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-bold text-[#111827]">Template Variables</p>
-          <button onClick={onClose} className="text-[#9ca3af] hover:text-[#374151]"><X size={16} /></button>
+          <p className="text-sm font-bold text-[#1A1A1A]">Template Variables</p>
+          <button onClick={onClose} className="text-[#6B7280] hover:text-[#1A1A1A]"><X size={16} /></button>
         </div>
         <p className="mt-1 text-xs text-[#6b7280]">Use these placeholders inside any template body or subject.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {VARIABLES.map((variable) => (
-            <span key={variable} className="rounded-lg bg-[#f3f4f6] px-2 py-1 font-mono text-xs text-[#374151]">{`{{${variable}}}`}</span>
+            <span key={variable} className="rounded-lg bg-[#FFFFFF] px-2 py-1 font-mono text-xs text-[#1A1A1A]">{`{{${variable}}}`}</span>
           ))}
         </div>
       </div>
@@ -464,12 +464,12 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
     <div className="grid items-start gap-5 xl:grid-cols-[280px_minmax(0,1fr)_360px]">
       {/* Categories — fits its own content, no stretching */}
       <aside className="rounded-xl border border-[#e5e7eb] bg-white p-4">
-        <p className="text-sm font-bold text-[#111827]">Categories</p>
+        <p className="text-sm font-bold text-[#1A1A1A]">Categories</p>
         <div className="mt-3 space-y-1">
           {categories.map((category) => (
-            <button key={category} onClick={() => setQuery(category)} className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-[#374151] hover:bg-[#fafafa]">
+            <button key={category} onClick={() => setQuery(category)} className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-[#1A1A1A] hover:bg-[#E5E7EB]">
               <span>{category}</span>
-              <span className="text-xs text-[#9ca3af]">{records.filter((r) => r.category === category).length}</span>
+              <span className="text-xs text-[#6B7280]">{records.filter((r) => r.category === category).length}</span>
             </button>
           ))}
         </div>
@@ -477,27 +477,27 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
 
       {/* Templates — fixed height, scrollable list */}
       <section className="flex max-h-[calc(100vh-120px)] flex-col rounded-xl border border-[#e5e7eb] bg-white">
-        <div className="flex shrink-0 items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-            <Search size={14} className="text-[#9ca3af]" />
+        <div className="flex shrink-0 items-center justify-between border-b border-[#FFFFFF] px-4 py-3">
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] px-3">
+            <Search size={14} className="text-[#6B7280]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${type} templates`} className="w-60 bg-transparent text-sm outline-none" />
           </div>
           <Button onClick={onCreate}><Plus size={14} /> New Template</Button>
         </div>
         {filtered.length ? (
-          <div className="flex-1 overflow-y-auto divide-y divide-[#f3f4f6]">
+          <div className="flex-1 overflow-y-auto divide-y divide-[#FFFFFF]">
             {filtered.map((template) => (
-              <div key={template._id || template.id || template.name} className="p-4 hover:bg-[#fafafa] cursor-pointer" onClick={() => onEdit(template)}>
+              <div key={template._id || template.id || template.name} className="p-4 hover:bg-[#E5E7EB] cursor-pointer" onClick={() => onEdit(template)}>
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-bold text-[#111827]">{template.name || "Untitled template"}</p>
+                    <p className="text-sm font-bold text-[#1A1A1A]">{template.name || "Untitled template"}</p>
                     <p className="mt-1 text-xs text-[#6b7280]">{template.category || "No category"} - {template.status || "Draft"}</p>
-                    {template.subject && <p className="mt-2 text-sm text-[#374151]">{template.subject}</p>}
+                    {template.subject && <p className="mt-2 text-sm text-[#1A1A1A]">{template.subject}</p>}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
-                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
-                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
+                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"><Pencil size={13} /></button>
+                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"><Copy size={13} /></button>
+                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
                   </div>
                 </div>
               </div>
@@ -510,16 +510,16 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
 
       {/* Variables — fits its own content, no stretching */}
       <aside className="rounded-xl border border-[#e5e7eb] bg-white p-4">
-        <p className="text-sm font-bold text-[#111827]">Variables</p>
+        <p className="text-sm font-bold text-[#1A1A1A]">Variables</p>
         <p className="mt-1 text-xs text-[#6b7280]">Use these in templates for dynamic client communication.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {VARIABLES.map((variable) => (
-            <span key={variable} className="rounded-lg bg-[#f3f4f6] px-2 py-1 font-mono text-xs text-[#374151]">{`{{${variable}}}`}</span>
+            <span key={variable} className="rounded-lg bg-[#FFFFFF] px-2 py-1 font-mono text-xs text-[#1A1A1A]">{`{{${variable}}}`}</span>
           ))}
         </div>
-        <div className="mt-5 rounded-xl bg-[#fff8f6] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">Preview Pattern</p>
-          <p className="mt-2 text-sm text-[#374151]">Hello {"{{client_name}}"}, your {"{{proposal_id}}"} is ready for review.</p>
+        <div className="mt-5 rounded-xl bg-[#FFFFFF] p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#5A1A14]">Preview Pattern</p>
+          <p className="mt-2 text-sm text-[#1A1A1A]">Hello {"{{client_name}}"}, your {"{{proposal_id}}"} is ready for review.</p>
         </div>
       </aside>
     </div>
@@ -555,13 +555,13 @@ function DefaultTemplatesMenu({ defaults, existing, onPick }) {
                 key={def.category}
                 disabled={added}
                 onClick={() => { onPick(def); setOpen(false); }}
-                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-[#fafafa] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
               >
                 <span className="min-w-0">
-                  <span className="block truncate font-medium text-[#111827]">{def.name}</span>
-                  <span className="block truncate text-xs text-[#9ca3af]">{def.category}</span>
+                  <span className="block truncate font-medium text-[#1A1A1A]">{def.name}</span>
+                  <span className="block truncate text-xs text-[#6B7280]">{def.category}</span>
                 </span>
-                {added ? <span className="shrink-0 text-[10px] font-bold uppercase text-[#9ca3af]">Added</span> : <Plus size={14} className="shrink-0 text-[#884c2d]" />}
+                {added ? <span className="shrink-0 text-[10px] font-bold uppercase text-[#6B7280]">Added</span> : <Plus size={14} className="shrink-0 text-[#5A1A14]" />}
               </button>
             );
           })}
@@ -646,16 +646,16 @@ export default function CommunicationCenter({ mode = "email" }) {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#F1F1F5]">
+    <div className="flex min-h-full flex-col bg-[#F0EDE4]">
       {/* Header strip — matches Companies / Projects style */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
             <PageIcon size={15} />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base font-medium text-[#0E121B]">{page.title}</h1>
-            <p className="mt-0.5 truncate text-xs text-[#525866]">{page.subtitle}</p>
+            <h1 className="text-base font-medium text-[#1A1A1A]">{page.title}</h1>
+            <p className="mt-0.5 truncate text-xs text-[#6B7280]">{page.subtitle}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">

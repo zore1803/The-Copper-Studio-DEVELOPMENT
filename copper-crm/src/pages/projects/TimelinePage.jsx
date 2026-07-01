@@ -78,26 +78,26 @@ export default function TimelinePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+    <div className="flex flex-col min-h-full bg-[#F0EDE4]">
+      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Global Timeline</h1>
-          <p className="text-xs text-[#525866] mt-0.5">All project stages plotted on a master Gantt chart.</p>
+          <h1 className="text-base font-medium text-[#1A1A1A]">Global Timeline</h1>
+          <p className="text-xs text-[#6B7280] mt-0.5">All project stages plotted on a master Gantt chart.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3">
-            <Search size={14} className="text-[#9ca3af]" />
+          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-3">
+            <Search size={14} className="text-[#6B7280]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects..."
-              className="w-44 bg-transparent text-sm text-[#111827] outline-none"
+              className="w-44 bg-transparent text-sm text-[#1A1A1A] outline-none"
             />
           </div>
           <select
             value={selectedPackage}
             onChange={(e) => setSelectedPackage(e.target.value)}
-            className="h-9 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#884c2d]"
+            className="h-9 rounded-lg border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#1A1A1A] outline-none focus:ring-2 focus:ring-[#5A1A14]"
           >
             {packages.map(pkg => (
               <option key={pkg} value={pkg}>{pkg === "All" ? "All Packages" : pkg}</option>
@@ -111,8 +111,8 @@ export default function TimelinePage() {
         <div className="flex justify-center py-20 text-sm text-[#6b7280]">Loading timeline...</div>
       ) : !filteredProjects.length ? (
         <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-16 text-center">
-          <FolderKanban size={28} className="mx-auto mb-3 text-[#884c2d]" />
-          <p className="text-sm font-semibold text-[#111827]">No projects found.</p>
+          <FolderKanban size={28} className="mx-auto mb-3 text-[#5A1A14]" />
+          <p className="text-sm font-semibold text-[#1A1A1A]">No projects found.</p>
           <p className="mt-1 text-sm text-[#6b7280]">Try adjusting your search or package filter.</p>
         </div>
       ) : (

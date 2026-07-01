@@ -61,11 +61,11 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
       <div className="px-6 py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
-              <FolderKanban size={24} className="text-[#884c2d]" />
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#FFFFFF]">
+              <FolderKanban size={24} className="text-[#5A1A14]" />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-bold text-[#111827]">{project.name}</h2>
+              <h2 className="truncate text-2xl font-bold text-[#1A1A1A]">{project.name}</h2>
               {project.clientProjectName && project.clientProjectName !== project.name && (
                 <p className="mt-0.5 truncate text-sm text-[#6b7280]">“{project.clientProjectName}”</p>
               )}
@@ -83,7 +83,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
                       </div>
                     ))}
                     {team.length > 3 && (
-                      <div className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
+                      <div className="grid h-7 w-7 place-items-center rounded-full bg-[#6B7280] text-[10px] font-bold text-white ring-2 ring-white">
                         +{team.length - 3}
                       </div>
                     )}
@@ -92,14 +92,14 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-[#6b7280]">
                 <span className="flex items-center gap-1.5">
-                  <Calendar size={13} className="text-[#884c2d]" /> Start: <span className="font-semibold text-[#111827]">{startDate}</span>
+                  <Calendar size={13} className="text-[#5A1A14]" /> Start: <span className="font-semibold text-[#1A1A1A]">{startDate}</span>
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <CalendarCheck size={13} className="text-[#884c2d]" /> Expected: <span className="font-semibold text-[#111827]">{expectedDate}</span>
+                  <CalendarCheck size={13} className="text-[#5A1A14]" /> Expected: <span className="font-semibold text-[#1A1A1A]">{expectedDate}</span>
                 </span>
                 {packageName && (
                   <span className="flex items-center gap-1.5">
-                    <Package size={13} className="text-[#884c2d]" /> Package: <span className="font-semibold text-[#111827]">{packageName}</span>
+                    <Package size={13} className="text-[#5A1A14]" /> Package: <span className="font-semibold text-[#1A1A1A]">{packageName}</span>
                   </span>
                 )}
               </div>
@@ -123,7 +123,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               key={tab.label}
               to={tab.to}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                tab.label === activeTab ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"
+                tab.label === activeTab ? "bg-[#5A1A14] text-white" : "text-[#6b7280] hover:bg-[#E5E7EB]"
               }`}
             >
               {tab.label}

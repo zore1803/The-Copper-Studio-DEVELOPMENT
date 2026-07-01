@@ -19,7 +19,7 @@ const styles = {
     icon: Info,
     border: "border-blue-100",
     bg: "bg-blue-50",
-    iconText: "text-[#2563EB]",
+    iconText: "text-[#5A1A14]",
   },
 };
 

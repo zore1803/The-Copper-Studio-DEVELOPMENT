@@ -103,11 +103,11 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       <button
         ref={buttonRef}
         onClick={() => setOpen((value) => !value)}
-        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-9 w-9"}`}
+        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"} ${buttonClassName || "h-9 w-9"}`}
       >
         <Filter size={16} />
         {activeCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#884c2d] text-[10px] font-bold text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#5A1A14] text-[10px] font-bold text-white">
             {activeCount}
           </span>
         )}
@@ -116,9 +116,9 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
         <div
           ref={panelRef}
           style={panelStyle}
-          className={`fixed z-[9999] overflow-hidden rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-2xl shadow-[#111827]/15 ${panelClassName}`}
+          className={`fixed z-[9999] overflow-hidden rounded-xl border border-[#e5e7eb] bg-white p-3 shadow-2xl shadow-[#1A1A1A]/15 ${panelClassName}`}
         >
-          <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Filters</p>
+          <p className="px-1 pb-2 text-xs font-bold uppercase tracking-wide text-[#6B7280]">Filters</p>
           <div
             style={{ maxHeight: `calc(${panelStyle.maxHeight || 360}px - 88px)` }}
             className="grid grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
@@ -131,13 +131,13 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
                     value={draft[field.key] ?? ""}
                     onChange={(event) => setDraftValue(field.key, event.target.value)}
                     placeholder={field.placeholder}
-                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none transition-all focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
                   />
                 ) : (
                   <select
                     value={draft[field.key] ?? defaultValueFor(field)}
                     onChange={(event) => setDraftValue(field.key, event.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d]"
+                    className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#5A1A14]"
                   >
                     {(field.options || []).map((option) => {
                       const optValue = typeof option === "object" ? option.value : option;
@@ -149,7 +149,7 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
               </label>
             ))}
           </div>
-          <div className="mt-3 flex justify-end gap-2 border-t border-[#f3f4f6] pt-3">
+          <div className="mt-3 flex justify-end gap-2 border-t border-[#FFFFFF] pt-3">
             <Button variant="secondary" onClick={resetFilters}><X size={14} /> Reset</Button>
             <Button onClick={applyFilters}>Apply</Button>
           </div>

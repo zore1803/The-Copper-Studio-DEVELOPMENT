@@ -44,7 +44,7 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
 
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`} ref={rootRef}>
-      {label && <span className="text-xs font-semibold text-[#374151]">{label}</span>}
+      {label && <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>}
       <div className="mt-1.5 flex gap-2">
         <div className="relative">
           <button
@@ -52,11 +52,11 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
             disabled={disabled}
             onClick={() => setOpen((v) => !v)}
             className={`flex h-[38px] items-center gap-1 rounded-lg border px-2.5 text-sm outline-none transition-all ${
-              error ? "border-red-300" : "border-[#e5e7eb] focus:border-[#884c2d]"
-            } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : "hover:bg-[#f9fafb]"}`}
+              error ? "border-red-300" : "border-[#e5e7eb] focus:border-[#5A1A14]"
+            } ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : "hover:bg-[#E5E7EB]"}`}
           >
-            <span className="font-semibold text-[#374151]">{selectedCountry?.dial || dialCode}</span>
-            <ChevronDown size={13} className="text-[#9ca3af]" />
+            <span className="font-semibold text-[#1A1A1A]">{selectedCountry?.dial || dialCode}</span>
+            <ChevronDown size={13} className="text-[#6B7280]" />
           </button>
           {open && !disabled && (
             <div className="absolute z-50 mt-1 w-64 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white shadow-lg">
@@ -69,7 +69,7 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
               />
               <div className="max-h-56 overflow-y-auto">
                 {filtered.length === 0 ? (
-                  <p className="px-3 py-2 text-sm text-[#9ca3af]">No matches</p>
+                  <p className="px-3 py-2 text-sm text-[#6B7280]">No matches</p>
                 ) : (
                   filtered.map((country) => (
                     <button
@@ -77,12 +77,12 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
                       type="button"
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => pickCountry(country)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[#fff1ec] ${
-                        country.dial === dialCode ? "bg-[#fff1ec] font-semibold text-[#884c2d]" : "text-[#374151]"
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${
+                        country.dial === dialCode ? "bg-[#FFFFFF] font-semibold text-[#5A1A14]" : "text-[#1A1A1A]"
                       }`}
                     >
                       <span className="truncate">{country.name}</span>
-                      <span className="shrink-0 text-[#9ca3af]">{country.dial}</span>
+                      <span className="shrink-0 text-[#6B7280]">{country.dial}</span>
                     </button>
                   ))
                 )}
@@ -100,14 +100,14 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
           maxLength={10}
           aria-invalid={Boolean(error)}
           className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
-          } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#5A1A14] focus:ring-[#5A1A14]/20"
+          } ${disabled ? "bg-[#FFFFFF] text-[#6b7280]" : ""}`}
         />
       </div>
       {error ? (
         <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
       ) : hint ? (
-        <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>
+        <span className="mt-1 block text-[11px] text-[#6B7280]">{hint}</span>
       ) : null}
     </label>
   );

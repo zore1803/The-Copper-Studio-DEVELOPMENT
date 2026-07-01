@@ -42,12 +42,12 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
           <Icon size={17} />
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
+          <p className="mt-0.5 text-lg font-bold text-[#1A1A1A]">{value}</p>
         </div>
       </div>
     </div>
@@ -56,11 +56,11 @@ function Metric({ label, value, icon: Icon }) {
 
 function EmptyState({ title, text }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
         <PackageCheck size={20} />
       </div>
-      <p className="text-sm font-semibold text-[#111827]">{title}</p>
+      <p className="text-sm font-semibold text-[#1A1A1A]">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-[#6b7280]">{text}</p>
     </div>
   );
@@ -69,13 +69,13 @@ function EmptyState({ title, text }) {
 function Field({ label, value, onChange, type = "text", options }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14]">
           {options.map((opt) => <option key={opt}>{opt}</option>)}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20" />
       )}
     </label>
   );
@@ -185,18 +185,18 @@ export default function Payments() {
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-[#F1F1F5]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
+    <div className="flex flex-col min-h-full bg-[#F0EDE4]">
+      <div className="flex flex-col gap-4 border-b border-[#E5E7EB] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Payments</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
+          <h1 className="text-base font-medium text-[#1A1A1A]">Payments</h1>
+          <p className="text-xs text-[#6B7280] mt-0.5">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1A1A1A]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1A1A1A]/50 shrink-0" />
             <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1A1A1A]/50"
               placeholder="Search by ID, company, or status…"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
@@ -206,7 +206,7 @@ export default function Payments() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#E5E7EB] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -217,7 +217,7 @@ export default function Payments() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#884c2d]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#E5E7EB] ${sortBy === opt.value ? "font-semibold text-[#5A1A14]" : "text-[#1A1A1A]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -237,7 +237,7 @@ export default function Payments() {
           />
           <button
             onClick={() => setCreating(true)}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#C57E5B] px-4 text-sm font-medium text-white hover:bg-[#b06a48] transition-colors shadow-sm"
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#5A1A14] px-4 text-sm font-medium text-white hover:bg-[#6B7280] transition-colors shadow-sm"
           >
             <Plus size={16} /> New Payment
           </button>
@@ -257,19 +257,19 @@ export default function Payments() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
                   <tr>
-                    {["Payment ID", "Company", "Amount", "Method", "Gateway", "Status"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
+                    {["Payment ID", "Company", "Amount", "Method", "Gateway", "Status"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#6B7280]">{head}</th>)}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#f3f4f6]">
+                <tbody className="divide-y divide-[#FFFFFF]">
                   {paginated.map((row) => (
-                    <tr key={row._id || row.id || row.paymentId} className="hover:bg-[#fafafa]">
+                    <tr key={row._id || row.id || row.paymentId} className="hover:bg-[#E5E7EB]">
                       <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.paymentId || row.id || row._id}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{row.company || "Not linked"}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(row.amount))}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{row.paymentMethod || row.method || "Not added"}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{row.gateway || "Razorpay"}</td>
+                      <td className="px-4 py-3 text-sm text-[#1A1A1A]">{row.company || "Not linked"}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-[#1A1A1A]">{money(parseMoney(row.amount))}</td>
+                      <td className="px-4 py-3 text-sm text-[#1A1A1A]">{row.paymentMethod || row.method || "Not added"}</td>
+                      <td className="px-4 py-3 text-sm text-[#1A1A1A]">{row.gateway || "Razorpay"}</td>
                       <td className="px-4 py-3"><Status value={row.status || "Pending"} /></td>
                     </tr>
                   ))}
@@ -278,16 +278,16 @@ export default function Payments() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E5E7EB]">
               <p className="text-sm text-[#6b7280]">
-                Showing <span className="font-semibold text-[#111827]">{paginated.length}</span> of{" "}
-                <span className="font-semibold text-[#111827]">{sorted.length}</span> Payments
+                Showing <span className="font-semibold text-[#1A1A1A]">{paginated.length}</span> of{" "}
+                <span className="font-semibold text-[#1A1A1A]">{sorted.length}</span> Payments
               </p>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -297,8 +297,8 @@ export default function Payments() {
                     onClick={() => setPage(p)}
                     className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                       p === page
-                        ? "bg-[#884c2d] text-white"
-                        : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"
+                        ? "bg-[#5A1A14] text-white"
+                        : "border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"
                     }`}
                   >
                     {p}
@@ -307,7 +307,7 @@ export default function Payments() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -332,6 +332,6 @@ function Status({ value }) {
       ? "bg-red-50 text-red-600"
       : /pending|processing/i.test(value)
         ? "bg-amber-50 text-amber-700"
-        : "bg-[#f3f4f6] text-[#6b7280]";
+        : "bg-[#FFFFFF] text-[#6b7280]";
   return <span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{value}</span>;
 }

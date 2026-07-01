@@ -467,7 +467,7 @@ function renderPackagesPage() {
   // Cold first load with no cache yet — show a loading state rather than the
   // stale hardcoded prices while the live pricing is fetched from the database.
   if (!packagesLoaded) {
-    packageGrid.innerHTML = `<p class="package-loading" style="grid-column:1/-1;text-align:center;color:#8a6a55;padding:48px 0;font-size:0.95rem;">Loading packages…</p>`;
+    packageGrid.innerHTML = `<p class="package-loading" style="grid-column:1/-1;text-align:center;color:#6B7280;padding:48px 0;font-size:0.95rem;">Loading packages…</p>`;
     return;
   }
 
@@ -897,7 +897,7 @@ function renderPaymentPage() {
           packageName: pkg.name
         },
         theme: {
-          color: "#884c2d"
+          color: "#5A1A14"
         },
         handler: async (response) => {
           // Razorpay calls this after a successful charge. Wrap it so a failing

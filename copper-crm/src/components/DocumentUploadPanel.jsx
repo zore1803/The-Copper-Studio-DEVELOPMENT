@@ -126,19 +126,19 @@ export default function DocumentUploadPanel({
     >
       <div className="space-y-4">
         {/* Destination — where the document will be filed. */}
-        <div className="rounded-lg border border-[#e5e7eb] bg-[#fafafa] p-3 space-y-3">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Destination folder</p>
+        <div className="rounded-lg border border-[#e5e7eb] bg-[#FFFFFF] p-3 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#6B7280]">Destination folder</p>
           {company ? (
             <div className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm">
-              <span className="text-[#6b7280]">Company:</span> <span className="font-semibold text-[#111827]">{company.name}</span>
+              <span className="text-[#6b7280]">Company:</span> <span className="font-semibold text-[#1A1A1A]">{company.name}</span>
             </div>
           ) : (
             <label className="block">
-              <span className="text-xs font-semibold text-[#374151]">Company *</span>
+              <span className="text-xs font-semibold text-[#1A1A1A]">Company *</span>
               <select
                 value={form.companyId}
                 onChange={(e) => setForm((prev) => ({ ...prev, companyId: e.target.value, projectId: "" }))}
-                className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
               >
                 <option value="">Select a company…</option>
                 {companies.map((c) => (
@@ -148,19 +148,19 @@ export default function DocumentUploadPanel({
             </label>
           )}
           <label className="block">
-            <span className="text-xs font-semibold text-[#374151]">Project folder</span>
+            <span className="text-xs font-semibold text-[#1A1A1A]">Project folder</span>
             <select
               value={form.projectId}
               onChange={(e) => set("projectId")(e.target.value)}
               disabled={!form.companyId}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#9ca3af]"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20 disabled:bg-[#FFFFFF] disabled:text-[#6B7280]"
             >
               <option value="">Company level (no specific project)</option>
               {companyProjects.map((p) => (
                 <option key={p._id || p.id} value={p._id || p.id}>{p.name || p.projectName || "Untitled project"}</option>
               ))}
             </select>
-            <span className="mt-1 block text-[11px] text-[#9ca3af]">
+            <span className="mt-1 block text-[11px] text-[#6B7280]">
               {!form.companyId
                 ? "Pick a company first to choose its project folder."
                 : form.projectId
@@ -172,13 +172,13 @@ export default function DocumentUploadPanel({
 
         {/* File */}
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">File *</span>
-          <div className="mt-1.5 rounded-lg border border-dashed border-[#d8c2b9] bg-[#fff8f6] px-3 py-3">
+          <span className="text-xs font-semibold text-[#1A1A1A]">File *</span>
+          <div className="mt-1.5 rounded-lg border border-dashed border-[#6B7280] bg-[#FFFFFF] px-3 py-3">
             <div className="flex items-center gap-3">
               <input id="shared-doc-browse" type="file" className="hidden" onChange={handleBrowse} disabled={reading || saving} />
               <label
                 htmlFor="shared-doc-browse"
-                className={`rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+                className={`rounded-lg bg-[#5A1A14] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6B7280] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
               >
                 Browse…
               </label>
@@ -186,21 +186,21 @@ export default function DocumentUploadPanel({
             </div>
             {reading && (
               <div className="mt-2.5">
-                <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
+                <div className="mb-1 flex justify-between text-[10px] font-bold uppercase tracking-wide text-[#6B7280]">
                   <span>Reading file</span><span>{readPct}%</span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${readPct}%` }} />
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+                  <div className="h-full rounded-full bg-[#5A1A14] transition-all" style={{ width: `${readPct}%` }} />
                 </div>
               </div>
             )}
             {saving && (
               <div className="mt-2.5">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#884c2d]">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#5A1A14]">
                   <Loader2 size={11} className="animate-spin" /> Uploading to server…
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#884c2d]" />
+                <div className="h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#5A1A14]" />
                 </div>
               </div>
             )}
@@ -208,18 +208,18 @@ export default function DocumentUploadPanel({
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">File name *</span>
-          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+          <span className="text-xs font-semibold text-[#1A1A1A]">File name *</span>
+          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20" />
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Category</span>
+          <span className="text-xs font-semibold text-[#1A1A1A]">Category</span>
           <input
             list="doc-categories"
             value={form.category}
             onChange={(e) => set("category")(e.target.value)}
             placeholder="Select or type a custom category…"
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
           />
           <datalist id="doc-categories">
             {DOCUMENT_CATEGORIES.map((category) => <option key={category} value={category} />)}
@@ -230,30 +230,30 @@ export default function DocumentUploadPanel({
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">File type</span>
-          <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+          <span className="text-xs font-semibold text-[#1A1A1A]">File type</span>
+          <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20">
             {FILE_TYPES.map((type) => <option key={type}>{type}</option>)}
           </select>
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">…or paste a file URL</span>
+          <span className="text-xs font-semibold text-[#1A1A1A]">…or paste a file URL</span>
           <input
             value={fileReady ? "" : form.fileUrl}
             onChange={(e) => set("fileUrl")(e.target.value)}
             disabled={fileReady}
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f9fafb] disabled:text-[#9ca3af]"
+            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20 disabled:bg-[#FFFFFF] disabled:text-[#6B7280]"
           />
-          <span className="mt-1 block text-[11px] text-[#9ca3af]">Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above.</span>
+          <span className="mt-1 block text-[11px] text-[#6B7280]">Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above.</span>
         </label>
 
         <label className="block">
-          <span className="text-xs font-semibold text-[#374151]">Notes</span>
+          <span className="text-xs font-semibold text-[#1A1A1A]">Notes</span>
           <textarea
             value={form.notes}
             onChange={(e) => set("notes")(e.target.value)}
             rows={3}
-            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
           />
         </label>
       </div>

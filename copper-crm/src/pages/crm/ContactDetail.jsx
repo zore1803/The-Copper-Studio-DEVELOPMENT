@@ -55,10 +55,10 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#884c2d] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#5A1A14] bg-[#FFFFFF]" : "border-[#e5e7eb] hover:bg-[#E5E7EB]"}`}
               >
-                <span className="font-semibold text-[#111827]">{project.name}</span>
-                <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#884c2d]" />
+                <span className="font-semibold text-[#1A1A1A]">{project.name}</span>
+                <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#E5E7EB] accent-[#5A1A14]" />
               </label>
             );
           })}
@@ -75,13 +75,13 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
 function NoteInput({ label, value, onChange, placeholder }) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold text-[#374151]">{label}</span>
+      <span className="text-xs font-semibold text-[#1A1A1A]">{label}</span>
       <textarea
         value={value || ""}
         rows={1}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full resize-none overflow-hidden rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
         onInput={(event) => { event.target.style.height = "auto"; event.target.style.height = `${event.target.scrollHeight}px`; }}
         ref={(el) => { if (el) { el.style.height = "auto"; el.style.height = `${el.scrollHeight}px`; } }}
       />
@@ -121,7 +121,7 @@ const TABS = ["Overview", "Projects", "Meetings", "Documents", "Notes", "Activit
 function LinkedInGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#1877B5" />
+      <circle cx="28" cy="28" r="28" fill="#5A1A14" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -137,11 +137,11 @@ function InstagramGlyph(props) {
     <svg viewBox="0 0 56 56" {...props}>
       <defs>
         <linearGradient id="igGradientContact" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#FED576" />
-          <stop offset="25%" stopColor="#F47133" />
-          <stop offset="50%" stopColor="#BC3081" />
-          <stop offset="75%" stopColor="#C92F88" />
-          <stop offset="100%" stopColor="#8B3AB5" />
+          <stop offset="0%" stopColor="#5A1A14" />
+          <stop offset="25%" stopColor="#5A1A14" />
+          <stop offset="50%" stopColor="#5A1A14" />
+          <stop offset="75%" stopColor="#5A1A14" />
+          <stop offset="100%" stopColor="#5A1A14" />
         </linearGradient>
       </defs>
       <rect width="56" height="56" rx="14" fill="url(#igGradientContact)" />
@@ -155,7 +155,7 @@ function InstagramGlyph(props) {
 function FacebookGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <circle cx="28" cy="28" r="28" fill="#1877F2" />
+      <circle cx="28" cy="28" r="28" fill="#5A1A14" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -169,7 +169,7 @@ function FacebookGlyph(props) {
 function XGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <rect width="56" height="56" rx="12" fill="#000" />
+      <rect width="56" height="56" rx="12" fill="#1A1A1A" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
@@ -199,7 +199,7 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
       target="_blank"
       rel="noopener noreferrer"
       title={label}
-      style={{ color: "#0EA5E9", backgroundColor: "#E0F2FE" }}
+      style={{ color: "#5A1A14", backgroundColor: "#FFFFFF" }}
       className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent transition-transform hover:scale-110"
     >
       <Icon size={13} />
@@ -210,8 +210,8 @@ function WebsiteIconLink({ href, icon: Icon, label }) {
 function InfoLine({ label, value }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-      <p className="mt-0.5 text-[#374151]">{value || "Not added"}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{label}</p>
+      <p className="mt-0.5 text-[#1A1A1A]">{value || "Not added"}</p>
     </div>
   );
 }
@@ -220,12 +220,12 @@ function KpiChip({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
+          <p className="mt-0.5 text-base font-bold leading-tight text-[#1A1A1A]" title={String(value)}>{value}</p>
         </div>
       </div>
     </div>
@@ -234,8 +234,8 @@ function KpiChip({ label, value, icon: Icon }) {
 
 function EmptyTab({ icon: Icon, text }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+    <div className="rounded-xl border border-dashed border-[#E5E7EB] bg-white p-10 text-center">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#5A1A14]">
         <Icon size={20} />
       </div>
       <p className="text-sm text-[#6b7280]">{text}</p>
@@ -408,7 +408,7 @@ export default function ContactDetail() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#f8fafc]">
+    <div className="flex min-h-full flex-col bg-[#FFFFFF]">
       <div className="border-b border-[#e5e7eb] bg-white">
         <div className="px-6 py-8">
           <button onClick={() => navigate(-1)} className="mb-5 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-800">
@@ -417,11 +417,11 @@ export default function ContactDetail() {
 
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#FFFFFF]">
                 <Avatar name={contactFullName(contact)} size="lg" />
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-2xl font-bold text-[#111827]">{contactFullName(contact)}</h2>
+                <h2 className="truncate text-2xl font-bold text-[#1A1A1A]">{contactFullName(contact)}</h2>
                 <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[#6b7280]">
                   <span>{contact.designation || "No designation"}</span>
                   <span className="inline-flex items-center gap-1"><Building2 size={12} /> {companyName}</span>
@@ -432,7 +432,7 @@ export default function ContactDetail() {
                 {roles.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {roles.map((role) => (
-                      <span key={role} className="rounded-full bg-[#fff1ec] px-2 py-0.5 text-[11px] font-semibold text-[#884c2d]">{role}</span>
+                      <span key={role} className="rounded-full bg-[#FFFFFF] px-2 py-0.5 text-[11px] font-semibold text-[#5A1A14]">{role}</span>
                     ))}
                   </div>
                 )}
@@ -453,17 +453,17 @@ export default function ContactDetail() {
                 companyName={companyName}
                 triggerLabel="Share Contact"
                 iconSize={14}
-                triggerClassName="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-4 text-sm font-semibold text-[#1F2937] transition-colors hover:bg-[#f9fafb]"
+                triggerClassName="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#E5E7EB]"
               />
               <button
                 onClick={() => setManagingAccess(true)}
-                className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#884c2d] hover:bg-[#ffe7da]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
+                className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#6B7280] bg-[#FFFFFF] text-[#5A1A14] hover:bg-[#E5E7EB]" : "border-[#6B7280] bg-white text-[#1A1A1A] hover:bg-[#E5E7EB]"}`}
               >
                 <LinkIcon size={14} /> Project Access
               </button>
               <button
                 onClick={() => setEditing(true)}
-                className="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec]"
+                className="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#6B7280] bg-white px-4 text-sm font-semibold text-[#1A1A1A] transition-colors hover:bg-[#E5E7EB]"
               >
                 <Pencil size={14} /> Edit Contact
               </button>
@@ -473,7 +473,7 @@ export default function ContactDetail() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#f1f1f5] bg-[#fafafa] p-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#F0EDE4] bg-[#FFFFFF] p-4 sm:grid-cols-3 lg:grid-cols-5">
             <InfoLine label="Company" value={companyName} />
             <InfoLine label="Designation" value={contact.designation} />
             <InfoLine label="Email" value={contact.email} />
@@ -495,13 +495,13 @@ export default function ContactDetail() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#1D1E22] hover:text-[#884c2d]"}`}
+              className={`flex items-center gap-1.5 whitespace-nowrap border-b-[3px] px-4 py-3 text-sm font-semibold transition-colors ${activeTab === tab ? "border-[#5A1A14] text-[#5A1A14]" : "border-transparent text-[#1A1A1A] hover:text-[#5A1A14]"}`}
             >
               {tab}
               {Boolean(tabCounts[tab]) && (
                 <span
                   className={`grid h-5 min-w-[20px] place-items-center rounded-full px-1.5 text-[11px] font-bold ${
-                    activeTab === tab ? "bg-[#C57E5B] text-white" : "bg-[#e5e7eb] text-[#374151]"
+                    activeTab === tab ? "bg-[#5A1A14] text-white" : "bg-[#e5e7eb] text-[#1A1A1A]"
                   }`}
                 >
                   {tabCounts[tab]}
@@ -516,7 +516,7 @@ export default function ContactDetail() {
         {activeTab === "Overview" && (
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-              <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+              <div className="bg-[#FFFFFF] border-b border-[#E5E7EB] px-5 py-3">
                 <p className="text-sm font-bold text-gray-700">Contact Details</p>
               </div>
               <div className="p-5">
@@ -531,8 +531,8 @@ export default function ContactDetail() {
                 <Detail label="Alternative Number" value={contact.alternatePhone} />
               </div>
               {contact.preferences && (
-                <div className="mt-5 border-t border-[#f1f1f5] pt-4">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">Preferences</p>
+                <div className="mt-5 border-t border-[#F0EDE4] pt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">Preferences</p>
                   <p className="text-sm text-gray-600">{contact.preferences}</p>
                 </div>
               )}
@@ -540,7 +540,7 @@ export default function ContactDetail() {
             </div>
 
             <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-              <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+              <div className="bg-[#FFFFFF] border-b border-[#E5E7EB] px-5 py-3">
                 <p className="text-sm font-bold text-gray-700">Associated Contacts</p>
               </div>
               <div className="p-5">
@@ -573,11 +573,11 @@ export default function ContactDetail() {
                 <button
                   key={p._id || p.id}
                   onClick={() => openProject(p)}
-                  className="rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-all hover:border-[#cda88f] hover:shadow-sm"
+                  className="rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-all hover:border-[#5A1A14] hover:shadow-sm"
                 >
                   <div className="flex items-center gap-2">
-                    <FolderKanban size={15} className="shrink-0 text-[#884c2d]" />
-                    <p className="truncate font-semibold text-[#111827]">{p.name || "Untitled project"}</p>
+                    <FolderKanban size={15} className="shrink-0 text-[#5A1A14]" />
+                    <p className="truncate font-semibold text-[#1A1A1A]">{p.name || "Untitled project"}</p>
                   </div>
                   <p className="mt-1 text-xs text-[#6b7280]">{p.status || p.currentPhase || "—"}</p>
                 </button>
@@ -592,8 +592,8 @@ export default function ContactDetail() {
               {linkedMeetings.map((m) => (
                 <div key={m._id || m.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <Calendar size={15} className="text-[#884c2d]" />
-                    <p className="text-sm font-semibold text-[#111827]">{m.title || m.subject || "Meeting"}</p>
+                    <Calendar size={15} className="text-[#5A1A14]" />
+                    <p className="text-sm font-semibold text-[#1A1A1A]">{m.title || m.subject || "Meeting"}</p>
                   </div>
                   <span className="text-xs text-[#6b7280]">{formatDate(m.scheduled || m.scheduledAt || m.createdAt)}</span>
                 </div>
@@ -608,8 +608,8 @@ export default function ContactDetail() {
               {linkedDocuments.map((d) => (
                 <div key={d._id || d.id} className="flex items-center justify-between rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <FileText size={15} className="shrink-0 text-[#884c2d]" />
-                    <p className="truncate text-sm font-semibold text-[#111827]">{d.name || d.fileName || "Document"}</p>
+                    <FileText size={15} className="shrink-0 text-[#5A1A14]" />
+                    <p className="truncate text-sm font-semibold text-[#1A1A1A]">{d.name || d.fileName || "Document"}</p>
                   </div>
                   <span className="text-xs text-[#6b7280]">{d.category || d.fileType || "—"}</span>
                 </div>
@@ -627,25 +627,25 @@ export default function ContactDetail() {
             {linkedNotes.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 <div className="flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-2.5">
-                  <Search size={13} className="text-[#9ca3af]" />
+                  <Search size={13} className="text-[#6B7280]" />
                   <input
                     value={noteSearch}
                     onChange={(event) => { setNoteSearch(event.target.value); setNotePage(1); }}
                     placeholder="Search notes…"
-                    className="w-40 bg-transparent text-xs outline-none placeholder:text-[#9ca3af]"
+                    className="w-40 bg-transparent text-xs outline-none placeholder:text-[#6B7280]"
                   />
                 </div>
                 <input
                   type="date"
                   value={noteDateFilter}
                   onChange={(event) => { setNoteDateFilter(event.target.value); setNotePage(1); }}
-                  className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                  className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#5A1A14] focus:ring-2 focus:ring-[#5A1A14]/20"
                 />
                 <button
                   type="button"
                   onClick={() => { setNoteSortDir((prev) => (prev === null ? "desc" : prev === "desc" ? "asc" : null)); setNotePage(1); }}
                   className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-                    noteSortDir ? "border-[#884c2d] bg-[#fff8f6] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+                    noteSortDir ? "border-[#5A1A14] bg-[#FFFFFF] text-[#5A1A14]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"
                   }`}
                   title="Sort by created date"
                 >
@@ -656,7 +656,7 @@ export default function ContactDetail() {
                   <button
                     type="button"
                     onClick={() => { setNoteSearch(""); setNoteDateFilter(""); setNoteSortDir(null); setNotePage(1); }}
-                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#884c2d] hover:bg-[#fff1ec]"
+                    className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#5A1A14] hover:bg-[#E5E7EB]"
                   >
                     Clear
                   </button>
@@ -665,7 +665,7 @@ export default function ContactDetail() {
             )}
             {!linkedNotes.length && (
               <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-                <div className="bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-3">
+                <div className="bg-[#FFFFFF] border-b border-[#E5E7EB] px-5 py-3">
                   <p className="text-sm font-bold text-gray-700">Contact Notes</p>
                 </div>
                 <div className="p-5">
@@ -715,19 +715,19 @@ export default function ContactDetail() {
                                   {...prov.draggableProps}
                                   onMouseEnter={(event) => showNotePreview(event, n)}
                                   onMouseLeave={scheduleHideNotePreview}
-                                  className={`relative overflow-hidden rounded-xl border bg-white transition-shadow ${snap.isDragging ? "border-[#884c2d]/40 shadow-lg" : "border-[#e5e7eb]"}`}
+                                  className={`relative overflow-hidden rounded-xl border bg-white transition-shadow ${snap.isDragging ? "border-[#5A1A14]/40 shadow-lg" : "border-[#e5e7eb]"}`}
                                   style={prov.draggableProps.style}
                                 >
                                   <div className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-3">
-                                    <span {...prov.dragHandleProps} className={`mr-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} text-[#d1d5db] hover:text-[#9ca3af]`} title="Drag to reorder">
+                                    <span {...prov.dragHandleProps} className={`mr-2 ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-not-allowed"} text-[#E5E7EB] hover:text-[#6B7280]`} title="Drag to reorder">
                                       <GripVertical size={14} />
                                     </span>
                                     <p className="min-w-0 flex-1 text-sm font-bold text-gray-700">{n.title || "Note"}</p>
                                     <div className="flex shrink-0 items-center gap-1">
-                                      <button type="button" onClick={() => setEditingNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#884c2d]" title="Edit note">
+                                      <button type="button" onClick={() => setEditingNote(n)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-[#E5E7EB] hover:text-[#5A1A14]" title="Edit note">
                                         <Pencil size={14} />
                                       </button>
-                                      <button type="button" onClick={() => handleDeleteNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                                      <button type="button" onClick={() => handleDeleteNote(n)} className="rounded-lg p-1.5 text-[#6B7280] hover:bg-red-50 hover:text-red-600" title="Delete note">
                                         <Trash2 size={14} />
                                       </button>
                                     </div>
@@ -753,13 +753,13 @@ export default function ContactDetail() {
                   </DragDropContext>
                   {totalPages > 1 && (
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-xs text-[#9ca3af]">Page {Math.min(notePage, totalPages)} / {totalPages}</p>
+                      <p className="text-xs text-[#6B7280]">Page {Math.min(notePage, totalPages)} / {totalPages}</p>
                       <div className="flex gap-1.5">
                         <button
                           type="button"
                           disabled={notePage <= 1}
                           onClick={() => setNotePage((p) => Math.max(1, p - 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB] disabled:opacity-40"
                         >
                           <ChevronLeft size={14} />
                         </button>
@@ -767,7 +767,7 @@ export default function ContactDetail() {
                           type="button"
                           disabled={notePage >= totalPages}
                           onClick={() => setNotePage((p) => Math.min(totalPages, p + 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB] disabled:opacity-40"
                         >
                           <ChevronRight size={14} />
                         </button>
@@ -801,12 +801,12 @@ export default function ContactDetail() {
               <div className="space-y-4">
                 {activity.map((item, index) => (
                   <div key={index} className="flex gap-3">
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFFFFF] text-[#6b7280]">
                       <item.icon size={14} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#111827]">{item.title}</p>
-                      <p className="flex items-center gap-1 text-xs text-[#9ca3af]"><Clock3 size={11} /> {item.dateLabel}</p>
+                      <p className="text-sm font-semibold text-[#1A1A1A]">{item.title}</p>
+                      <p className="flex items-center gap-1 text-xs text-[#6B7280]"><Clock3 size={11} /> {item.dateLabel}</p>
                     </div>
                   </div>
                 ))}

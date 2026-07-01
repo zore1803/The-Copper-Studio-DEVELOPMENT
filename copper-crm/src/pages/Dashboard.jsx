@@ -62,7 +62,7 @@ function DashboardTooltip({ active, payload, label }) {
     <div className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-xs shadow-lg shadow-gray-200/60">
       {label && <p className="mb-1 font-bold text-[#6b7280]">{label}</p>}
       {payload.map((entry) => (
-        <p key={entry.dataKey} className="flex items-center gap-2 font-semibold text-[#111827]">
+        <p key={entry.dataKey} className="flex items-center gap-2 font-semibold text-[#1A1A1A]">
           <span className="inline-block h-2 w-2 rounded-full" style={{ background: entry.color }} />
           {entry.name}: {formatINR(entry.value)}
         </p>
@@ -72,8 +72,8 @@ function DashboardTooltip({ active, payload, label }) {
 }
 
 const TONE_STYLES = {
-  brown: { tint: "bg-[#fff1ec]", text: "text-[#884c2d]", bar: "bg-[#884c2d]" },
-  slate: { tint: "bg-[#eef2ff]", text: "text-[#4338ca]", bar: "bg-[#4338ca]" },
+  brown: { tint: "bg-[#FFFFFF]", text: "text-[#5A1A14]", bar: "bg-[#5A1A14]" },
+  slate: { tint: "bg-[#FFFFFF]", text: "text-[#5A1A14]", bar: "bg-[#5A1A14]" },
   emerald: { tint: "bg-emerald-50", text: "text-emerald-600", bar: "bg-emerald-500" },
   amber: { tint: "bg-amber-50", text: "text-amber-600", bar: "bg-amber-500" },
 };
@@ -85,7 +85,7 @@ function KpiCard({ label, value, change, up, icon: Icon, tone = "brown" }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider">{label}</p>
-          <p className="mt-2 text-2xl font-bold text-[#111827]">{value}</p>
+          <p className="mt-2 text-2xl font-bold text-[#1A1A1A]">{value}</p>
         </div>
         <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${styles.tint}`}>
           <Icon size={19} className={styles.text} />
@@ -97,7 +97,7 @@ function KpiCard({ label, value, change, up, icon: Icon, tone = "brown" }) {
             {up ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
             {change}%
           </span>
-          <span className="text-[11px] text-[#9ca3af]">vs last week</span>
+          <span className="text-[11px] text-[#6B7280]">vs last week</span>
         </div>
       )}
       <div className={`absolute inset-x-0 bottom-0 h-1 scale-x-0 ${styles.bar} transition-transform duration-300 group-hover:scale-x-100`} />
@@ -110,27 +110,27 @@ function SalesRevenueChart({ data }) {
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-[#FFFFFF] flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-bold text-[#111827]">Sales Revenue</h3>
-          <p className="text-xs text-[#9ca3af] mt-0.5">Trailing {data.length} month{data.length === 1 ? "" : "s"}</p>
+          <h3 className="text-sm font-bold text-[#1A1A1A]">Sales Revenue</h3>
+          <p className="text-xs text-[#6B7280] mt-0.5">Trailing {data.length} month{data.length === 1 ? "" : "s"}</p>
         </div>
-        <span className="rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{formatCompact(totalVal)}</span>
+        <span className="rounded-full bg-[#FFFFFF] px-3 py-1 text-xs font-bold text-[#5A1A14]">{formatCompact(totalVal)}</span>
       </div>
       <div className="h-72 px-2 py-4">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="salesRevenueFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="#884c2d" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="#5A1A14" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#5A1A14" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} stroke="#f3f4f6" />
-            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={64} />
+            <CartesianGrid vertical={false} stroke="#FFFFFF" />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={64} />
             <Tooltip content={<DashboardTooltip />} />
-            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={2.5} fill="url(#salesRevenueFill)" activeDot={{ r: 4 }} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#5A1A14" strokeWidth={2.5} fill="url(#salesRevenueFill)" activeDot={{ r: 4 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -164,17 +164,17 @@ function InvoicesCard({ records }) {
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
       <p className="text-xs text-[#6b7280] font-medium mb-1">Total Revenue from Projects</p>
-      <p className="text-xl font-bold text-[#111827]">{formatINR(totalRevenue)}</p>
+      <p className="text-xl font-bold text-[#1A1A1A]">{formatINR(totalRevenue)}</p>
       <p className="text-xs text-[#6b7280] mt-0.5">{pctCleared}% projects paid</p>
       <div className="mt-4 space-y-2">
         {topPackages.map(([pkg, amt]) => (
           <div key={pkg}>
             <div className="flex justify-between text-xs text-[#6b7280] mb-1">
               <span className="truncate max-w-[120px]">{pkg}</span>
-              <span className="font-semibold text-[#111827]">{formatCompact(amt)}</span>
+              <span className="font-semibold text-[#1A1A1A]">{formatCompact(amt)}</span>
             </div>
-            <div className="h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-              <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${Math.round((amt / maxPkg) * 100)}%` }} />
+            <div className="h-1.5 rounded-full bg-[#FFFFFF] overflow-hidden">
+              <div className="h-full rounded-full bg-[#5A1A14]" style={{ width: `${Math.round((amt / maxPkg) * 100)}%` }} />
             </div>
           </div>
         ))}
@@ -184,13 +184,13 @@ function InvoicesCard({ records }) {
           <AreaChart data={trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="invoicesTrendFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.22} />
-                <stop offset="100%" stopColor="#884c2d" stopOpacity={0} />
+                <stop offset="0%" stopColor="#5A1A14" stopOpacity={0.22} />
+                <stop offset="100%" stopColor="#5A1A14" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#6B7280" }} axisLine={false} tickLine={false} />
             <Tooltip content={<DashboardTooltip />} />
-            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={1.75} fill="url(#invoicesTrendFill)" activeDot={{ r: 3 }} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#5A1A14" strokeWidth={1.75} fill="url(#invoicesTrendFill)" activeDot={{ r: 3 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -227,8 +227,8 @@ function EarningsCard({ records }) {
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e7eb] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-      <p className="text-sm font-bold text-[#111827] mb-1">{quarter} Earnings</p>
-      <p className="text-xl font-bold text-[#111827]">{formatCompact(totalRevenue)}</p>
+      <p className="text-sm font-bold text-[#1A1A1A] mb-1">{quarter} Earnings</p>
+      <p className="text-xl font-bold text-[#1A1A1A]">{formatCompact(totalRevenue)}</p>
       <p className="text-xs text-[#6b7280]">{Math.abs(growth)}% {growth >= 0 ? "↑" : "↓"} from last quarter</p>
       {growth > 0 && <p className="text-xs font-semibold text-emerald-600 mt-1">Outperforming previous quarter</p>}
       <div className="mt-4 flex items-center gap-1">
@@ -237,7 +237,7 @@ function EarningsCard({ records }) {
             key={q}
             onClick={() => setQuarter(q)}
             className={`flex-1 py-1 text-xs font-semibold rounded-lg border transition-colors ${
-              q === quarter ? "bg-[#884c2d] text-white border-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+              q === quarter ? "bg-[#5A1A14] text-white border-[#5A1A14]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#E5E7EB]"
             }`}
           >
             {q}
@@ -247,21 +247,21 @@ function EarningsCard({ records }) {
       <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-[#6b7280]">
         <div>
           <p>Revenue</p>
-          <p className="font-bold text-[#111827] text-sm">{formatCompact(totalRevenue)}</p>
+          <p className="font-bold text-[#1A1A1A] text-sm">{formatCompact(totalRevenue)}</p>
         </div>
         <div>
           <p>Profit (est.)</p>
-          <p className="font-bold text-[#111827] text-sm">{formatCompact(profit)}</p>
+          <p className="font-bold text-[#1A1A1A] text-sm">{formatCompact(profit)}</p>
         </div>
       </div>
       <div className="mt-4 flex items-end gap-1 h-12">
         {revenue.map((m, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
             <div
-              className="w-full rounded-t bg-[#884c2d]/80"
+              className="w-full rounded-t bg-[#5A1A14]/80"
               style={{ height: `${Math.round((m.revenue / maxR) * 40)}px` }}
             />
-            <span className="text-[9px] text-[#9ca3af]">{m.month}</span>
+            <span className="text-[9px] text-[#6B7280]">{m.month}</span>
           </div>
         ))}
       </div>
@@ -276,27 +276,27 @@ function CrmTab({ companies, contacts }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
         <div className="bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <p className="text-xl font-bold text-[#111827]">{companies.length}</p>
+          <p className="text-xl font-bold text-[#1A1A1A]">{companies.length}</p>
           <p className="text-xs font-semibold text-[#6b7280] mt-1">Companies</p>
         </div>
         <div className="bg-white rounded-xl border border-[#e5e7eb] p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <p className="text-xl font-bold text-[#111827]">{contacts.length}</p>
+          <p className="text-xl font-bold text-[#1A1A1A]">{contacts.length}</p>
           <p className="text-xs font-semibold text-[#6b7280] mt-1">Contacts</p>
         </div>
       </div>
       <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#111827]">Recent Companies</h3>
-          <button onClick={() => navigate("/admin/companies")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+        <div className="px-5 py-4 border-b border-[#FFFFFF] flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[#1A1A1A]">Recent Companies</h3>
+          <button onClick={() => navigate("/admin/companies")} className="text-xs font-semibold text-[#5A1A14] hover:underline">View all →</button>
         </div>
         {recentCompanies.length === 0 ? (
-          <p className="p-5 text-sm text-[#9ca3af]">No companies added yet.</p>
+          <p className="p-5 text-sm text-[#6B7280]">No companies added yet.</p>
         ) : (
           <table className="min-w-full text-xs">
-            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+            <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
               <tr>
                 {["Name", "Industry", "Status"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#6B7280]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -305,10 +305,10 @@ function CrmTab({ companies, contacts }) {
                 <tr
                   key={company.id || company._id}
                   onClick={() => navigate(`/admin/companies/${company.id || company._id}`)}
-                  className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
+                  className="border-b border-[#FFFFFF] hover:bg-[#E5E7EB] cursor-pointer transition-colors"
                 >
-                  <td className="px-5 py-3 font-semibold text-[#111827]">{company.name}</td>
-                  <td className="px-5 py-3 text-[#374151]">{company.industry || "—"}</td>
+                  <td className="px-5 py-3 font-semibold text-[#1A1A1A]">{company.name}</td>
+                  <td className="px-5 py-3 text-[#1A1A1A]">{company.industry || "—"}</td>
                   <td className="px-5 py-3 text-[#6b7280]">{company.status || "—"}</td>
                 </tr>
               ))}
@@ -338,7 +338,7 @@ function InvoicesTab({ invoices }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Total Invoiced", value: formatINR(summary.total), iconBg: "bg-[#884c2d]", icon: IndianRupee },
+          { label: "Total Invoiced", value: formatINR(summary.total), iconBg: "bg-[#5A1A14]", icon: IndianRupee },
           { label: "Collected", value: formatINR(summary.paid), iconBg: "bg-emerald-600", icon: CheckCircle2 },
           { label: "Pending", value: formatINR(summary.pending), iconBg: "bg-amber-500", icon: Clock3 },
           { label: "Failed / Overdue", value: formatINR(summary.failed), iconBg: "bg-red-500", icon: ArrowDownRight },
@@ -346,7 +346,7 @@ function InvoicesTab({ invoices }) {
           <div key={k.label} className="bg-white rounded-xl border border-[#e5e7eb] p-5 flex items-start justify-between shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
             <div>
               <p className="text-xs font-semibold text-[#6b7280] uppercase tracking-wider mb-2">{k.label}</p>
-              <p className="text-lg font-bold text-[#111827]">{k.value}</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">{k.value}</p>
             </div>
             <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${k.iconBg}`}>
               <k.icon size={17} className="text-white" />
@@ -355,15 +355,15 @@ function InvoicesTab({ invoices }) {
         ))}
       </div>
       <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#f3f4f6]">
-          <h3 className="text-sm font-bold text-[#111827]">Recent Invoices</h3>
+        <div className="px-5 py-4 border-b border-[#FFFFFF]">
+          <h3 className="text-sm font-bold text-[#1A1A1A]">Recent Invoices</h3>
         </div>
         {recentInvoices.length ? (
           <table className="min-w-full">
-            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+            <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
               <tr>
                 {["Invoice", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#6B7280]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -371,24 +371,24 @@ function InvoicesTab({ invoices }) {
               {recentInvoices.map((invoice) => {
                 const status = invoiceStatus(invoice);
                 return (
-                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="border-b border-[#f9fafb] hover:bg-[#fafafa] transition-colors">
+                  <tr key={invoice._id || invoice.id || invoice.invoiceNumber} className="border-b border-[#FFFFFF] hover:bg-[#E5E7EB] transition-colors">
                     <td className="px-5 py-3 text-xs font-mono text-[#6b7280]">{invoice.invoiceNumber || invoice.invoiceId || invoice.id || invoice._id}</td>
-                    <td className="px-5 py-3 text-sm font-semibold text-[#111827]">{invoice.company || invoice.client || invoice.customerEmail || "Not linked"}</td>
-                    <td className="px-5 py-3 text-sm text-[#374151]">{invoice.package || invoice.project || "Not added"}</td>
-                    <td className="px-5 py-3 text-sm font-bold text-[#111827]">{formatINR(invoiceAmount(invoice))}</td>
+                    <td className="px-5 py-3 text-sm font-semibold text-[#1A1A1A]">{invoice.company || invoice.client || invoice.customerEmail || "Not linked"}</td>
+                    <td className="px-5 py-3 text-sm text-[#1A1A1A]">{invoice.package || invoice.project || "Not added"}</td>
+                    <td className="px-5 py-3 text-sm font-bold text-[#1A1A1A]">{formatINR(invoiceAmount(invoice))}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold ${statusColor[status] || "bg-gray-100 text-gray-600"}`}>
                         {status}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date || invoice.paidAt || invoice.createdAt)}</td>
+                    <td className="px-5 py-3 text-sm text-[#1A1A1A]">{formatDate(invoice.issueDate || invoice.date || invoice.paidAt || invoice.createdAt)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
         ) : (
-          <p className="p-5 text-sm text-[#9ca3af]">No invoices generated yet.</p>
+          <p className="p-5 text-sm text-[#6B7280]">No invoices generated yet.</p>
         )}
       </div>
     </div>
@@ -474,7 +474,7 @@ export default function Dashboard() {
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                tab === t ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#374151]"
+                tab === t ? "border-[#5A1A14] text-[#5A1A14]" : "border-transparent text-[#6b7280] hover:text-[#1A1A1A]"
               }`}
             >
               {t}
@@ -487,7 +487,7 @@ export default function Dashboard() {
         {tab === "CRM" ? (
           <>
             <div>
-              <h2 className="text-lg font-bold text-[#111827]">CRM Overview</h2>
+              <h2 className="text-lg font-bold text-[#1A1A1A]">CRM Overview</h2>
               <p className="text-sm text-[#6b7280]">Lead pipeline, stage breakdown, and recent activity</p>
             </div>
             <CrmTab companies={companies} contacts={contacts} />
@@ -495,7 +495,7 @@ export default function Dashboard() {
         ) : tab === "Invoices" ? (
           <>
             <div>
-              <h2 className="text-lg font-bold text-[#111827]">Revenue & Invoices</h2>
+              <h2 className="text-lg font-bold text-[#1A1A1A]">Revenue & Invoices</h2>
               <p className="text-sm text-[#6b7280]">Generated invoices, payment status, and collected revenue</p>
             </div>
             <InvoicesTab invoices={invoices} />
@@ -503,7 +503,7 @@ export default function Dashboard() {
         ) : (
           <>
             <div>
-              <h2 className="text-lg font-bold text-[#111827]">Overview</h2>
+              <h2 className="text-lg font-bold text-[#1A1A1A]">Overview</h2>
               <p className="text-sm text-[#6b7280]">Visual summary of key metrics and project health</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -518,18 +518,18 @@ export default function Dashboard() {
               <EarningsCard records={revenueRecords} />
             </div>
             <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#111827]">Priority Projects</h3>
-                <button onClick={() => navigate("/admin/projects")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+              <div className="px-6 py-4 border-b border-[#FFFFFF] flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#1A1A1A]">Priority Projects</h3>
+                <button onClick={() => navigate("/admin/projects")} className="text-xs font-semibold text-[#5A1A14] hover:underline">View all →</button>
               </div>
               {metrics.priorityProjects.length === 0 ? (
-                <p className="p-5 text-sm text-[#9ca3af]">No active projects.</p>
+                <p className="p-5 text-sm text-[#6B7280]">No active projects.</p>
               ) : (
                 <table className="min-w-full">
-                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                  <thead className="bg-[#FFFFFF] border-b border-[#E5E7EB]">
                     <tr>
                       {["Project", "Client", "Progress", "Due", "Status"].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
+                        <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#6B7280]">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -540,22 +540,22 @@ export default function Dashboard() {
                         <tr
                           key={project.id}
                           onClick={() => navigate(`/admin/companies/${project.companyId}/projects/${project.id}`)}
-                          className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
+                          className="border-b border-[#FFFFFF] hover:bg-[#E5E7EB] cursor-pointer transition-colors"
                         >
                           <td className="px-5 py-4">
-                            <p className="text-sm font-semibold text-[#111827]">{project.name}</p>
-                            <p className="text-xs text-[#9ca3af] mt-0.5">{project.currentPhase || project.status}</p>
+                            <p className="text-sm font-semibold text-[#1A1A1A]">{project.name}</p>
+                            <p className="text-xs text-[#6B7280] mt-0.5">{project.currentPhase || project.status}</p>
                           </td>
-                          <td className="px-5 py-4 text-sm text-[#374151]">{project.client}</td>
+                          <td className="px-5 py-4 text-sm text-[#1A1A1A]">{project.client}</td>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="h-1.5 w-24 rounded-full bg-[#f3f4f6] overflow-hidden">
-                                <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${project.progress || 0}%` }} />
+                              <div className="h-1.5 w-24 rounded-full bg-[#FFFFFF] overflow-hidden">
+                                <div className="h-full rounded-full bg-[#5A1A14]" style={{ width: `${project.progress || 0}%` }} />
                               </div>
-                              <span className="text-xs font-semibold text-[#374151]">{project.progress || 0}%</span>
+                              <span className="text-xs font-semibold text-[#1A1A1A]">{project.progress || 0}%</span>
                             </div>
                           </td>
-                          <td className="px-5 py-4 text-sm text-[#374151]">
+                          <td className="px-5 py-4 text-sm text-[#1A1A1A]">
                             {project.daysLeft <= 0 ? "Due now" : `${project.daysLeft}d`}
                           </td>
                           <td className="px-5 py-4">
