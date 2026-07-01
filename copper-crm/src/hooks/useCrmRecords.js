@@ -17,15 +17,27 @@ function wait(ms) {
 }
 
 export function useCrmRecords(type, fallback = EMPTY_FALLBACK) {
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Seed straight from the localStorage cache so a refresh paints instantly with
+  // the last-known records instead of an empty/loading state while the server
+  // (which cold-starts slowly on the free tier) is still responding.
+  const [records, setRecords] = useState(() => {
+    const cached = storeGet(type);
+    return cached.length ? cached : fallback;
+  });
+  // Only block the UI on the very first load when there's nothing cached yet;
+  // otherwise we revalidate in the background without a spinner.
+  const [loading, setLoading] = useState(() => storeGet(type).length === 0);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let alive = true;
 
+    // Re-seed from cache when the record type changes so the switch is instant.
+    const cachedForType = storeGet(type);
+    setRecords(cachedForType.length ? cachedForType : fallback);
+    setLoading(cachedForType.length === 0);
+
     async function load() {
-      setLoading(true);
       for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
         try {
           const data = await apiGet(`/api/crm/${type}`);
