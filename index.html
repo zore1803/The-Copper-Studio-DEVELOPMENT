@@ -68,6 +68,22 @@
       </footer>
     </main>
 
+    <!-- Discount tool (Ctrl+Z to toggle, display-only) -->
+    <div class="discount-toolbar" id="discountToolbar">
+      <button class="discount-icon-btn" id="discountRsBtn" title="Set ₹ discount">
+        <span>₹</span>
+      </button>
+      <button class="discount-icon-btn" id="discountPctBtn" title="Set % discount">
+        <span>%</span>
+      </button>
+      <div class="discount-input-popup" id="discountPopup">
+        <span class="discount-popup-symbol" id="discountSymbol">₹</span>
+        <input type="number" id="discountValue" placeholder="0" min="0" />
+        <button id="discountApplyBtn">Apply</button>
+        <button id="discountClearBtn">Clear</button>
+      </div>
+    </div>
+
     <script src="assets/app.js?v=checkout-reference-1"></script>
   </body>
 </html>

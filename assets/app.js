@@ -1293,3 +1293,93 @@ const pageRenderers = {
 };
 
 pageRenderers[page]?.();
+
+// ── Discount display tool (packages page only, Ctrl+Z to toggle) ──────────
+if (page === "packages") {
+  let discountToolbarVisible = false;
+  let discountMode = null; // "rs" | "pct"
+  let discountAmount = 0;
+
+  const toolbar = document.getElementById("discountToolbar");
+  const popup = document.getElementById("discountPopup");
+  const rsBtn = document.getElementById("discountRsBtn");
+  const pctBtn = document.getElementById("discountPctBtn");
+  const symbolEl = document.getElementById("discountSymbol");
+  const valueInput = document.getElementById("discountValue");
+  const applyBtn = document.getElementById("discountApplyBtn");
+  const clearBtn = document.getElementById("discountClearBtn");
+
+  // Ctrl+Z toggles the toolbar
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "z") {
+      e.preventDefault();
+      discountToolbarVisible = !discountToolbarVisible;
+      toolbar.classList.toggle("is-visible", discountToolbarVisible);
+      if (!discountToolbarVisible) {
+        popup.classList.remove("is-visible");
+        clearDiscount();
+      }
+    }
+  });
+
+  function openPopup(mode) {
+    discountMode = mode;
+    symbolEl.textContent = mode === "rs" ? "₹" : "%";
+    valueInput.value = discountAmount || "";
+    popup.classList.add("is-visible");
+    valueInput.focus();
+  }
+
+  rsBtn.addEventListener("click", () => openPopup("rs"));
+  pctBtn.addEventListener("click", () => openPopup("pct"));
+
+  applyBtn.addEventListener("click", applyDiscount);
+  valueInput.addEventListener("keydown", (e) => { if (e.key === "Enter") applyDiscount(); });
+
+  clearBtn.addEventListener("click", () => {
+    valueInput.value = "";
+    clearDiscount();
+    popup.classList.remove("is-visible");
+  });
+
+  function applyDiscount() {
+    const val = parseFloat(valueInput.value) || 0;
+    discountAmount = val;
+    popup.classList.remove("is-visible");
+    renderDiscountedPrices();
+  }
+
+  function clearDiscount() {
+    discountAmount = 0;
+    discountMode = null;
+    renderDiscountedPrices();
+  }
+
+  function renderDiscountedPrices() {
+    const visible = packages.filter((pkg) => pkg.category === activeCategory);
+    visible.forEach((pkg) => {
+      const card = document.querySelector(`[data-package="${pkg.id}"]`)?.closest(".package-card");
+      if (!card) return;
+      const priceEl = card.querySelector(".price");
+      if (!priceEl) return;
+
+      if (!discountAmount || !discountMode) {
+        priceEl.innerHTML = formatCurrency(pkg.price);
+        return;
+      }
+
+      let discounted;
+      if (discountMode === "rs") {
+        discounted = Math.max(0, pkg.price - discountAmount);
+      } else {
+        discounted = Math.max(0, pkg.price * (1 - discountAmount / 100));
+      }
+
+      priceEl.innerHTML = `
+        <span class="price-original">${formatCurrency(pkg.price)}</span>
+        ${formatCurrency(Math.round(discounted))}
+        <span class="price-badge">${discountMode === "rs" ? `−${formatCurrency(discountAmount)}` : `−${discountAmount}%`}</span>
+      `;
+    });
+  }
+}
