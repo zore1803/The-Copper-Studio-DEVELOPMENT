@@ -1,15 +1,7 @@
-import { ArrowRight, CheckCircle2, LogIn } from "lucide-react";
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { apiGet } from "../../lib/api";
 
 const CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
-
-const CATEGORY_META = {
-  CopperBrand: { label: "Brand Identity & Design", color: "#884c2d" },
-  CopperWeb:   { label: "Website & Web Applications", color: "#2563eb" },
-  CopperFlow:  { label: "Automation & Workflows", color: "#059669" },
-};
 
 const FALLBACK_PACKAGES = [
   {
@@ -76,7 +68,6 @@ export default function PublicPackages() {
   useEffect(() => {
     apiGet("/api/packages")
       .then((data) => {
-        // Only use API data if it has the category field (new format)
         if (Array.isArray(data) && data.length && data.some((p) => p.category)) {
           setPackages(data);
         }
@@ -85,45 +76,100 @@ export default function PublicPackages() {
   }, []);
 
   const visible = packages.filter((p) => p.category === activeCategory);
-  const featuredId = visible.find((p) => /most|popular|advance/i.test(`${p.label} ${p.name}`))?.id || visible[1]?.id;
-  const meta = CATEGORY_META[activeCategory] || CATEGORY_META.CopperBrand;
+  const featuredId =
+    visible.find((p) => /most|popular|advance/i.test(`${p.label} ${p.name}`))?.id ||
+    visible[1]?.id;
 
   return (
-    <main className="min-h-screen bg-[#f7f2ef] text-[#211a17]">
-      <header className="border-b border-[#e5d8d1] bg-white/90 px-5 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#884c2d]">The Copper Studio</p>
-            <h1 className="text-lg font-bold">Pricing Packages</h1>
-          </div>
-          <Link to="/login" className="inline-flex items-center gap-2 rounded-lg border border-[#d8c2b9] bg-white px-3 py-2 text-xs font-bold text-[#6f381a] hover:bg-[#fff1ec]">
-            <LogIn size={14} /> Portal Login
-          </Link>
-        </div>
-      </header>
+    <div style={{ minHeight: "100vh", background: "#f9f6f3", fontFamily: "'Inter', 'Segoe UI', sans-serif", color: "#111" }}>
 
-      <section className="mx-auto max-w-6xl px-5 py-10">
-        {/* Page heading */}
-        <div className="mb-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#884c2d]">Choose a package</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#111827]">Start your journey with us.</h2>
-          <p className="mt-3 text-sm leading-6 text-[#6c6355]">
-            Select a service category, pick your plan, and get your secure onboarding link after payment.
+      {/* Logo */}
+      <div style={{ display: "flex", justifyContent: "center", padding: "32px 0 28px" }}>
+        <a href="/" aria-label="The Copper Studio">
+          <img
+            src="/copper-crm/public/copper-studio-wordmark.png"
+            alt="The Copper Studio"
+            style={{ height: 64, width: "auto", display: "block" }}
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+        </a>
+      </div>
+
+      <div style={{ width: "min(1100px, calc(100% - 40px))", margin: "0 auto", paddingBottom: 80 }}>
+
+        {/* Hero card */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0,1fr) 300px",
+          gap: 32,
+          alignItems: "center",
+          padding: "40px 36px",
+          border: "1px solid #efefef",
+          borderRadius: 14,
+          background: "#ffffff",
+          boxShadow: "0 14px 34px rgba(0,0,0,0.04)",
+          marginBottom: 40,
+        }}>
+          <div>
+            <span style={{ display: "inline-block", marginBottom: 12, color: "#964d0a", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+              Step 1 — Select a package
+            </span>
+            <h1 style={{ margin: "0 0 12px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#111" }}>
+              Choose a package to get started.
+            </h1>
+            <p style={{ margin: 0, maxWidth: 500, color: "#555", fontSize: "0.95rem", lineHeight: 1.55 }}>
+              Pick a package, verify your details, pay securely via Razorpay, and receive your invoice by email.
+            </p>
+          </div>
+          <div style={{ padding: 20, border: "1px solid #efe6dd", borderRadius: 12, background: "#fbf7f3" }}>
+            <p style={{ margin: "0 0 12px", color: "#8a6a55", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              Included after payment
+            </p>
+            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 11 }}>
+              {[
+                { icon: "✓", text: "Account confirmation & portal access" },
+                { icon: "✓", text: "GST invoice (PDF)" },
+                { icon: "✓", text: "Welcome & onboarding steps" },
+              ].map((item) => (
+                <li key={item.text} style={{ display: "flex", alignItems: "center", gap: 10, color: "#3f3a36", fontSize: "0.86rem" }}>
+                  <span style={{ color: "#964d0a", fontWeight: 700 }}>{item.icon}</span>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Section head */}
+        <div style={{ marginBottom: 22 }}>
+          <h2 style={{ margin: "0 0 5px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.5rem", fontWeight: 500, letterSpacing: "-0.02em", color: "#111" }}>
+            Our packages
+          </h2>
+          <p style={{ margin: 0, color: "#646464", fontSize: "0.9rem" }}>
+            Select a service category, choose your plan, and proceed to checkout.
           </p>
         </div>
 
         {/* Category switcher */}
-        <div className="mb-8 flex justify-center">
-          <div className="inline-flex rounded-xl border border-[#e5d8d1] bg-white p-1 shadow-sm">
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", background: "#fff", border: "1px solid #e5d8d1", borderRadius: 16, padding: 5, gap: 4, boxShadow: "0 2px 10px rgba(136,76,45,0.07)" }}>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`rounded-lg px-5 py-2 text-sm font-semibold transition-all ${
-                  activeCategory === cat
-                    ? "bg-[#884c2d] text-white shadow-sm"
-                    : "text-[#6c6355] hover:text-[#211a17]"
-                }`}
+                style={{
+                  padding: "10px 26px",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  border: "none",
+                  borderRadius: 12,
+                  cursor: "pointer",
+                  transition: "background 0.18s, color 0.18s, box-shadow 0.18s",
+                  background: activeCategory === cat ? "#884c2d" : "transparent",
+                  color: activeCategory === cat ? "#fff" : "#6c6355",
+                  boxShadow: activeCategory === cat ? "0 2px 8px rgba(136,76,45,0.22)" : "none",
+                  whiteSpace: "nowrap",
+                }}
               >
                 {cat}
               </button>
@@ -131,46 +177,64 @@ export default function PublicPackages() {
           </div>
         </div>
 
-        {/* Active category label */}
-        <p className="mb-5 text-center text-xs font-medium text-[#9ca3af]">{meta.label}</p>
-
         {/* Package cards */}
-        <div className="grid gap-5 lg:grid-cols-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 22 }}>
           {visible.map((pkg) => {
             const featured = pkg.id === featuredId;
             const checkoutHref = backendUrl(`/checkout?package=${encodeURIComponent(pkg.id)}`);
             return (
-              <article
+              <div
                 key={pkg.id}
-                className={`flex flex-col rounded-xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md ${
-                  featured ? "border-[#884c2d] ring-2 ring-[#884c2d]/10" : "border-[#e5d8d1]"
-                }`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  padding: "28px 26px",
+                  border: featured ? "1px solid #964d0a" : "1px solid #ececec",
+                  borderRadius: 14,
+                  background: "#ffffff",
+                  boxShadow: featured
+                    ? "0 0 0 1px #964d0a inset, 0 18px 40px rgba(150,77,10,0.12)"
+                    : "0 14px 34px rgba(0,0,0,0.04)",
+                  transition: "border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease",
+                  cursor: "default",
+                }}
+                onMouseEnter={(e) => { if (!featured) { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = "#d8c2b9"; } }}
+                onMouseLeave={(e) => { if (!featured) { e.currentTarget.style.transform = ""; e.currentTarget.style.borderColor = "#ececec"; } }}
               >
                 {/* Header */}
-                <div className="mb-5 flex items-start justify-between gap-3">
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-[#884c2d]">{activeCategory}</p>
-                    <h3 className="mt-1 text-lg font-bold text-[#111827]">{pkg.name}</h3>
+                    <p style={{ margin: "0 0 5px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                      {activeCategory}
+                    </p>
+                    <h3 style={{ margin: 0, fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.25rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
+                      {pkg.name}
+                    </h3>
                   </div>
                   {featured && (
-                    <span className="shrink-0 rounded-full bg-[#fff1ec] px-2.5 py-1 text-[11px] font-bold text-[#884c2d]">
+                    <span style={{ flexShrink: 0, background: "#fff1ec", color: "#964d0a", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999 }}>
                       Popular
                     </span>
                   )}
                 </div>
 
                 {/* Price */}
-                <div className="mb-5">
-                  <p className="text-3xl font-bold text-[#111827]">{money(pkg.price)}</p>
-                  <p className="mt-1 text-sm text-[#6c6355]">{pkg.duration}</p>
+                <div>
+                  <p style={{ margin: 0, fontFamily: "Georgia,'Times New Roman',serif", fontSize: "2.1rem", fontWeight: 500, color: "#111" }}>
+                    {money(pkg.price)}
+                  </p>
+                  <p style={{ margin: "4px 0 0", color: "#646464", fontSize: "0.84rem" }}>
+                    {pkg.duration}
+                  </p>
                 </div>
 
-                {/* Features */}
-                <ul className="mb-6 flex-1 space-y-2.5">
+                {/* Inclusions */}
+                <ul style={{ listStyle: "none", margin: "4px 0 0", padding: "16px 0 6px", borderTop: "1px solid #f1f1f1", display: "grid", gap: 11, flex: 1 }}>
                   {(pkg.includes || []).map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-sm text-[#374151]">
-                      <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-500" />
-                      <span>{item}</span>
+                    <li key={item} style={{ display: "flex", gap: 10, color: "#444", fontSize: "0.88rem", lineHeight: 1.4 }}>
+                      <span style={{ color: "#964d0a", fontWeight: 700, flexShrink: 0 }}>✓</span>
+                      {item}
                     </li>
                   ))}
                 </ul>
@@ -178,19 +242,107 @@ export default function PublicPackages() {
                 {/* CTA */}
                 <a
                   href={checkoutHref}
-                  className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-colors ${
-                    featured
-                      ? "bg-[#884c2d] text-white hover:bg-[#6f381a]"
-                      : "border border-[#d8c2b9] bg-white text-[#6f381a] hover:bg-[#fff1ec]"
-                  }`}
+                  style={{
+                    display: "block",
+                    marginTop: "auto",
+                    width: "100%",
+                    minHeight: 52,
+                    borderRadius: 12,
+                    fontSize: "0.75rem",
+                    fontWeight: 800,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    textDecoration: "none",
+                    textAlign: "center",
+                    lineHeight: "52px",
+                    border: featured ? "none" : "1px solid #dcdcdc",
+                    background: featured ? "#964d0a" : "#ffffff",
+                    color: featured ? "#ffffff" : "#111111",
+                    transition: "background 0.15s, color 0.15s, border-color 0.15s",
+                    boxSizing: "border-box",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (featured) { e.currentTarget.style.background = "#7e4008"; }
+                    else { e.currentTarget.style.borderColor = "#964d0a"; e.currentTarget.style.color = "#964d0a"; }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (featured) { e.currentTarget.style.background = "#964d0a"; }
+                    else { e.currentTarget.style.borderColor = "#dcdcdc"; e.currentTarget.style.color = "#111111"; }
+                  }}
                 >
-                  Continue to Checkout <ArrowRight size={15} />
+                  Continue to Checkout →
                 </a>
-              </article>
+              </div>
             );
           })}
         </div>
-      </section>
-    </main>
+
+        {/* Custom package banner */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 24,
+          marginTop: 36,
+          padding: "32px 36px",
+          border: "1px solid #efefef",
+          borderRadius: 14,
+          background: "#ffffff",
+          boxShadow: "0 14px 34px rgba(0,0,0,0.04)",
+          flexWrap: "wrap",
+        }}>
+          <div>
+            <p style={{ margin: "0 0 6px", color: "#8f8f8f", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+              Custom Package Plan
+            </p>
+            <h3 style={{ margin: "0 0 8px", fontFamily: "Georgia,'Times New Roman',serif", fontSize: "1.3rem", fontWeight: 500, letterSpacing: "-0.01em", color: "#111" }}>
+              Need something tailored to your business?
+            </h3>
+            <p style={{ margin: 0, color: "#555", fontSize: "0.9rem", lineHeight: 1.55 }}>
+              Tell us about your requirements and we'll put together a custom plan that fits your goals, timeline, and budget.
+            </p>
+          </div>
+          <a
+            href="mailto:contact@thecopperstudio.com"
+            style={{
+              flexShrink: 0,
+              display: "inline-block",
+              padding: "14px 28px",
+              background: "#964d0a",
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: "0.78rem",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              borderRadius: 10,
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#7e4008"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#964d0a"; }}
+          >
+            Get a Custom Quote
+          </a>
+        </div>
+
+        {/* Footer */}
+        <footer style={{ marginTop: 56, borderTop: "1px solid #efefef", paddingTop: 28, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <strong style={{ fontSize: "0.9rem", color: "#111" }}>The Copper Studio</strong>
+            <small style={{ display: "block", marginTop: 3, color: "#999", fontSize: "0.78rem" }}>
+              © 2024 The Copper Studio. Secure checkout guaranteed.
+            </small>
+          </div>
+          <nav style={{ display: "flex", gap: 20 }}>
+            {["Privacy Policy", "Terms of Service", "Support"].map((link) => (
+              <a key={link} href="#" style={{ fontSize: "0.82rem", color: "#888", textDecoration: "none" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#964d0a"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#888"; }}
+              >{link}</a>
+            ))}
+          </nav>
+        </footer>
+      </div>
+    </div>
   );
 }
