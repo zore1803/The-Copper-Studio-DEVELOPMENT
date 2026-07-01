@@ -235,6 +235,11 @@ export async function sendPaymentCancelledEmail({ to, name, packageName, amount,
 }
 
 export async function sendOtpEmail({ to, code, label }) {
+  const vars = { coupon_code: code, label: label || "verification" };
+  const resolved = await resolveEmailTemplate("OTP", vars);
+  if (resolved) return sendMail({ to, subject: resolved.subject, html: resolved.html });
+
+  // Fallback to hardcoded
   return sendMail({
     to,
     subject: `Your ${label || "verification"} code — The Copper Studio`,
@@ -244,6 +249,7 @@ export async function sendOtpEmail({ to, code, label }) {
         <p>Use this code to complete checkout on The Copper Studio:</p>
         <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${code}</p>
         <p style="font-size:13px;color:#6b7280">This code expires in 10 minutes. Ignore this email if you did not request it.</p>
+        ${signatureHtml()}
       </div>
     `
   });
