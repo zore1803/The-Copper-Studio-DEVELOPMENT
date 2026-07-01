@@ -266,7 +266,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
     }
     setTesting(true);
     try {
-      const result = await apiPost("/admin/settings/test-email", {
+      const result = await apiPost("/api/admin/settings/test-email", {
         to: testRecipient.trim(),
         subject: form.subject || "",
         body: form.body || "",
