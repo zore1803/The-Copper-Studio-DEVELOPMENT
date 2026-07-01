@@ -1,14 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "./ui";
 import SidePanel from "./SidePanel";
-import SearchableSelectField from "./SearchableSelect";
-import { generateProjectCode, generateDefaultProjectName, PROJECT_TEMPLATES } from "../lib/projectDefaults";
-import { useDataFields } from "../lib/dataFields";
-import { useAuth } from "../auth/useAuth";
 
 const PACKAGE_OPTIONS = ["Starter", "Growth", "Enterprise", "Custom"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+const PAYMENT_STATUS_OPTIONS = ["Pending", "Partial", "Paid", "Overdue"];
 
 function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
@@ -22,14 +19,14 @@ function FormSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
       <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
-      <div className="grid gap-4 sm:grid-cols-3">{children}</div>
+      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
   );
 }
 
 function Input({ label, value, onChange, type = "text", disabled = false, span = false, hint, error }) {
   return (
-    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <input
         type={type}
@@ -52,7 +49,7 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
 
 function Textarea({ label, value, onChange, span = false }) {
   return (
-    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <textarea
         value={value || ""}
@@ -64,10 +61,10 @@ function Textarea({ label, value, onChange, span = false }) {
   );
 }
 
-function Select({ label, value, onChange, options = [], span = false, error, hint }) {
+function Select({ label, value, onChange, options = [], span = false, error }) {
   const normalized = options.map((option) => (typeof option === "string" ? { value: option, label: option } : option));
   return (
-    <label className={`block ${span ? "sm:col-span-3" : ""}`}>
+    <label className={`block ${span ? "sm:col-span-2" : ""}`}>
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       <select
         value={value || ""}
@@ -80,19 +77,14 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
         <option value="">Select…</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
-      {error
-        ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>
-        : hint
-          ? <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>
-          : null}
+      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
     </label>
   );
 }
 
 /** Rich project creation form, shared between the company workspace and the global Projects page. */
-export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], projects = [], onClose, onSave }) {
-  const { token } = useAuth();
-  const dataFields = useDataFields(token);
+export default function ProjectFormPanel({ company, companies = [], contacts = [], invoices = [], onClose, onSave }) {
+  const [projectCode] = useState(() => `PRJ-${Date.now().toString(36).toUpperCase()}`);
   const [companyId, setCompanyId] = useState(() => String(company?.id || company?._id || ""));
   const [form, setForm] = useState({
     name: "",
@@ -103,8 +95,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     startDate: "",
     expectedEndDate: "",
     priority: "Medium",
-    status: "Requirement Gathering",
-    template: "Custom",
+    template: "Logo Design",
     budget: "",
     discount: "",
     linkedInvoiceId: "",
@@ -114,10 +105,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     tags: "",
   });
   const [errors, setErrors] = useState({});
-  const [saving, setSaving] = useState(false);
-  const nameTouched = useRef(false);
   const set = (key) => (value) => {
-    if (key === "name") nameTouched.current = true;
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
@@ -127,14 +115,6 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     () => company || companies.find((c) => String(c.id || c._id) === companyId),
     [company, companies, companyId]
   );
-  const projectCode = useMemo(
-    () => (resolvedCompany ? generateProjectCode(resolvedCompany, projects) : ""),
-    [resolvedCompany, projects]
-  );
-  useEffect(() => {
-    if (!resolvedCompany || nameTouched.current) return;
-    setForm((prev) => ({ ...prev, name: generateDefaultProjectName(resolvedCompany, projects) }));
-  }, [resolvedCompany, projects]);
   const scopedContacts = useMemo(
     () => (company ? contacts : contacts.filter((c) => String(c.companyId) === companyId)),
     [company, contacts, companyId]
@@ -157,46 +137,38 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
     return next;
   }
 
-  async function handleSave() {
-    if (saving) return;
+  function handleSave() {
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length || !resolvedCompany) return;
     const contact = scopedContacts.find((c) => String(c.id || c._id) === form.primaryContactId);
-    setSaving(true);
-    try {
-      await onSave(resolvedCompany, {
-        ...form,
-        projectCode,
-        packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
-        primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
-        finalAmount,
-        tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-        assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
-      });
-    } finally {
-      setSaving(false);
-    }
+    onSave(resolvedCompany, {
+      ...form,
+      projectCode,
+      packageName: form.packageName === "Custom" ? (form.customPackageName || "Custom") : form.packageName,
+      primaryContact: contact ? (contact.name || `${contact.firstName || ""} ${contact.lastName || ""}`.trim()) : "",
+      finalAmount,
+      tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+      assignedTeam: form.assignedTeam.split(",").map((name) => name.trim()).filter(Boolean),
+    });
   }
 
   return (
     <SidePanel
       title="New Project"
       subtitle={company ? `Link this project to ${company.name}.` : "Create a project linked to an existing company."}
-      width="max-w-2xl"
       onClose={onClose}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? "Creating…" : "Create Project"}</Button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave}><Save size={14} /> Create Project</Button>
         </div>
       }
     >
       <div className="space-y-6">
         <FormSection title="Basic Information">
-          <Input span label="Project name *" value={form.name} onChange={set("name")} error={errors.name}
-            hint={!errors.name ? "Auto-filled from company name, project #, and month/year — edit freely." : undefined} />
-          <Input label="Project ID" value={projectCode} disabled hint={resolvedCompany ? "Auto-generated from company" : "Select a company to generate"} />
+          <Input span label="Project name *" value={form.name} onChange={set("name")} error={errors.name} />
+          <Input label="Project ID" value={projectCode} disabled />
           {company ? (
             <Input label="Company" value={company.name} disabled />
           ) : (
@@ -205,8 +177,17 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           )}
           <Select label="Primary contact" value={form.primaryContactId} onChange={set("primaryContactId")}
             options={scopedContacts.map((c) => ({ value: String(c.id || c._id), label: c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.email }))} />
-          <Select span label="Project manager" value={form.projectManager} onChange={set("projectManager")} options={dataFields.companyOwner} />
-          <Select label="Package purchased" value={form.packageName} onChange={set("packageName")} options={PACKAGE_OPTIONS} />
+          <Input span label="Project manager" value={form.projectManager} onChange={set("projectManager")} />
+          <Select label="Package purchased" value={form.packageName} onChange={(val) => {
+            setForm(prev => {
+              let autoBudget = prev.budget;
+              if (val === "Starter") autoBudget = 24999;
+              else if (val === "Growth") autoBudget = 49999;
+              else if (val === "Enterprise") autoBudget = 89999;
+              return { ...prev, packageName: val, budget: autoBudget };
+            });
+            setErrors(prev => (prev.packageName ? { ...prev, packageName: "" } : prev));
+          }} options={PACKAGE_OPTIONS} />
           {form.packageName === "Custom" && (
             <Input label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} error={errors.customPackageName} />
           )}
@@ -218,19 +199,17 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
           <Select label="Priority" value={form.priority} onChange={set("priority")} options={PRIORITY_OPTIONS} />
         </FormSection>
 
-        <FormSection title="Delivery Pipeline">
-          <Select label="Delivery stage" value={form.status} onChange={set("status")} options={dataFields.projectDeliveryStage} />
-          <Select label="Project template" value={form.template} onChange={set("template")} options={dataFields.projectTemplate}
-            hint="Generates the editable project-stage roadmap" />
+        <FormSection title="Workflow Template">
+          <Select span label="Project Template" value={form.template} onChange={set("template")} options={["Logo Design", "Website", "SEO", "Custom"]} />
         </FormSection>
 
         <FormSection title="Commercials">
           <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} error={errors.budget} />
           <Input type="number" label="Discount applied" value={form.discount} onChange={set("discount")} error={errors.discount} />
           <Input label="Final amount" value={formatINR(finalAmount)} disabled />
-          <SearchableSelectField label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
-            options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} placeholder="Search invoices…" />
-          <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={dataFields.paymentStatusProjects} />
+          <Select label="Invoice linked" value={form.linkedInvoiceId} onChange={set("linkedInvoiceId")}
+            options={scopedInvoices.map((i) => ({ value: String(i.id || i._id), label: i.invoiceId || i.id || i._id }))} />
+          <Select label="Payment status" value={form.paymentStatus} onChange={set("paymentStatus")} options={PAYMENT_STATUS_OPTIONS} />
         </FormSection>
 
         <FormSection title="Internal">

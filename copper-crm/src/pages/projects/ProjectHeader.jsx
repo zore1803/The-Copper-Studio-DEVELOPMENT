@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { FolderKanban, Calendar, Clock3, AlertCircle } from "lucide-react";
+import { FolderKanban, Plus, Share2, Calendar, Clock3, AlertCircle, Pencil } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
+import Breadcrumb from "../../components/Breadcrumb";
 import { isRoadmapComplete } from "../../lib/stageProgress";
 
 const statusColor = {
@@ -42,19 +43,25 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
   const liveStatus = liveProjectStatus(project);
 
   return (
-    <div className="border-b border-[#e5e7eb] bg-white">
+    <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
       <div className="px-6 py-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+        <Breadcrumb
+          items={[
+            { label: "Companies", to: "/admin/companies" },
+            { label: company.name, to: `/admin/companies/${company.id || company._id}` },
+            { label: "Projects", to: `/admin/companies/${company.id || company._id}` },
+            { label: project.name, to: null },
+          ]}
+        />
+
+        <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff8f6]">
               <FolderKanban size={24} className="text-[#884c2d]" />
             </div>
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-bold text-[#111827]">{project.name}</h2>
-              {project.clientProjectName && project.clientProjectName !== project.name && (
-                <p className="mt-0.5 truncate text-sm text-[#6b7280]">“{project.clientProjectName}”</p>
-              )}
-              <p className="mt-0.5 text-sm text-[#6b7280]">{company.name}</p>
+              <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
+              <p className="mt-0.5 text-sm text-[#525866]">{company.name}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <Badge color={statusColor[liveStatus] || "gray"}>{liveStatus}</Badge>
                 <Badge color={pill.color}>
@@ -77,10 +84,10 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap shrink-0 gap-2">
+          <div className="flex flex-wrap shrink-0 gap-3">
             {onAction && (
-              <Button onClick={onAction}>
-                {ActionIcon && <ActionIcon size={14} />}
+              <Button variant="primary" size="lg" onClick={onAction}>
+                {ActionIcon && <ActionIcon size={15} className="mr-1.5" />}
                 {actionLabel}
               </Button>
             )}
@@ -88,20 +95,18 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
         </div>
       </div>
 
-      <div className="overflow-x-auto px-6 pb-5">
-        <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.label}
-              to={tab.to}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${
-                tab.label === activeTab ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
-        </div>
+      <div className="flex gap-7 overflow-x-auto border-t border-[#f1f1f5] bg-[#FAFAFA] px-6">
+        {tabs.map((tab) => (
+          <Link
+            key={tab.label}
+            to={tab.to}
+            className={`whitespace-nowrap border-b-[3px] py-3.5 text-sm font-semibold transition-colors ${
+              tab.label === activeTab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#525866] hover:text-[#111827]"
+            }`}
+          >
+            {tab.label}
+          </Link>
+        ))}
       </div>
     </div>
   );

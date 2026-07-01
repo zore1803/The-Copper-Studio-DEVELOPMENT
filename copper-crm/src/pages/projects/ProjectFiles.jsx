@@ -2,13 +2,12 @@ import { useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FolderPlus, FilePlus2, FileText, FileType, Image, Frame,
-  MoreHorizontal, Trash2, X, Check,
+  Folder as FolderIcon, MoreHorizontal, Trash2, X, Check,
 } from "lucide-react";
 import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import ProjectHeader from "./ProjectHeader";
-import customFolderSvg from "../../assets/Folder.svg";
 
 const TYPE_META = {
   pdf: { icon: FileText, className: "bg-red-50 text-red-600" },
@@ -83,7 +82,7 @@ export default function ProjectFiles() {
   if ((!company || !project) && projectsLoading) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
-        <p className="text-sm font-semibold text-[#6b7280]">Loading project files…</p>
+        <p className="text-sm font-semibold text-[#6c6355]">Loading project files…</p>
       </div>
     );
   }
@@ -91,7 +90,7 @@ export default function ProjectFiles() {
   if (!company || !project) {
     return (
       <div className="rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] p-10 text-center">
-        <p className="text-sm font-semibold text-[#6b7280]">We couldn't find that project for this company.</p>
+        <p className="text-sm font-semibold text-[#6c6355]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
     );
@@ -150,7 +149,7 @@ export default function ProjectFiles() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#f8fafc]" onClick={() => setDocMenu(null)}>
+    <div className="space-y-6" onClick={() => setDocMenu(null)}>
       <ProjectHeader
         company={company}
         project={project}
@@ -160,7 +159,6 @@ export default function ProjectFiles() {
         onAction={() => fileInputRef.current?.click()}
       />
 
-      <div className="flex-1 space-y-5 p-6">
       {/* Upload folder selector */}
       <div className="flex items-center gap-3 rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <FilePlus2 size={15} className="text-[#884c2d] shrink-0" />
@@ -190,7 +188,7 @@ export default function ProjectFiles() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="font-display text-lg font-semibold text-[#211a17]">Directory</h3>
-            <p className="mt-1 text-xs text-[#6b7280]">{documents.length} files across {folders.filter(f => f.count > 0).length} folders</p>
+            <p className="mt-1 text-xs text-[#6c6355]">{documents.length} files across {folders.filter(f => f.count > 0).length} folders</p>
           </div>
           {newFolderMode ? (
             <form onSubmit={handleAddFolder} className="flex items-center gap-2">
@@ -216,25 +214,27 @@ export default function ProjectFiles() {
         </div>
 
         {folders.length ? (
-          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {folders.map(folder => (
               <button
                 key={folder.key}
                 type="button"
                 onClick={() => setActiveFolder(activeFolder === folder.key ? null : folder.key)}
-                className={`group flex flex-col items-center justify-start rounded-xl p-3 text-center transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-105 hover:-translate-y-1 will-change-transform ${
-                  activeFolder === folder.key ? "bg-black/10 ring-1 ring-black/5" : "bg-transparent"
+                className={`group cursor-pointer rounded-xl border p-5 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  activeFolder === folder.key ? "border-[#884c2d] bg-white shadow-md" : "border-[#d8c2b9] bg-[#fff1ec] hover:bg-white"
                 }`}
               >
-                <img src={customFolderSvg} alt="Folder" className="mb-3 h-[96px] w-auto object-contain drop-shadow-sm" />
-                <p className="line-clamp-2 w-full text-[13px] font-medium leading-tight text-[#374151]">{folder.key}</p>
-                <p className="mt-0.5 w-full text-[11px] text-[#9ca3af]">{folder.count} items · {formatSizeMB(folder.size)}</p>
+                <div className={`mb-4 grid h-12 w-12 place-items-center rounded-lg ${folder.className}`}>
+                  <FolderIcon size={24} />
+                </div>
+                <h4 className="text-sm font-bold text-[#211a17] truncate">{folder.key}</h4>
+                <p className="mt-1 text-[11px] text-[#6c6355]">{folder.count} items · {formatSizeMB(folder.size)}</p>
               </button>
             ))}
           </div>
         ) : (
           <div className="rounded-xl border border-dashed border-[#d8c2b9] bg-[#fff8f6] p-8 text-center">
-            <p className="text-sm text-[#6b7280]">No folders yet for this project.</p>
+            <p className="text-sm text-[#6c6355]">No folders yet for this project.</p>
             <button onClick={() => setNewFolderMode(true)} className="mt-2 text-xs font-bold text-[#884c2d] hover:underline">
               Create the first folder →
             </button>
@@ -264,11 +264,11 @@ export default function ProjectFiles() {
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-[#ead8d1] bg-[#fff1ec]">
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Name</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Folder</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Upload Date</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] md:table-cell">Uploaded By</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Action</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Name</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Folder</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355] sm:table-cell">Upload Date</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6c6355] md:table-cell">Uploaded By</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6c6355]">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ead8d1]">
@@ -285,12 +285,12 @@ export default function ProjectFiles() {
                           </div>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-[#211a17]">{doc.name}</p>
-                            <p className="text-[11px] text-[#6b7280]">{formatSizeMB(doc.sizeMB)}</p>
+                            <p className="text-[11px] text-[#6c6355]">{formatSizeMB(doc.sizeMB)}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm text-[#6b7280]">{doc.category}</td>
-                      <td className="hidden px-6 py-5 text-sm text-[#6b7280] sm:table-cell">{doc.date}</td>
+                      <td className="px-6 py-5 text-sm text-[#6c6355]">{doc.category}</td>
+                      <td className="hidden px-6 py-5 text-sm text-[#6c6355] sm:table-cell">{doc.date}</td>
                       <td className="hidden px-6 py-5 md:table-cell">
                         <div className="flex items-center gap-2">
                           <Avatar name={doc.uploadedBy} size="sm" />
@@ -301,7 +301,7 @@ export default function ProjectFiles() {
                         <button
                           type="button"
                           onClick={() => setDocMenu(docMenu === menuKey ? null : menuKey)}
-                          className="text-[#6b7280] transition-colors hover:text-[#884c2d]"
+                          className="text-[#6c6355] transition-colors hover:text-[#884c2d]"
                         >
                           <MoreHorizontal size={18} />
                         </button>
@@ -345,7 +345,7 @@ export default function ProjectFiles() {
             </table>
           ) : (
             <div className="p-10 text-center">
-              <p className="text-sm text-[#6b7280] mb-3">No documents in {activeFolder ? `"${activeFolder}"` : "this project"} yet.</p>
+              <p className="text-sm text-[#6c6355] mb-3">No documents in {activeFolder ? `"${activeFolder}"` : "this project"} yet.</p>
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="text-xs font-bold text-[#884c2d] hover:underline"
@@ -356,7 +356,6 @@ export default function ProjectFiles() {
           )}
         </div>
       </section>
-      </div>
     </div>
   );
 }

@@ -2,14 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
-import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
-import {
-  Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
-  CircleDot, StickyNote, History, X, Copy, Video, Search, Download,
-  FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
-  Send, Save, Lock, AlertTriangle, Activity, FileText, FileImage,
-  FileSpreadsheet, FileArchive, File,
-} from "lucide-react";
+import { TASK_STATUSES, normalizeTaskStatus } from "../../lib/taskStatus";
 
 /* ─── Shared primitives ─── */
 
@@ -30,28 +23,23 @@ const CS = {
 };
 
 /* Gantt status palette — shared with the admin task Gantt for visual parity. */
-const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
+const GANTT_TASK_STATUSES = TASK_STATUSES;
 const GANTT_STATUS_COLOR = {
-  Backlog: "#9ca3af",
   "To Do": "#0ea5e9",
   "In Progress": "#f59e0b",
   Review: "#6366f1",
-  Completed: "#10b981",
-  Blocked: "#ef4444",
+  Done: "#10b981",
 };
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
-const GANTT_TODAY = today();
 
 function PageShell({ title, subtitle, children, action }) {
   return (
-    <div className="p-5 xl:p-6 max-w-7xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{title}</h1>
-          {subtitle && <p className="mt-0.5 text-xs" style={{ color: CS.secondary }}>{subtitle}</p>}
-        </div>
-        {action && <div className="shrink-0">{action}</div>}
+    <div className="p-4 md:p-6 xl:p-8 max-w-7xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold" style={{ color: CS.primary, fontFamily: "Inter, sans-serif" }}>{title}</h1>
+        {subtitle && <p className="mt-1 text-sm" style={{ color: CS.secondary }}>{subtitle}</p>}
+        {action && <div className="mt-3">{action}</div>}
       </div>
       {children}
     </div>
@@ -127,32 +115,31 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-function CsBtn({ children, onClick, type = "button", variant = "primary", disabled, icon: Icon, loading, className = "" }) {
+function CsBtn({ children, onClick, type = "button", variant = "primary", disabled, icon, className = "" }) {
   const variants = {
     primary: { background: CS.primary, color: CS.onPrimary, border: "none" },
     secondary: { background: "#fff", color: CS.secondary, border: `1px solid ${CS.outlineVariant}` },
     ghost: { background: "transparent", color: CS.secondary, border: "none" },
     danger: { background: "#fff", color: CS.error, border: `1px solid ${CS.error}` },
   };
-  const ShownIcon = loading ? Loader2 : Icon;
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95 ${disabled ? "opacity-60 cursor-not-allowed" : "hover:opacity-90"} ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-95 ${disabled ? "opacity-60 cursor-not-allowed" : "hover:opacity-90"} ${className}`}
       style={{ ...variants[variant], fontFamily: "Inter, sans-serif" }}
     >
-      {ShownIcon && <ShownIcon size={16} className={loading ? "animate-spin" : ""} />}
+      {icon && <span className="material-symbols-outlined text-[18px]">{icon}</span>}
       {children}
     </button>
   );
 }
 
-function EmptyState({ icon: Icon, title, description, action }) {
+function EmptyState({ icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      {Icon && <Icon size={40} strokeWidth={1.5} className="mb-3" style={{ color: CS.outlineVariant }} />}
+      <span className="material-symbols-outlined text-[48px] mb-3" style={{ color: CS.outlineVariant }}>{icon}</span>
       <p className="text-base font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{title}</p>
       <p className="text-sm" style={{ color: CS.secondary }}>{description}</p>
       {action && <div className="mt-4">{action}</div>}
@@ -161,7 +148,7 @@ function EmptyState({ icon: Icon, title, description, action }) {
 }
 
 function Spinner() {
-  return <Loader2 size={24} className="animate-spin" style={{ color: CS.primary }} />;
+  return <span className="material-symbols-outlined text-[24px] animate-spin" style={{ color: CS.primary }}>progress_activity</span>;
 }
 
 /* ─── PROJECT TIMELINE ─── */
@@ -170,12 +157,13 @@ function ClientTaskGantt({ tasks }) {
   const [zoom, setZoom] = useState("Week");
 
   const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+    const GANTT_TODAY = today();
     const mapped = tasks.map((task) => {
       const start = task.startDate ? parseFullDate(task.startDate) : null;
       const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
       if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
       const safeEnd = end < start ? start : end;
-      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
+      const status = normalizeTaskStatus(task.status);
       return { ...task, start, end: safeEnd, status };
     }).filter(Boolean);
 
@@ -185,8 +173,11 @@ function ClientTaskGantt({ tasks }) {
     }
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
-    const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
+    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(GANTT_TODAY.getTime() - 3 * DAY_MS);
+    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(GANTT_TODAY.getTime() + 14 * DAY_MS);
+    min.setHours(0, 0, 0, 0);
+    max.setHours(23, 59, 59, 999);
+
     const groupList = GANTT_TASK_STATUSES
       .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
       .filter((g) => g.tasks.length > 0);
@@ -206,8 +197,8 @@ function ClientTaskGantt({ tasks }) {
       weeks: weekCols,
       summary: {
         total: mapped.length,
-        completed: mapped.filter((t) => t.status === "Completed").length,
-        blocked: mapped.filter((t) => t.status === "Blocked").length,
+        completed: mapped.filter((t) => t.status === "Done").length,
+        blocked: 0,
         unscheduled,
       },
     };
@@ -218,7 +209,7 @@ function ClientTaskGantt({ tasks }) {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
         <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
-          <CalendarDays size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />
+          <span className="material-symbols-outlined text-[32px]" style={{ color: CS.outlineVariant }}>calendar_month</span>
           <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>No scheduled tasks yet.</p>
           <p className="mt-1 text-xs" style={{ color: CS.secondary }}>Tasks appear here once The Copper Studio sets their start and due dates.</p>
         </div>
@@ -230,6 +221,7 @@ function ClientTaskGantt({ tasks }) {
   const totalRangeMs = Math.max(1, maxDate - minDate);
   const timelineWidth = weeks.length * colWidth;
   const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
+  const GANTT_TODAY = today();
   const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
   const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
 
@@ -239,7 +231,7 @@ function ClientTaskGantt({ tasks }) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }}>
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: CS.primaryFixed, color: CS.primary }}>
-            <CalendarDays size={18} />
+            <span className="material-symbols-outlined text-[18px]">calendar_month</span>
           </div>
           <div>
             <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Task Timeline</h3>
@@ -248,7 +240,7 @@ function ClientTaskGantt({ tasks }) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#e8f5e9", color: "#388e3c" }}>
-            <CheckCircle2 size={14} /> {completionPct}% complete
+            <span className="material-symbols-outlined text-[14px]">check_circle</span> {completionPct}% complete
           </span>
           {summary.blocked > 0 && (
             <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
@@ -354,18 +346,26 @@ function ClientTaskGantt({ tasks }) {
 
 export function ClientTimelinePage() {
   const { token } = useAuth();
-  const { projects, loading, selectedProject, selectedId } = useClientProject();
-  const selected = selectedProject;
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
   const [tasks, setTasks] = useState([]);
 
   useEffect(() => {
-    if (!selectedId) return;
+    clientApi.getProjects(token).then(p => {
+      setProjects(p);
+      setSelected(p[0] || null);
+    }).catch(() => {}).finally(() => setLoading(false));
+  }, [token]);
+
+  useEffect(() => {
+    if (!selected?._id) return;
     let alive = true;
-    clientApi.getProjectTasks(selectedId, token)
+    clientApi.getProjectTasks(selected._id, token)
       .then((data) => { if (alive) setTasks(data); })
       .catch(() => { if (alive) setTasks([]); });
     return () => { alive = false; };
-  }, [selectedId, token]);
+  }, [selected, token]);
 
   const statusBadge = (s) => {
     const map = {
@@ -390,10 +390,38 @@ export function ClientTimelinePage() {
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : projects.length === 0 ? (
         <Card className="py-4">
-          <EmptyState icon={Activity} title="No projects yet" description="Your project timeline will appear here once setup is complete." />
+          <EmptyState icon="timeline" title="No projects yet" description="Your project timeline will appear here once setup is complete." />
         </Card>
       ) : (
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: project list */}
+          <div className="lg:col-span-1 space-y-3">
+            {projects.map(p => (
+              <button
+                key={p._id}
+                onClick={() => setSelected(p)}
+                className="w-full text-left rounded-xl border p-4 transition-all"
+                style={{
+                  background: selected?._id === p._id ? CS.surfaceLow : CS.surfaceLowest,
+                  borderColor: selected?._id === p._id ? CS.primary : CS.outlineVariant,
+                  borderWidth: selected?._id === p._id ? 2 : 1,
+                }}
+              >
+                <p className="font-semibold text-sm mb-1" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{p.name}</p>
+                <p className="text-xs mb-2" style={{ color: CS.secondary }}>{p.packageName || "Package"}</p>
+                <div className="flex items-center justify-between mb-2">
+                  <Badge {...statusBadge(p.status)} />
+                  <span className="text-xs font-bold" style={{ color: CS.primary }}>{p.progress || 0}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: CS.surfaceContainer }}>
+                  <div className="h-full rounded-full" style={{ width: `${p.progress || 0}%`, background: CS.primaryContainer }} />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Right: project detail */}
+          <div className="lg:col-span-2 space-y-5">
             {selected ? (
               <>
                 {/* Overview */}
@@ -433,14 +461,14 @@ export function ClientTimelinePage() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-9 h-9 rounded-lg flex items-center justify-center"
                         style={{ background: CS.primaryFixed, color: CS.primary }}>
-                        <StickyNote size={20} />
+                        <span className="material-symbols-outlined text-[20px]">sticky_note_2</span>
                       </div>
                       <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Notes from The Copper Studio</h3>
                     </div>
                     <p className="text-sm leading-relaxed" style={{ color: CS.secondary }}>{selected.adminNotes}</p>
                     <div className="grid sm:grid-cols-2 gap-4 mt-4 pt-4 border-t" style={{ borderColor: CS.outlineVariant }}>
                       <div className="flex items-center gap-2">
-                        <Calendar size={18} style={{ color: CS.outlineVariant }} />
+                        <span className="material-symbols-outlined text-[18px]" style={{ color: CS.outlineVariant }}>calendar_today</span>
                         <span className="text-sm" style={{ color: CS.onSurface }}>
                           Started:{" "}
                           <span className="font-medium">
@@ -449,7 +477,7 @@ export function ClientTimelinePage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <History size={18} style={{ color: CS.outlineVariant }} />
+                        <span className="material-symbols-outlined text-[18px]" style={{ color: CS.outlineVariant }}>history</span>
                         <span className="text-sm" style={{ color: CS.onSurface }}>
                           Status: <span className="font-medium"><Badge {...statusBadge(selected.status)} /></span>
                         </span>
@@ -474,10 +502,9 @@ export function ClientTimelinePage() {
                               style={{
                                 background: stage.status === "completed" ? CS.primaryContainer : stage.status === "in_progress" ? CS.primaryFixed : CS.surfaceContainer,
                               }}>
-                              {(() => {
-                                const StageIcon = stage.status === "completed" ? Check : stage.status === "in_progress" ? CircleDot : Clock;
-                                return <StageIcon size={14} style={{ color: sb.color }} />;
-                              })()}
+                              <span className="material-symbols-outlined text-[14px]" style={{ color: sb.color }}>
+                                {stage.status === "completed" ? "check" : stage.status === "in_progress" ? "radio_button_checked" : "schedule"}
+                              </span>
                             </div>
                             <div className="flex-1 pb-1">
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
@@ -492,14 +519,14 @@ export function ClientTimelinePage() {
                               {stage.status === "in_progress" && (
                                 <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                                   style={{ background: CS.primaryFixed, color: CS.primary }}>
-                                  <Clock size={12} />
+                                  <span className="material-symbols-outlined text-[12px]">schedule</span>
                                   In Progress
                                 </span>
                               )}
                               {stage.status === "completed" && (
                                 <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                                   style={{ background: "#e8f5e9", color: "#388e3c" }}>
-                                  <CheckCircle2 size={12} />
+                                  <span className="material-symbols-outlined text-[12px]">check_circle</span>
                                   Completed
                                 </span>
                               )}
@@ -513,11 +540,8 @@ export function ClientTimelinePage() {
 
                 <ClientTaskGantt tasks={tasks} />
               </>
-            ) : (
-              <Card className="py-4">
-                <EmptyState icon={Activity} title="Select a project" description="Choose a project from the switcher above to see its timeline." />
-              </Card>
-            )}
+            ) : null}
+          </div>
         </div>
       )}
     </PageShell>
@@ -541,23 +565,10 @@ function meetingTypelabel(type) {
 
 export function ClientMeetingsPage() {
   const { token, user } = useAuth();
-  const { selectedId } = useClientProject();
-  const [allMeetings, setAllMeetings] = useState([]);
+  const [meetings, setMeetings] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRaw, setSelected] = useState(null);
-
-  // Only this project's meetings (plus any general, project-less ones).
-  const meetings = useMemo(
-    () => allMeetings.filter((m) => belongsToProject(m, selectedId)),
-    [allMeetings, selectedId]
-  );
-
-  // Keep the open detail valid when the project (and thus the list) changes.
-  const mid = (m) => String(m?._id || m?.id || "");
-  const selected = (selectedRaw && meetings.some((m) => mid(m) === mid(selectedRaw)))
-    ? selectedRaw
-    : (meetings[0] || null);
+  const [selected, setSelected] = useState(null);
   const [bookingEvent, setBookingEvent] = useState(null);
   const [form, setForm] = useState({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -572,8 +583,9 @@ export function ClientMeetingsPage() {
     ])
       .then(([m, events]) => {
         if (!alive) return;
-        setAllMeetings(m);
+        setMeetings(m);
         setEventTypes(events);
+        setSelected(m.find(x => x.status === "confirmed") || m[0] || null);
       })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
@@ -586,8 +598,8 @@ export function ClientMeetingsPage() {
     setSubmitting(true);
     setError("");
     try {
-      const m = await clientApi.requestMeeting({ ...form, projectId: selectedId || undefined }, token);
-      setAllMeetings(prev => [m, ...prev]);
+      const m = await clientApi.requestMeeting(form, token);
+      setMeetings(prev => [m, ...prev]);
       setSelected(m);
       setForm({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
       setSuccess("Meeting request sent! We'll confirm shortly.");
@@ -638,7 +650,7 @@ export function ClientMeetingsPage() {
                           <p className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{eventType.name}</p>
                           <p className="text-xs mt-1" style={{ color: CS.secondary }}>{eventType.durationMinutes || 30} minutes</p>
                         </div>
-                        <CalendarPlus size={18} style={{ color: eventType.color || CS.primary }} />
+                        <span className="material-symbols-outlined text-[18px]" style={{ color: eventType.color || CS.primary }}>calendar_add_on</span>
                       </div>
                     </button>
                   ))}
@@ -654,7 +666,7 @@ export function ClientMeetingsPage() {
                     <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time and complete the Calendly booking form.</p>
                   </div>
                   <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors" style={{ color: CS.secondary }} title="Close booking">
-                    <X size={18} />
+                    <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
                 </div>
                 <iframe
@@ -734,7 +746,7 @@ export function ClientMeetingsPage() {
                 {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#fde8e8", color: CS.error }}>{error}</p>}
                 {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#e8f5e9", color: "#388e3c" }}>{success}</p>}
                 <div className="flex justify-end">
-                  <CsBtn type="submit" disabled={submitting} loading={submitting} icon={Send}>
+                  <CsBtn type="submit" disabled={submitting} icon={submitting ? "progress_activity" : "send"}>
                     {submitting ? "Sending…" : "Request Meeting"}
                   </CsBtn>
                 </div>
@@ -749,7 +761,7 @@ export function ClientMeetingsPage() {
                 <div className="px-5 py-4 border-b" style={{ borderColor: CS.outlineVariant, background: `${CS.surfaceLow}80` }}>
                   <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{selected.title}</h3>
                   <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: CS.secondary }}>
-                    <Clock size={15} />
+                    <span className="material-symbols-outlined text-[15px]">schedule</span>
                     {selected.scheduledAt
                       ? new Date(selected.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hour12: true })
                       : "Awaiting confirmation"}
@@ -769,7 +781,7 @@ export function ClientMeetingsPage() {
                           className="p-1 rounded transition-colors"
                           style={{ color: CS.primary }}
                           title="Copy link">
-                          <Copy size={18} />
+                          <span className="material-symbols-outlined text-[18px]">content_copy</span>
                         </button>
                       </div>
                     </div>
@@ -810,7 +822,7 @@ export function ClientMeetingsPage() {
                     <a href={selected.meetingLink} target="_blank" rel="noreferrer"
                       className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-95"
                       style={{ background: CS.primary, color: CS.onPrimary }}>
-                      <Video size={18} />
+                      <span className="material-symbols-outlined text-[18px]">videocam</span>
                       Join Video Call
                     </a>
                   )}
@@ -818,7 +830,7 @@ export function ClientMeetingsPage() {
               </Card>
             ) : (
               <Card className="p-6">
-                <EmptyState icon={Video} title="Select a meeting" description="Click on a meeting to view its details, or request a new one." />
+                <EmptyState icon="video_chat" title="Select a meeting" description="Click on a meeting to view its details, or request a new one." />
               </Card>
             )}
           </div>
@@ -831,8 +843,8 @@ export function ClientMeetingsPage() {
 /* ─── DOCUMENTS ─── */
 
 function fileIcon(type) {
-  const map = { pdf: FileText, doc: FileText, docx: FileText, png: FileImage, jpg: FileImage, jpeg: FileImage, xlsx: FileSpreadsheet, zip: FileArchive };
-  return map[type?.toLowerCase()] || File;
+  const map = { pdf: "picture_as_pdf", doc: "article", docx: "article", png: "image", jpg: "image", jpeg: "image", xlsx: "table_chart", zip: "folder_zip" };
+  return map[type?.toLowerCase()] || "insert_drive_file";
 }
 
 function docStatusBadge(s) {
@@ -845,7 +857,6 @@ function docStatusBadge(s) {
 
 export function ClientDocumentsPage() {
   const { token } = useAuth();
-  const { selectedId } = useClientProject();
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -856,10 +867,9 @@ export function ClientDocumentsPage() {
   }, [token]);
 
   const filtered = docs.filter(d => {
-    const matchesProject = belongsToProject(d, selectedId);
-    const matchesSearch = (d.name || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = d.name.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "all" || d.status === filter;
-    return matchesProject && matchesSearch && matchesFilter;
+    return matchesSearch && matchesFilter;
   });
 
   const filterOpts = [
@@ -874,7 +884,7 @@ export function ClientDocumentsPage() {
       {/* Filter bar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18} style={{ color: CS.secondary }} />
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px]" style={{ color: CS.secondary }}>search</span>
           <input
             type="text"
             value={search}
@@ -903,7 +913,7 @@ export function ClientDocumentsPage() {
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : filtered.length === 0 ? (
         <Card>
-          <EmptyState icon={FolderOpen} title="No documents" description={search || filter !== "all" ? "No documents match your filter." : "No documents have been shared with you yet."} />
+          <EmptyState icon="folder_open" title="No documents" description={search || filter !== "all" ? "No documents match your filter." : "No documents have been shared with you yet."} />
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -912,7 +922,7 @@ export function ClientDocumentsPage() {
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: CS.primaryFixed, color: CS.primary }}>
-                  {(() => { const FIcon = fileIcon(doc.fileType); return <FIcon size={24} />; })()}
+                  <span className="material-symbols-outlined text-[24px]">{fileIcon(doc.fileType)}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{doc.name}</p>
@@ -932,13 +942,13 @@ export function ClientDocumentsPage() {
                   <a href={doc.fileUrl} target="_blank" rel="noreferrer"
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
                     style={{ background: CS.primary, color: CS.onPrimary }}>
-                    <Download size={15} />
+                    <span className="material-symbols-outlined text-[15px]">download</span>
                     Download
                   </a>
                 ) : (
                   <button disabled className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold opacity-40 cursor-not-allowed"
                     style={{ background: CS.surfaceContainer, color: CS.secondary }}>
-                    <Download size={15} />
+                    <span className="material-symbols-outlined text-[15px]">download</span>
                     Download
                   </button>
                 )}
@@ -958,26 +968,16 @@ export function ClientDocumentsPage() {
 
 export function ClientBillingPage() {
   const { token } = useAuth();
-  const { selectedProject } = useClientProject();
-  const [allOrders, setAllOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrderRaw, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    clientApi.getOrders(token).then(setAllOrders).catch(() => {}).finally(() => setLoading(false));
+    clientApi.getOrders(token).then(o => {
+      setOrders(o);
+      setSelectedOrder(o[0] || null);
+    }).catch(() => {}).finally(() => setLoading(false));
   }, [token]);
-
-  // Only the selected project's invoices/orders.
-  const orders = useMemo(
-    () => allOrders.filter((o) => orderBelongsToProject(o, selectedProject)),
-    [allOrders, selectedProject]
-  );
-
-  // Keep the open invoice valid when the project (and thus the list) changes.
-  const oid = (o) => String(o?._id || o?.id || "");
-  const selectedOrder = (selectedOrderRaw && orders.some((o) => oid(o) === oid(selectedOrderRaw)))
-    ? selectedOrderRaw
-    : (orders[0] || null);
 
   const totalPaid = orders.filter(o => o.payment?.status === "paid").reduce((sum, o) => sum + (o.package?.total || 0), 0);
 
@@ -990,15 +990,15 @@ export function ClientBillingPage() {
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {[
-              { Icon: Wallet, label: "Total Paid", value: `₹${totalPaid.toLocaleString("en-IN")}`, color: CS.primary },
-              { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#4caf50" },
-              { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#ff9800" },
+              { icon: "payments", label: "Total Paid", value: `₹${totalPaid.toLocaleString("en-IN")}`, color: CS.primary },
+              { icon: "receipt_long", label: "Total Invoices", value: orders.length, color: "#4caf50" },
+              { icon: "pending_actions", label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#ff9800" },
             ].map(s => (
               <div key={s.label} className="rounded-xl border p-5 flex items-center gap-4"
                 style={{ background: CS.surfaceLowest, borderColor: CS.outlineVariant }}>
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: s.color + "15" }}>
-                  <s.Icon size={22} style={{ color: s.color }} />
+                  <span className="material-symbols-outlined text-[22px]" style={{ color: s.color }}>{s.icon}</span>
                 </div>
                 <div>
                   <p className="text-xl font-bold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>{s.value}</p>
@@ -1015,7 +1015,7 @@ export function ClientBillingPage() {
                   <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Invoice History</h3>
                 </div>
                 {orders.length === 0 ? (
-                  <EmptyState icon={ReceiptText} title="No invoices" description="Your invoices will appear here after purchasing a package." />
+                  <EmptyState icon="receipt_long" title="No invoices" description="Your invoices will appear here after purchasing a package." />
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -1106,7 +1106,7 @@ export function ClientBillingPage() {
                         <ul className="space-y-1.5">
                           {selectedOrder.package.includes.map((item, i) => (
                             <li key={i} className="flex items-start gap-2">
-                              <CheckCircle2 size={14} className="mt-0.5 shrink-0" style={{ color: CS.primary }} />
+                              <span className="material-symbols-outlined text-[14px] mt-0.5" style={{ color: CS.primary }}>check_circle</span>
                               <span className="text-xs" style={{ color: CS.onSurface }}>{item}</span>
                             </li>
                           ))}
@@ -1126,7 +1126,7 @@ export function ClientBillingPage() {
                           }
                           className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                           style={{ background: CS.primary, fontFamily: "Inter, sans-serif" }}>
-                          <Download size={18} />
+                          <span className="material-symbols-outlined text-[18px]">download</span>
                           Download Invoice (PDF)
                         </button>
                       </div>
@@ -1135,7 +1135,7 @@ export function ClientBillingPage() {
                 </Card>
               ) : (
                 <Card className="p-6">
-                  <EmptyState icon={Receipt} title="Select an invoice" description="Click an invoice to see its details." />
+                  <EmptyState icon="receipt" title="Select an invoice" description="Click an invoice to see its details." />
                 </Card>
               )}
             </div>
@@ -1251,7 +1251,7 @@ export function ClientSettingsPage() {
                   </div>
                 </div>
                 <div className="flex justify-end pt-2">
-                  <CsBtn type="submit" disabled={saving} loading={saving} icon={Save}>
+                  <CsBtn type="submit" disabled={saving} icon={saving ? "progress_activity" : "save"}>
                     {saving ? "Saving…" : "Save Changes"}
                   </CsBtn>
                 </div>
@@ -1298,7 +1298,7 @@ export function ClientSettingsPage() {
               ))}
             </div>
             <div className="flex justify-end mt-5 pt-4 border-t" style={{ borderColor: CS.outlineVariant }}>
-              <CsBtn onClick={saveProfile} disabled={saving} loading={saving} icon={Save}>
+              <CsBtn onClick={saveProfile} disabled={saving} icon={saving ? "progress_activity" : "save"}>
                 {saving ? "Saving…" : "Save Preferences"}
               </CsBtn>
             </div>
@@ -1314,7 +1314,7 @@ export function ClientSettingsPage() {
                 <CsInput label="New Password (min 8 chars)" type="password" value={pwForm.newPassword} onChange={v => setPwForm(f => ({ ...f, newPassword: v }))} required />
                 <CsInput label="Confirm New Password" type="password" value={pwForm.confirmPassword} onChange={v => setPwForm(f => ({ ...f, confirmPassword: v }))} required />
                 <div className="flex justify-end">
-                  <CsBtn type="submit" disabled={savingPw} loading={savingPw} icon={Lock}>
+                  <CsBtn type="submit" disabled={savingPw} icon="lock">
                     {savingPw ? "Updating…" : "Update Password"}
                   </CsBtn>
                 </div>
@@ -1327,7 +1327,7 @@ export function ClientSettingsPage() {
               <div className="rounded-lg p-4 flex items-center gap-4" style={{ background: CS.surfaceLow }}>
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center border"
                   style={{ background: "#fff", borderColor: CS.outlineVariant }}>
-                  <MonitorSmartphone size={20} style={{ color: CS.primary }} />
+                  <span className="material-symbols-outlined text-[20px]" style={{ color: CS.primary }}>devices</span>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -1347,7 +1347,7 @@ export function ClientSettingsPage() {
               <p className="text-sm mb-4" style={{ color: CS.secondary }}>
                 Deactivating your account will archive all your data and revoke portal access immediately.
               </p>
-              <CsBtn variant="danger" icon={AlertTriangle}>Deactivate Account</CsBtn>
+              <CsBtn variant="danger" icon="warning">Deactivate Account</CsBtn>
             </div>
           </>
         )}
@@ -1373,7 +1373,7 @@ export function ClientSupportPage() {
       <Card className="p-6 max-w-2xl">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: CS.primaryFixed, color: CS.primary }}>
-            <Headset size={24} />
+            <span className="material-symbols-outlined text-[24px]">support_agent</span>
           </div>
           <div>
             <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "Inter, sans-serif" }}>Get in Touch</h3>
@@ -1382,11 +1382,11 @@ export function ClientSupportPage() {
         </div>
         <div className="space-y-3">
           {[
-            { Icon: Mail, label: "Email us", value: "studio@coppercrm.in" },
-            { Icon: Video, label: "Book a call", value: "Use the Meetings section to schedule a support call" },
+            { icon: "mail", label: "Email us", value: "studio@coppercrm.in" },
+            { icon: "video_chat", label: "Book a call", value: "Use the Meetings section to schedule a support call" },
           ].map(item => (
             <div key={item.label} className="flex items-center gap-3 p-4 rounded-lg" style={{ background: CS.surfaceLow }}>
-              <item.Icon size={20} style={{ color: CS.primary }} />
+              <span className="material-symbols-outlined text-[20px]" style={{ color: CS.primary }}>{item.icon}</span>
               <div>
                 <p className="text-xs font-semibold" style={{ color: CS.secondary }}>{item.label}</p>
                 <p className="text-sm font-medium" style={{ color: CS.onSurface }}>{item.value}</p>

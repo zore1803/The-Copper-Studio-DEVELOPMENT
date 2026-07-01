@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
@@ -67,7 +67,7 @@ function TaskField({ label, value, onChange, placeholder = "", type = "text", cl
         max={max}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B] focus:ring-2 focus:ring-[#C57E5B]/20"
       />
     </label>
   );
@@ -106,13 +106,13 @@ export function StageEditorModal({ statuses, initialStatus, stage, mode, project
         <TaskField label="Stage name" value={form.title || ""} onChange={set("title")} className="sm:col-span-2" />
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Status</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]">
             {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Priority</span>
-          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]">
             {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
@@ -120,7 +120,7 @@ export function StageEditorModal({ statuses, initialStatus, stage, mode, project
         <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} min={projectDates.startDate} max={projectDates.endDate} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
-          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]" />
+          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]" />
         </label>
       </div>
     </SidePanel>
@@ -140,7 +140,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
     <DragDropContext onDragEnd={(result) => onDragEnd(columns, result)}>
       <div className="flex gap-4 overflow-x-auto pb-2">
         {TASK_STATUSES.map((status) => (
-          <section key={status} className="flex w-[260px] shrink-0 flex-col rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+          <section key={status} className="flex w-[260px] shrink-0 flex-col rounded-xl border border-[#E1E4EA] bg-white shadow-sm">
             <div className="flex items-center justify-between gap-2 border-b border-[#f1f1f5] px-3.5 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_DOT[status]}`} />
@@ -167,7 +167,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                           {...prov.draggableProps}
                           {...prov.dragHandleProps}
                           onClick={() => onOpenEdit(status, task)}
-                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#884c2d] shadow-md" : "border-[#e5e7eb] hover:border-[#884c2d]/40"}`}
+                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#C57E5B] shadow-md" : "border-[#E1E4EA] hover:border-[#C57E5B]/40"}`}
                         >
                           <div className="mb-2 flex items-start gap-2">
                             <GripVertical size={12} className="mt-0.5 shrink-0 text-[#d1d5db]" />
@@ -184,7 +184,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                                 const st = task.startDate ? parseFullDate(task.startDate) : null;
                                 const en = task.dueDate ? parseFullDate(task.dueDate) : task.endDate ? parseFullDate(task.endDate) : task.deadline ? parseShortDate(task.deadline, new Date().getFullYear()) : null;
                                 const pText = getProgressText(st, en, status, !st || !en);
-                                return pText ? <span className="text-[#884c2d]">{pText}</span> : null;
+                                return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
                               })()}
                             </span>
                             <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
@@ -197,7 +197,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                   ))}
                   {provided.placeholder}
                   {columns[status].length === 0 && (
-                    <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#e5e7eb] text-[11px] font-semibold text-[#9ca3af]">
+                    <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#E1E4EA] text-[11px] font-semibold text-[#9ca3af]">
                       Drop stages here
                     </div>
                   )}
@@ -214,12 +214,15 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
 export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategories }) {
   const [colWidth, setColWidth] = useState(DEFAULT_COL_WIDTH);
   const scrollRef = useRef(null);
-
+  const targetCenterRef = useRef(null);
 
   const updateZoom = (updater) => {
     setColWidth((prevWidth) => {
       const nextWidth = typeof updater === "function" ? updater(prevWidth) : updater;
       if (nextWidth === prevWidth) return prevWidth;
+      if (scrollRef.current) {
+        targetCenterRef.current = (scrollRef.current.scrollLeft + scrollRef.current.clientWidth / 2) / prevWidth;
+      }
       return nextWidth;
     });
   };
@@ -227,16 +230,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   const zoomOut = () => updateZoom((w) => Math.max(MIN_COL_WIDTH, w - ZOOM_STEP));
   const zoomIn = () => updateZoom((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
   const [collapsed, setCollapsed] = useState({});
-
-  // The visible window starts a generous distance before/after the stages and
-  // keeps growing as the user scrolls toward either edge — so the timeline runs
-  // on and on in both directions instead of stopping at the last stage.
-  const INITIAL_PAD_DAYS = 60;
-  const EXTEND_DAYS = 90;
-  const [pad, setPad] = useState({ left: INITIAL_PAD_DAYS, right: INITIAL_PAD_DAYS });
-  // px we still need to add to scrollLeft after a left-side extension so the
-  // content doesn't visually jump when new days are prepended.
-  const pendingLeftPx = useRef(0);
 
   // Pinch / Ctrl+scroll over the chart zooms the timeline instead of the whole page.
   // Plain two-finger scrolling (no Ctrl) is left alone so the chart still scrolls.
@@ -255,7 +248,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
     return () => el.removeEventListener("wheel", onWheel);
   }, [stages.length]);
 
-  const { groups, minDate, maxDate, baseMinTime, baseMaxTime, weeks, summary } = useMemo(() => {
+  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
     const TODAY = today();
     const referenceYear = new Date().getFullYear();
     // First pass: parse whatever dates a stage has, and flag the ones missing them.
@@ -287,20 +280,14 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status, isDanger: false };
     });
     const unscheduled = parsed.filter((p) => !p.hasDates).length;
-    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, baseMinTime: TODAY.getTime(), baseMaxTime: TODAY.getTime(), weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
     const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    // Raw extent of the real stages — used to decide where to re-center on Today.
-    const rawMin = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime()))) : new Date(TODAY.getTime());
-    const rawMax = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime()))) : new Date(TODAY.getTime());
-    rawMin.setHours(0, 0, 0, 0);
-    rawMax.setHours(23, 59, 59, 999);
-    // Apply the scroll-driven padding so the window can run far past the stages.
-    const min = new Date(rawMin.getTime() - pad.left * DAY_MS);
-    const max = new Date(rawMax.getTime() + pad.right * DAY_MS);
+    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(TODAY.getTime() - 3 * DAY_MS);
+    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(TODAY.getTime() + 14 * DAY_MS);
     min.setHours(0, 0, 0, 0);
     max.setHours(23, 59, 59, 999);
-
+    
     const groupList = groupCategories
       ? groupCategories.map(cat => ({
           id: cat.id,
@@ -328,8 +315,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       groups: groupList,
       minDate: min,
       maxDate: max,
-      baseMinTime: rawMin.getTime(),
-      baseMaxTime: rawMax.getTime(),
       weeks: weekCols,
       summary: {
         total: mapped.length,
@@ -338,16 +323,9 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
         unscheduled,
       },
     };
-  }, [stages, groupBy, groupCategories, pad]);
+  }, [stages, groupBy, groupCategories]);
 
-  // Reset the scroll padding whenever the underlying stage range changes, so a
-  // fresh project doesn't inherit a giant window scrolled far from its stages.
-  useEffect(() => {
-    setPad({ left: INITIAL_PAD_DAYS, right: INITIAL_PAD_DAYS });
-  }, [baseMinTime, baseMaxTime]);
-
-  // Auto-scroll the timeline to TODAY (or the nearest date) when it loads, when the date range changes,
-  // or when zooming (to keep Today in view per user request).
+  // Auto-scroll the timeline to TODAY (or the nearest date) when it loads or when the date range changes.
   useEffect(() => {
     if (scrollRef.current && minDate && maxDate) {
       const TODAY = today();
@@ -360,22 +338,18 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       // Scroll so the target date is slightly offset from the left edge (e.g. roughly 1 column)
       scrollRef.current.scrollLeft = Math.max(0, targetPx - colWidth);
     }
-    // Re-center only when the underlying data or zoom changes — NOT on every
-    // scroll-driven pad extension (that would yank the view back to Today).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseMinTime, baseMaxTime, colWidth]);
+  }, [minDate, maxDate]); // We explicitly removed colWidth from deps so it doesn't snap to Today on zoom.
 
-  // Keep the scroll position stable after prepending days on the left edge.
-  useLayoutEffect(() => {
-    if (pendingLeftPx.current && scrollRef.current) {
-      scrollRef.current.scrollLeft += pendingLeftPx.current;
-      pendingLeftPx.current = 0;
+  useEffect(() => {
+    if (scrollRef.current && targetCenterRef.current != null) {
+      scrollRef.current.scrollLeft = targetCenterRef.current * colWidth - scrollRef.current.clientWidth / 2;
+      targetCenterRef.current = null;
     }
-  }, [pad.left]);
+  }, [colWidth]);
 
   if (!groups.length) {
     return (
-      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
+      <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
         <p className="text-sm font-semibold text-[#111827]">No scheduled stages yet.</p>
         <p className="mt-1 text-sm text-[#6b7280]">Add start and due dates to stages to see them on the Gantt chart.</p>
       </div>
@@ -401,20 +375,6 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   const TODAY = today();
   const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
 
-  // As the user scrolls toward either edge, grow the window in that direction so
-  // the dates keep going on and on. A left-side extension records how many px were
-  // prepended so useLayoutEffect can keep the viewport from jumping.
-  function handleTimelineScroll(e) {
-    const el = e.currentTarget;
-    const edge = pxPerDay * 7; // trigger within ~one week of an edge
-    if (el.scrollLeft <= edge) {
-      pendingLeftPx.current += EXTEND_DAYS * pxPerDay;
-      setPad((p) => ({ ...p, left: p.left + EXTEND_DAYS }));
-    } else if (el.scrollWidth - (el.scrollLeft + el.clientWidth) <= edge) {
-      setPad((p) => ({ ...p, right: p.right + EXTEND_DAYS }));
-    }
-  }
-
   function toggleGroup(id) {
     setCollapsed((current) => ({ ...current, [id]: !current[id] }));
   }
@@ -422,7 +382,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
   const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-[#E1E4EA] bg-white shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#f1f1f5] bg-[#fbfaf9] px-5 py-4">
         <div>
           <div className="flex items-center gap-2">
@@ -463,7 +423,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
               value={colWidth}
               onChange={(e) => updateZoom(Number(e.target.value))}
               title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
-              className="w-24 accent-[#884c2d]"
+              className="w-24 accent-[#C57E5B]"
             />
             <button
               type="button"
@@ -486,7 +446,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           {groups.map((group) => (
             <div key={group.id} className="border-b border-[#f1f1f5]">
               <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#884c2d]"}`} />
+                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#C57E5B]"}`} />
                 <span className="truncate text-sm font-semibold text-[#111827]">{group.title}</span>
                 <span className="ml-auto shrink-0 text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
               </button>
@@ -501,7 +461,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
                       <span>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
                       {(() => {
                         const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
-                        return pText ? <span className="text-[#884c2d]">{pText}</span> : null;
+                        return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
                       })()}
                     </span>
                   </span>
@@ -511,7 +471,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           ))}
         </div>
 
-        <div ref={scrollRef} onScroll={handleTimelineScroll} className="flex-1 overflow-x-auto">
+        <div ref={scrollRef} className="flex-1 overflow-x-auto">
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="sticky top-0 z-20 flex h-11 border-b border-[#f1f1f5] bg-white">
               {timeCols.map((col, index) => (
@@ -601,7 +561,7 @@ export default function ProjectTimeline() {
 
   if (!company || !project) {
     return (
-      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
+      <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
         <p className="text-sm font-semibold text-[#6b7280]">We couldn't find that project for this company.</p>
         <Button variant="secondary" className="mt-4" onClick={() => navigate("/admin/companies")}>Back to Companies</Button>
       </div>
@@ -703,7 +663,7 @@ export default function ProjectTimeline() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#f8fafc]">
+    <div className="space-y-6">
       <ProjectHeader
         company={company}
         project={project}
@@ -713,19 +673,18 @@ export default function ProjectTimeline() {
         onAction={() => openNewStage()}
       />
 
-      <div className="flex-1 space-y-5 p-6">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-[#111827]">Project Timeline</h3>
-        <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
+        <div className="flex items-center gap-1 rounded-lg bg-[#F1F1F5] p-1">
           <button
             onClick={() => setView("kanban")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-white text-[#C57E5B] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
           >
             <Columns3 size={13} /> Kanban
           </button>
           <button
             onClick={() => setView("gantt")}
-            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-[#fff1ec] text-[#884c2d]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-white text-[#C57E5B] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
           >
             <CalendarRange size={13} /> Gantt
           </button>
@@ -737,7 +696,6 @@ export default function ProjectTimeline() {
       ) : (
         <GanttView stages={stageCards} onOpenEdit={openEditStage} />
       )}
-      </div>
 
       {stageEditor && (
         <StageEditorModal
