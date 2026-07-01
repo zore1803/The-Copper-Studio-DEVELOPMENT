@@ -136,20 +136,24 @@ function TemplatePreview({ subject, body, type }) {
   );
 }
 
-// Convert plain text to minimal HTML
+// Convert plain text → HTML, preserving line counts:
+// - single \n  → <br> on its own line (keeps line count identical in textarea)
+// - \n\n (paragraph) → </p> blank line <p> (also keeps blank line in HTML view)
 function textToHtml(text = "") {
   const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return escaped
     .split(/\n\n+/)
-    .map((para) => `<p>${para.replace(/\n/g, "<br/>")}</p>`)
-    .join("\n");
+    .map((para) => `<p>${para.replace(/\n/g, "<br>\n")}</p>`)
+    .join("\n\n");
 }
 
-// Strip HTML tags back to plain text
+// Strip HTML back to plain text — exactly reverses textToHtml.
 function htmlToText(html = "") {
   return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<br\s*\/?>\s*/gi, "\n")   // <br> + any trailing whitespace/newline → single \n
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n") // </p><p> pair → paragraph break
+    .replace(/<\/p>/gi, "")
+    .replace(/<p[^>]*>/gi, "")
     .replace(/<[^>]+>/g, "")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
     .replace(/\n{3,}/g, "\n\n")
