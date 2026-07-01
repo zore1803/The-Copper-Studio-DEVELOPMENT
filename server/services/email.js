@@ -1,24 +1,6 @@
 import sgMail from "@sendgrid/mail";
 import Settings from "../models/Settings.js";
 import EmailTemplate from "../models/EmailTemplate.js";
-import { seller, signatory } from "../data/sellerConfig.js";
-
-// Email signature block. The signature image uses mix-blend-mode:multiply so a
-// white background drops out against the white email body (supported clients);
-// where it isn't supported, a white-on-white image is still effectively invisible.
-function signatureHtml() {
-  const img = signatory.image
-    ? `<img src="${signatory.image}" alt="${signatory.name}" style="display:block;max-height:56px;max-width:200px;object-fit:contain;mix-blend-mode:multiply;margin:0 0 4px" />`
-    : "";
-  return `
-    <div style="margin-top:26px;border-top:1px solid #e5e7eb;padding-top:14px;font-family:Inter,Arial,sans-serif;color:#111827">
-      ${img}
-      <p style="margin:0;font-weight:700">${signatory.name}${signatory.title ? `, ${signatory.title}` : ""}</p>
-      <p style="margin:2px 0 0;font-size:13px;color:#6b7280">${seller.legalName}</p>
-      <p style="margin:2px 0 0;font-size:13px;color:#6b7280">${seller.email} &nbsp;·&nbsp; ${seller.mobile}</p>
-      <p style="margin:2px 0 0;font-size:13px;color:#6b7280">${seller.website}</p>
-    </div>`;
-}
 
 function clean(value) {
   return String(value || "").trim();
@@ -120,7 +102,7 @@ async function resolveEmailTemplate(category, vars = {}) {
     const bodyHtml = bodyAnyToHtml(interpolate(tpl.body, vars));
     return {
       subject: interpolate(tpl.subject || category, vars),
-      html: `<div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">${bodyHtml}${signatureHtml()}</div>`,
+      html: `<div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">${bodyHtml}</div>`,
     };
   } catch {
     return null;
@@ -192,8 +174,7 @@ export async function sendInvoiceEmail({ to, name, invoiceNumber, packageName, t
         <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} has been received successfully.</p>
         <p>${invoiceLine}</p>
         <p style="font-size:13px;color:#6b7280">This is a computer-generated invoice. No further amount is due against it.</p>
-        ${signatureHtml()}
-      </div>
+              </div>
     `,
     attachments,
   });
@@ -228,8 +209,7 @@ export async function sendPaymentCancelledEmail({ to, name, packageName, amount,
           <p style="margin:6px 0 0;font-size:14px;color:#525866">Any deducted amount is usually reversed by Razorpay or your bank within a few working days. Please do not make a duplicate payment if your bank shows a debit and contact support with the payment reference.</p>
         </div>
         ${referenceRows.length ? `<p style="font-size:13px;color:#6b7280">${referenceRows.join("<br/>")}</p>` : ""}
-        ${signatureHtml()}
-      </div>
+              </div>
     `
   });
 }
@@ -249,8 +229,7 @@ export async function sendOtpEmail({ to, code, label }) {
         <p>Use this code to complete checkout on The Copper Studio:</p>
         <p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${code}</p>
         <p style="font-size:13px;color:#6b7280">This code expires in 10 minutes. Ignore this email if you did not request it.</p>
-        ${signatureHtml()}
-      </div>
+              </div>
     `
   });
 }
@@ -280,7 +259,7 @@ export async function sendTestEmail({ to, subject, body }) {
   return sendMail({
     to,
     subject: subject || "Test Email",
-    html: `<div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">${bodyHtml}${signatureHtml()}</div>`,
+    html: `<div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">${bodyHtml}</div>`,
   });
 }
 
