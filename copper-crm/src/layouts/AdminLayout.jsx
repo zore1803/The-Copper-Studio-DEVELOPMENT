@@ -75,9 +75,26 @@ const pageNames = {
   "/admin/database": "Database",
   "/admin/settings": "Settings",
   "/admin/settings/profile": "Profile",
-  "/admin/settings/trigger-template": "Trigger Template",
+  "/admin/settings/trigger-template": "Templates",
   "/admin/settings/data-fields": "Data Fields",
   "/admin/settings/pricing": "Pricing",
+};
+
+// Hard-coded breadcrumb chains for pages whose URL path doesn't reflect the
+// logical navigation hierarchy (e.g. /admin/communication/* lives under Settings > Templates).
+const breadcrumbOverrides = {
+  "/admin/communication/email-templates": [
+    { label: "Analytics", to: "/admin" },
+    { label: "Settings", to: "/admin/settings" },
+    { label: "Templates", to: "/admin/settings/trigger-template" },
+    { label: "Email Templates", to: "/admin/communication/email-templates" },
+  ],
+  "/admin/communication/whatsapp-templates": [
+    { label: "Analytics", to: "/admin" },
+    { label: "Settings", to: "/admin/settings" },
+    { label: "Templates", to: "/admin/settings/trigger-template" },
+    { label: "WhatsApp Templates", to: "/admin/communication/whatsapp-templates" },
+  ],
 };
 
 const searchablePages = [
@@ -100,6 +117,7 @@ const searchablePages = [
 ];
 
 function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) {
+  if (breadcrumbOverrides[pathname]) return breadcrumbOverrides[pathname];
   const segments = pathname.split("/").filter(Boolean);
   const crumbs = [{ label: "Analytics", to: "/admin" }];
   let path = "";
