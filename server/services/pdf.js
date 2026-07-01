@@ -106,6 +106,14 @@ export async function htmlToPdfBuffer(html) {
   }
 }
 
+export async function warmupBrowser() {
+  try {
+    await getBrowser();
+  } catch {
+    // warmup is best-effort; if Chromium can't launch now, the first real request will surface the error
+  }
+}
+
 export async function closeBrowser() {
   if (!browserPromise) return;
   try {

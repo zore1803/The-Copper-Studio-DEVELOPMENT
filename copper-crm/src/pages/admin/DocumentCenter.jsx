@@ -137,7 +137,26 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
       <span className="text-[#6b7280]">{formattedDate}</span>
       <span onClick={(e) => e.stopPropagation()}>
         {doc.fileUrl ? (
-          <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-[#884c2d] hover:underline">View</a>
+          <button
+            className="text-xs font-bold text-[#884c2d] hover:underline"
+            onClick={() => {
+              const url = doc.fileUrl;
+              if (url.startsWith("data:")) {
+                const [header, b64] = url.split(",");
+                const mime = header.match(/:(.*?);/)[1];
+                const bytes = atob(b64);
+                const arr = new Uint8Array(bytes.length);
+                for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+                const blob = new Blob([arr], { type: mime });
+                const blobUrl = URL.createObjectURL(blob);
+                const win = window.open(blobUrl, "_blank");
+                if (win) win.onload = () => URL.revokeObjectURL(blobUrl);
+                else URL.revokeObjectURL(blobUrl);
+              } else {
+                window.open(url, "_blank", "noreferrer");
+              }
+            }}
+          >View</button>
         ) : (
           <span className="text-xs text-[#9ca3af]">No file</span>
         )}

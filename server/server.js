@@ -29,7 +29,7 @@ import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
 import { syncFinanceForOrder } from "./services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "./services/projectNaming.js";
 import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate.js";
-import { htmlToPdfBuffer } from "./services/pdf.js";
+import { htmlToPdfBuffer, warmupBrowser } from "./services/pdf.js";
 import { seedEmailTemplates } from "./scripts/seedEmailTemplates.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
 
@@ -855,6 +855,7 @@ async function start() {
 
   app.listen(port, () => {
     console.log(`API running at http://localhost:${port} (DB: mongo)`);
+    warmupBrowser();
   });
 }
 
