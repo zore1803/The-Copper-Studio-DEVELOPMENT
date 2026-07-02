@@ -77,7 +77,7 @@ function KpiCard({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#E1E4EA] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
           <Icon size={16} />
         </div>
         <div>
@@ -92,7 +92,7 @@ function KpiCard({ label, value, icon: Icon }) {
 function EmptyState({ title, text, action }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+      <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <MessageCircle size={20} />
       </div>
       <p className="text-sm font-semibold text-[#111827]">{title}</p>
@@ -340,7 +340,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
             </div>
             <Button variant="secondary" onClick={onClose}>Cancel</Button>
             <Button onClick={() => onSave(form)}><Save size={14} /> Save</Button>
-            <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>
+            <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-[25px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>
           </div>
         </div>
 
@@ -478,7 +478,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
       {/* Templates — fixed height, scrollable list */}
       <section className="flex max-h-[calc(100vh-120px)] flex-col rounded-xl border border-[#e5e7eb] bg-white">
         <div className="flex shrink-0 items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
-          <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+          <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${type} templates`} className="w-60 bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
@@ -495,9 +495,9 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
                     {template.subject && <p className="mt-2 text-sm text-[#374151]">{template.subject}</p>}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
-                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
-                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
+                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
+                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
+                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
                   </div>
                 </div>
               </div>

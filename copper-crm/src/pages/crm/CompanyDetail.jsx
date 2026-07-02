@@ -173,7 +173,7 @@ function formatINR(value) {
 function EmptyState({ icon: Icon, title, text, action }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+      <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
         <Icon size={20} />
       </div>
       <p className="text-sm font-semibold text-[#111827]">{title}</p>
@@ -187,7 +187,7 @@ function KpiChip({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -271,7 +271,7 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                className={`flex items-center justify-between rounded-[25px] border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
               >
                 <span className="font-semibold text-[#111827]">{project.name}</span>
                 <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]" />
@@ -990,8 +990,8 @@ export default function CompanyDetail() {
               <button
                 onClick={openLinkClient}
                 title="Link Client Portal"
-                className={`flex h-9 items-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec] ${
-                  linkedClientContacts.length ? "gap-1.5 pl-3 pr-1.5" : "w-9 justify-center"
+                className={`flex h-8 items-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec] ${
+                  linkedClientContacts.length ? "gap-1.5 pl-3 pr-1.5" : "w-8 justify-center"
                 }`}
               >
                 <LinkIcon size={15} className="shrink-0" />
@@ -1061,7 +1061,7 @@ export default function CompanyDetail() {
                 onClick={() => setCompanyDetailsOpen((open) => !open)}
                 aria-expanded={companyDetailsOpen}
                 title={companyDetailsOpen ? "Hide company details" : "Show company details"}
-                className="flex h-9 w-9 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
+                className="flex h-8 w-8 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
               >
                 <ChevronDown size={18} className={`transition-transform ${companyDetailsOpen ? "rotate-180" : ""}`} />
               </button>
@@ -1275,7 +1275,7 @@ function Section({ title, action, flush = false, children }) {
 // across tabs instead of each module inventing its own toolbar.
 function ModuleSearch({ value, onChange, placeholder }) {
   return (
-    <div className="flex h-11 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+    <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
       <Search size={14} className="text-[#525866] shrink-0" />
       <input
         value={value}
@@ -1323,7 +1323,7 @@ function ActivityTimeline({ items, full = false }) {
             const Icon = item.icon || MessageSquare;
             return (
               <div key={`${item.type}-${item.title}-${index}`} className="flex gap-3">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+                <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
                   <Icon size={15} />
                 </div>
                 <div className="min-w-0">
@@ -1377,7 +1377,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
               <td className="py-3 pr-4 text-[#374151]">{project.projectManager || project.manager || "Unassigned"}</td>
               <td className="py-3 pr-4 text-right font-semibold text-[#111827]">{formatINR(Number(project.budget || project.value || 0))}</td>
               <td className="py-3 pl-2 pr-5 text-right" onClick={(event) => event.stopPropagation()}>
-                <button onClick={() => onDelete(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                <button onClick={() => onDelete(project)} className="rounded-[25px] p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -1391,7 +1391,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
 
 function WorkspaceToggle({ options, value, onChange }) {
   return (
-    <div className="inline-flex h-11 items-center rounded-full border border-[#e5e7eb] bg-white p-1">
+    <div className="inline-flex h-8 items-center rounded-full border border-[#e5e7eb] bg-white p-1">
       {options.map((option) => (
         <button
           key={option}
@@ -1565,10 +1565,10 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
               <td className="py-3 pr-4"><StatusBadge status={contact.status || "Active"} /></td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
-                  <button onClick={() => onEdit(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Edit2 size={14} /></button>
-                  <button onClick={() => onPrimary(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
-                  <button onClick={() => onDelete(contact)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
+                  <button onClick={() => onView(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onEdit(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Edit2 size={14} /></button>
+                  <button onClick={() => onPrimary(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
+                  <button onClick={() => onDelete(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1607,8 +1607,8 @@ function InvoicesTable({ invoices, onView, onDownload }) {
               <td className="py-3 pr-4 font-mono text-xs text-[#6b7280]">{invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked"}</td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
-                  <button onClick={() => onDownload(invoice)} className="rounded-lg p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Download size={14} /></button>
+                  <button onClick={() => onView(invoice)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onDownload(invoice)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Download size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1667,7 +1667,7 @@ function TaskGantt({ tasks, projects }) {
                 <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                 <p className="text-xs text-[#6b7280]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"} / {task.status || "Backlog"}</p>
               </div>
-              <div className="relative h-9 rounded-lg bg-[#f3f4f6]">
+              <div className="relative h-8 rounded-lg bg-[#f3f4f6]">
                 <div
                   className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#8D3118] px-1.5 text-[10px] font-bold text-white"
                   style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
@@ -1791,13 +1791,13 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onDeleteGroup(group.name); }}
-                  className="absolute right-2 top-2 rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                  className="absolute right-2 top-2 rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                   title="Delete group"
                 >
                   <Trash2 size={13} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
+                  <div className="grid h-8 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{group.name}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files · {group.folders.join(", ")}</p>
@@ -1818,7 +1818,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
+                  <div className="grid h-8 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>
@@ -1867,7 +1867,7 @@ function DocumentList({ documents, onDelete }) {
                 <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
               )}
               {onDelete ? (
-                <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                <button onClick={() => onDelete(doc)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                   <Trash2 size={14} />
                 </button>
               ) : null}
@@ -1905,7 +1905,7 @@ function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload })
                     <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
                   )}
                   {onDelete ? (
-                    <button onClick={() => onDelete(doc)} className="rounded-lg p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                    <button onClick={() => onDelete(doc)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                       <Trash2 size={14} />
                     </button>
                   ) : null}
@@ -1974,7 +1974,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                                 <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); onDelete(task); }}
-                                  className="shrink-0 rounded-lg p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                                  className="shrink-0 rounded-[25px] p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                                   title="Delete task"
                                 >
                                   <Trash2 size={13} />
@@ -2081,7 +2081,7 @@ function TasksTable({ tasks, projects, onDelete }) {
               <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
               <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
               <td className="py-3 pr-4 text-right">
-                <button onClick={() => onDelete(task)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
+                <button onClick={() => onDelete(task)} className="rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -2182,9 +2182,9 @@ function CalendarTaskView({ tasks, onCreate }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+          <button onClick={() => navigate(-1)} className="rounded-[25px] border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
           <p className="text-sm font-bold text-[#111827]">{headerLabel}</p>
-          <button onClick={() => navigate(1)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
+          <button onClick={() => navigate(1)} className="rounded-[25px] border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
         </div>
         <WorkspaceToggle options={CALENDAR_VIEWS} value={calendarView} onChange={setCalendarView} />
       </div>
@@ -2381,7 +2381,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   return (
     <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex h-9 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+        <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
           <Search size={13} className="text-[#525866] shrink-0" />
           <input
             value={search}
@@ -2394,12 +2394,12 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           type="date"
           value={dateFilter}
           onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
-          className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+          className="h-8 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
         <button
           type="button"
           onClick={cycleSort}
-          className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
+          className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
             sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
           }`}
           title="Sort by created date"
@@ -2449,7 +2449,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
                   <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
                     <Edit2 size={14} />
                   </button>
-                  <button type="button" onClick={() => onDelete(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                  <button type="button" onClick={() => onDelete(note)} className="rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -2478,7 +2478,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronLeft size={14} />
             </button>
@@ -2486,7 +2486,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronRight size={14} />
             </button>

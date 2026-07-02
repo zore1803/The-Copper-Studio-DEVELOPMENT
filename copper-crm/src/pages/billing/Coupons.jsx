@@ -248,8 +248,8 @@ function ClockPicker({ value, onChange, onClose }) {
       </div>
 
       <div className="flex gap-2 px-2 pb-2 pt-1">
-        <button onClick={onClose} className="flex-1 rounded-lg border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
-        <button onClick={apply} className="flex-1 rounded-lg bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
+        <button onClick={onClose} className="flex-1 rounded-[25px] border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
+        <button onClick={apply} className="flex-1 rounded-[25px] bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
       </div>
     </div>
   );
@@ -465,7 +465,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-[#ffffff] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]"><Icon size={17} /></div>
+        <div className="flex h-8 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]"><Icon size={17} /></div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
           <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
@@ -508,7 +508,7 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
           <Status value={coupon.status || "Draft"} />
           <button
             onClick={() => onDelete(coupon)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
             title="Delete coupon"
           >
             <Trash2 size={14} />
@@ -549,7 +549,7 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
       </div>
       <button
         onClick={() => onDelete(coupon)}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[25px] text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
         title="Delete coupon"
       >
         <Trash2 size={14} />
@@ -685,7 +685,7 @@ export default function Coupons() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -698,7 +698,7 @@ export default function Coupons() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -709,7 +709,7 @@ export default function Coupons() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -720,7 +720,7 @@ export default function Coupons() {
           </div>
           <button
             onClick={() => setCreating(true)}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+            className="flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
           >
             <Plus size={16} /> Create Coupon
           </button>
@@ -744,7 +744,7 @@ export default function Coupons() {
               {/* Filter */}
               <FilterButton
                 panelWidth={220}
-                buttonClassName="h-9 w-9"
+                buttonClassName="h-8 w-8"
                 onReset={() => setStatusFilter("All")}
                 fields={[
                   {
@@ -760,8 +760,8 @@ export default function Coupons() {
 
               {/* View switcher */}
               <div className="flex items-center rounded-lg border border-[#e5e7eb] overflow-hidden">
-                <button onClick={() => setViewMode("card")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><Grid2x2 size={15} /></button>
-                <button onClick={() => setViewMode("list")} className={`flex h-9 w-9 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><List size={15} /></button>
+                <button onClick={() => setViewMode("card")} className={`flex h-8 w-8 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><Grid2x2 size={15} /></button>
+                <button onClick={() => setViewMode("list")} className={`flex h-8 w-8 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><List size={15} /></button>
               </div>
             </div>
           </div>
@@ -797,7 +797,7 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -805,7 +805,7 @@ export default function Coupons() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-[25px] text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
@@ -813,7 +813,7 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={14} />
                     </button>

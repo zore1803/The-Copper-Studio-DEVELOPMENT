@@ -42,7 +42,7 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-5 py-4 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -216,7 +216,7 @@ export default function ProjectsList() {
           <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               value={search}
@@ -229,7 +229,7 @@ export default function ProjectsList() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-8 items-center gap-1.5 rounded-[25px] border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={14} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -240,7 +240,7 @@ export default function ProjectsList() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -362,7 +362,7 @@ export default function ProjectsList() {
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteProject(project)} className="rounded-lg p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                    <button onClick={() => handleDeleteProject(project)} className="rounded-[25px] p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -371,7 +371,7 @@ export default function ProjectsList() {
             }) : (
               <tr>
                 <td colSpan={9} className="px-5 py-10 text-center">
-                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+                  <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
                     <FolderKanban size={20} />
                   </div>
                   <p className="text-sm font-semibold text-[#111827]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>

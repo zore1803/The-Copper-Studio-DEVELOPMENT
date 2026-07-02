@@ -356,7 +356,7 @@ export default function ProjectFiles() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={!allFolderDefs.length || uploadProgress !== null}
-            className="ml-auto flex items-center gap-1.5 rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="ml-auto flex items-center gap-1.5 rounded-[25px] bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           >
             <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
           </button>
@@ -397,7 +397,7 @@ export default function ProjectFiles() {
               <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#8D3118] text-white hover:bg-[#9A4113]">
                 <Check size={13} />
               </button>
-              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
+              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
                 <X size={13} />
               </button>
             </form>
@@ -465,7 +465,7 @@ export default function ProjectFiles() {
           )}
           <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
-            <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+            <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
               <Search size={14} className="text-[#525866] shrink-0" />
               <input
                 value={searchQuery}
@@ -483,7 +483,7 @@ export default function ProjectFiles() {
             <select
               value={typeFilter}
               onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#374151] outline-none focus:border-[#8D3118]"
+              className="h-8 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#374151] outline-none focus:border-[#8D3118]"
             >
               <option value="">All types</option>
               {typeOptions.map((key) => <option key={key} value={key}>{TYPE_META[key].label}</option>)}
@@ -528,7 +528,7 @@ export default function ProjectFiles() {
                           <button
                             type="button"
                             onClick={() => openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg }))}
-                            className={`grid h-10 w-10 shrink-0 place-items-center rounded ${meta.className} transition-transform hover:scale-105`}
+                            className={`grid h-8 w-10 shrink-0 place-items-center rounded ${meta.className} transition-transform hover:scale-105`}
                             title="Open file"
                           >
                             <Icon size={18} />
@@ -622,7 +622,7 @@ export default function ProjectFiles() {
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setPage(currentPage - 1)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -631,7 +631,7 @@ export default function ProjectFiles() {
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setPage(currentPage + 1)}
-                  className="grid h-7 w-7 place-items-center rounded-lg border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -659,7 +659,7 @@ export default function ProjectFiles() {
                   const meta = TYPE_META[infoDoc.type] || TYPE_META.doc;
                   const Icon = meta.icon;
                   return (
-                    <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-lg ${meta.className}`}>
+                    <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${meta.className}`}>
                       <Icon size={20} />
                     </div>
                   );

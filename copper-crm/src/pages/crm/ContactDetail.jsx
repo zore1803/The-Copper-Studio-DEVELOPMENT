@@ -55,7 +55,7 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                className={`flex items-center justify-between rounded-[25px] border px-3 py-2.5 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
               >
                 <span className="font-semibold text-[#111827]">{project.name}</span>
                 <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]" />
@@ -220,7 +220,7 @@ function KpiChip({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -235,7 +235,7 @@ function KpiChip({ label, value, icon: Icon }) {
 function EmptyTab({ icon: Icon, text }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+      <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
         <Icon size={20} />
       </div>
       <p className="text-sm text-[#6b7280]">{text}</p>
@@ -453,21 +453,21 @@ export default function ContactDetail() {
                 companyName={companyName}
                 triggerLabel="Share Contact"
                 iconSize={14}
-                triggerClassName="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-4 text-sm font-semibold text-[#1F2937] transition-colors hover:bg-[#f9fafb]"
+                triggerClassName="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-4 text-sm font-semibold text-[#1F2937] transition-colors hover:bg-[#f9fafb]"
               />
               <button
                 onClick={() => setManagingAccess(true)}
-                className={`inline-flex h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#8D3118] hover:bg-[#F8E3D8]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
+                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${contact.userId ? "border-[#d8c2b9] bg-[#fff1ec] text-[#8D3118] hover:bg-[#F8E3D8]" : "border-[#d8c2b9] bg-white text-[#211a17] hover:bg-[#fff1ec]"}`}
               >
                 <LinkIcon size={14} /> Project Access
               </button>
               <button
                 onClick={() => setEditing(true)}
-                className="inline-flex h-11 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec]"
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec]"
               >
                 <Pencil size={14} /> Edit Contact
               </button>
-              <button onClick={handleDelete} className="inline-flex h-11 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100">
+              <button onClick={handleDelete} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100">
                 <Trash2 size={14} /> Delete
               </button>
             </div>
@@ -550,7 +550,7 @@ export default function ContactDetail() {
                     <button
                       key={item._id || item.id}
                       onClick={() => navigate(`/admin/contacts/${item._id || item.id}`)}
-                      className="flex w-full items-center gap-2.5 text-left hover:bg-gray-50 rounded-lg -mx-1 px-1 py-0.5"
+                      className="flex w-full items-center gap-2.5 text-left hover:bg-gray-50 rounded-[25px] -mx-1 px-1 py-0.5"
                     >
                       <Avatar name={contactFullName(item)} size="sm" />
                       <div>
@@ -626,7 +626,7 @@ export default function ContactDetail() {
             </div>
             {linkedNotes.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex h-9 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+                <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
                   <Search size={13} className="text-[#525866] shrink-0" />
                   <input
                     value={noteSearch}
@@ -639,12 +639,12 @@ export default function ContactDetail() {
                   type="date"
                   value={noteDateFilter}
                   onChange={(event) => { setNoteDateFilter(event.target.value); setNotePage(1); }}
-                  className="h-9 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+                  className="h-8 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
                 />
                 <button
                   type="button"
                   onClick={() => { setNoteSortDir((prev) => (prev === null ? "desc" : prev === "desc" ? "asc" : null)); setNotePage(1); }}
-                  className={`flex h-9 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
+                  className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
                     noteSortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
                   }`}
                   title="Sort by created date"
@@ -727,7 +727,7 @@ export default function ContactDetail() {
                                       <button type="button" onClick={() => setEditingNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
                                         <Pencil size={14} />
                                       </button>
-                                      <button type="button" onClick={() => handleDeleteNote(n)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                                      <button type="button" onClick={() => handleDeleteNote(n)} className="rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
                                         <Trash2 size={14} />
                                       </button>
                                     </div>
@@ -759,7 +759,7 @@ export default function ContactDetail() {
                           type="button"
                           disabled={notePage <= 1}
                           onClick={() => setNotePage((p) => Math.max(1, p - 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+                          className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
                         >
                           <ChevronLeft size={14} />
                         </button>
@@ -767,7 +767,7 @@ export default function ContactDetail() {
                           type="button"
                           disabled={notePage >= totalPages}
                           onClick={() => setNotePage((p) => Math.min(totalPages, p + 1))}
-                          className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+                          className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
                         >
                           <ChevronRight size={14} />
                         </button>

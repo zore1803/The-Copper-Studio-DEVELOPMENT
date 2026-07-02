@@ -85,7 +85,7 @@ export default function TimelinePage() {
           <p className="text-xs text-[#525866] mt-0.5">All project stages plotted on a master Gantt chart.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+          <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               value={search}
@@ -97,7 +97,7 @@ export default function TimelinePage() {
           <select
             value={selectedPackage}
             onChange={(e) => setSelectedPackage(e.target.value)}
-            className="h-9 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#8D3118]"
+            className="h-8 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#8D3118]"
           >
             {packages.map(pkg => (
               <option key={pkg} value={pkg}>{pkg === "All" ? "All Packages" : pkg}</option>

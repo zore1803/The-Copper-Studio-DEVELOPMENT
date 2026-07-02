@@ -72,7 +72,7 @@ function useClickOutside(refs, onOutside, active) {
 function EmptyState({ onCreate }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+      <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <Phone size={20} />
       </div>
       <p className="text-sm font-semibold text-[#111827]">No contacts yet.</p>
@@ -153,7 +153,7 @@ function FolderCard({ folder, count, onClick }) {
       onClick={onClick}
       className="flex flex-col items-start gap-3 rounded-xl border border-[#E1E4EA] bg-white p-4 text-left transition-colors hover:bg-[#fafafa]"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+      <div className="flex h-8 w-10 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <FolderIcon size={18} />
       </div>
       <div>
@@ -171,7 +171,7 @@ function FolderRow({ folder, count, onClick }) {
       className="flex items-center justify-between rounded-xl border border-[#E1E4EA] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa]"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
           <FolderIcon size={16} />
         </div>
         <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
@@ -186,7 +186,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]" title="Back to all folders">
+          <button onClick={onBack} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]" title="Back to all folders">
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
             </div>
           </div>
         </div>
-        <button onClick={onAdd} className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto">
+        <button onClick={onAdd} className="flex h-8 items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto">
           <Plus size={15} /> Add contacts
         </button>
       </div>
@@ -216,7 +216,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
             const companyName = company?.companyName || company?.name || c.company || "Not linked";
             return (
               <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
-                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
+                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
                   <X size={14} />
                 </button>
                 <div className="flex items-center gap-3">
@@ -297,7 +297,7 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+      <div className="mb-3 flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
         <Search size={14} className="text-[#525866] shrink-0" />
         <input
           className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -311,7 +311,7 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
           const id = idOf(c);
           const checked = selected.has(id);
           return (
-            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${checked ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}>
+            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-[25px] border px-3 py-2.5 transition-colors ${checked ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}>
               <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#d1d5db] accent-[#8D3118]" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[#111827]">{contactFullName(c)}</p>
@@ -496,7 +496,7 @@ export default function Contacts() {
           <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
@@ -504,7 +504,7 @@ export default function Contacts() {
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen((value) => !value)}
-                className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+                className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
               >
                 <ArrowUpDown size={15} />
                 <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -515,7 +515,7 @@ export default function Contacts() {
                     <button
                       key={opt.value}
                       onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                      className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                      className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                     >
                       {opt.label}
                       {sortBy === opt.value && <Check size={14} />}
@@ -549,7 +549,7 @@ export default function Contacts() {
 
             <button
               onClick={() => setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" })}
-              className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+              className="flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
             >
               <Plus size={16} /> New Contact
             </button>
@@ -588,7 +588,7 @@ export default function Contacts() {
                   <button
                     disabled={page === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
@@ -608,7 +608,7 @@ export default function Contacts() {
                   <button
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -624,7 +624,7 @@ export default function Contacts() {
                 <p className="text-xs text-[#525866] mt-0.5">Organise your contacts into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+                <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
                   <Search size={14} className="text-[#525866] shrink-0" />
                   <input
                     className="w-full bg-transparent text-xs outline-none placeholder:text-[#525866]"
@@ -633,7 +633,7 @@ export default function Contacts() {
                     onChange={(e) => { setFolderSearch(e.target.value); setFolderPage(1); }}
                   />
                 </div>
-                <button onClick={() => setCreatingFolder(true)} className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors">
+                <button onClick={() => setCreatingFolder(true)} className="flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors">
                   <FolderPlus size={15} /> New Folder
                 </button>
               </div>
@@ -657,23 +657,23 @@ export default function Contacts() {
                     <button
                       onClick={() => setFolderView((v) => (v === "grid" ? "list" : "grid"))}
                       title={folderView === "grid" ? "Switch to list view" : "Switch to grid view"}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
                     >
                       {folderView === "grid" ? <List size={16} /> : <Grid2x2 size={16} />}
                     </button>
-                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronLeft size={16} />
                     </button>
                     {Array.from({ length: folderTotalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
                       <button
                         key={p}
                         onClick={() => setFolderPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-[25px] text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
                     ))}
-                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronRight size={16} />
                     </button>
                   </div>

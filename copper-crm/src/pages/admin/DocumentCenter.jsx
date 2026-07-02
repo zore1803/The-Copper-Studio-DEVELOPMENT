@@ -61,7 +61,7 @@ function fileType(name = "") {
 function EmptyState({ title, text }) {
   return (
     <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+      <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
         <Folder size={20} />
       </div>
       <p className="text-sm font-semibold text-[#111827]">{title}</p>
@@ -133,7 +133,7 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
       className={`grid w-full grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 border-b border-[#f3f4f6] px-4 py-3 text-left text-sm hover:bg-[#fafafa] cursor-pointer ${selected ? "bg-[#fff8f6]" : "bg-white"}`}
     >
       <span className="flex min-w-0 items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
           <Icon size={16} />
         </span>
         <span className="min-w-0">
@@ -496,7 +496,7 @@ export default function DocumentCenter() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="h-9 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#374151] outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+              className="h-8 rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#374151] outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               <option value="All">All Categories</option>
               {availableCategories.map((c) => (
@@ -504,12 +504,12 @@ export default function DocumentCenter() {
               ))}
             </select>
           )}
-          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
-          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <button onClick={() => setView("grid")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
           <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
         </div>
       </div>

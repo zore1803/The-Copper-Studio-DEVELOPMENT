@@ -26,8 +26,8 @@ export function Card({ children, className = "" }) {
 }
 
 export function Button({ children, variant = "primary", size = "md", onClick, className = "", disabled = false, type = "button" }) {
-  const base = "inline-flex items-center gap-1.5 font-semibold rounded-xl transition-all disabled:opacity-50";
-  const sizes = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-xs", lg: "px-5 py-2.5 text-sm" };
+  const base = "inline-flex h-8 items-center gap-1.5 font-semibold rounded-[25px] transition-all disabled:opacity-50";
+  const sizes = { sm: "px-3 text-xs", md: "px-4 text-xs", lg: "px-5 text-sm" };
   const variants = {
     primary:   "bg-[#8D3118] text-white hover:bg-[#9A4113] shadow-sm shadow-[#8D3118]/20",
     secondary: "bg-white text-[#211a17] border border-[#d8c2b9] hover:bg-[#fff1ec]",

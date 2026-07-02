@@ -103,7 +103,7 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       <button
         ref={buttonRef}
         onClick={() => setOpen((value) => !value)}
-        className={`relative flex items-center justify-center rounded-full border transition-colors ${open ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-9 w-9"}`}
+        className={`relative flex items-center justify-center rounded-[25px] border transition-colors ${open ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"} ${buttonClassName || "h-8 w-8"}`}
       >
         <Filter size={16} />
         {activeCount > 0 && (

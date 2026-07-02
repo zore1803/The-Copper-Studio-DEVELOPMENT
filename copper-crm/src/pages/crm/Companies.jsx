@@ -232,7 +232,7 @@ function FolderCard({ folder, count, active, onClick }) {
         active ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#E1E4EA] bg-white hover:bg-[#fafafa]"
       }`}
     >
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#8D3118] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}>
+      <div className={`flex h-8 w-10 items-center justify-center rounded-lg border ${active ? "border-[#8D3118] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}>
         <FolderIcon size={18} />
       </div>
       <div>
@@ -250,7 +250,7 @@ function FolderRow({ folder, count, onClick }) {
       className="flex items-center justify-between rounded-xl border border-[#E1E4EA] bg-white px-4 py-3 text-left transition-colors hover:bg-[#fafafa]"
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866]">
           <FolderIcon size={16} />
         </div>
         <p className="text-sm font-semibold text-[#0E121B]">{folder}</p>
@@ -267,7 +267,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
+            className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
             title="Back to all folders"
           >
             <ChevronLeft size={16} />
@@ -282,7 +282,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         </div>
         <button
           onClick={onAdd}
-          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto"
+          className="flex h-8 items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto"
         >
           <Plus size={15} />
           Add companies
@@ -305,13 +305,13 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
             <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
               <button
                 onClick={() => onRemove(c)}
-                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-lg text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
+                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
                 title="Remove from folder"
               >
                 <X size={14} />
               </button>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f3f4f6]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f3f4f6]">
                   <Building2 size={15} className="text-[#9ca3af]" />
                 </div>
                 <div className="min-w-0">
@@ -396,7 +396,7 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+      <div className="mb-3 flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
         <Search size={14} className="text-[#525866] shrink-0" />
         <input
           className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -677,7 +677,7 @@ export default function Companies() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -687,15 +687,15 @@ export default function Companies() {
             />
           </div>
           <div className="relative" ref={actionsRef}>
-            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
+            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
               <MoreVertical size={16} />
             </button>
             {actionsOpen && (
               <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-[25px] px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <Download size={14} /> Export filtered CSV
                 </button>
-                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-[25px] px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <X size={14} /> Clear filters
                 </button>
               </div>
@@ -705,7 +705,7 @@ export default function Companies() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -716,7 +716,7 @@ export default function Companies() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -748,7 +748,7 @@ export default function Companies() {
           </button>
           <button
             onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
-            className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+            className="flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
           >
             <Plus size={16} />
             Add Company
@@ -836,7 +836,7 @@ export default function Companies() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -856,7 +856,7 @@ export default function Companies() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -872,7 +872,7 @@ export default function Companies() {
                 <p className="text-xs text-[#525866] mt-0.5">Organise your companies into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+                <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
                   <Search size={14} className="text-[#525866] shrink-0" />
                   <input
                     className="w-full bg-transparent text-xs outline-none placeholder:text-[#525866]"
@@ -883,7 +883,7 @@ export default function Companies() {
                 </div>
                 <button
                   onClick={() => setCreatingFolder(true)}
-                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors"
+                  className="flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors"
                 >
                   <FolderPlus size={15} />
                   New Folder
@@ -907,7 +907,7 @@ export default function Companies() {
                 <div className="flex items-center justify-between px-1">
                   <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
                   <div className="flex items-center gap-1.5">
-                    <div className="inline-flex h-9 items-center rounded-full border border-[#EAECF0] bg-white p-1">
+                    <div className="inline-flex h-8 items-center rounded-full border border-[#EAECF0] bg-white p-1">
                       <button
                         onClick={() => setFolderView("list")}
                         title="List view"
@@ -930,7 +930,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.max(1, p - 1))}
                       disabled={folderPage === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -948,7 +948,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))}
                       disabled={folderPage === folderTotalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={16} />
                     </button>
