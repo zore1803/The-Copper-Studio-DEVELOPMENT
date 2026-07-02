@@ -656,7 +656,7 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
             activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fff8f6]"
           }`}
         >
-          <div className={`grid h-8 w-10 shrink-0 place-items-center rounded-2xl ${
+          <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
             activeSection === section.key ? "bg-[#f3dfd7] text-[#8D3118]" : "bg-[#f5e6e1] text-[#6c6355]"
           }`}>
             <section.icon size={17} />

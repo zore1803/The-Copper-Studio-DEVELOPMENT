@@ -68,7 +68,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
           <Icon size={17} />
         </div>
         <div>
@@ -577,7 +577,7 @@ export default function Invoices() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+            <div className="flex h-14 items-center justify-between px-6 border-t border-[#E1E4EA]">
               <p className="text-sm text-[#6b7280]">
                 Showing <span className="font-semibold text-[#111827]">{paginated.length}</span> of{" "}
                 <span className="font-semibold text-[#111827]">{sorted.length}</span> Invoices

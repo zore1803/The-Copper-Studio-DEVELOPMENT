@@ -1797,7 +1797,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                   <Trash2 size={13} />
                 </button>
                 <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><Layers size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{group.name}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files · {group.folders.join(", ")}</p>
@@ -1818,7 +1818,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-8 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>

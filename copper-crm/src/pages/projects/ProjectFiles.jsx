@@ -528,7 +528,7 @@ export default function ProjectFiles() {
                           <button
                             type="button"
                             onClick={() => openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg }))}
-                            className={`grid h-8 w-10 shrink-0 place-items-center rounded ${meta.className} transition-transform hover:scale-105`}
+                            className={`grid h-10 w-10 shrink-0 place-items-center rounded ${meta.className} transition-transform hover:scale-105`}
                             title="Open file"
                           >
                             <Icon size={18} />

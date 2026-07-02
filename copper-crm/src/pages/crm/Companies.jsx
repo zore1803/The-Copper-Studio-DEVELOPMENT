@@ -232,7 +232,7 @@ function FolderCard({ folder, count, active, onClick }) {
         active ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#E1E4EA] bg-white hover:bg-[#fafafa]"
       }`}
     >
-      <div className={`flex h-8 w-10 items-center justify-center rounded-lg border ${active ? "border-[#8D3118] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}>
+      <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${active ? "border-[#8D3118] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}>
         <FolderIcon size={18} />
       </div>
       <div>
@@ -739,9 +739,9 @@ export default function Companies() {
           {/* View toggle */}
           <button
             onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-            className={`flex items-center gap-1.5 rounded-full p-1 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
+            className={`flex h-8 items-center gap-1.5 rounded-[25px] p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
           >
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
+            <span className="flex h-7 items-center gap-1.5 rounded-[25px] bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
               <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"} />
               <span className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"}>Hotlist</span>
             </span>
@@ -827,7 +827,7 @@ export default function Companies() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+            <div className="flex h-14 items-center justify-between px-6 border-t border-[#E1E4EA]">
               <p className="text-sm text-[#6b7280]">
                 Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
                 <span className="font-semibold text-[#111827]">{filtered.length}</span> Companies

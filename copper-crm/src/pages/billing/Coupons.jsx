@@ -465,7 +465,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-[#ffffff] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]"><Icon size={17} /></div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]"><Icon size={17} /></div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
           <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
@@ -788,7 +788,7 @@ export default function Coupons() {
                   ))}
                 </div>
               )}
-              <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
+              <div className="flex h-14 items-center justify-between px-6 border-t border-[#E1E4EA]">
                   <p className="text-sm text-[#6b7280]">
                     Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
                     <span className="font-semibold text-[#111827]">{sorted.length}</span> Coupons
