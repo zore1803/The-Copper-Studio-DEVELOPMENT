@@ -675,10 +675,10 @@ export function ClientMeetingsPage() {
                   <table className="w-full">
                     <thead>
                       <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
-                        <th className="px-6 py-3 text-left font-bold uppercase">Meeting</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase">Type</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase">Date / Time</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase">Status</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Meeting</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Type</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Date / Time</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1021,11 +1021,11 @@ export function ClientBillingPage() {
                     <table className="w-full">
                       <thead>
                         <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
-                          <th className="px-6 py-3 text-left font-bold uppercase">Invoice</th>
-                          <th className="px-6 py-3 text-left font-bold uppercase">Package</th>
-                          <th className="px-6 py-3 text-left font-bold uppercase">Date</th>
-                          <th className="px-6 py-3 text-right font-bold uppercase">Amount</th>
-                          <th className="px-6 py-3 text-left font-bold uppercase">Status</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase text-white">Invoice</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase text-white">Package</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase text-white">Date</th>
+                          <th className="px-6 py-3 text-right font-bold uppercase text-white">Amount</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase text-white">Status</th>
                         </tr>
                       </thead>
                       <tbody>
