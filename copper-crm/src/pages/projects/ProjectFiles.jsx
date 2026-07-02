@@ -9,6 +9,7 @@ import { Avatar, Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import ProjectHeader from "./ProjectHeader";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import customFolderSvg from "../../assets/Folder.svg";
 
 const TYPE_META = {
@@ -116,6 +117,7 @@ export default function ProjectFiles() {
   const [page, setPage] = useState(1);
   const [uploadProgress, setUploadProgress] = useState(null); // null = idle, 0-100 while uploading
   const [infoDoc, setInfoDoc] = useState(null);
+  const [deletingFolder, setDeletingFolder] = useState(null);
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject } = useCrmRecords("projects");
   const { records: allDocuments } = useCrmRecords("documents");
@@ -302,20 +304,26 @@ export default function ProjectFiles() {
     showToast({ title: "Folder created", message: `"${name}" folder added to this project.` });
   }
 
-  async function handleDeleteFolder(folder) {
+  function handleRequestDeleteFolder(folder) {
     const docsInFolder = documents.filter((d) => (d.category || "General") === folder.key);
     // A folder can only be removed once it's empty — delete/move its files first.
     if (docsInFolder.length) {
       showToast({ type: "error", title: "Folder isn't empty", message: `"${folder.key}" still has ${docsInFolder.length} file(s). Remove them before deleting the folder.` });
       return;
     }
-    if (!window.confirm(`Delete the empty folder "${folder.key}"?`)) return;
+    setDeletingFolder(folder);
+  }
+
+  async function handleDeleteFolder() {
+    const folder = deletingFolder;
+    if (!folder) return;
     const updated = {
       ...project,
       customFolders: customFolders.filter((name) => name !== folder.key),
     };
     await saveProject(updated);
     if (activeFolder === folder.key) { setActiveFolder(null); setPage(1); }
+    setDeletingFolder(null);
     showToast({ title: "Folder deleted", message: `"${folder.key}" removed.` });
   }
 
@@ -329,33 +337,36 @@ export default function ProjectFiles() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]" onClick={() => setDocMenu(null)}>
-      <ProjectHeader
-        company={company}
-        project={project}
-        activeTab="Files"
-        actionLabel="Upload File"
-        actionIcon={FilePlus2}
-        onAction={() => fileInputRef.current?.click()}
-      />
+      <ProjectHeader company={company} project={project} activeTab="Files" />
 
       <div className="flex-1 space-y-5 p-6">
-      {/* Upload folder selector + live upload progress */}
+      {/* Single upload control: picks a folder here when at the root, or targets
+          the folder you're currently browsing — kept out of every other toolbar
+          on this page so there's exactly one place to start an upload. */}
       <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <FilePlus2 size={15} className="text-[#8D3118] shrink-0" />
-          <span className="text-xs font-semibold text-[#374151]">Upload to:</span>
-          <select
-            value={effectiveUploadFolder}
-            onChange={(e) => handleUploadFolderChange(e.target.value)}
-            className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#8D3118]"
-          >
-            {allFolderDefs.length === 0 && <option value="">No folders yet</option>}
-            {allFolderDefs.map((f) => <option key={f.key} value={f.key}>{f.key}</option>)}
-            <option value="__new__">+ Create new folder…</option>
-          </select>
+          {activeFolder ? (
+            <span className="text-xs font-semibold text-[#374151]">
+              Uploading to <span className="text-[#8D3118]">{activeFolder}</span>
+            </span>
+          ) : (
+            <>
+              <span className="text-xs font-semibold text-[#374151]">Upload to:</span>
+              <select
+                value={effectiveUploadFolder}
+                onChange={(e) => handleUploadFolderChange(e.target.value)}
+                className="text-xs border border-[#e5e7eb] rounded-lg px-2 py-1 outline-none focus:border-[#8D3118]"
+              >
+                {allFolderDefs.length === 0 && <option value="">No folders yet</option>}
+                {allFolderDefs.map((f) => <option key={f.key} value={f.key}>{f.key}</option>)}
+                <option value="__new__">+ Create new folder…</option>
+              </select>
+            </>
+          )}
           <button
             onClick={() => fileInputRef.current?.click()}
-            disabled={!allFolderDefs.length || uploadProgress !== null}
+            disabled={(!activeFolder && !allFolderDefs.length) || uploadProgress !== null}
             className="ml-auto flex items-center gap-1.5 rounded-full bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           >
             <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
@@ -425,7 +436,7 @@ export default function ProjectFiles() {
                 </button>
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); handleDeleteFolder(folder); }}
+                  onClick={(e) => { e.stopPropagation(); handleRequestDeleteFolder(folder); }}
                   title="Delete folder"
                   className="absolute right-1 top-1 grid h-7 w-7 place-items-center rounded-lg bg-white/90 text-[#9ca3af] opacity-0 shadow-sm transition-opacity hover:text-red-600 group-hover:opacity-100"
                 >
@@ -497,9 +508,6 @@ export default function ProjectFiles() {
                 Clear
               </button>
             )}
-            <Button variant="secondary" size="sm" disabled={!allFolderDefs.length} onClick={() => fileInputRef.current?.click()}>
-              <FilePlus2 size={14} /> Upload File
-            </Button>
           </div>
         </div>
 
@@ -641,6 +649,16 @@ export default function ProjectFiles() {
         </div>
       </section>
       </div>
+
+      {deletingFolder && (
+        <ConfirmDeleteModal
+          title="Delete folder?"
+          name={deletingFolder.key}
+          message="This folder is empty, so nothing else will be removed."
+          onCancel={() => setDeletingFolder(null)}
+          onConfirm={handleDeleteFolder}
+        />
+      )}
 
       {/* View Info panel */}
       {infoDoc && (
