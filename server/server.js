@@ -23,7 +23,7 @@ import calendlyRoutes from "./routes/calendly.js";
 import invoiceRoutes from "./routes/invoices.js";
 import { packages as SEED_PACKAGES } from "./data/packages.js";
 import Package from "./models/Package.js";
-import { sendInvoiceEmail } from "./services/email.js";
+import { sendInvoiceEmail, sendPaymentCancelledEmail } from "./services/email.js";
 import { sendPortalInvite } from "./services/portalInvite.js";
 import { sendOtp, verifyOtp, isVerified } from "./services/otp.js";
 import { syncFinanceForOrder } from "./services/finance.js";
@@ -32,6 +32,8 @@ import { buildInvoiceModel, renderInvoiceHtml } from "./services/invoiceTemplate
 import { htmlToPdfBuffer } from "./services/pdf.js";
 import { seedEmailTemplates } from "./scripts/seedEmailTemplates.js";
 import { requireAuth, requireRole } from "./middleware/auth.js";
+import { shouldSendNotificationEmail } from "./services/notificationPrefs.js";
+import { runScheduledNotifications } from "./services/scheduledNotifications.js";
 
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -56,25 +58,6 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/settings", settingsRoutes);
 app.use("/api/calendly", calendlyRoutes);
 app.use("/api/invoices", invoiceRoutes);
-
-// Client-facing notification emails (invoice, payment, reminders) are gated by
-// the recipient's own portal preferences (Settings > Notifications). The
-// master "Email Notifications" toggle blocks everything covered here; a
-// specific category toggle (e.g. "billingAlerts") can additionally suppress
-// just that kind. Critical account emails (portal invite, password reset)
-// intentionally do NOT go through this check — those aren't "notifications",
-// they're required to use the account at all. A missing account (no User
-// record yet, e.g. the very first invoice at checkout) always sends, since
-// there's no preference to honor yet.
-async function shouldSendNotificationEmail(email, category) {
-  if (!email) return true;
-  const user = await User.findOne({ email: String(email).toLowerCase() }).select("preferences").catch(() => null);
-  if (!user) return true;
-  const notif = user.preferences?.notifications || {};
-  if (notif.email === false) return false;
-  if (category && notif[category] === false) return false;
-  return true;
-}
 
 // Build + email the tax invoice for a paid order. Failures are logged but never
 // block the order/payment response (the invoice is always retrievable via the API).
@@ -753,7 +736,19 @@ app.post("/api/orders", async (req, res, next) => {
     if (order.payment.status === "paid") await ensureContactForOrder(order, company);
     await ensureProjectForOrder(order, invite?.userId, company);
     const finance = await syncFinanceForOrder(order);
-    if (order.payment.status === "paid") await emailInvoiceForOrder(order, finance?.invoice);
+    if (order.payment.status === "paid") {
+      await emailInvoiceForOrder(order, finance?.invoice);
+    } else if (customer.customerEmail && await shouldSendNotificationEmail(customer.customerEmail, "billingAlerts")) {
+      // Billing Alerts cover payments that are pending/incomplete — a
+      // successful payment gets the invoice email above, not this one.
+      await sendPaymentCancelledEmail({
+        to: customer.customerEmail,
+        name: customer.customerName,
+        packageName: selectedPackage.name,
+        amount: total,
+      }).catch((error) => console.error("Billing alert email failed:", error.message));
+      await Order.findByIdAndUpdate(order._id, { "payment.billingAlertSentAt": new Date() }).catch(() => {});
+    }
 
     res.status(201).json(order);
   } catch (error) {

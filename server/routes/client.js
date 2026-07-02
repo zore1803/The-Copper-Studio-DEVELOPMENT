@@ -10,6 +10,7 @@ import Contact from "../models/Contact.js";
 import Invoice from "../models/Invoice.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
+import { runScheduledNotifications } from "../services/scheduledNotifications.js";
 
 const router = express.Router();
 
@@ -157,6 +158,11 @@ router.get("/orders", async (req, res, next) => {
 
 router.get("/projects", async (req, res, next) => {
   try {
+    // Best-effort, throttled to run at most every few minutes — there's no
+    // cron on this host, so meeting reminders / weekly reports piggyback on
+    // whichever client request happens to land, the same way Calendly
+    // meeting sync does elsewhere in this file.
+    runScheduledNotifications().catch(() => {});
     const filter = await projectsVisibilityFilter(req.auth.sub);
     const projects = await Project.find(filter).sort({ createdAt: -1 });
     res.json(projects);

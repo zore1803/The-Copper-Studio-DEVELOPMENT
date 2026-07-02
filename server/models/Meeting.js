@@ -21,6 +21,7 @@ const schema = new mongoose.Schema(
     agenda: { type: String, default: "" },
     notes: { type: String, default: "" },
     calendlyEventUri: { type: String, default: "", index: true },
+    reminderSentAt: { type: Date },
     participants: [
       {
         name: { type: String },

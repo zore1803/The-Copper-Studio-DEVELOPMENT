@@ -51,7 +51,8 @@ const schema = new mongoose.Schema(
       razorpayOrderId: { type: String, default: "" },
       razorpayPaymentId: { type: String, default: "" },
       couponCode: { type: String, default: "" },
-      paidAt: { type: Date }
+      paidAt: { type: Date },
+      billingAlertSentAt: { type: Date }
     },
     email: {
       credentialsQueued: { type: Boolean, default: true },

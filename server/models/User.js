@@ -32,7 +32,8 @@ const schema = new mongoose.Schema(
       expiresAt: { type: Date },
       verifiedAt: { type: Date }
     },
-    lastLoginAt: { type: Date }
+    lastLoginAt: { type: Date },
+    lastWeeklyReportAt: { type: Date }
   },
   { timestamps: true }
 );
@@ -61,6 +62,7 @@ export default defineModel({
     },
     invite: { tokenHash: "", expiresAt: null, sentAt: null },
     resetPassword: { otpHash: "", expiresAt: null, verifiedAt: null },
-    lastLoginAt: null
+    lastLoginAt: null,
+    lastWeeklyReportAt: null
   }
 });

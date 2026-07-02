@@ -214,6 +214,65 @@ export async function sendPaymentCancelledEmail({ to, name, packageName, amount,
   });
 }
 
+export async function sendMeetingReminderEmail({ to, name, title, scheduledAt, meetingLink }) {
+  const when = scheduledAt
+    ? new Date(scheduledAt).toLocaleString("en-IN", { dateStyle: "full", timeStyle: "short", timeZone: "Asia/Kolkata" })
+    : "";
+  const vars = { client_name: name || "", meeting_title: title || "your meeting", meeting_time: when };
+  const resolved = await resolveEmailTemplate("Meeting Reminder", vars);
+  if (resolved) return sendMail({ to, subject: resolved.subject, html: resolved.html });
+
+  return sendMail({
+    to,
+    subject: `Reminder: ${title || "Your meeting"} is tomorrow | The Copper Studio`,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">Meeting reminder${name ? `, ${name}` : ""}</h2>
+        <p>This is a reminder that <strong>${title || "your meeting"}</strong> with The Copper Studio is coming up.</p>
+        ${when ? `<p style="font-size:16px;font-weight:700;margin:12px 0">${when} (IST)</p>` : ""}
+        ${meetingLink ? `<p><a href="${meetingLink}" style="display:inline-block;background:#8D3118;color:#fff;padding:11px 16px;border-radius:10px;text-decoration:none;font-weight:700">Join meeting</a></p>` : ""}
+        <p style="font-size:13px;color:#6b7280">You can manage or reschedule this meeting from your client portal.</p>
+      </div>
+    `
+  });
+}
+
+export async function sendWeeklyProjectReportEmail({ to, name, projects }) {
+  const rows = projects.map((p) => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6">${p.name}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6">${p.currentPhase || "—"}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #f3f4f6;text-align:right">${p.progress ?? 0}%</td>
+    </tr>
+  `).join("");
+
+  const vars = { client_name: name || "", company_name: "" };
+  const resolved = await resolveEmailTemplate("Weekly Project Report", vars);
+  if (resolved) return sendMail({ to, subject: resolved.subject, html: resolved.html });
+
+  return sendMail({
+    to,
+    subject: "Your weekly project summary | The Copper Studio",
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">Weekly summary${name ? `, ${name}` : ""}</h2>
+        <p>Here's where things stand across your project${projects.length === 1 ? "" : "s"} this week:</p>
+        <table style="width:100%;border-collapse:collapse;margin:12px 0">
+          <thead>
+            <tr style="background:#8D3118;color:#fff;font-size:12px">
+              <th style="padding:8px 12px;text-align:left">Project</th>
+              <th style="padding:8px 12px;text-align:left">Current Phase</th>
+              <th style="padding:8px 12px;text-align:right">Progress</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <p style="font-size:13px;color:#6b7280">Full details, roadmap, and documents are always available in your client portal.</p>
+      </div>
+    `
+  });
+}
+
 export async function sendOtpEmail({ to, code, label }) {
   const vars = { coupon_code: code, label: label || "verification" };
   const resolved = await resolveEmailTemplate("OTP", vars);
