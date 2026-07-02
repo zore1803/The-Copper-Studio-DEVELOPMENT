@@ -1,12 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, Check, CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
+
+const SORT_OPTIONS = [
+  { value: "created_desc", label: "Newest first" },
+  { value: "created_asc", label: "Oldest first" },
+  { value: "name_asc", label: "Name (A–Z)" },
+  { value: "value_desc", label: "Value (high–low)" }
+];
+
+// Closes the sort dropdown when clicking outside its trigger/menu.
+function useClickOutside(ref, onOutside, active) {
+  useEffect(() => {
+    if (!active) return;
+    function onDown(event) {
+      if (ref.current && ref.current.contains(event.target)) return;
+      onOutside();
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [active, onOutside, ref]);
+}
 
 function formatINR(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
@@ -79,6 +99,10 @@ export default function ProjectsList() {
   }, []);
 
   const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("created_desc");
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef(null);
+  useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   const computedProjects = useMemo(() => {
     return projects.map((p) => {
@@ -117,12 +141,22 @@ export default function ProjectsList() {
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return computedProjects.filter((project) => {
+    const arr = computedProjects.filter((project) => {
       const matchesQuery = !query || `${project.name} ${project.client} ${project.template}`.toLowerCase().includes(query);
       const matchesStatus = statusFilter === "All" || project.effectiveStatus === statusFilter;
       return matchesQuery && matchesStatus;
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [computedProjects, search, statusFilter]);
+    });
+    const byCreated = (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    const byValue = (a, b) => (Number(b.finalAmount || b.budget) || 0) - (Number(a.finalAmount || a.budget) || 0);
+    const byName = (a, b) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" });
+    switch (sortBy) {
+      case "created_asc": return arr.sort(byCreated);
+      case "name_asc": return arr.sort(byName);
+      case "value_desc": return arr.sort(byValue);
+      case "created_desc":
+      default: return arr.sort((a, b) => byCreated(b, a));
+    }
+  }, [computedProjects, search, statusFilter, sortBy]);
 
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
@@ -190,6 +224,30 @@ export default function ProjectsList() {
               placeholder="Search projects or clients"
               className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
             />
+          </div>
+          {/* Sort */}
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setSortOpen((value) => !value)}
+              className={`flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <ArrowUpDown size={14} />
+              <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                  >
+                    {opt.label}
+                    {sortBy === opt.value && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
         </div>

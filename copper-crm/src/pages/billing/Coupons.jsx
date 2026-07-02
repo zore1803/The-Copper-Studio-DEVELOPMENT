@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart2, ChevronLeft, ChevronRight, Clock, Copy, Grid2x2, List, Plus, Save, Tag, Trash2, TrendingUp } from "lucide-react";
+import { ArrowUpDown, BarChart2, Check, ChevronLeft, ChevronRight, Clock, Copy, Grid2x2, List, Plus, Save, Search, Tag, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
 import PhoneInput from "../../components/PhoneInput";
@@ -28,6 +28,26 @@ function formatDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", hour12: true });
+}
+
+const SORT_OPTIONS = [
+  { value: "created_desc", label: "Newest first" },
+  { value: "created_asc", label: "Oldest first" },
+  { value: "code_asc", label: "Code (A–Z)" },
+  { value: "validity_asc", label: "Valid till (soonest)" }
+];
+
+// Closes the sort dropdown when clicking outside its trigger/menu.
+function useClickOutside(ref, onOutside, active) {
+  useEffect(() => {
+    if (!active) return;
+    function onDown(event) {
+      if (ref.current && ref.current.contains(event.target)) return;
+      onOutside();
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [active, onOutside, ref]);
 }
 
 const PACKAGE_CATEGORIES = ["CopperBrand", "CopperWeb", "CopperFlow"];
@@ -541,6 +561,8 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
 export default function Coupons() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("created_desc");
+  const [sortOpen, setSortOpen] = useState(false);
   const [copied, setCopied] = useState("");
   const [creating, setCreating] = useState(false);
   const [viewMode, setViewMode] = useState("card");
@@ -549,6 +571,8 @@ export default function Coupons() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const { records: coupons, save: saveCoupon, remove: removeCoupon } = useCrmRecords("coupons");
   const { showToast } = useToast();
+  const sortRef = useRef(null);
+  useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   async function createCoupon(coupon) {
     const code = randomCode();
@@ -601,10 +625,24 @@ export default function Coupons() {
     return matchesStatus && haystack.includes(query.toLowerCase());
   }), [coupons, query, statusFilter]);
 
-  useEffect(() => { setPage(1); }, [query, statusFilter]);
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    const created = (c) => new Date(c.createdAt || c.generatedAt || 0);
+    const validity = (c) => new Date(c.validUntil || 0);
+    const byStr = (a, b, key) => String(a[key] || "").localeCompare(String(b[key] || ""), undefined, { sensitivity: "base" });
+    switch (sortBy) {
+      case "created_asc": return arr.sort((a, b) => created(a) - created(b));
+      case "code_asc": return arr.sort((a, b) => byStr(a, b, "code"));
+      case "validity_asc": return arr.sort((a, b) => validity(a) - validity(b));
+      case "created_desc":
+      default: return arr.sort((a, b) => created(b) - created(a));
+    }
+  }, [filtered, sortBy]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  useEffect(() => { setPage(1); }, [query, statusFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const metrics = useMemo(() => {
     const active = coupons.filter((c) => c.status === "Active").length;
@@ -645,7 +683,48 @@ export default function Coupons() {
           <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
           <p className="text-xs text-[#525866] mt-0.5">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
         </div>
-        <Button onClick={() => setCreating(true)}><Plus size={14} /> Create Coupon</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Search */}
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
+            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+            <input
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+              placeholder="Search by code, company, or contact…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          {/* Sort */}
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setSortOpen((value) => !value)}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <ArrowUpDown size={15} />
+              <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
+            </button>
+            {sortOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-52 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                  >
+                    {opt.label}
+                    {sortBy === opt.value && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setCreating(true)}
+            className="flex h-11 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+          >
+            <Plus size={16} /> Create Coupon
+          </button>
+        </div>
       </div>
 
       <div className="p-6">
@@ -660,13 +739,7 @@ export default function Coupons() {
 
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
           {/* Toolbar */}
-          <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-            {/* Search */}
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 w-full lg:w-72">
-              <svg className="text-[#9ca3af] shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search coupons" className="w-full bg-transparent text-sm outline-none" />
-            </div>
-
+          <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-end">
             <div className="flex items-center gap-2">
               {/* Filter */}
               <FilterButton
@@ -694,13 +767,13 @@ export default function Coupons() {
           </div>
 
           {/* List header */}
-          {viewMode === "list" && filtered.length > 0 && (
+          {viewMode === "list" && sorted.length > 0 && (
             <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-[#f3f4f6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
               <span>Code</span><span>Company</span><span>Contact</span><span>Amount</span><span>Validity</span><span>Status</span>
             </div>
           )}
 
-          {filtered.length ? (
+          {sorted.length ? (
             <>
               {viewMode === "card" ? (
                 <div className="grid gap-4 p-4 xl:grid-cols-2">
@@ -718,7 +791,7 @@ export default function Coupons() {
               <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#E1E4EA]">
                   <p className="text-sm text-[#6b7280]">
                     Showing <span className="font-semibold text-[#111827]">{Math.min(paginated.length, PAGE_SIZE)}</span> of{" "}
-                    <span className="font-semibold text-[#111827]">{filtered.length}</span> Coupons
+                    <span className="font-semibold text-[#111827]">{sorted.length}</span> Coupons
                   </p>
                   <div className="flex items-center gap-1">
                     <button
