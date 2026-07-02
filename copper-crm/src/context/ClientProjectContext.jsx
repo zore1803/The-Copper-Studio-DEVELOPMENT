@@ -69,7 +69,14 @@ export function ClientProjectProvider({ children }) {
             const data = await apiGet("/api/client/projects", token);
             if (!alive) return;
             const list = Array.isArray(data) ? data : [];
-            checkProjectNotifications(projectsRef.current, list, browserNotifEnabledRef.current);
+            // Isolated in its own try/catch so a notification bug can never
+            // masquerade as a fetch failure (which would retry the network
+            // call pointlessly and, worse, skip the state update below).
+            try {
+              checkProjectNotifications(projectsRef.current, list, browserNotifEnabledRef.current);
+            } catch (notifyError) {
+              console.error("Project notification check failed:", notifyError);
+            }
             projectsRef.current = list;
             storeSet("projects", list);
             setProjects(list);
