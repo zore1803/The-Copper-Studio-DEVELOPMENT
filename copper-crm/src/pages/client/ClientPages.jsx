@@ -1032,7 +1032,7 @@ function docStatusBadge(s) {
 
 export function ClientDocumentsPage() {
   const { token } = useAuth();
-  const { selectedId } = useClientProject();
+  const { projects, selectedId } = useClientProject();
   const [docs, setDocs] = useState(() => storeGet("documents"));
   const [loading, setLoading] = useState(() => storeGet("documents").length === 0);
   const [search, setSearch] = useState("");
@@ -1058,6 +1058,11 @@ export function ClientDocumentsPage() {
     const matchesFilter = filter === "all" || d.status === filter;
     return matchesProject && matchesSearch && matchesFilter;
   });
+
+  const projectManagerFor = (doc) => {
+    const project = projects.find((p) => String(p._id || p.id) === String(doc.projectId));
+    return project?.projectManager || project?.manager || "Unassigned";
+  };
 
   const filterOpts = [
     { value: "all", label: "All" },
@@ -1118,7 +1123,7 @@ export function ClientDocumentsPage() {
               <div className="flex items-center justify-between">
                 <Badge {...docStatusBadge(doc.status)} />
                 <span className="text-xs" style={{ color: CS.secondary }}>
-                  {doc.uploadedByName || "Copper Studio"}
+                  {projectManagerFor(doc)}
                 </span>
               </div>
               <div className="pt-3 border-t flex gap-2" style={{ borderColor: CS.outlineVariant }}>
