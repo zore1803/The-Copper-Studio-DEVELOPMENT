@@ -595,6 +595,11 @@ export function ClientMeetingsPage() {
   // background once the real fetch resolves.
   const [allMeetings, setAllMeetings] = useState(() => storeGet("meetings"));
   const [eventTypes, setEventTypes] = useState([]);
+  // Tracked separately from the meetings-list `loading` (which can resolve
+  // instantly from cache) so the booking card doesn't flash "Booking
+  // unavailable" for the second or two the event-types fetch is still in
+  // flight before it's had a chance to auto-select the first slot.
+  const [eventTypesLoading, setEventTypesLoading] = useState(true);
   const [loading, setLoading] = useState(() => storeGet("meetings").length === 0);
   const [selectedRaw, setSelected] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -674,7 +679,7 @@ export function ClientMeetingsPage() {
         setBookingEvent((prev) => prev || events[0] || null);
       })
       .catch(() => {})
-      .finally(() => alive && setLoading(false));
+      .finally(() => { if (alive) { setLoading(false); setEventTypesLoading(false); } });
     return () => { alive = false; };
   }, [token]);
 
@@ -783,7 +788,9 @@ export function ClientMeetingsPage() {
 
           {/* Right: book a meeting — Calendly widget shown directly */}
           <div className="w-full lg:w-[480px] shrink-0">
-            {bookingEvent ? (
+            {eventTypesLoading ? (
+              <Card className="p-6 flex justify-center py-16"><Spinner /></Card>
+            ) : bookingEvent ? (
               <Card>
                 <div className="px-4 py-3 border-b" style={{ borderColor: CS.outlineVariant }}>
                   <h3 className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
