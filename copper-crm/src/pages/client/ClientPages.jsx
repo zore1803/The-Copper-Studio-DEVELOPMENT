@@ -46,7 +46,7 @@ const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
 const GANTT_TODAY = today();
 
-function PageShell({ title, subtitle, children, action }) {
+function PageShell({ title, subtitle, children, action, maxWidthClass = "max-w-7xl" }) {
   return (
     <div className="flex flex-col min-h-full">
       <div
@@ -59,7 +59,7 @@ function PageShell({ title, subtitle, children, action }) {
         </div>
         {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      <div className="p-5 xl:p-6 max-w-7xl mx-auto w-full">
+      <div className={`p-5 xl:p-6 ${maxWidthClass} mx-auto w-full`}>
         {children}
       </div>
     </div>
@@ -652,6 +652,7 @@ export function ClientMeetingsPage() {
     <PageShell
       title="Meetings"
       subtitle="Manage your scheduled calls and book new sessions with our team."
+      maxWidthClass="max-w-[1600px]"
       action={
         <FilterButton
           buttonClassName="h-8 w-8"
@@ -665,9 +666,9 @@ export function ClientMeetingsPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Left: all meetings list, admin list pattern */}
-          <div className="lg:col-span-3">
+          <div className="w-full flex-1 min-w-0">
             <div className="overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
               {filteredMeetings.length === 0 ? (
                 <EmptyState icon={Video} title="No meetings" description={statusFilter === "all" ? "You don't have any meetings yet." : "No meetings match this filter."} />
@@ -749,7 +750,7 @@ export function ClientMeetingsPage() {
           </div>
 
           {/* Right: book a meeting — Calendly widget shown directly */}
-          <div>
+          <div className="w-full lg:w-[680px] shrink-0">
             {bookingEvent ? (
               <Card>
                 <div className="px-4 py-3 border-b" style={{ borderColor: CS.outlineVariant }}>
