@@ -1288,7 +1288,6 @@ export function ClientBillingPage() {
                     <div className="space-y-3">
                       {[
                         { label: "Package", value: selectedOrder.package?.name },
-                        { label: "Amount", value: `₹${(selectedOrder.package?.total || 0).toLocaleString("en-IN")}` },
                         { label: "Provider", value: selectedOrder.payment?.provider || "Razorpay" },
                         { label: "Payment ID", value: selectedOrder.payment?.razorpayPaymentId || "—" },
                         {
