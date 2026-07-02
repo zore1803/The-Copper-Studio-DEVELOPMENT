@@ -233,36 +233,50 @@ router.get("/documents", async (req, res, next) => {
       $or: [{ clientId: user._id }, { customerEmail: user.email }]
     }).sort({ createdAt: -1 }).lean();
 
-    const invoiceDocs = userInvoices.filter(inv => inv.clientVisible !== false).map((inv) => {
-      const project = projects.find(
-        (p) =>
-          (inv.projectId && String(p._id || p.id) === String(inv.projectId)) ||
-          (inv.sourceOrderId && p.orderId && String(p.orderId) === String(inv.sourceOrderId))
-      );
+    // Only surface an invoice under Documents once we can pin it to exactly one
+    // of the client's visible projects — an invoice with no resolvable project
+    // has no projectId, and the frontend treats a missing projectId as
+    // "belongs to every project", which used to leak that invoice into every
+    // project's document list instead of just its own.
+    const invoiceDocs = userInvoices
+      .filter(inv => inv.clientVisible !== false)
+      .map((inv) => {
+        const project = projects.find(
+          (p) =>
+            (inv.projectId && String(p._id || p.id) === String(inv.projectId)) ||
+            (inv.sourceOrderId && p.orderId && String(p.orderId) === String(inv.sourceOrderId))
+        );
+        return { inv, project };
+      })
+      .filter(({ project }) => project)
+      .map(({ inv, project }) => {
+        const pName = project.name || project.projectName || "Project";
+        const pId = project._id || project.id;
 
-      const pName = project?.name || project?.projectName || "Project";
-      const pId = project?._id || project?.id;
+        return {
+          _id: inv._id || inv.id,
+          id: inv._id || inv.id,
+          name: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
+          fileName: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
+          fileType: "pdf",
+          category: "Invoices",
+          tags: ["Invoice", "Receipt"],
+          projectId: pId,
+          companyId: inv.companyId || project.companyId,
+          projectName: pName,
+          visibility: "client",
+          status: "final_delivery",
+          folderPath: `${pName} / Invoices`,
+          fileUrl: `/api/invoices/${inv._id || inv.id || inv.invoiceNumber}/pdf`,
+          createdAt: inv.createdAt || inv.date || inv.paidAt,
+        };
+      });
 
-      return {
-        _id: inv._id || inv.id,
-        id: inv._id || inv.id,
-        name: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
-        fileName: `Tax Invoice - ${inv.invoiceNumber || inv.id}.pdf`,
-        fileType: "pdf",
-        category: "Invoices",
-        tags: ["Invoice", "Receipt"],
-        projectId: pId,
-        companyId: inv.companyId || project?.companyId,
-        projectName: pName,
-        visibility: "client",
-        status: "final_delivery",
-        folderPath: `${pName} / Invoices`,
-        fileUrl: `/api/invoices/${inv._id || inv.id || inv.invoiceNumber}/pdf`,
-        createdAt: inv.createdAt || inv.date || inv.paidAt,
-      };
-    });
+    // A project should only ever have one invoice attached — if duplicates
+    // exist, keep the most recent (userInvoices is already sorted newest-first).
+    const latestInvoicePerProject = [...new Map(invoiceDocs.map((doc) => [String(doc.projectId), doc])).values()];
 
-    const allDocs = [...collectionDocs, ...embeddedDocs, ...invoiceDocs];
+    const allDocs = [...collectionDocs, ...embeddedDocs, ...latestInvoicePerProject];
     // Sort combined list by createdAt descending
     allDocs.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
