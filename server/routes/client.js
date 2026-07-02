@@ -273,8 +273,18 @@ router.get("/documents", async (req, res, next) => {
 
 router.get("/meetings", async (req, res, next) => {
   try {
-    const filter = await projectScopedVisibilityFilter(req.auth.sub);
-    const meetings = await Meeting.find(filter).sort({ createdAt: -1 });
+    // Meetings are personal, not project-shared: a client should only ever see
+    // a meeting they themselves requested/booked, matched either by their
+    // account id (portal requests) or the email they used to book with
+    // Calendly (calendly.js resolves clientId by email too, but this also
+    // catches meetings where that lookup missed, e.g. a stale/typo'd email).
+    const email = String(req.auth.email || "").toLowerCase();
+    const meetings = await Meeting.find({
+      $or: [
+        { clientId: req.auth.sub },
+        ...(email ? [{ "participants.email": { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" } }] : []),
+      ],
+    }).sort({ createdAt: -1 });
     res.json(meetings);
   } catch (error) {
     next(error);
