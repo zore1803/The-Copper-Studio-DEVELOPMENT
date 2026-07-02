@@ -377,7 +377,7 @@ export function renderInvoiceHtml(input) {
       </div>
       <div class="sign">
         <div class="for">For ${esc(s.legalName)}</div>
-        <div class="line">Authorized Signatory</div>
+        ${isPaid ? `<div class="line">Authorized Signatory</div>` : ""}
       </div>
     </div>
 
