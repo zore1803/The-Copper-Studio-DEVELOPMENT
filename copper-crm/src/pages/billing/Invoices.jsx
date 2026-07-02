@@ -553,17 +553,17 @@ export default function Invoices() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+                <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Invoice Number</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Company</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Project</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">Amount</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">GST</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Issue Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Due Date</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">Status</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">PDF</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Invoice Number</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Project</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-white/90">Amount</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-white/90">GST</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Issue Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Due Date</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-white/90">Status</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-white/90">PDF</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">

@@ -1354,15 +1354,15 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+        <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Package</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Progress</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project Manager</th>
-            <th className="py-3 pr-4 text-right text-xs font-medium text-[#525866]">Budget</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-white/90">Project</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Package</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Progress</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Due</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Project Manager</th>
+            <th className="py-3 pr-4 text-right text-xs font-medium text-white/90">Budget</th>
             <th className="py-3 pl-2 pr-5 w-10" />
           </tr>
         </thead>
@@ -1533,15 +1533,15 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+        <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Contact</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Email</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Phone</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">WhatsApp</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">LinkedIn</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
-            <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-white/90">Contact</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Email</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Phone</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">WhatsApp</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">LinkedIn</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Status</th>
+            <th className="py-3 pr-5 text-right text-xs font-medium text-white/90">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6] bg-white">
@@ -1583,16 +1583,16 @@ function InvoicesTable({ invoices, onView, onDownload }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+        <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
-            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Invoice ID</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Amount</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Payment</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Transaction ID</th>
-            <th className="py-3 pr-5 text-right text-xs font-medium text-[#525866]">Actions</th>
+            <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-white/90">Invoice ID</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Amount</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Payment</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Transaction ID</th>
+            <th className="py-3 pr-5 text-right text-xs font-medium text-white/90">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6] bg-white">
@@ -2060,14 +2060,14 @@ function TasksTable({ tasks, projects, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+        <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Task</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Assigned To</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Priority</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Due Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Task</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Assigned To</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Priority</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Status</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Due Date</th>
+            <th className="py-3 pr-4 text-left text-xs font-medium text-white/90">Project</th>
             <th className="py-3 pr-4" />
           </tr>
         </thead>

@@ -723,40 +723,40 @@ export default function Companies() {
           <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
-                <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+                <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                   <tr>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Company Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Contact Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Location
                       </div>
                     </th>
                     <th className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-white/90">
                         Status
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Lead Source
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Owner
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-white/90">
                         Industry
                       </div>
                     </th>

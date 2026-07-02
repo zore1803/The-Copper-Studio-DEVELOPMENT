@@ -264,16 +264,16 @@ export default function Payments() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+                <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Payment Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Payment ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Company</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Contact</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Method</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Invoice No.</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Payment Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Payment ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Contact</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-white/90">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Method</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-white/90">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Invoice No.</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">

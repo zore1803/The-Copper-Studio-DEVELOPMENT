@@ -637,10 +637,10 @@ function DataTablePreview({ type, title }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[620px]">
-          <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
+          <thead className="bg-[#8D3118] border-b border-[#6E2412]">
             <tr>
               {columns.map((column) => (
-                <th key={column} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{column}</th>
+                <th key={column} className="px-4 py-3 text-left text-xs font-medium text-white/90">{column}</th>
               ))}
             </tr>
           </thead>

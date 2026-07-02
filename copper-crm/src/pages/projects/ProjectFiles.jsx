@@ -507,13 +507,13 @@ export default function ProjectFiles() {
           {pageDocuments.length ? (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-[#8D3118]/20 bg-[#8D3118]/30">
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Name</th>
-                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Folder</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Size</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Upload Date</th>
-                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] md:table-cell">Uploaded By</th>
-                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Action</th>
+                <tr className="border-b border-[#6E2412] bg-[#8D3118]">
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-white/90">Name</th>
+                  <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-white/90">Folder</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-white/90 sm:table-cell">Size</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-white/90 sm:table-cell">Upload Date</th>
+                  <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-white/90 md:table-cell">Uploaded By</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-white/90">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ead8d1]">
