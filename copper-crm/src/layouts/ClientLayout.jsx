@@ -172,15 +172,6 @@ const navItems = [
   { icon: Settings, label: "Settings", to: "/client/profile" },
 ];
 
-const pageTitles = {
-  "/client": "Dashboard",
-  "/client/projects": "Project Timeline",
-  "/client/meetings": "Meetings",
-  "/client/documents": "Documents",
-  "/client/invoices": "Billing & Invoices",
-  "/client/profile": "Settings",
-};
-
 function isActive(item, pathname) {
   return item.end ? pathname === item.to : pathname.startsWith(item.to);
 }
@@ -240,7 +231,6 @@ export default function ClientLayout() {
 
   const name = auth.user?.name || "Client";
   const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
-  const pageTitle = pageTitles[location.pathname] || "Portal";
 
   function go(to) {
     navigate(to);
@@ -337,8 +327,6 @@ export default function ClientLayout() {
             <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827]" onClick={() => setMobileOpen(true)}>
               <Menu size={18} />
             </button>
-            <h2 className="hidden sm:block text-sm font-semibold text-[#111827] truncate">{pageTitle}</h2>
-            <span className="hidden sm:block h-5 w-px bg-[#E1E4EA]" />
             <ProjectSwitcher />
           </div>
 
