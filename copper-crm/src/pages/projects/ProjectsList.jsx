@@ -54,21 +54,6 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
   );
 }
 
-function Section({ title, subtitle, action, children }) {
-  return (
-    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-[#f3e5e0] bg-[#fff1ec] px-5 py-3.5">
-        <div>
-          <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-xs text-[#6b7280]">{subtitle}</p>}
-        </div>
-        {action}
-      </div>
-      <div className="p-0 overflow-x-auto">{children}</div>
-    </section>
-  );
-}
-
 const PROJECT_STATUS_OPTIONS = [
   { value: "not_started", label: "Not Started" },
   { value: "in_progress", label: "In Progress" },
@@ -215,7 +200,21 @@ export default function ProjectsList() {
           <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
           <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status filter */}
+          <div className="flex gap-1.5 overflow-x-auto">
+            {statusFilters.map((item) => (
+              <button
+                key={item.value}
+                onClick={() => setStatusFilter(item.value)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
+                  statusFilter === item.value ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
           <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
@@ -263,25 +262,8 @@ export default function ProjectsList() {
         </div>
       )}
 
-      <Section
-        title="Project Portfolio"
-        subtitle="Manage all active projects and workflows."
-        action={
-          <div className="flex gap-1.5 overflow-x-auto">
-            {statusFilters.map((item) => (
-              <button
-                key={item.value}
-                onClick={() => setStatusFilter(item.value)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        }
-      >
+      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+        <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-[#6b7280]">
           <thead className="bg-[#8D3118] text-xs uppercase text-white">
             <tr>
@@ -381,7 +363,8 @@ export default function ProjectsList() {
             )}
           </tbody>
         </table>
-      </Section>
+        </div>
+      </section>
 
       {creating && (
         <ProjectFormPanel
