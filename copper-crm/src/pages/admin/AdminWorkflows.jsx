@@ -497,7 +497,7 @@ function SettingsField({ label, value, onChange, type = "text", placeholder, err
         disabled={disabled}
         aria-invalid={Boolean(error)}
         className={`h-9 w-full rounded-lg border bg-white px-3 text-sm text-[#111827] outline-none transition-all focus:ring-2 disabled:cursor-not-allowed disabled:bg-[#f9fafb] disabled:text-[#9ca3af] ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {hint && !error && <span className="text-[11px] text-[#9ca3af]">{hint}</span>}
@@ -513,7 +513,7 @@ function SettingsSelect({ label, value, onChange, options }) {
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#884c2d] focus:ring-4 focus:ring-[#f3dfd7]"
+        className="mt-2 w-full rounded-2xl border border-[#d8c2b9] bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:border-[#8D3118] focus:ring-4 focus:ring-[#f3dfd7]"
       >
         {options.map((option) => (
           <option key={option} value={option}>{option}</option>
@@ -533,7 +533,7 @@ function SettingsToggle({ title, description, checked, onChange }) {
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#884c2d]" : "bg-[#d8c2b9]"}`}
+        className={`relative h-7 w-12 rounded-full transition-colors ${checked ? "bg-[#8D3118]" : "bg-[#d8c2b9]"}`}
       >
         <span
           className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "left-6" : "left-1"}`}
@@ -559,14 +559,14 @@ function SettingsSecretField({ label, value, onChange, placeholder, error = "", 
           placeholder={placeholder}
           aria-invalid={Boolean(error)}
           className={`w-full rounded-2xl border bg-[#fffdfc] px-4 py-3 pr-11 text-sm text-[#211a17] outline-none transition-all focus:ring-4 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#884c2d] focus:ring-[#f3dfd7]"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#8D3118] focus:ring-[#f3dfd7]"
           }`}
         />
         <button
           type="button"
           onClick={() => setRevealed((current) => !current)}
           title={revealed ? "Hide value" : "Reveal value"}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9c8c80] transition-colors hover:text-[#884c2d]"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9c8c80] transition-colors hover:text-[#8D3118]"
         >
           {revealed ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -605,7 +605,7 @@ function SecurityGate({ onUnlock }) {
 
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><LockKeyhole size={22} /></div>
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#f3dfd7] text-[#8D3118]"><LockKeyhole size={22} /></div>
       <h3 className="mt-4 text-lg font-semibold text-[#211a17]">Confirm it's you</h3>
       <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#6c6355]">
         This area holds account credentials — your password, SMTP access, and the payment gateway endpoint. Re-enter your password to unlock it.
@@ -619,7 +619,7 @@ function SecurityGate({ onUnlock }) {
           placeholder="Current password"
           aria-invalid={Boolean(error)}
           className={`w-full rounded-2xl border bg-[#fffdfc] px-4 py-3 text-sm text-[#211a17] outline-none transition-all focus:ring-4 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#884c2d] focus:ring-[#f3dfd7]"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#d8c2b9] focus:border-[#8D3118] focus:ring-[#f3dfd7]"
           }`}
         />
         {error && <p className="text-[11px] font-semibold text-red-500">{error}</p>}
@@ -657,7 +657,7 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
           }`}
         >
           <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
-            activeSection === section.key ? "bg-[#f3dfd7] text-[#884c2d]" : "bg-[#f5e6e1] text-[#6c6355]"
+            activeSection === section.key ? "bg-[#f3dfd7] text-[#8D3118]" : "bg-[#f5e6e1] text-[#6c6355]"
           }`}>
             <section.icon size={17} />
           </div>
@@ -713,9 +713,9 @@ function DataFieldList({ label, hint, values, onChange }) {
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addValue(); } }}
           placeholder="Add option…"
-          className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 text-xs text-[#111827] outline-none transition-all focus:border-[#884c2d] focus:bg-white focus:ring-2 focus:ring-[#884c2d]/20"
+          className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 text-xs text-[#111827] outline-none transition-all focus:border-[#8D3118] focus:bg-white focus:ring-2 focus:ring-[#8D3118]/20"
         />
-        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#374151] hover:border-[#884c2d] hover:text-[#884c2d] transition-colors">
+        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-lg border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#374151] hover:border-[#8D3118] hover:text-[#8D3118] transition-colors">
           <Plus size={12} /> Add
         </button>
       </div>
@@ -758,10 +758,10 @@ function DataFieldsSection({ onSave, saving }) {
             <button
               key={group.label}
               onClick={() => setActiveGroup(group.label)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#884c2d]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
             >
               <span>{group.label}</span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#884c2d]/10 text-[#884c2d]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{totalOptions}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{totalOptions}</span>
             </button>
           );
         })}
@@ -974,7 +974,7 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f3dfd7] text-[#884c2d]"><Icon size={17} /></div>
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f3dfd7] text-[#8D3118]"><Icon size={17} /></div>
           <div className="min-w-0">
             <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
             {description && <p className="mt-0.5 truncate text-xs text-[#525866]">{description}</p>}
@@ -1095,7 +1095,7 @@ export function SettingsTriggerTemplatePage() {
           onClick={() => navigate("/admin/communication/email-templates")}
           className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
         >
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><Mail size={18} /></div>
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#8D3118]"><Mail size={18} /></div>
           <div>
             <p className="text-sm font-bold text-[#211a17]">Email Templates</p>
             <p className="mt-1 text-xs leading-5 text-[#6c6355]">Create and edit the email templates sent to clients.</p>
@@ -1106,7 +1106,7 @@ export function SettingsTriggerTemplatePage() {
           onClick={() => navigate("/admin/communication/whatsapp-templates")}
           className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
         >
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#884c2d]"><MessageCircle size={18} /></div>
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#8D3118]"><MessageCircle size={18} /></div>
           <div>
             <p className="text-sm font-bold text-[#211a17]">WhatsApp Templates</p>
             <p className="mt-1 text-xs leading-5 text-[#6c6355]">Create and edit the WhatsApp message templates.</p>
@@ -1263,10 +1263,10 @@ function PricingSection({ onSave, saving }) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#884c2d]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+              className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
             >
               <span>{cat}</span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#884c2d]/10 text-[#884c2d]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{count}</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{count}</span>
             </button>
           );
         })}
@@ -1304,12 +1304,12 @@ function PricingSection({ onSave, saving }) {
               const e = edits[pkg.id] || {};
               return (
                 <div key={pkg.id} className="rounded-xl border border-[#f0e6e0] bg-[#fdfaf9] p-5">
-                  <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#884c2d]">{pkg.name}</p>
+                  <p className="mb-4 text-xs font-bold uppercase tracking-wide text-[#8D3118]">{pkg.name}</p>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className="mb-1 block text-xs font-medium text-[#6c6355]">Plan label</label>
                       <input
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.label ?? ""}
                         onChange={(ev) => set(pkg.id, "label", ev.target.value)}
                         placeholder="e.g. Most popular"
@@ -1319,7 +1319,7 @@ function PricingSection({ onSave, saving }) {
                       <label className="mb-1 block text-xs font-medium text-[#6c6355]">Price (₹)</label>
                       <input
                         type="number"
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.price ?? ""}
                         onChange={(ev) => set(pkg.id, "price", ev.target.value)}
                         placeholder="0"
@@ -1328,7 +1328,7 @@ function PricingSection({ onSave, saving }) {
                     <div className="sm:col-span-2">
                       <label className="mb-1 block text-xs font-medium text-[#6c6355]">Duration / timeline</label>
                       <input
-                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        className="h-9 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm text-[#111827] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                         value={e.duration ?? ""}
                         onChange={(ev) => set(pkg.id, "duration", ev.target.value)}
                         placeholder="e.g. 20 days delivery"
@@ -1338,7 +1338,7 @@ function PricingSection({ onSave, saving }) {
                       <label className="mb-1 block text-xs font-medium text-[#6c6355]">Inclusions <span className="font-normal text-[#9ca3af]">(one per line)</span></label>
                       <textarea
                         rows={5}
-                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#884c2d] focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 resize-none"
+                        className="w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] focus:border-[#8D3118] focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 resize-none"
                         value={e.includes ?? ""}
                         onChange={(ev) => set(pkg.id, "includes", ev.target.value)}
                         placeholder={"Logo design (3 concepts)\nBrand colour palette\n…"}

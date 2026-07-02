@@ -72,7 +72,7 @@ function DashboardTooltip({ active, payload, label }) {
 }
 
 const TONE_STYLES = {
-  brown: { tint: "bg-[#fff1ec]", text: "text-[#884c2d]", bar: "bg-[#884c2d]" },
+  brown: { tint: "bg-[#fff1ec]", text: "text-[#8D3118]", bar: "bg-[#8D3118]" },
   slate: { tint: "bg-[#eef2ff]", text: "text-[#4338ca]", bar: "bg-[#4338ca]" },
   emerald: { tint: "bg-emerald-50", text: "text-emerald-600", bar: "bg-emerald-500" },
   amber: { tint: "bg-amber-50", text: "text-amber-600", bar: "bg-amber-500" },
@@ -115,22 +115,22 @@ function SalesRevenueChart({ data }) {
           <h3 className="text-sm font-bold text-[#111827]">Sales Revenue</h3>
           <p className="text-xs text-[#9ca3af] mt-0.5">Trailing {data.length} month{data.length === 1 ? "" : "s"}</p>
         </div>
-        <span className="rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{formatCompact(totalVal)}</span>
+        <span className="rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#8D3118]">{formatCompact(totalVal)}</span>
       </div>
       <div className="h-72 px-2 py-4">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="salesRevenueFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="#884c2d" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="#8D3118" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#8D3118" stopOpacity={0.02} />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} stroke="#f3f4f6" />
             <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={64} />
             <Tooltip content={<DashboardTooltip />} />
-            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={2.5} fill="url(#salesRevenueFill)" activeDot={{ r: 4 }} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#8D3118" strokeWidth={2.5} fill="url(#salesRevenueFill)" activeDot={{ r: 4 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -174,7 +174,7 @@ function InvoicesCard({ records }) {
               <span className="font-semibold text-[#111827]">{formatCompact(amt)}</span>
             </div>
             <div className="h-1.5 rounded-full bg-[#f3f4f6] overflow-hidden">
-              <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${Math.round((amt / maxPkg) * 100)}%` }} />
+              <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${Math.round((amt / maxPkg) * 100)}%` }} />
             </div>
           </div>
         ))}
@@ -184,13 +184,13 @@ function InvoicesCard({ records }) {
           <AreaChart data={trend} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="invoicesTrendFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#884c2d" stopOpacity={0.22} />
-                <stop offset="100%" stopColor="#884c2d" stopOpacity={0} />
+                <stop offset="0%" stopColor="#8D3118" stopOpacity={0.22} />
+                <stop offset="100%" stopColor="#8D3118" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
             <Tooltip content={<DashboardTooltip />} />
-            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#884c2d" strokeWidth={1.75} fill="url(#invoicesTrendFill)" activeDot={{ r: 3 }} />
+            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#8D3118" strokeWidth={1.75} fill="url(#invoicesTrendFill)" activeDot={{ r: 3 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -237,7 +237,7 @@ function EarningsCard({ records }) {
             key={q}
             onClick={() => setQuarter(q)}
             className={`flex-1 py-1 text-xs font-semibold rounded-lg border transition-colors ${
-              q === quarter ? "bg-[#884c2d] text-white border-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+              q === quarter ? "bg-[#8D3118] text-white border-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
             }`}
           >
             {q}
@@ -258,7 +258,7 @@ function EarningsCard({ records }) {
         {revenue.map((m, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
             <div
-              className="w-full rounded-t bg-[#884c2d]/80"
+              className="w-full rounded-t bg-[#8D3118]/80"
               style={{ height: `${Math.round((m.revenue / maxR) * 40)}px` }}
             />
             <span className="text-[9px] text-[#9ca3af]">{m.month}</span>
@@ -287,7 +287,7 @@ function CrmTab({ companies, contacts }) {
       <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
         <div className="px-5 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
           <h3 className="text-sm font-bold text-[#111827]">Recent Companies</h3>
-          <button onClick={() => navigate("/admin/companies")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+          <button onClick={() => navigate("/admin/companies")} className="text-xs font-semibold text-[#8D3118] hover:underline">View all →</button>
         </div>
         {recentCompanies.length === 0 ? (
           <p className="p-5 text-sm text-[#9ca3af]">No companies added yet.</p>
@@ -338,7 +338,7 @@ function InvoicesTab({ invoices }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
         {[
-          { label: "Total Invoiced", value: formatINR(summary.total), iconBg: "bg-[#884c2d]", icon: IndianRupee },
+          { label: "Total Invoiced", value: formatINR(summary.total), iconBg: "bg-[#8D3118]", icon: IndianRupee },
           { label: "Collected", value: formatINR(summary.paid), iconBg: "bg-emerald-600", icon: CheckCircle2 },
           { label: "Pending", value: formatINR(summary.pending), iconBg: "bg-amber-500", icon: Clock3 },
           { label: "Failed / Overdue", value: formatINR(summary.failed), iconBg: "bg-red-500", icon: ArrowDownRight },
@@ -474,7 +474,7 @@ export default function Dashboard() {
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                tab === t ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#374151]"
+                tab === t ? "border-[#8D3118] text-[#8D3118]" : "border-transparent text-[#6b7280] hover:text-[#374151]"
               }`}
             >
               {t}
@@ -520,7 +520,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden">
               <div className="px-6 py-4 border-b border-[#f3f4f6] flex items-center justify-between">
                 <h3 className="text-sm font-bold text-[#111827]">Priority Projects</h3>
-                <button onClick={() => navigate("/admin/projects")} className="text-xs font-semibold text-[#884c2d] hover:underline">View all →</button>
+                <button onClick={() => navigate("/admin/projects")} className="text-xs font-semibold text-[#8D3118] hover:underline">View all →</button>
               </div>
               {metrics.priorityProjects.length === 0 ? (
                 <p className="p-5 text-sm text-[#9ca3af]">No active projects.</p>
@@ -550,7 +550,7 @@ export default function Dashboard() {
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-2.5">
                               <div className="h-1.5 w-24 rounded-full bg-[#f3f4f6] overflow-hidden">
-                                <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${project.progress || 0}%` }} />
+                                <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${project.progress || 0}%` }} />
                               </div>
                               <span className="text-xs font-semibold text-[#374151]">{project.progress || 0}%</span>
                             </div>

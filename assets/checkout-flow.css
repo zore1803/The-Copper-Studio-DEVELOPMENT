@@ -1540,13 +1540,13 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   white-space: nowrap;
 }
 .category-switcher .category-tab.is-active {
-  background: #884c2d;
+  background: #8D3118;
   color: #fff;
   box-shadow: 0 2px 8px rgba(136,76,45,0.22);
 }
 .category-switcher .category-tab:hover:not(.is-active) {
   background: #fff1ec;
-  color: #884c2d;
+  color: #8D3118;
 }
 
 /* ── Custom package banner ──────────────────────────────────────────────── */
@@ -1566,7 +1566,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #884c2d;
+  color: #8D3118;
   margin: 0 0 6px;
 }
 .custom-package-body h3 {
@@ -1647,11 +1647,11 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   transition: background 0.15s, color 0.15s;
 }
 .discount-icon-btn:hover {
-  background: #884c2d;
+  background: #8D3118;
   color: #fff;
 }
 .discount-icon-btn.active {
-  background: #884c2d;
+  background: #8D3118;
   color: #fff;
 }
 
@@ -1672,7 +1672,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
 .discount-popup-symbol {
   font-size: 13px;
   font-weight: 800;
-  color: #884c2d;
+  color: #8D3118;
   min-width: 12px;
 }
 .discount-input-popup input {
@@ -1688,7 +1688,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   background: #fdf9f7;
 }
 .discount-input-popup input:focus {
-  border-color: #884c2d;
+  border-color: #8D3118;
   background: #fff;
 }
 #discountApplyBtn {
@@ -1699,7 +1699,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   font-weight: 700;
   cursor: pointer;
   border: none;
-  background: #884c2d;
+  background: #8D3118;
   color: #fff;
   display: flex;
   align-items: center;
@@ -1708,7 +1708,7 @@ body[data-page="packages"] .package-card .btn-secondary:hover {
   flex-shrink: 0;
 }
 #discountApplyBtn:hover {
-  background: #6f381a;
+  background: #6E2412;
 }
 #discountClearBtn {
   width: 30px;

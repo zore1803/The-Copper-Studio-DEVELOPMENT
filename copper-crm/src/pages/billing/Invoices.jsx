@@ -45,7 +45,7 @@ function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
           <Icon size={17} />
         </div>
         <div>
@@ -62,7 +62,7 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
     <label className="block">
       <span className="text-xs font-semibold text-[#374151]">{label}</span>
       {options ? (
-        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] disabled:bg-[#f3f4f6] disabled:text-[#6b7280]">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] disabled:bg-[#f3f4f6] disabled:text-[#6b7280]">
           {options.map((opt) => (
             typeof opt === "string"
               ? <option key={opt} value={opt}>{opt}</option>
@@ -70,7 +70,7 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
           ))}
         </select>
       ) : (
-        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#6b7280]" />
+        <input type={type} value={value || ""} onChange={(e) => onChange(e.target.value)} disabled={disabled} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 disabled:bg-[#f3f4f6] disabled:text-[#6b7280]" />
       )}
       {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
@@ -225,7 +225,7 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
             onFocus={() => setClientOpen(true)}
             onBlur={() => setTimeout(() => setClientOpen(false), 150)}
             placeholder="Search clients by name, email, or company…"
-            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] pl-9 pr-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
           {clientOpen && clientMatches.length > 0 && (
             <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
@@ -448,7 +448,7 @@ export default function Invoices() {
         <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {["All", ...INVOICE_STATUSES].map((item) => (
-              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#884c2d] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
+              <button key={item} onClick={() => setStatus(item)} className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${status === item ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{item}</button>
             ))}
           </div>
           <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
@@ -476,7 +476,7 @@ export default function Invoices() {
                     <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
                     <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
                     <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
-                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#884c2d] hover:underline"><Download size={15} /></button></td>
+                    <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
                   </tr>
                 ))}
               </tbody>
@@ -521,7 +521,7 @@ function StatusSelect({ value, onChange }) {
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#884c2d]/30 ${statusTone(value)}`}
+      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
       aria-label="Invoice status"
     >
       {UNPAID_STATUS_ACTIONS.map((status) => (

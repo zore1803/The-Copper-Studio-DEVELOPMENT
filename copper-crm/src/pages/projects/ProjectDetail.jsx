@@ -52,7 +52,7 @@ function PanelField({ label, value, onChange, type = "text", disabled = false, s
         value={value || ""}
         disabled={disabled}
         onChange={(event) => onChange?.(event.target.value)}
-        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
+        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
     </label>
   );
@@ -66,7 +66,7 @@ function PanelSelect({ label, value, onChange, options = [], span = false }) {
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">Select...</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -78,7 +78,7 @@ function PanelSelect({ label, value, onChange, options = [], span = false }) {
 function PanelSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
   );
@@ -88,7 +88,7 @@ function KpiChip({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#E1E4EA] bg-white px-5 py-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F1F1F5] text-[#884c2d]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F1F1F5] text-[#8D3118]">
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -115,7 +115,7 @@ function Section({ title, action, children }) {
 function MetaRow({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center gap-4">
-      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#F1F1F5] text-[#884c2d]">
+      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#F1F1F5] text-[#8D3118]">
         <Icon size={17} />
       </div>
       <div>
@@ -279,7 +279,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
             Overall Progress — {form.progress}%
           </label>
           <div className="h-2 rounded-full bg-[#f3f4f6] overflow-hidden">
-            <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${form.progress}%` }} />
+            <div className="h-full rounded-full bg-[#8D3118] transition-all" style={{ width: `${form.progress}%` }} />
           </div>
         </div>
 
@@ -288,7 +288,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
           <select
             value={form.clientStatus}
             onChange={e => set("clientStatus")(e.target.value)}
-            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           >
             {CLIENT_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -297,8 +297,8 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
         <div className="rounded-xl bg-[#EBE1D8] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-[#2b211c]">Project Stages</h3>
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#884c2d] shadow-sm">
-              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#884c2d]">i</span>
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#8D3118] shadow-sm">
+              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#8D3118]">i</span>
               Client Visible
             </span>
           </div>
@@ -315,12 +315,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Phase Name"
                     value={stage.name || ""} 
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="flex-1 rounded-xl border border-[#DCD1C8] bg-white/70 px-4 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#8D3118] focus:bg-white focus:ring-1 focus:ring-[#8D3118]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#884c2d] focus:bg-white focus:ring-1 focus:ring-[#884c2d]/50"
+                    className="w-36 rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2.5 text-sm font-bold text-[#2b211c] outline-none focus:border-[#8D3118] focus:bg-white focus:ring-1 focus:ring-[#8D3118]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>
@@ -349,7 +349,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "startDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#8D3118] focus:bg-white"
                     />
                   </div>
                   <div>
@@ -360,7 +360,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "endDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#884c2d] focus:bg-white"
+                      className="w-full rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] font-medium outline-none focus:border-[#8D3118] focus:bg-white"
                     />
                   </div>
                 </div>
@@ -371,7 +371,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Stage notes (visible to client)..."
                     value={stage.notes || ""}
                     onChange={(e) => updateStage(index, "notes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#8D3118] focus:bg-white placeholder:text-[#A89C92]"
                   />
                 </div>
 
@@ -390,7 +390,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave }) {
                     placeholder="Internal notes (hidden from client)..."
                     value={stage.internalNotes || ""}
                     onChange={(e) => updateStage(index, "internalNotes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#884c2d] focus:bg-white placeholder:text-[#A89C92]"
+                    className="w-full resize-none rounded-xl border border-[#DCD1C8] bg-white/70 px-3 py-2 text-sm text-[#3B2818] outline-none focus:border-[#8D3118] focus:bg-white placeholder:text-[#A89C92]"
                   />
                 </div>
 
@@ -542,7 +542,7 @@ export default function ProjectDetail() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-[#0E121B] flex items-center gap-2">
-                  <ListChecks className="text-[#884c2d]" size={20} />
+                  <ListChecks className="text-[#8D3118]" size={20} />
                   Project Roadmap
                 </h3>
                 <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">
@@ -648,7 +648,7 @@ export default function ProjectDetail() {
                   <span className="text-[#0E121B]">{formatINR(project.budgetUsed)} / {formatINR(project.budget)}</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-[#F1F1F5]">
-                  <div className="h-full rounded-full bg-[#884c2d]" style={{ width: `${budgetPct}%` }} />
+                  <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${budgetPct}%` }} />
                 </div>
               </div>
             </div>

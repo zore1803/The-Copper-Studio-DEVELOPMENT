@@ -125,7 +125,7 @@ function blocksToHtml(blocks) {
       case "otp":
         return `<p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${t}</p>`;
       case "box":
-        return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#884c2d">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#525866">${t}</p></div>`;
+        return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#8D3118">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#525866">${t}</p></div>`;
       case "divider":
         return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">`;
       default: // "p"
@@ -312,7 +312,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                         onChange={(e) => setTestRecipient(e.target.value)}
                         placeholder={isEmail ? "e.g. you@example.com" : "e.g. +919876543210"}
                         type={isEmail ? "email" : "tel"}
-                        className="mt-0.5 w-full rounded-lg border border-[#884c2d] px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#884c2d]/20"
+                        className="mt-0.5 w-full rounded-lg border border-[#8D3118] px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-[#8D3118]/20"
                       />
                     </label>
                     {templateVars.length > 0 && (
@@ -325,7 +325,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                               value={testVars[v] || ""}
                               onChange={(e) => setTestVars((prev) => ({ ...prev, [v]: e.target.value }))}
                               placeholder={`Test value for ${v}`}
-                              className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+                              className="mt-0.5 w-full rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
                             />
                           </label>
                         ))}
@@ -350,11 +350,11 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
           <div className="flex w-[380px] shrink-0 flex-col gap-4 overflow-y-auto p-6">
             <label className="block">
               <span className="text-xs font-semibold text-[#374151]">Template name</span>
-              <input value={form.name || ""} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+              <input value={form.name || ""} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20" />
             </label>
             <label className="block">
               <span className="text-xs font-semibold text-[#374151]">Category</span>
-              <select value={form.category || ""} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              <select value={form.category || ""} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118]">
                 <option value="">Select…</option>
                 {categories.map((c) => <option key={c}>{c}</option>)}
               </select>
@@ -362,7 +362,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
             {isEmail && (
               <label className="block">
                 <span className="text-xs font-semibold text-[#374151]">Subject line</span>
-                <input value={form.subject || ""} onChange={(e) => set("subject")(e.target.value)} placeholder="e.g. Invoice {{invoice_id}} for {{company_name}}" className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+                <input value={form.subject || ""} onChange={(e) => set("subject")(e.target.value)} placeholder="e.g. Invoice {{invoice_id}} for {{company_name}}" className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20" />
               </label>
             )}
             <div className="block flex-1">
@@ -371,10 +371,10 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                 {/* Text / JSON toggle */}
                 <div className="flex rounded-lg border border-[#e5e7eb] p-0.5 text-[11px] font-semibold">
                   <button type="button" onClick={() => switchMode("text")}
-                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "text" ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
+                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "text" ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
                   >Text</button>
                   <button type="button" onClick={() => switchMode("json")}
-                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "json" ? "bg-[#884c2d] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
+                    className={`rounded-md px-2.5 py-1 transition-colors ${bodyMode === "json" ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:text-[#374151]"}`}
                   >JSON</button>
                 </div>
               </div>
@@ -386,7 +386,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                 placeholder={bodyMode === "json"
                   ? `[\n  { "type": "heading", "text": "Hello {{client_name}}" },\n  { "type": "p", "text": "Your invoice {{invoice_id}} is attached." },\n  { "type": "muted", "text": "This is auto-generated." }\n]`
                   : "Hi {{client_name}},\n\nYour invoice {{invoice_id}} is attached.\n\nThanks,\nThe Copper Studio Team"}
-                className={`mt-1.5 w-full resize-none rounded-lg border px-3 py-2 text-xs leading-relaxed outline-none font-mono focus:ring-2 focus:ring-[#884c2d]/20 ${jsonError ? "border-red-400 focus:border-red-400" : "border-[#e5e7eb] focus:border-[#884c2d]"}`}
+                className={`mt-1.5 w-full resize-none rounded-lg border px-3 py-2 text-xs leading-relaxed outline-none font-mono focus:ring-2 focus:ring-[#8D3118]/20 ${jsonError ? "border-red-400 focus:border-red-400" : "border-[#e5e7eb] focus:border-[#8D3118]"}`}
               />
               {jsonError && <p className="mt-1 text-[11px] text-red-500">{jsonError}</p>}
               {bodyMode === "json" && !jsonError && (
@@ -395,7 +395,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                   <div className="mt-2 space-y-1">
                     {BLOCK_TYPES.map((b) => (
                       <div key={b.type} className="flex items-baseline gap-2">
-                        <code className="shrink-0 rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 text-[10px] text-[#884c2d]">{b.type}</code>
+                        <code className="shrink-0 rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 text-[10px] text-[#8D3118]">{b.type}</code>
                         <span className="text-[10px] text-[#6b7280]">{b.desc}</span>
                       </div>
                     ))}
@@ -405,7 +405,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
             </div>
             <label className="block">
               <span className="text-xs font-semibold text-[#374151]">Status</span>
-              <select value={form.status || "Draft"} onChange={(e) => set("status")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d]">
+              <select value={form.status || "Draft"} onChange={(e) => set("status")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118]">
                 {["Draft", "Active"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </label>
@@ -417,7 +417,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                     key={v}
                     type="button"
                     onClick={() => set("body")((form.body || "") + `{{${v}}}`)}
-                    className="rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 font-mono text-[11px] text-[#374151] hover:border-[#884c2d] hover:text-[#884c2d]"
+                    className="rounded bg-white border border-[#e5e7eb] px-1.5 py-0.5 font-mono text-[11px] text-[#374151] hover:border-[#8D3118] hover:text-[#8D3118]"
                   >{`{{${v}}}`}</button>
                 ))}
               </div>
@@ -518,7 +518,7 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
           ))}
         </div>
         <div className="mt-5 rounded-xl bg-[#fff8f6] p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">Preview Pattern</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">Preview Pattern</p>
           <p className="mt-2 text-sm text-[#374151]">Hello {"{{client_name}}"}, your {"{{proposal_id}}"} is ready for review.</p>
         </div>
       </aside>
@@ -561,7 +561,7 @@ function DefaultTemplatesMenu({ defaults, existing, onPick }) {
                   <span className="block truncate font-medium text-[#111827]">{def.name}</span>
                   <span className="block truncate text-xs text-[#9ca3af]">{def.category}</span>
                 </span>
-                {added ? <span className="shrink-0 text-[10px] font-bold uppercase text-[#9ca3af]">Added</span> : <Plus size={14} className="shrink-0 text-[#884c2d]" />}
+                {added ? <span className="shrink-0 text-[10px] font-bold uppercase text-[#9ca3af]">Added</span> : <Plus size={14} className="shrink-0 text-[#8D3118]" />}
               </button>
             );
           })}
@@ -650,7 +650,7 @@ export default function CommunicationCenter({ mode = "email" }) {
       {/* Header strip — matches Companies / Projects style */}
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
             <PageIcon size={15} />
           </div>
           <div className="min-w-0">

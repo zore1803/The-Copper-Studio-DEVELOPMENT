@@ -32,14 +32,14 @@ body {
   --studio-border: #d8c2b9;
   --studio-text: #211a17;
   --studio-muted: #6c6355;
-  --studio-copper: #884c2d;
+  --studio-copper: #8D3118;
   --studio-copper-soft: #ffdbcc;
   --studio-copper-light: #ffb693;
   --studio-teal: #026769;
 
   /* Copper Studio OS design tokens — aligned to the admin design system so the
      client portal shares the same copper palette, neutrals and surfaces. */
-  --cs-primary: #884c2d;
+  --cs-primary: #8D3118;
   --cs-primary-container: #b06a48;
   --cs-on-primary: #ffffff;
   --cs-primary-fixed: #fff1ec;
@@ -71,7 +71,7 @@ h1, h2, h3, .font-display {
 .studio-gradient {
   background:
     radial-gradient(circle at 88% 20%, rgba(255, 119, 38, 0.42), transparent 32%),
-    linear-gradient(135deg, #0d0c12 0%, #211a17 42%, #884c2d 100%);
+    linear-gradient(135deg, #0d0c12 0%, #211a17 42%, #8D3118 100%);
 }
 
 .studio-card {
@@ -93,11 +93,11 @@ h1, h2, h3, .font-display {
 
 /* Color remaps for legacy admin pages */
 .bg-\[\#2563EB\] { background-color: var(--studio-copper) !important; }
-.hover\:bg-blue-700:hover { background-color: #6f381a !important; }
+.hover\:bg-blue-700:hover { background-color: #6E2412 !important; }
 .text-\[\#2563EB\] { color: var(--studio-copper) !important; }
 .border-\[\#2563EB\] { border-color: var(--studio-copper) !important; }
 .bg-blue-50 { background-color: #fff1ec !important; }
-.text-blue-700 { color: #6f381a !important; }
+.text-blue-700 { color: #6E2412 !important; }
 .text-blue-600 { color: var(--studio-copper) !important; }
 .border-blue-50, .border-blue-100, .border-blue-200 { border-color: #ffdbcc !important; }
 .focus\:border-blue-300:focus, .focus-within\:border-blue-300:focus-within { border-color: #ffb693 !important; }

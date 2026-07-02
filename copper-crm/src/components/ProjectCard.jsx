@@ -37,11 +37,11 @@ export default function ProjectCard({ project, showClient = true }) {
   return (
     <Link
       to={`/admin/companies/${project.companyId}/projects/${projectId}`}
-      className="group block rounded-xl border border-[#ead9d0] bg-white p-5 transition-all hover:border-[#c98a63] hover:shadow-md hover:shadow-[#884c2d]/5"
+      className="group block rounded-xl border border-[#ead9d0] bg-white p-5 transition-all hover:border-[#c98a63] hover:shadow-md hover:shadow-[#8D3118]/5"
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-[#2b211c] group-hover:text-[#884c2d]">{project.name || "Untitled project"}</p>
+          <p className="truncate text-sm font-bold text-[#2b211c] group-hover:text-[#8D3118]">{project.name || "Untitled project"}</p>
           {showClient && <p className="mt-0.5 truncate text-xs text-[#6c6355]">{project.client || "Unassigned client"}</p>}
         </div>
         <Badge color={statusColor[status] || "gray"}>{status}</Badge>
@@ -53,7 +53,7 @@ export default function ProjectCard({ project, showClient = true }) {
           <span className="font-bold text-[#2b211c]">{progress}%</span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-[#f1e7e1]">
-          <div className={`h-full rounded-full ${isDone ? "bg-emerald-500" : "bg-[#884c2d]"}`} style={{ width: `${Math.min(100, progress)}%` }} />
+          <div className={`h-full rounded-full ${isDone ? "bg-emerald-500" : "bg-[#8D3118]"}`} style={{ width: `${Math.min(100, progress)}%` }} />
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export default function ProjectCard({ project, showClient = true }) {
                 </div>
               ))}
               {team.length > 4 && (
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f1e7e1] text-[10px] font-bold text-[#884c2d] ring-2 ring-white">+{team.length - 4}</div>
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f1e7e1] text-[10px] font-bold text-[#8D3118] ring-2 ring-white">+{team.length - 4}</div>
               )}
             </div>
           ) : (

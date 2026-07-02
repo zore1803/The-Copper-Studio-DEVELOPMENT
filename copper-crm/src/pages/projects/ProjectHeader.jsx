@@ -57,7 +57,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#E1E4EA] bg-[#fff8f6]">
-              <FolderKanban size={24} className="text-[#884c2d]" />
+              <FolderKanban size={24} className="text-[#8D3118]" />
             </div>
             <div className="min-w-0">
               <h2 className="truncate text-2xl font-bold text-[#0E121B]">{project.name}</h2>
@@ -101,7 +101,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
             key={tab.label}
             to={tab.to}
             className={`whitespace-nowrap border-b-[3px] py-3.5 text-sm font-semibold transition-colors ${
-              tab.label === activeTab ? "border-[#C57E5B] text-[#C57E5B]" : "border-transparent text-[#525866] hover:text-[#111827]"
+              tab.label === activeTab ? "border-[#8D3118] text-[#8D3118]" : "border-transparent text-[#525866] hover:text-[#111827]"
             }`}
           >
             {tab.label}

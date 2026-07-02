@@ -67,7 +67,7 @@ function TaskField({ label, value, onChange, placeholder = "", type = "text", cl
         max={max}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B] focus:ring-2 focus:ring-[#C57E5B]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -106,13 +106,13 @@ export function StageEditorModal({ statuses, initialStatus, stage, mode, project
         <TaskField label="Stage name" value={form.title || ""} onChange={set("title")} className="sm:col-span-2" />
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Status</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#8D3118]">
             {statuses.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Priority</span>
-          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]">
+          <select value={form.priority || "Medium"} onChange={(e) => set("priority")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#8D3118]">
             {["High", "Medium", "Low"].map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
         </label>
@@ -120,7 +120,7 @@ export function StageEditorModal({ statuses, initialStatus, stage, mode, project
         <TaskField label="Due date" type="date" value={form.dueDate || ""} onChange={set("dueDate")} min={projectDates.startDate} max={projectDates.endDate} />
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold text-[#374151]">Notes</span>
-          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#C57E5B]" />
+          <textarea value={form.description || ""} onChange={(e) => set("description")(e.target.value)} rows={3} className="mt-1.5 w-full resize-none rounded-lg border border-[#E1E4EA] px-3 py-2 text-sm outline-none focus:border-[#8D3118]" />
         </label>
       </div>
     </SidePanel>
@@ -167,7 +167,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                           {...prov.draggableProps}
                           {...prov.dragHandleProps}
                           onClick={() => onOpenEdit(status, task)}
-                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#C57E5B] shadow-md" : "border-[#E1E4EA] hover:border-[#C57E5B]/40"}`}
+                          className={`cursor-pointer rounded-lg border bg-white p-3 shadow-sm transition-shadow ${snap.isDragging ? "border-[#8D3118] shadow-md" : "border-[#E1E4EA] hover:border-[#8D3118]/40"}`}
                         >
                           <div className="mb-2 flex items-start gap-2">
                             <GripVertical size={12} className="mt-0.5 shrink-0 text-[#d1d5db]" />
@@ -184,7 +184,7 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
                                 const st = task.startDate ? parseFullDate(task.startDate) : null;
                                 const en = task.dueDate ? parseFullDate(task.dueDate) : task.endDate ? parseFullDate(task.endDate) : task.deadline ? parseShortDate(task.deadline, new Date().getFullYear()) : null;
                                 const pText = getProgressText(st, en, status, !st || !en);
-                                return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
+                                return pText ? <span className="text-[#8D3118]">{pText}</span> : null;
                               })()}
                             </span>
                             <div className="flex items-center text-[10px] font-semibold text-violet-500 bg-violet-50 px-2 py-0.5 rounded-full">
@@ -386,7 +386,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#f1f1f5] bg-[#fbfaf9] px-5 py-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1ec] text-[#884c2d]">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1ec] text-[#8D3118]">
               <CalendarRange size={17} />
             </div>
             <div>
@@ -423,7 +423,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
               value={colWidth}
               onChange={(e) => updateZoom(Number(e.target.value))}
               title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
-              className="w-24 accent-[#C57E5B]"
+              className="w-24 accent-[#8D3118]"
             />
             <button
               type="button"
@@ -446,7 +446,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
           {groups.map((group) => (
             <div key={group.id} className="border-b border-[#f1f1f5]">
               <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#C57E5B]"}`} />
+                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#8D3118]"}`} />
                 <span className="truncate text-sm font-semibold text-[#111827]">{group.title}</span>
                 <span className="ml-auto shrink-0 text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
               </button>
@@ -461,7 +461,7 @@ export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategor
                       <span>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
                       {(() => {
                         const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
-                        return pText ? <span className="text-[#C57E5B]">{pText}</span> : null;
+                        return pText ? <span className="text-[#8D3118]">{pText}</span> : null;
                       })()}
                     </span>
                   </span>
@@ -678,13 +678,13 @@ export default function ProjectTimeline() {
         <div className="flex items-center gap-1 rounded-lg bg-[#F1F1F5] p-1">
           <button
             onClick={() => setView("kanban")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-white text-[#C57E5B] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "kanban" ? "bg-white text-[#8D3118] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
           >
             <Columns3 size={13} /> Kanban
           </button>
           <button
             onClick={() => setView("gantt")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-white text-[#C57E5B] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${view === "gantt" ? "bg-white text-[#8D3118] shadow-sm" : "text-[#6b7280] hover:text-[#111827]"}`}
           >
             <CalendarRange size={13} /> Gantt
           </button>

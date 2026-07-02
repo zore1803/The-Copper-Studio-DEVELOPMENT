@@ -14,7 +14,7 @@ function formatINR(value) {
 
 function KpiChip({ label, value, icon: Icon, tone = "default" }) {
   const toneStyles = {
-    default: "bg-[#fff1ec] text-[#884c2d]",
+    default: "bg-[#fff1ec] text-[#8D3118]",
     success: "bg-emerald-50 text-emerald-700",
     warning: "bg-amber-50 text-amber-700",
     danger: "bg-red-50 text-red-700",
@@ -186,7 +186,7 @@ export default function ProjectsList() {
                 key={item.value}
                 onClick={() => setStatusFilter(item.value)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#884c2d] text-white" : "bg-[#f1e7e1] text-[#6c6355] hover:bg-[#ead9d0]"
+                  statusFilter === item.value ? "bg-[#8D3118] text-white" : "bg-[#f1e7e1] text-[#6c6355] hover:bg-[#ead9d0]"
                 }`}
               >
                 {item.label}
@@ -213,7 +213,7 @@ export default function ProjectsList() {
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center">
                   <div className="mx-auto flex justify-center items-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#884c2d]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8D3118]"></div>
                   </div>
                   <p className="mt-4 text-sm font-semibold text-[#2b211c]">Loading projects...</p>
                 </td>
@@ -226,7 +226,7 @@ export default function ProjectsList() {
                   <td className="px-5 py-4">
                     <Link
                       to={`/admin/companies/${project.companyId}/projects/${project.id || project._id}`}
-                      className="font-bold text-[#884c2d] hover:underline"
+                      className="font-bold text-[#8D3118] hover:underline"
                     >
                       {project.name}
                     </Link>
@@ -242,7 +242,7 @@ export default function ProjectsList() {
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-16 overflow-hidden rounded-full bg-[#f1e7e1]">
                         <div
-                          className={`h-full rounded-full ${project.computedProgress === 100 ? "bg-emerald-500" : "bg-[#884c2d]"}`}
+                          className={`h-full rounded-full ${project.computedProgress === 100 ? "bg-emerald-500" : "bg-[#8D3118]"}`}
                           style={{ width: `${project.computedProgress}%` }}
                         />
                       </div>
@@ -278,7 +278,7 @@ export default function ProjectsList() {
             }) : (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center">
-                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#884c2d]">
+                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
                     <FolderKanban size={20} />
                   </div>
                   <p className="text-sm font-semibold text-[#2b211c]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>

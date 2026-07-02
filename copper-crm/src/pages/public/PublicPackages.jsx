@@ -165,7 +165,7 @@ export default function PublicPackages() {
                   borderRadius: 12,
                   cursor: "pointer",
                   transition: "background 0.18s, color 0.18s, box-shadow 0.18s",
-                  background: activeCategory === cat ? "#884c2d" : "transparent",
+                  background: activeCategory === cat ? "#8D3118" : "transparent",
                   color: activeCategory === cat ? "#fff" : "#6c6355",
                   boxShadow: activeCategory === cat ? "0 2px 8px rgba(136,76,45,0.22)" : "none",
                   whiteSpace: "nowrap",

@@ -147,7 +147,7 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 const ANALYTICS = {
-  copper: "#884c2d",
+  copper: "#8D3118",
   copperLight: "#c98a63",
   green: "#10b981",
   amber: "#f59e0b",
@@ -261,7 +261,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
           {revenue.map((m, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div
-                className="w-full rounded-t bg-[#884c2d]/80 transition-all duration-300"
+                className="w-full rounded-t bg-[#8D3118]/80 transition-all duration-300"
                 style={{ height: `${Math.max(Math.round((m.revenue / maxR) * 40), m.revenue > 0 ? 2 : 0)}px` }}
               />
               <span className="text-[9px] text-gray-400">{m.month}</span>
@@ -301,7 +301,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
                     <div>
                       <p className="text-sm font-bold text-gray-800">{safeString(o.customer?.customerName || o.client || o.companyName || "Unknown Client")}</p>
                       <p className="text-xs text-gray-500">{safeString(o.customer?.customerEmail || o.contactName || o.email)}</p>
-                      <p className="text-xs text-[#884c2d] mt-1 font-medium">Package: {safeString(o.package?.name || o.packageId || o.projectType || "Custom")}</p>
+                      <p className="text-xs text-[#8D3118] mt-1 font-medium">Package: {safeString(o.package?.name || o.packageId || o.projectType || "Custom")}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-gray-900">Rs {moneyValue(o.amount ?? o.package?.total ?? o.total).toLocaleString("en-IN")}</p>
@@ -1012,7 +1012,7 @@ export function AnalyticsPage() {
                 </div>
                 <div className="flex gap-2">
                   {["All", "Revenue", "Users", "Projects"].map(m => (
-                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#884c2d] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+                    <button key={m} onClick={() => setMetricFilter(m)} className={`px-2 py-1 text-[11px] font-bold rounded transition-colors ${metricFilter === m ? 'bg-[#8D3118] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
                       {m}
                     </button>
                   ))}
@@ -1133,7 +1133,7 @@ export function AnalyticsPage() {
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                        <p className={`text-xs font-bold ${item.count > 0 ? "text-[#884c2d] underline decoration-[#884c2d]/30 underline-offset-2" : "text-gray-400"}`}>
+                        <p className={`text-xs font-bold ${item.count > 0 ? "text-[#8D3118] underline decoration-[#8D3118]/30 underline-offset-2" : "text-gray-400"}`}>
                           {item.count} {item.count === 1 ? "order" : "orders"}
                         </p>
                       </div>
@@ -1305,7 +1305,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
               placeholder="Search projects..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 focus:border-[#884c2d] w-full sm:w-64 transition-all"
+              className="pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
@@ -1351,7 +1351,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
                       <span className="font-medium text-gray-900">Due:</span> {new Date(p.expected).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                     {p.priorityLevel !== "Completed" && (
-                      <p className={`text-[10px] font-bold ${p.daysRemaining < 0 ? "text-red-600" : "text-[#884c2d]"}`}>
+                      <p className={`text-[10px] font-bold ${p.daysRemaining < 0 ? "text-red-600" : "text-[#8D3118]"}`}>
                         {p.daysRemaining < 0 ? `${Math.abs(p.daysRemaining)} days late` : `${p.daysRemaining} days left`}
                       </p>
                     )}
@@ -1360,7 +1360,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2">
                     <div className="w-full max-w-[100px] bg-gray-200 rounded-full h-1.5">
-                      <div className="bg-[#884c2d] h-1.5 rounded-full" style={{ width: `${p.progress}%` }}></div>
+                      <div className="bg-[#8D3118] h-1.5 rounded-full" style={{ width: `${p.progress}%` }}></div>
                     </div>
                     <span className="text-xs font-bold text-gray-700">{p.progress}%</span>
                   </div>
@@ -1444,7 +1444,7 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
               placeholder="Search payments..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#884c2d]/20 focus:border-[#884c2d] w-full sm:w-64 transition-all"
+              className="pl-8 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
@@ -1949,10 +1949,10 @@ export function ServicesPage() {
 
         <div className="space-y-5">
           <div className="rounded-2xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-5 text-center">
-            <Tag size={22} className="mx-auto text-[#884c2d]" />
+            <Tag size={22} className="mx-auto text-[#8D3118]" />
             <p className="mt-3 font-mono text-xl font-bold text-gray-950">{previewCode}</p>
             <p className="mt-1 text-xs font-semibold text-gray-500">{discountLabel} off on {coupon.packageName || "selected package"}</p>
-            <p className="mt-1 text-[11px] font-semibold text-[#884c2d]">Valid till {formatDateTime(coupon.validity)}</p>
+            <p className="mt-1 text-[11px] font-semibold text-[#8D3118]">Valid till {formatDateTime(coupon.validity)}</p>
             <p className="mt-2 text-[10px] text-gray-400">A unique code is generated on create.</p>
           </div>
 

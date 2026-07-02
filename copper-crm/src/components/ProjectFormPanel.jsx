@@ -18,7 +18,7 @@ function formatINR(value) {
 function FormSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#884c2d]">{title}</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
   );
@@ -35,7 +35,7 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
         onChange={(event) => onChange?.(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
       {error
@@ -55,7 +55,7 @@ function Textarea({ label, value, onChange, span = false }) {
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -71,7 +71,7 @@ function Select({ label, value, onChange, options = [], span = false, error }) {
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#884c2d] focus:ring-[#884c2d]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       >
         <option value="">Select…</option>

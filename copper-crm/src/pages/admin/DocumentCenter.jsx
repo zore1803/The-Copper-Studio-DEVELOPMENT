@@ -138,7 +138,7 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
       <span onClick={(e) => e.stopPropagation()}>
         {doc.fileUrl ? (
           <button
-            className="text-xs font-bold text-[#884c2d] hover:underline"
+            className="text-xs font-bold text-[#8D3118] hover:underline"
             onClick={() => {
               const url = doc.fileUrl;
               if (url.startsWith("data:")) {
@@ -254,7 +254,7 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
             <select
               value={form.companyId}
               onChange={(e) => setForm((prev) => ({ ...prev, companyId: e.target.value, projectId: "" }))}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
             >
               <option value="">Select a company…</option>
               {companies.map((c) => (
@@ -268,7 +268,7 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
               value={form.projectId}
               onChange={(e) => set("projectId")(e.target.value)}
               disabled={!form.companyId}
-              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f3f4f6] disabled:text-[#9ca3af]"
+              className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 disabled:bg-[#f3f4f6] disabled:text-[#9ca3af]"
             >
               <option value="">Company level (no specific project)</option>
               {companyProjects.map((p) => (
@@ -291,7 +291,7 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
               <input id="center-doc-browse" type="file" className="hidden" onChange={handleBrowse} disabled={reading || saving} />
               <label
                 htmlFor="center-doc-browse"
-                className={`rounded-lg bg-[#884c2d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6f381a] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+                className={`rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#6E2412] ${reading || saving ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
               >
                 Browse…
               </label>
@@ -303,17 +303,17 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
                   <span>Reading file</span><span>{readPct}%</span>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="h-full rounded-full bg-[#884c2d] transition-all" style={{ width: `${readPct}%` }} />
+                  <div className="h-full rounded-full bg-[#8D3118] transition-all" style={{ width: `${readPct}%` }} />
                 </div>
               </div>
             )}
             {saving && (
               <div className="mt-2.5">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#884c2d]">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-[#8D3118]">
                   <Loader2 size={11} className="animate-spin" /> Uploading to server…
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-[#f1d9cd]">
-                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#884c2d]" />
+                  <div className="upload-indeterminate h-full w-1/3 rounded-full bg-[#8D3118]" />
                 </div>
               </div>
             )}
@@ -321,17 +321,17 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File name *</span>
-          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20" />
+          <input value={form.name} onChange={(e) => set("name")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20" />
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">Category</span>
-          <select value={form.category} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+          <select value={form.category} onChange={(e) => set("category")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20">
             {DOCUMENT_CATEGORIES.map((category) => <option key={category}>{category}</option>)}
           </select>
         </label>
         <label className="block">
           <span className="text-xs font-semibold text-[#374151]">File type</span>
-          <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20">
+          <select value={form.fileType} onChange={(e) => set("fileType")(e.target.value)} className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20">
             {["pdf", "doc", "docx", "xlsx", "png", "jpg", "zip"].map((type) => <option key={type}>{type}</option>)}
           </select>
         </label>
@@ -341,7 +341,7 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
             value={fileReady ? "" : form.fileUrl}
             onChange={(e) => set("fileUrl")(e.target.value)}
             disabled={fileReady}
-            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20 disabled:bg-[#f9fafb] disabled:text-[#9ca3af]"
+            className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 disabled:bg-[#f9fafb] disabled:text-[#9ca3af]"
           />
           <span className="mt-1 block text-[11px] text-[#9ca3af]">Link to an already-hosted file (Drive, S3, etc.) — only used if you don't browse a file above.</span>
         </label>
@@ -351,7 +351,7 @@ function UploadPanel({ onClose, onSave, companies = [], projects = [], defaultCo
             value={form.notes}
             rows={3}
             onChange={(e) => set("notes")(e.target.value)}
-            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#884c2d] focus:ring-2 focus:ring-[#884c2d]/20"
+            className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
         </label>
       </div>
@@ -644,11 +644,11 @@ export default function DocumentCenter() {
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="min-w-0">
           <nav className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
-            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#884c2d]">Companies</button>
+            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#8D3118]">Companies</button>
             {selectedCompanyId && (
               <>
                 <span>/</span>
-                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#884c2d] truncate max-w-[180px]">
+                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#8D3118] truncate max-w-[180px]">
                   {currentCompany?.name || currentCompany?.companyName || "Company"}
                 </button>
               </>
@@ -667,8 +667,8 @@ export default function DocumentCenter() {
             <Search size={14} className="text-[#9ca3af]" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
           </div>
-          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#884c2d] text-[#884c2d]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
           <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
         </div>
       </div>
@@ -737,7 +737,7 @@ export default function DocumentCenter() {
                   <p className="mt-0.5 text-xs text-[#9ca3af]">{currentCompany?.name || currentCompany?.companyName || currentProject.companyName}</p>
                 </div>
                 {currentProject.projectId && (
-                  <span className="shrink-0 rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#884c2d]">{currentProject.projectId}</span>
+                  <span className="shrink-0 rounded-full bg-[#fff1ec] px-3 py-1 text-xs font-bold text-[#8D3118]">{currentProject.projectId}</span>
                 )}
               </div>
               <div className="mt-4 flex gap-1">
@@ -746,7 +746,7 @@ export default function DocumentCenter() {
                     key={key}
                     type="button"
                     onClick={() => setProjectTab(key)}
-                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#884c2d] text-[#884c2d]" : "border-transparent text-[#6b7280] hover:text-[#111827]"}`}
+                    className={`-mb-px border-b-2 px-4 py-2 text-sm font-semibold ${projectTab === key ? "border-[#8D3118] text-[#8D3118]" : "border-transparent text-[#6b7280] hover:text-[#111827]"}`}
                   >
                     {label}
                   </button>
