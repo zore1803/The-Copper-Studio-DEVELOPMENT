@@ -557,13 +557,23 @@ const MEETING_STATUS_FILTERS = [
 
 // Buckets a meeting into New (awaiting confirmation) / Current (confirmed &
 // upcoming) / Past (completed, cancelled, or already elapsed) for the filter.
+function isSameCalendarDay(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+// Past: completed (or cancelled, or scheduled for a date that's already gone
+// by but never got marked completed). Current: scheduled for today.
+// New: scheduled for a future date, or not yet scheduled at all (a fresh
+// request awaiting confirmation is still an upcoming ask).
 function meetingCategory(m) {
   if (m.status === "completed" || m.status === "cancelled") return "past";
-  if (m.status === "requested") return "new";
-  if (m.status === "confirmed") {
-    if (m.scheduledAt && new Date(m.scheduledAt) < new Date()) return "past";
-    return "current";
-  }
+
+  const when = m.scheduledAt ? new Date(m.scheduledAt) : (m.preferredDate ? new Date(m.preferredDate) : null);
+  if (!when || Number.isNaN(when.getTime())) return "new";
+
+  const now = new Date();
+  if (isSameCalendarDay(when, now)) return "current";
+  if (when < now) return "past";
   return "new";
 }
 
