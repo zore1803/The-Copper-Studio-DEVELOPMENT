@@ -8,6 +8,7 @@ import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const SORT_OPTIONS = [
   { value: "created_desc", label: "Newest first" },
@@ -85,6 +86,8 @@ export default function ProjectsList() {
   }, []);
 
   const [statusFilter, setStatusFilter] = useState("All");
+  const [deletingProject, setDeletingProject] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef(null);
@@ -179,9 +182,13 @@ export default function ProjectsList() {
     showToast({ title: "Status updated", message: `${project.name} is now ${newStatus.replace("_", " ")}.` });
   }
 
-  async function handleDeleteProject(project) {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+  async function handleDeleteProject() {
+    const project = deletingProject;
+    if (!project) return;
+    setDeleting(true);
     await remove(project);
+    setDeleting(false);
+    setDeletingProject(null);
     showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
   }
 
@@ -338,7 +345,7 @@ export default function ProjectsList() {
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteProject(project)} className="rounded-full p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                    <button onClick={() => setDeletingProject(project)} className="rounded-full p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                       <Trash2 size={14} />
                     </button>
                   </td>
@@ -370,6 +377,15 @@ export default function ProjectsList() {
           onCreateCompany={() => navigate("/admin/companies", { state: { openCreate: true, returnTo: "/admin/projects" } })}
           onClose={() => setCreating(false)}
           onSave={handleCreate}
+        />
+      )}
+      {deletingProject && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={deletingProject.name || "this project"}
+          loading={deleting}
+          onCancel={() => setDeletingProject(null)}
+          onConfirm={handleDeleteProject}
         />
       )}
       </div>

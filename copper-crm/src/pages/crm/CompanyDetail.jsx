@@ -22,6 +22,7 @@ import ContactFormPanel from "../../components/ContactFormPanel";
 import DocumentUploadPanel from "../../components/DocumentUploadPanel";
 import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/RichTextEditor";
 import FilterButton from "../../components/FilterButton";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -581,6 +582,8 @@ export default function CompanyDetail() {
   const [projectStatusFilter, setProjectStatusFilter] = useState("All");
   const [projectPackageFilter, setProjectPackageFilter] = useState("All");
   const [projectManagerFilter, setProjectManagerFilter] = useState("All");
+  const [deletingProject, setDeletingProject] = useState(null);
+  const [deletingProjectLoading, setDeletingProjectLoading] = useState(false);
   const [projectTimelineFilter, setProjectTimelineFilter] = useState("All");
   const { records: companies, loading: companiesLoading, save: saveCompany } = useCrmRecords("companies");
   const { records: projects, save: saveProject, remove: removeProject } = useCrmRecords("projects");
@@ -902,9 +905,13 @@ export default function CompanyDetail() {
     showToast({ title: "Task deleted", message: `${task.title || task.taskName || "Task"} removed from ${company.name}.` });
   }
 
-  async function handleDeleteProject(project) {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+  async function handleDeleteProject() {
+    const project = deletingProject;
+    if (!project) return;
+    setDeletingProjectLoading(true);
     await removeProject(project);
+    setDeletingProjectLoading(false);
+    setDeletingProject(null);
     showToast({ title: "Project deleted", message: `${project.name || "Project"} removed from ${company.name}.` });
   }
 
@@ -1118,7 +1125,7 @@ export default function CompanyDetail() {
             onView={setProjectView}
             onOpen={navigate}
             onCreate={() => setCreatingProject(true)}
-            onDelete={handleDeleteProject}
+            onDelete={setDeletingProject}
             statusFilter={projectStatusFilter}
             packageFilter={projectPackageFilter}
             managerFilter={projectManagerFilter}
@@ -1231,6 +1238,15 @@ export default function CompanyDetail() {
           defaultDueDate={typeof creatingTask === "string" ? creatingTask : ""}
           onClose={() => setCreatingTask(false)}
           onSave={handleCreateTask}
+        />
+      )}
+      {deletingProject && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={deletingProject.name || "this project"}
+          loading={deletingProjectLoading}
+          onCancel={() => setDeletingProject(null)}
+          onConfirm={handleDeleteProject}
         />
       )}
       {viewingFolder && (

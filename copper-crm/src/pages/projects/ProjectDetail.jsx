@@ -6,6 +6,7 @@ import {
   Settings2, Save, Trash2
 } from "lucide-react";
 import { Button } from "../../components/ui";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
@@ -393,6 +394,8 @@ export default function ProjectDetail() {
   const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
   const [managing, setManaging] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const project = useMemo(
     () => allProjects.find((p) => String(p.id || p._id) === projectId),
@@ -493,14 +496,25 @@ export default function ProjectDetail() {
   }
 
   async function handleDeleteProject() {
-    if (!window.confirm(`Delete "${project.name || "this project"}"? This cannot be undone.`)) return;
+    setDeleting(true);
     await removeProject(project);
+    setDeleting(false);
+    setConfirmingDelete(false);
     showToast({ title: "Project deleted", message: `${project.name || "Project"} removed.` });
     navigate(`/admin/companies/${currentCompany.id || currentCompany._id}`);
   }
 
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
+      {confirmingDelete && (
+        <ConfirmDeleteModal
+          title="Delete project?"
+          name={project.name || "this project"}
+          loading={deleting}
+          onCancel={() => setConfirmingDelete(false)}
+          onConfirm={handleDeleteProject}
+        />
+      )}
       <ProjectHeader
         company={currentCompany}
         project={project}
@@ -625,7 +639,7 @@ export default function ProjectDetail() {
           invoices={invoices}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
-          onDelete={handleDeleteProject}
+          onDelete={() => setConfirmingDelete(true)}
         />
       )}
     </div>
