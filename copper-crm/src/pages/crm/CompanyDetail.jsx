@@ -55,7 +55,7 @@ function InstagramGlyph(props) {
           <stop offset="100%" stopColor="#8B3AB5" />
         </linearGradient>
       </defs>
-      <rect width="56" height="56" rx="14" fill="url(#igGradient)" />
+      <circle cx="28" cy="28" r="28" fill="url(#igGradient)" />
       <rect x="14" y="14" width="28" height="28" rx="8" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="28" cy="28" r="7.2" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="37.2" cy="18.8" r="1.9" fill="#fff" />
@@ -80,7 +80,7 @@ function FacebookGlyph(props) {
 function XGlyph(props) {
   return (
     <svg viewBox="0 0 56 56" {...props}>
-      <rect width="56" height="56" rx="12" fill="#000" />
+      <circle cx="28" cy="28" r="28" fill="#000" />
       <g transform="translate(14,14) scale(1.16667)">
         <path
           fill="#fff"
