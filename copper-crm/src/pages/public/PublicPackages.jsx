@@ -111,7 +111,7 @@ export default function PublicPackages() {
           marginBottom: 40,
         }}>
           <div>
-            <span style={{ display: "inline-block", marginBottom: 12, color: "#C55418", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            <span style={{ display: "inline-block", marginBottom: 12, color: "#8D3118", fontSize: "0.72rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase" }}>
               Step 1 — Select a package
             </span>
             <h1 style={{ margin: "0 0 12px", fontFamily: "'DM Sans', system-ui, sans-serif", fontSize: "clamp(1.9rem,3.4vw,2.5rem)", fontWeight: 500, letterSpacing: "-0.02em", lineHeight: 1.12, color: "#111" }}>
@@ -132,7 +132,7 @@ export default function PublicPackages() {
                 { icon: "✓", text: "Welcome & onboarding steps" },
               ].map((item) => (
                 <li key={item.text} style={{ display: "flex", alignItems: "center", gap: 10, color: "#3f3a36", fontSize: "0.86rem" }}>
-                  <span style={{ color: "#C55418", fontWeight: 700 }}>{item.icon}</span>
+                  <span style={{ color: "#8D3118", fontWeight: 700 }}>{item.icon}</span>
                   {item.text}
                 </li>
               ))}
@@ -165,7 +165,7 @@ export default function PublicPackages() {
                   borderRadius: 12,
                   cursor: "pointer",
                   transition: "background 0.18s, color 0.18s, box-shadow 0.18s",
-                  background: activeCategory === cat ? "#C55418" : "transparent",
+                  background: activeCategory === cat ? "#8D3118" : "transparent",
                   color: activeCategory === cat ? "#fff" : "#6c6355",
                   boxShadow: activeCategory === cat ? "0 2px 8px rgba(136,76,45,0.22)" : "none",
                   whiteSpace: "nowrap",
@@ -190,11 +190,11 @@ export default function PublicPackages() {
                   flexDirection: "column",
                   gap: 14,
                   padding: "28px 26px",
-                  border: featured ? "1px solid #C55418" : "1px solid #ececec",
+                  border: featured ? "1px solid #8D3118" : "1px solid #ececec",
                   borderRadius: 14,
                   background: "#ffffff",
                   boxShadow: featured
-                    ? "0 0 0 1px #C55418 inset, 0 18px 40px rgba(150,77,10,0.12)"
+                    ? "0 0 0 1px #8D3118 inset, 0 18px 40px rgba(150,77,10,0.12)"
                     : "0 14px 34px rgba(0,0,0,0.04)",
                   transition: "border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease",
                   cursor: "default",
@@ -213,7 +213,7 @@ export default function PublicPackages() {
                     </h3>
                   </div>
                   {featured && (
-                    <span style={{ flexShrink: 0, background: "#fff1ec", color: "#C55418", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999 }}>
+                    <span style={{ flexShrink: 0, background: "#fff1ec", color: "#8D3118", fontSize: "0.68rem", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 999 }}>
                       Popular
                     </span>
                   )}
@@ -233,7 +233,7 @@ export default function PublicPackages() {
                 <ul style={{ listStyle: "none", margin: "4px 0 0", padding: "16px 0 6px", borderTop: "1px solid #f1f1f1", display: "grid", gap: 11, flex: 1 }}>
                   {(pkg.includes || []).map((item) => (
                     <li key={item} style={{ display: "flex", gap: 10, color: "#444", fontSize: "0.88rem", lineHeight: 1.4 }}>
-                      <span style={{ color: "#C55418", fontWeight: 700, flexShrink: 0 }}>✓</span>
+                      <span style={{ color: "#8D3118", fontWeight: 700, flexShrink: 0 }}>✓</span>
                       {item}
                     </li>
                   ))}
@@ -256,17 +256,17 @@ export default function PublicPackages() {
                     textAlign: "center",
                     lineHeight: "52px",
                     border: featured ? "none" : "1px solid #dcdcdc",
-                    background: featured ? "#C55418" : "#ffffff",
+                    background: featured ? "#8D3118" : "#ffffff",
                     color: featured ? "#ffffff" : "#111111",
                     transition: "background 0.15s, color 0.15s, border-color 0.15s",
                     boxSizing: "border-box",
                   }}
                   onMouseEnter={(e) => {
                     if (featured) { e.currentTarget.style.background = "#9A4113"; }
-                    else { e.currentTarget.style.borderColor = "#C55418"; e.currentTarget.style.color = "#C55418"; }
+                    else { e.currentTarget.style.borderColor = "#8D3118"; e.currentTarget.style.color = "#8D3118"; }
                   }}
                   onMouseLeave={(e) => {
-                    if (featured) { e.currentTarget.style.background = "#C55418"; }
+                    if (featured) { e.currentTarget.style.background = "#8D3118"; }
                     else { e.currentTarget.style.borderColor = "#dcdcdc"; e.currentTarget.style.color = "#111111"; }
                   }}
                 >
@@ -308,7 +308,7 @@ export default function PublicPackages() {
               flexShrink: 0,
               display: "inline-block",
               padding: "14px 28px",
-              background: "#C55418",
+              background: "#8D3118",
               color: "#fff",
               fontWeight: 800,
               fontSize: "0.78rem",
@@ -319,7 +319,7 @@ export default function PublicPackages() {
               transition: "background 0.15s",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "#9A4113"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "#C55418"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#8D3118"; }}
           >
             Get a Custom Quote
           </a>
@@ -336,7 +336,7 @@ export default function PublicPackages() {
           <nav style={{ display: "flex", gap: 20 }}>
             {["Privacy Policy", "Terms of Service", "Support"].map((link) => (
               <a key={link} href="#" style={{ fontSize: "0.82rem", color: "#888", textDecoration: "none" }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#C55418"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#8D3118"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "#888"; }}
               >{link}</a>
             ))}

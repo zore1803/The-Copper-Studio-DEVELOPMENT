@@ -147,8 +147,8 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 const ANALYTICS = {
-  copper: "#C55418",
-  copperLight: "#D2743F",
+  copper: "#8D3118",
+  copperLight: "#8D3118",
   green: "#10b981",
   amber: "#f59e0b",
   grid: "#f0e6e1",
@@ -581,10 +581,10 @@ export function ServicesPage() {
 
         <div className="space-y-5">
           <div className="rounded-2xl border border-dashed border-[#e2c4b4] bg-[#fff1ec] p-5 text-center">
-            <Tag size={22} className="mx-auto text-[#C55418]" />
+            <Tag size={22} className="mx-auto text-[#8D3118]" />
             <p className="mt-3 font-mono text-xl font-bold text-[#1F2937]">{previewCode}</p>
             <p className="mt-1 text-xs font-semibold text-[#6B7280]">{discountLabel} off on {coupon.packageName || "selected package"}</p>
-            <p className="mt-1 text-[11px] font-semibold text-[#C55418]">Valid till {formatDateTime(coupon.validity)}</p>
+            <p className="mt-1 text-[11px] font-semibold text-[#8D3118]">Valid till {formatDateTime(coupon.validity)}</p>
             <p className="mt-2 text-[10px] text-[#9CA3AF]">A unique code is generated on create.</p>
           </div>
 

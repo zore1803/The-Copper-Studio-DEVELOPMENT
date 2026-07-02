@@ -21,7 +21,7 @@ function ProjectSwitcher() {
         className="flex h-9 max-w-[240px] items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm text-[#111827] hover:bg-[#f9fafb] transition-colors"
         title="Switch project"
       >
-        <FolderKanban size={15} className="shrink-0 text-[#D2743F]" />
+        <FolderKanban size={15} className="shrink-0 text-[#8D3118]" />
         <span className="truncate font-medium">{selectedProject?.name || "Select a project"}</span>
         <ChevronDown size={14} className={`shrink-0 text-[#9ca3af] transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -40,12 +40,12 @@ function ProjectSwitcher() {
                     onClick={() => { setSelectedId(id); setOpen(false); }}
                     className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm hover:bg-[#f9fafb] ${active ? "bg-[#fff8f6]" : ""}`}
                   >
-                    <FolderKanban size={15} className={`shrink-0 ${active ? "text-[#D2743F]" : "text-[#9ca3af]"}`} />
+                    <FolderKanban size={15} className={`shrink-0 ${active ? "text-[#8D3118]" : "text-[#9ca3af]"}`} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium text-[#111827]">{p.name || "Untitled project"}</span>
                       {p.packageName && <span className="block truncate text-xs text-[#9ca3af]">{p.packageName}</span>}
                     </span>
-                    {active && <Check size={15} className="shrink-0 text-[#D2743F]" />}
+                    {active && <Check size={15} className="shrink-0 text-[#8D3118]" />}
                   </button>
                 );
               })}
@@ -86,7 +86,7 @@ function NavItem({ item, collapsed, active, onNavigate }) {
         onClick={() => onNavigate(item.to)}
         title={item.label}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-          active ? "bg-white border-[#E5E5E5] text-[#D2743F] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
+          active ? "bg-white border-[#E5E5E5] text-[#8D3118] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
         }`}
       >
         <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
@@ -97,7 +97,7 @@ function NavItem({ item, collapsed, active, onNavigate }) {
     <button
       onClick={() => onNavigate(item.to)}
       className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-        active ? "bg-white border border-[#E5E5E5] text-[#D2743F] shadow-sm" : "text-[#374151] hover:bg-white/70"
+        active ? "bg-white border border-[#E5E5E5] text-[#8D3118] shadow-sm" : "text-[#374151] hover:bg-white/70"
       }`}
     >
       <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
@@ -180,7 +180,7 @@ export default function ClientLayout() {
         <div className={`border-t border-[#ECECEC] ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2 py-3" : "p-3 space-y-2"}`}>
           {(!collapsed || mobileOpen) && (
             <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-              <div className="h-8 w-8 shrink-0 rounded-full bg-[#D2743F] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+              <div className="h-8 w-8 shrink-0 rounded-full bg-[#8D3118] flex items-center justify-center text-white text-xs font-bold">{initials}</div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
                 <p className="text-[10px] text-[#9ca3af] truncate">{auth.user?.email}</p>
@@ -222,7 +222,7 @@ export default function ClientLayout() {
                 className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#D2743F]" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#8D3118]" />
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
@@ -248,7 +248,7 @@ export default function ClientLayout() {
 
             {/* Avatar */}
             <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#D2743F] text-white text-xs font-medium">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white text-xs font-medium">
                 {initials}
               </span>
             </div>

@@ -50,7 +50,7 @@ function AuthShell({ children, title, subtitle }) {
       <main className="flex min-h-screen items-center justify-center px-5 py-8">
         <div className="w-full max-w-[440px] rounded-xl border border-[#d8c2b9] bg-[#fff8f6] p-6 shadow-[0_24px_80px_rgba(54,47,44,0.12)] sm:p-8">
           <div className="mb-7">
-            <div className="mb-4 h-11 w-11 rounded-xl bg-[#F5D5C6] text-[#C55418] grid place-items-center">
+            <div className="mb-4 h-11 w-11 rounded-xl bg-[#F5D5C6] text-[#8D3118] grid place-items-center">
               <LockKeyhole size={20} />
             </div>
             <h2 className="font-display text-2xl font-bold tracking-tight text-[#211a17]">{title}</h2>
@@ -73,7 +73,7 @@ function RolePicker({ value, onChange }) {
           onClick={() => onChange(role.value)}
           className={`rounded-xl border p-3 text-left transition-all ${
             value === role.value
-              ? "border-[#C55418] bg-[#fff1ec] text-[#9A4113]"
+              ? "border-[#8D3118] bg-[#fff1ec] text-[#9A4113]"
               : "border-[#d8c2b9] bg-white text-[#6c6355] hover:border-[#E7A98C]"
           }`}
         >
@@ -92,7 +92,7 @@ function Field({ icon: Icon, type = "text", label, value, onChange, placeholder,
   return (
     <label className="block">
       <span className="text-xs font-semibold text-[#6c6355]">{label}</span>
-      <span className="mt-1.5 flex items-center gap-2 rounded-xl border border-[#d8c2b9] bg-[#fff1ec] px-3 py-2.5 focus-within:border-[#C55418] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#F5D5C6]/70">
+      <span className="mt-1.5 flex items-center gap-2 rounded-xl border border-[#d8c2b9] bg-[#fff1ec] px-3 py-2.5 focus-within:border-[#8D3118] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#F5D5C6]/70">
         <Icon size={16} className="text-[#85736c]" />
         <input
           type={inputType}
@@ -103,7 +103,7 @@ function Field({ icon: Icon, type = "text", label, value, onChange, placeholder,
           className="w-full bg-transparent text-sm text-[#211a17] outline-none placeholder:text-[#b49f96]"
         />
         {type === "password" && (
-          <button type="button" onClick={() => setVisible((next) => !next)} className="text-[#85736c] hover:text-[#C55418]">
+          <button type="button" onClick={() => setVisible((next) => !next)} className="text-[#85736c] hover:text-[#8D3118]">
             {visible ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
@@ -117,7 +117,7 @@ function SubmitButton({ children, loading }) {
     <button
       type="submit"
       disabled={loading}
-      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#C55418] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#C55418]/20 transition-colors hover:bg-[#9A4113] disabled:cursor-not-allowed disabled:opacity-60"
+      className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#8D3118] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-[#8D3118]/20 transition-colors hover:bg-[#9A4113] disabled:cursor-not-allowed disabled:opacity-60"
     >
       {children}
       <ArrowRight size={16} />

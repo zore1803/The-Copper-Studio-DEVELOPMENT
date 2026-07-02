@@ -164,7 +164,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
         onClick={() => onNavigate(item.to)}
         title={item.label}
         className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-          active ? "bg-white border-[#E5E5E5] text-[#D2743F] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
+          active ? "bg-white border-[#E5E5E5] text-[#8D3118] shadow-sm" : "border-transparent text-[#374151] hover:bg-white/70"
         }`}
       >
         <item.icon size={20} strokeWidth={1.8} className="shrink-0" />
@@ -174,7 +174,7 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
   return (
     <button
       onClick={() => onNavigate(item.to)}
-      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E5E5] text-[#D2743F] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
+      className={`group relative flex w-full items-center gap-3 rounded-lg transition-colors py-2 ${indent ? "pl-9 pr-3" : "px-3"} ${active ? "bg-white border border-[#E5E5E5] text-[#8D3118] shadow-sm" : "text-[#374151] hover:bg-white/70"}`}
     >
       <item.icon size={16} strokeWidth={1.8} className="shrink-0" />
       <span className="truncate text-sm font-medium">{item.label}</span>
@@ -193,7 +193,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
         <button
           title={item.label}
           className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
-            active ? "bg-white border-[#E5E5E5] text-[#D2743F]" : "border-transparent text-[#374151] hover:bg-white/70"
+            active ? "bg-white border-[#E5E5E5] text-[#8D3118]" : "border-transparent text-[#374151] hover:bg-white/70"
           }`}
         >
           <item.icon size={20} strokeWidth={1.8} />
@@ -206,7 +206,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
     <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#D2743F]" : "text-[#374151] hover:bg-white/70"}`}
+        className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#8D3118]" : "text-[#374151] hover:bg-white/70"}`}
       >
         <span className="flex items-center gap-3">
           <item.icon size={16} strokeWidth={1.8} />
@@ -542,7 +542,7 @@ export default function AdminLayout() {
             <div ref={quickAddRef} className="relative">
               <button
                 onClick={() => setQuickAddOpen((v) => !v)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#D2743F] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#D2743F] transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#8D3118] transition-colors"
               >
                 <Plus size={16} />
               </button>
@@ -566,9 +566,9 @@ export default function AdminLayout() {
             <div ref={avatarRef} className="relative">
               <button
                 onClick={() => setAvatarOpen((v) => !v)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#C55418]/20 transition-all"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#8D3118]/20 transition-all"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#D2743F] text-white text-xs font-medium">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white text-xs font-medium">
                   {initials}
                 </span>
               </button>

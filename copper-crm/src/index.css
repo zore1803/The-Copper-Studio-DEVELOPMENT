@@ -40,7 +40,7 @@ body {
   /* Copper Studio OS design tokens — aligned to the admin design system so the
      client portal shares the same copper palette, neutrals and surfaces. */
   --cs-primary: #8D3118;
-  --cs-primary-container: #D2743F;
+  --cs-primary-container: #8D3118;
   --cs-on-primary: #ffffff;
   --cs-primary-fixed: #fff1ec;
   --cs-primary-fixed-dim: #F5D5C6;

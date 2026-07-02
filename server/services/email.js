@@ -75,7 +75,7 @@ function blocksToHtml(blocks) {
       case "muted": return `<p style="margin:0 0 12px;font-size:13px;color:#6b7280">${t}</p>`;
       case "button": return `<p style="margin:16px 0"><a href="${b.href || "#"}" style="display:inline-block;background:#2563eb;color:#fff;padding:11px 20px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">${t}</a></p>`;
       case "otp": return `<p style="font-size:28px;font-weight:800;letter-spacing:6px;margin:18px 0;color:#2563eb">${t}</p>`;
-      case "box": return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#884c2d">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#525866">${t}</p></div>`;
+      case "box": return `<div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">${b.title ? `<p style="margin:0 0 6px;font-weight:700;color:#8D3118">${b.title}</p>` : ""}<p style="margin:0;font-size:14px;color:#525866">${t}</p></div>`;
       case "divider": return `<hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">`;
       default: return `<p style="margin:0 0 12px">${t.replace(/\n/g, "<br>")}</p>`;
     }
@@ -205,7 +205,7 @@ export async function sendPaymentCancelledEmail({ to, name, packageName, amount,
         <p>Your payment${packageName ? ` for <strong>${packageName}</strong>` : ""} was cancelled or could not be completed successfully.</p>
         <p>No successful order has been created from this payment attempt.</p>
         <div style="margin:16px 0;padding:14px 16px;border:1px solid #fde2d6;background:#fff8f6;border-radius:12px">
-          <p style="margin:0;font-weight:700;color:#884c2d">If money was deducted</p>
+          <p style="margin:0;font-weight:700;color:#8D3118">If money was deducted</p>
           <p style="margin:6px 0 0;font-size:14px;color:#525866">Any deducted amount is usually reversed by Razorpay or your bank within a few working days. Please do not make a duplicate payment if your bank shows a debit and contact support with the payment reference.</p>
         </div>
         ${referenceRows.length ? `<p style="font-size:13px;color:#6b7280">${referenceRows.join("<br/>")}</p>` : ""}

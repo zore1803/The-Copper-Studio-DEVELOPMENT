@@ -52,7 +52,7 @@ const CONTACT_ROLE_OPTIONS = [
 function FormSection({ title, children, cols = 3 }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#C55418]">{title}</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className={`grid gap-4 ${cols === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>{children}</div>
     </div>
   );
@@ -70,7 +70,7 @@ function Input({ label, value, onChange, type = "text", placeholder = "", disabl
         onChange={(event) => onChange?.(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
       {error
@@ -88,7 +88,7 @@ function Select({ label, value, onChange, options = [], span = false, placeholde
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">{placeholder}</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -105,7 +105,7 @@ function Textarea({ label, value, onChange, span = false }) {
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -118,7 +118,7 @@ function Checkbox({ label, checked, onChange, span = false }) {
         type="checkbox"
         checked={!!checked}
         onChange={(event) => onChange(event.target.checked)}
-        className="h-4 w-4 rounded border-[#d1d5db] accent-[#C55418]"
+        className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]"
       />
       {label}
     </label>
@@ -147,7 +147,7 @@ function RoleDropdown({ form, setRole }) {
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-[#f9fafb] focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-left text-sm outline-none transition-colors hover:bg-[#f9fafb] focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <span className={selectedRoles.length ? "text-[#111827]" : "text-[#9ca3af]"}>{summary}</span>
         <ChevronDown size={16} className={`shrink-0 text-[#6b7280] transition-transform ${open ? "rotate-180" : ""}`} />
@@ -160,7 +160,7 @@ function RoleDropdown({ form, setRole }) {
                 type="checkbox"
                 checked={!!form[role.key]}
                 onChange={(event) => setRole(role.key)(event.target.checked)}
-                className="h-4 w-4 rounded border-[#d1d5db] accent-[#C55418]"
+                className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]"
               />
               {role.label}
             </label>

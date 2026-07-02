@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
 
-const COLORS = ["#111827", "#dc2626", "#16a34a", "#2563eb", "#C55418"];
+const COLORS = ["#111827", "#dc2626", "#16a34a", "#2563eb", "#8D3118"];
 
 // Plain-text rendering of a contentEditable body — used both to check for
 // emptiness (execCommand often leaves a stray "<br>" behind with no real
@@ -22,7 +22,7 @@ function ToolbarButton({ onClick, title, children, active = false }) {
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
       className={`flex h-7 w-7 items-center justify-center rounded-md transition-colors ${
-        active ? "bg-[#fff1ec] text-[#C55418]" : "text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151]"
+        active ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151]"
       }`}
     >
       {children}
@@ -62,7 +62,7 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
   return (
     <label className={`block ${span ? "sm:col-span-3" : ""}`}>
       {label && <span className="text-xs font-semibold text-[#374151]">{label}</span>}
-      <div className="mt-1.5 overflow-hidden rounded-lg border border-[#e5e7eb] focus-within:border-[#C55418] focus-within:ring-2 focus-within:ring-[#C55418]/20">
+      <div className="mt-1.5 overflow-hidden rounded-lg border border-[#e5e7eb] focus-within:border-[#8D3118] focus-within:ring-2 focus-within:ring-[#8D3118]/20">
         <div className="flex items-center gap-0.5 border-b border-[#f3f4f6] bg-[#fafafa] px-1.5 py-1">
           <ToolbarButton title="Bold" onClick={() => exec("bold")}><Bold size={13} /></ToolbarButton>
           <ToolbarButton title="Italic" onClick={() => exec("italic")}><Italic size={13} /></ToolbarButton>

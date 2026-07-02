@@ -52,7 +52,7 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
             disabled={disabled}
             onClick={() => setOpen((v) => !v)}
             className={`flex h-[38px] items-center gap-1 rounded-lg border px-2.5 text-sm outline-none transition-all ${
-              error ? "border-red-300" : "border-[#e5e7eb] focus:border-[#C55418]"
+              error ? "border-red-300" : "border-[#e5e7eb] focus:border-[#8D3118]"
             } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : "hover:bg-[#f9fafb]"}`}
           >
             <span className="font-semibold text-[#374151]">{selectedCountry?.dial || dialCode}</span>
@@ -78,7 +78,7 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => pickCountry(country)}
                       className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-[#fff1ec] ${
-                        country.dial === dialCode ? "bg-[#fff1ec] font-semibold text-[#C55418]" : "text-[#374151]"
+                        country.dial === dialCode ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151]"
                       }`}
                     >
                       <span className="truncate">{country.name}</span>
@@ -100,7 +100,7 @@ export default function PhoneInput({ label, value, onChange, error = "", span = 
           maxLength={10}
           aria-invalid={Boolean(error)}
           className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+            error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
           } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
         />
       </div>

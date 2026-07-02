@@ -51,7 +51,7 @@ function PanelField({ label, value, onChange, type = "text", disabled = false, s
         value={value || ""}
         disabled={disabled}
         onChange={(event) => onChange?.(event.target.value)}
-        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
+        className={`mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
     </label>
   );
@@ -65,7 +65,7 @@ function PanelSelect({ label, value, onChange, options = [], span = false }) {
       <select
         value={value || ""}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       >
         <option value="">Select...</option>
         {normalized.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -77,7 +77,7 @@ function PanelSelect({ label, value, onChange, options = [], span = false }) {
 function PanelSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#C55418]">{title}</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className="grid gap-4 sm:grid-cols-2">{children}</div>
     </div>
   );
@@ -255,7 +255,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
             Overall Progress — {form.progress}%
           </label>
           <div className="h-2 rounded-full bg-[#f3f4f6] overflow-hidden">
-            <div className="h-full rounded-full bg-[#C55418] transition-all" style={{ width: `${form.progress}%` }} />
+            <div className="h-full rounded-full bg-[#8D3118] transition-all" style={{ width: `${form.progress}%` }} />
           </div>
         </div>
 
@@ -264,7 +264,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
           <select
             value={form.clientStatus}
             onChange={e => set("clientStatus")(e.target.value)}
-            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+            className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           >
             {CLIENT_STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -273,8 +273,8 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
         <div className="rounded-xl bg-[#FFFFFF] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[15px] font-bold text-[#111827]">Project Stages</h3>
-            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#C55418] shadow-sm">
-              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#C55418]">i</span>
+            <span className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#8D3118] shadow-sm">
+              <span className="flex h-3 w-3 items-center justify-center rounded-full border border-[#8D3118]">i</span>
               Client Visible
             </span>
           </div>
@@ -283,7 +283,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
             {form.stages.map((stage, index) => (
               <div key={index} className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-[#e5e7eb]">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#C55418] text-xs font-bold text-white shadow-sm">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#8D3118] text-xs font-bold text-white shadow-sm">
                     {index + 1}
                   </div>
                   <input 
@@ -291,12 +291,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
                     placeholder="Phase Name"
                     value={stage.name || ""} 
                     onChange={(e) => updateStage(index, "name", e.target.value)}
-                    className="flex-1 rounded-xl border border-[#e5e7eb] bg-white px-4 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#C55418] focus:bg-white focus:ring-1 focus:ring-[#C55418]/50"
+                    className="flex-1 rounded-xl border border-[#e5e7eb] bg-white px-4 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#8D3118] focus:bg-white focus:ring-1 focus:ring-[#8D3118]/50"
                   />
                   <select
                     value={stage.status || "not_started"}
                     onChange={(e) => updateStage(index, "status", e.target.value)}
-                    className="w-36 rounded-xl border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#C55418] focus:bg-white focus:ring-1 focus:ring-[#C55418]/50"
+                    className="w-36 rounded-xl border border-[#e5e7eb] bg-white px-3 py-2.5 text-sm font-bold text-[#111827] outline-none focus:border-[#8D3118] focus:bg-white focus:ring-1 focus:ring-[#8D3118]/50"
                   >
                     <option value="not_started">Not Started</option>
                     <option value="in_progress">In Progress</option>
@@ -325,7 +325,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "startDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#C55418] focus:bg-white"
+                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#8D3118] focus:bg-white"
                     />
                   </div>
                   <div>
@@ -336,7 +336,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
                       min={form.startDate || undefined}
                       max={form.expectedEndDate || undefined}
                       onChange={(e) => updateStage(index, "endDate", e.target.value)}
-                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#C55418] focus:bg-white"
+                      className="w-full rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] font-medium outline-none focus:border-[#8D3118] focus:bg-white"
                     />
                   </div>
                 </div>
@@ -347,7 +347,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
                     placeholder="Stage notes (visible to client)..."
                     value={stage.notes || ""}
                     onChange={(e) => updateStage(index, "notes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#C55418] focus:bg-white placeholder:text-[#9ca3af]"
+                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#8D3118] focus:bg-white placeholder:text-[#9ca3af]"
                   />
                 </div>
 
@@ -366,7 +366,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
                     placeholder="Internal notes (hidden from client)..."
                     value={stage.internalNotes || ""}
                     onChange={(e) => updateStage(index, "internalNotes", e.target.value)}
-                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#C55418] focus:bg-white placeholder:text-[#9ca3af]"
+                    className="w-full resize-none rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#111827] outline-none focus:border-[#8D3118] focus:bg-white placeholder:text-[#9ca3af]"
                   />
                 </div>
 
@@ -525,7 +525,7 @@ export default function ProjectDetail() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold text-[#111827] flex items-center gap-2">
-                  <ListChecks className="text-[#C55418]" size={20} />
+                  <ListChecks className="text-[#8D3118]" size={20} />
                   Project Roadmap
                 </h3>
                 <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">

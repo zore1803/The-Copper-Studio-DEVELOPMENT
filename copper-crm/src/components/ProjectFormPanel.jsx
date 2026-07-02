@@ -20,7 +20,7 @@ function formatINR(value) {
 function FormSection({ title, children }) {
   return (
     <div className="space-y-3 border-t border-[#f3f4f6] pt-5 first:border-t-0 first:pt-0">
-      <h4 className="text-xs font-bold uppercase tracking-wide text-[#C55418]">{title}</h4>
+      <h4 className="text-xs font-bold uppercase tracking-wide text-[#8D3118]">{title}</h4>
       <div className="grid gap-4 sm:grid-cols-3">{children}</div>
     </div>
   );
@@ -37,7 +37,7 @@ function Input({ label, value, onChange, type = "text", disabled = false, span =
         onChange={(event) => onChange?.(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         } ${disabled ? "bg-[#f9fafb] text-[#6b7280]" : ""}`}
       />
       {error
@@ -57,7 +57,7 @@ function Textarea({ label, value, onChange, span = false }) {
         value={value || ""}
         rows={3}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20"
+        className="mt-1.5 w-full resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
       />
     </label>
   );
@@ -73,7 +73,7 @@ function Select({ label, value, onChange, options = [], span = false, error, hin
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       >
         <option value="">Select…</option>
@@ -275,7 +275,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
                 options={companies.map((c) => ({ value: String(c.id || c._id), label: c.name || c.companyName }))} />
               {onCreateCompany && (
                 <button type="button" onClick={onCreateCompany}
-                  className="mt-1 text-[11px] font-semibold text-[#C55418] hover:underline">
+                  className="mt-1 text-[11px] font-semibold text-[#8D3118] hover:underline">
                   + New company
                 </button>
               )}
@@ -319,7 +319,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
               <span className="inline-flex overflow-hidden rounded-md border border-[#e5e7eb] text-[11px] font-semibold">
                 {["amount", "percent"].map((mode) => (
                   <button key={mode} type="button" onClick={() => set("discountType")(mode)}
-                    className={`px-2 py-0.5 ${form.discountType === mode ? "bg-[#C55418] text-white" : "bg-white text-[#6b7280]"}`}>
+                    className={`px-2 py-0.5 ${form.discountType === mode ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280]"}`}>
                     {mode === "amount" ? "₹" : "%"}
                   </button>
                 ))}
@@ -328,7 +328,7 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
             <input type="number" value={form.discount || ""} onChange={(e) => set("discount")(e.target.value)}
               aria-invalid={Boolean(errors.discount)}
               className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                errors.discount ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+                errors.discount ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
               }`} />
             {errors.discount
               ? <span className="mt-1 block text-[11px] font-semibold text-red-500">{errors.discount}</span>

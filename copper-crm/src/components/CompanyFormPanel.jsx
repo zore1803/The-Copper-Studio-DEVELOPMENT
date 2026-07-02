@@ -60,7 +60,7 @@ function Field({ label, value, onChange, placeholder = "", type = "text", error 
         placeholder={placeholder}
         aria-invalid={Boolean(error)}
         className={`mt-1.5 w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-2 ${
-          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#C55418] focus:ring-[#C55418]/20"
+          error ? "border-red-300 focus:border-red-400 focus:ring-red-100" : "border-[#e5e7eb] focus:border-[#8D3118] focus:ring-[#8D3118]/20"
         }`}
       />
       {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
@@ -75,7 +75,7 @@ function SelectField({ label, value, onChange, options, placeholder = "Select…
       <select
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 bg-white"
+        className="mt-1.5 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 bg-white"
       >
         <option value="">{placeholder}</option>
         {options.map((o) => (
@@ -168,13 +168,13 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
             {form.logo ? (
               <img src={form.logo} alt="Company logo" className="h-full w-full object-cover" />
             ) : (
-              <Building2 size={28} className="text-[#C55418]" />
+              <Building2 size={28} className="text-[#8D3118]" />
             )}
           </div>
           <div>
             <span className="text-xs font-semibold text-[#374151]">Profile picture</span>
             <div className="mt-1.5 flex items-center gap-2">
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#C55418] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113]">
+              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113]">
                 <Upload size={13} /> {form.logo ? "Change" : "Upload"}
                 <input type="file" accept="image/*" className="hidden" onChange={handleLogoPick} />
               </label>
@@ -202,7 +202,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
             <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm">
               <span className="truncate text-[#111827]">{form.contact || primaryContact.name || "Contact"}</span>
               <span className="flex shrink-0 items-center gap-1">
-                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#C55418] hover:text-[#9A4113]" title="Edit contact">
+                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#8D3118] hover:text-[#9A4113]" title="Edit contact">
                   <Pencil size={13} />
                 </button>
                 <button type="button" onClick={() => { setPrimaryContact(null); set("contact")(""); }} className="text-[#9ca3af] hover:text-[#6b7280]" title="Remove">
@@ -214,7 +214,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowContactForm(true)}
-              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#C55418] hover:bg-[#fff1ec]"
+              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
             >
               <UserPlus size={14} /> Add primary contact
             </button>
@@ -248,7 +248,7 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
           <textarea
             value={form.notes || ""}
             onChange={(e) => set("notes")(e.target.value)}
-            className="mt-1.5 min-h-24 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#C55418] focus:ring-2 focus:ring-[#C55418]/20 transition-all"
+            className="mt-1.5 min-h-24 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 transition-all"
           />
         </label>
       </div>
