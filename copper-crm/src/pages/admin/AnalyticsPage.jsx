@@ -165,7 +165,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
         <select 
           value={year}
           onChange={(e) => setLocalYear(Number(e.target.value))}
-          className="h-8 rounded-lg border border-[#E1E4EA] bg-[#F5F7FA] px-2 flex items-center text-xs font-bold text-[#525866] outline-none cursor-pointer hover:bg-[#f3f4f6]"
+          className="h-8 appearance-none rounded-full border border-[#E1E4EA] bg-[#F5F7FA] px-2 text-xs font-bold leading-8 text-[#525866] outline-none cursor-pointer hover:bg-[#f3f4f6]"
         >
           {[currentYear - 3, currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
             <option key={y} value={y}>{y}</option>
@@ -949,40 +949,40 @@ export function AnalyticsPage() {
       action={
         <div className="flex flex-wrap items-center justify-end gap-2">
 
-          <div className="flex items-center gap-2 rounded-xl border border-[#E1E4EA] bg-[#ffffff] p-1">
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+          <div className="flex h-8 items-center gap-2 overflow-hidden rounded-full border border-[#E1E4EA] bg-[#ffffff] px-1">
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 appearance-none rounded-full bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
               {["Monthly", "Bi-Monthly", "Quarterly", "Annually", "Custom Range", "All Time"].map((item) => <option key={item}>{item}</option>)}
             </select>
-            
+
             {filterType !== "All Time" && filterType !== "Custom Range" && (
-              <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+              <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="h-8 appearance-none bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
                 {[currentD.getFullYear() - 3, currentD.getFullYear() - 2, currentD.getFullYear() - 1, currentD.getFullYear(), currentD.getFullYear() + 1].map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             )}
 
             {filterType === "Monthly" && (
-              <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+              <select value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))} className="h-8 appearance-none bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
                 {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             )}
 
             {filterType === "Bi-Monthly" && (
-              <select value={filterBiMonth} onChange={(e) => setFilterBiMonth(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+              <select value={filterBiMonth} onChange={(e) => setFilterBiMonth(Number(e.target.value))} className="h-8 appearance-none bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
                 {["Jan-Feb", "Mar-Apr", "May-Jun", "Jul-Aug", "Sep-Oct", "Nov-Dec"].map((m, i) => <option key={i} value={i}>{m}</option>)}
               </select>
             )}
 
             {filterType === "Quarterly" && (
-              <select value={filterQuarter} onChange={(e) => setFilterQuarter(Number(e.target.value))} className="h-8 rounded-lg bg-transparent px-2 text-xs font-bold text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+              <select value={filterQuarter} onChange={(e) => setFilterQuarter(Number(e.target.value))} className="h-8 appearance-none bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
                 {["Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"].map((q, i) => <option key={i} value={i}>{q}</option>)}
               </select>
             )}
 
             {filterType === "Custom Range" && (
-              <div className="flex items-center gap-1 border-l border-[#E1E4EA] px-2">
-                <input type="date" value={customStartDate} onChange={(e) => setCustomStartDate(e.target.value)} className="h-8 rounded-lg bg-transparent px-1 text-xs font-bold text-[#525866] outline-none hover:bg-[#f9fafb]" />
+              <div className="flex h-8 items-center gap-1 border-l border-[#E1E4EA] px-2">
+                <input type="date" value={customStartDate} onChange={(e) => setCustomStartDate(e.target.value)} className="h-8 bg-transparent px-1 text-xs font-bold text-[#525866] outline-none hover:bg-[#f9fafb]" />
                 <span className="text-[#9CA3AF] text-xs">to</span>
-                <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="h-8 rounded-lg bg-transparent px-1 text-xs font-bold text-[#525866] outline-none hover:bg-[#f9fafb]" />
+                <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} className="h-8 bg-transparent px-1 text-xs font-bold text-[#525866] outline-none hover:bg-[#f9fafb]" />
               </div>
             )}
           </div>
@@ -1218,7 +1218,7 @@ export function AnalyticsPage() {
               </div>
               <button 
                 onClick={() => setSelectedPackage(null)} 
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[#9CA3AF] hover:bg-[#f3f4f6] hover:text-[#525866] transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#9CA3AF] hover:bg-[#f3f4f6] hover:text-[#525866] transition-colors"
               >
                 <span className="text-xl leading-none">&times;</span>
               </button>
@@ -1307,13 +1307,13 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={14} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#525866]" size={14} />
             <input 
               type="text" 
               placeholder="Search projects..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-[#E1E4EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
+              className="h-8 pl-8 pr-4 text-sm border border-[#E1E4EA] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
@@ -1446,13 +1446,13 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={14} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#525866]" size={14} />
             <input 
               type="text" 
               placeholder="Search payments..." 
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-8 pr-4 py-1.5 text-sm border border-[#E1E4EA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
+              className="h-8 pl-8 pr-4 text-sm border border-[#E1E4EA] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8D3118]/20 focus:border-[#8D3118] w-full sm:w-64 transition-all"
             />
           </div>
         </div>
