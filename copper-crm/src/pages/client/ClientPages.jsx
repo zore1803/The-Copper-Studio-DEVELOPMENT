@@ -970,6 +970,31 @@ function resolveFileUrl(url) {
   return url.startsWith("/api/") ? `${import.meta.env.VITE_API_BASE_URL || ""}${url}` : url;
 }
 
+// data: URLs can't be navigated to directly as a top-level tab (browsers
+// block it and silently fall back to downloading it under a generated
+// name instead) — convert to a blob URL first, which opens/displays inline
+// like a normal link. http(s) URLs (uploaded docs, invoice PDFs) open as-is.
+function viewDocument(doc) {
+  const url = resolveFileUrl(doc.fileUrl);
+  if (!url) return;
+  if (url.startsWith("data:")) {
+    try {
+      const [meta, base64] = url.split(",");
+      const mime = (meta.match(/data:(.*?);base64/) || [])[1] || "application/octet-stream";
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      const blobUrl = URL.createObjectURL(new Blob([bytes], { type: mime }));
+      window.open(blobUrl, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch {
+      window.open(url, "_blank", "noopener");
+    }
+    return;
+  }
+  window.open(url, "_blank", "noopener");
+}
+
 // The browser's plain <a download> attribute is ignored for most
 // cross-origin URLs (the file API lives on a different domain than the
 // SPA), so the filename fell back to whatever random id/hash was last in
@@ -1099,12 +1124,12 @@ export function ClientDocumentsPage() {
               <div className="pt-3 border-t flex gap-2" style={{ borderColor: CS.outlineVariant }}>
                 {doc.fileUrl ? (
                   <>
-                    <a href={resolveFileUrl(doc.fileUrl)} target="_blank" rel="noreferrer"
+                    <button type="button" onClick={() => viewDocument(doc)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all border"
                       style={{ borderColor: CS.outlineVariant, color: CS.onSurface }}>
                       <Eye size={15} />
                       View
-                    </a>
+                    </button>
                     <button type="button" onClick={() => downloadDocument(doc)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
                       style={{ background: CS.primary, color: CS.onPrimary }}>
