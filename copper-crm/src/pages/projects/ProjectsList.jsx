@@ -7,6 +7,7 @@ import { apiGet } from "../../lib/api";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
+import FilterButton from "../../components/FilterButton";
 
 const SORT_OPTIONS = [
   { value: "created_desc", label: "Newest first" },
@@ -201,20 +202,6 @@ export default function ProjectsList() {
           <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {/* Status filter */}
-          <div className="flex gap-1.5 overflow-x-auto">
-            {statusFilters.map((item) => (
-              <button
-                key={item.value}
-                onClick={() => setStatusFilter(item.value)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === item.value ? "bg-[#8D3118] text-white" : "bg-[#f3f4f6] text-[#6b7280] hover:bg-[#e5e7eb]"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
           <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
@@ -248,6 +235,13 @@ export default function ProjectsList() {
               </div>
             )}
           </div>
+          <FilterButton
+            onReset={() => setStatusFilter("All")}
+            buttonClassName="h-8 w-8"
+            fields={[
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: statusFilters }
+            ]}
+          />
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>
         </div>
       </div>
