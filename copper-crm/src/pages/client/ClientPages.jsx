@@ -1321,6 +1321,68 @@ export function ClientBillingPage() {
                         </div>
                       ))}
                     </div>
+                    {selectedOrder.package?.total > 0 && (() => {
+                      // Mirrors the server-side invoice math (invoiceTemplate.js): the
+                      // stored package.total is already GST-inclusive and post-discount,
+                      // so the taxable base and discount are derived by working backwards
+                      // from it — same-state (seller is Maharashtra, code 27) splits GST
+                      // into CGST+SGST; any other client GSTIN state code charges IGST.
+                      const totalPaid = Number(selectedOrder.package?.total || 0);
+                      const taxableBase = Math.round(totalPaid / 1.18);
+                      const couponCode = selectedOrder.payment?.couponCode;
+                      // Fall back to the taxable base when no original pre-discount price
+                      // is on record (e.g. manually-created invoices), so the discount
+                      // line never goes negative.
+                      const planAmount = Number(selectedOrder.package?.price || 0) || taxableBase;
+                      const discount = couponCode ? Math.max(0, planAmount - taxableBase) : 0;
+                      const gstAmount = totalPaid - taxableBase;
+                      const clientGstin = selectedOrder.customer?.companyGstin || "";
+                      const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : "27";
+                      const isInterState = clientStateCode !== "27";
+                      const fmt = (n) => `₹${Math.round(n).toLocaleString("en-IN")}`;
+                      return (
+                        <div className="pt-3 border-t space-y-2" style={{ borderColor: CS.outlineVariant }}>
+                          <p className="text-xs font-semibold mb-1" style={{ color: CS.secondary }}>GST Details</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs" style={{ color: CS.secondary }}>Plan Amount</span>
+                            <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{fmt(planAmount)}</span>
+                          </div>
+                          {couponCode && (
+                            <>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs" style={{ color: CS.secondary }}>Discount ({couponCode})</span>
+                                <span className="text-xs font-medium" style={{ color: "#388e3c" }}>-{fmt(discount)}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs" style={{ color: CS.secondary }}>Amount After Discount</span>
+                                <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{fmt(taxableBase)}</span>
+                              </div>
+                            </>
+                          )}
+                          {isInterState ? (
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs" style={{ color: CS.secondary }}>IGST (18%)</span>
+                              <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{fmt(gstAmount)}</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs" style={{ color: CS.secondary }}>SGST (9%)</span>
+                                <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{fmt(gstAmount / 2)}</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs" style={{ color: CS.secondary }}>CGST (9%)</span>
+                                <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{fmt(gstAmount / 2)}</span>
+                              </div>
+                            </>
+                          )}
+                          <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: CS.outlineVariant }}>
+                            <span className="text-xs font-bold" style={{ color: CS.onSurface }}>Total Amount Paid</span>
+                            <span className="text-sm font-bold" style={{ color: CS.primary }}>{fmt(totalPaid)}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {selectedOrder.package?.includes?.length > 0 && (
                       <div className="pt-3 border-t" style={{ borderColor: CS.outlineVariant }}>
                         <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Includes</p>
