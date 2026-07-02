@@ -2042,8 +2042,8 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
               ]}
             />
           )}
-          <Button size="sm" onClick={onCreate}><Plus size={14} /> Task</Button>
           <WorkspaceToggle options={TASK_VIEWS} value={view} onChange={onView} />
+          <Button size="sm" onClick={onCreate}><Plus size={14} /> Task</Button>
         </div>
       }
     >
