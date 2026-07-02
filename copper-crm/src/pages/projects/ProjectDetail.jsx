@@ -100,7 +100,7 @@ function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   );
 }
 
-function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete }) {
+function ManageProjectPanel({ project, invoices = [], managers = [], onClose, onSave, onDelete }) {
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
 
@@ -115,6 +115,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
     startDate: project.startDate ? String(project.startDate).slice(0, 10) : "",
     expectedEndDate: (project.expectedEndDate || project.dueDate) ? String(project.expectedEndDate || project.dueDate).slice(0, 10) : "",
     priority: project.priority || "Medium",
+    projectManager: project.projectManager || project.manager || "",
     status: project.status || "Requirement Gathering",
     budget: project.budget ?? project.packageValue ?? "",
     budgetUsed: project.budgetUsed ?? "",
@@ -243,6 +244,14 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
             <PanelField label="Custom package name" value={form.customPackageName} onChange={set("customPackageName")} />
           )}
           <PanelSelect label="Priority" value={form.priority} onChange={set("priority")} options={PRIORITY_OPTIONS} />
+          <SearchableSelectField
+            label="Project manager"
+            value={form.projectManager}
+            onChange={set("projectManager")}
+            options={managers}
+            placeholder="Search or type a name…"
+            allowCustom
+          />
         </PanelSection>
 
         <PanelSection title="Timeline">
@@ -401,6 +410,10 @@ export default function ProjectDetail() {
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
+  const projectManagers = useMemo(
+    () => Array.from(new Set(allProjects.map((p) => p.projectManager || p.manager).filter(Boolean))),
+    [allProjects]
+  );
   const [managing, setManaging] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -483,6 +496,8 @@ export default function ProjectDetail() {
       expectedEndDate: updates.expectedEndDate,
       dueDate: updates.expectedEndDate,
       priority: updates.priority,
+      projectManager: updates.projectManager,
+      manager: updates.projectManager,
       status: roadmapComplete ? "Completed" : updates.status,
       budget: parseMoney(updates.budget),
       packageValue: parseMoney(updates.budget),
@@ -642,6 +657,7 @@ export default function ProjectDetail() {
         <ManageProjectPanel
           project={project}
           invoices={invoices}
+          managers={projectManagers}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
           onDelete={() => setConfirmingDelete(true)}
