@@ -605,14 +605,22 @@ export function ClientMeetingsPage() {
 
   const selected = selectedRaw;
   const [bookingEvent, setBookingEvent] = useState(null);
+  const [bookingFrameHeight, setBookingFrameHeight] = useState(520);
 
-  // Calendly's embedded scheduler posts this message to the parent window once
-  // the invitee finishes booking. The Meeting record itself is created by the
-  // Calendly webhook on the server (async), so poll a few times after the
-  // event fires to pick it up as soon as it lands instead of leaving the
-  // client staring at a stale list.
+  // Calendly's embedded scheduler posts messages to the parent window: a
+  // page-height update whenever its content size changes (so the iframe can
+  // be sized to fit instead of leaving blank space or clipping), and an
+  // event_scheduled message once the invitee finishes booking. The Meeting
+  // record itself is created by the Calendly webhook on the server (async),
+  // so poll a few times after booking to pick it up as soon as it lands
+  // instead of leaving the client staring at a stale list.
   useEffect(() => {
     function onCalendlyMessage(e) {
+      if (e.data?.event === "calendly.page_height") {
+        const height = Number(e.data?.payload?.height);
+        if (height > 0) setBookingFrameHeight(Math.min(800, Math.max(420, height)));
+        return;
+      }
       if (e.data?.event !== "calendly.event_scheduled") return;
       setBookingEvent(null);
       showToast({ title: "Meeting booked", message: "Your meeting has been scheduled and will appear here shortly." });
@@ -758,7 +766,7 @@ export function ClientMeetingsPage() {
                   {eventTypes.length > 1 ? (
                     <select
                       value={bookingEvent.schedulingUrl || bookingEvent.slug}
-                      onChange={(e) => setBookingEvent(eventTypes.find((et) => (et.schedulingUrl || et.slug) === e.target.value) || bookingEvent)}
+                      onChange={(e) => { setBookingEvent(eventTypes.find((et) => (et.schedulingUrl || et.slug) === e.target.value) || bookingEvent); setBookingFrameHeight(520); }}
                       className="mt-1.5 w-full rounded-lg px-2 py-1.5 text-xs border outline-none"
                       style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
                     >
@@ -775,7 +783,8 @@ export function ClientMeetingsPage() {
                 <iframe
                   title={`Book ${bookingEvent.name}`}
                   src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&hide_event_type_details=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
-                  className="h-[640px] w-full"
+                  style={{ height: bookingFrameHeight }}
+                  className="w-full"
                 />
               </Card>
             ) : (
