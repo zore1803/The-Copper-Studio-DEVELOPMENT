@@ -4,6 +4,7 @@ import { clientApi } from "../../lib/clientApi";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
 import FilterButton from "../../components/FilterButton";
+import { useToast } from "../../components/useToast";
 import {
   Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
   CircleDot, StickyNote, History, X, Copy, Video, Search, Download,
@@ -548,6 +549,7 @@ function meetingTypelabel(type) {
 export function ClientMeetingsPage() {
   const { token, user } = useAuth();
   const { selectedId } = useClientProject();
+  const { showToast } = useToast();
   const [allMeetings, setAllMeetings] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -579,6 +581,7 @@ export function ClientMeetingsPage() {
     function onCalendlyMessage(e) {
       if (e.data?.event !== "calendly.event_scheduled") return;
       setBookingEvent(null);
+      showToast({ title: "Meeting booked", message: "Your meeting has been scheduled and will appear here shortly." });
       let attempts = 0;
       const poll = setInterval(() => {
         attempts += 1;
@@ -618,8 +621,10 @@ export function ClientMeetingsPage() {
       setForm({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
       setSuccess("Meeting request sent! We'll confirm shortly.");
       setTimeout(() => setSuccess(""), 5000);
+      showToast({ title: "Meeting requested", message: `"${m.title}" is awaiting confirmation from the Copper Studio team.` });
     } catch (err) {
       setError(err.message || "Failed to request meeting.");
+      showToast({ type: "error", title: "Meeting request failed", message: err.message || "Please try again." });
     } finally {
       setSubmitting(false);
     }
