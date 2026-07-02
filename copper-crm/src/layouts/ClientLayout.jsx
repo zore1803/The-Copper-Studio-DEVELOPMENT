@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
   LayoutDashboard, GitBranch, Video, FileText,
   Receipt, Settings, LogOut, Bell, ChevronsLeft, ChevronsRight, Menu, X,
-  FolderKanban, ChevronDown, Check, Plus,
+  FolderKanban, ChevronDown, Check, Plus, Search,
 } from "lucide-react";
 import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
 import { useToast } from "../components/useToast";
@@ -13,6 +13,15 @@ const QUICK_ACTIONS = [
   { icon: Video, label: "Request a meeting", to: "/client/meetings" },
   { icon: FileText, label: "View documents", to: "/client/documents" },
   { icon: Receipt, label: "View invoices", to: "/client/invoices" },
+];
+
+const SEARCHABLE_PAGES = [
+  { label: "Dashboard", to: "/client", keywords: "home overview" },
+  { label: "Project Timeline", to: "/client/projects", keywords: "timeline gantt stages" },
+  { label: "Meetings", to: "/client/meetings", keywords: "calls calendly schedule booking" },
+  { label: "Documents", to: "/client/documents", keywords: "files deliverables uploads" },
+  { label: "Billing & Invoices", to: "/client/invoices", keywords: "payments purchases receipts" },
+  { label: "Settings", to: "/client/profile", keywords: "profile account preferences" },
 ];
 
 function ProjectSwitcher() {
@@ -59,6 +68,96 @@ function ProjectSwitcher() {
             </div>
           </div>
         </>
+      )}
+    </div>
+  );
+}
+
+function HeaderSearch() {
+  const navigate = useNavigate();
+  const { projects, setSelectedId } = useClientProject();
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    function onKey(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const projectMatches = projects
+      .filter((p) => `${p.name || ""} ${p.packageName || ""}`.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((p) => ({ type: "Project", label: p.name || "Untitled project", sublabel: p.packageName, id: String(p._id || p.id) }));
+    const pageMatches = SEARCHABLE_PAGES
+      .filter((pg) => `${pg.label} ${pg.keywords}`.toLowerCase().includes(q))
+      .slice(0, 5 - projectMatches.length)
+      .map((pg) => ({ type: "Page", label: pg.label, to: pg.to }));
+    return [...projectMatches, ...pageMatches];
+  }, [query, projects]);
+
+  function openResult(r) {
+    if (!r) return;
+    if (r.type === "Project") {
+      setSelectedId(r.id);
+      navigate("/client/projects");
+    } else {
+      navigate(r.to);
+    }
+    setQuery("");
+    setFocused(false);
+  }
+
+  return (
+    <div className="relative w-64 hidden md:block">
+      <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+        <Search size={14} className="text-[#525866] shrink-0" />
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setTimeout(() => setFocused(false), 150)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") openResult(results[0]);
+            if (e.key === "Escape") { setQuery(""); setFocused(false); }
+          }}
+          placeholder="Search projects, pages…"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+        />
+      </div>
+      {focused && query.trim() && (
+        <div className="absolute left-0 right-0 top-full mt-1 z-50 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
+          {results.length ? (
+            <div className="py-1">
+              {results.map((r) => (
+                <button
+                  key={`${r.type}-${r.label}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => openResult(r)}
+                  className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#f9fafb]"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium text-[#111827] truncate">{r.label}</span>
+                    {r.sublabel && <span className="block text-xs text-[#6b7280] truncate">{r.sublabel}</span>}
+                  </span>
+                  <span className="shrink-0 rounded bg-[#f3f4f6] px-1.5 py-0.5 text-[10px] font-bold uppercase text-[#6b7280]">{r.type}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="px-3 py-3 text-xs text-[#6b7280]">No results found.</div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -244,6 +343,8 @@ export default function ClientLayout() {
           </div>
 
           <div className="flex items-center gap-4">
+            <HeaderSearch />
+
             {/* Bell */}
             <div ref={notifRef} className="relative">
               <button
