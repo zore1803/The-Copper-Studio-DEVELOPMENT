@@ -11,7 +11,7 @@ import SidePanel from "../../components/SidePanel";
 import { useRevalidate } from "../../hooks/useRevalidate";
 import {
   Loader2, CalendarDays, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
-  CircleDot, StickyNote, History, Copy, Video, Search, Download,
+  StickyNote, History, Copy, Video, Search, Download,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage,
   FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route,
@@ -430,12 +430,6 @@ export function ClientTimelinePage() {
     return map[s] || { type: "neutral", label: s };
   };
 
-  const stageBadge = (s) => {
-    if (s === "completed") return { icon: "check_circle", color: "#388e3c" };
-    if (s === "in_progress") return { icon: "radio_button_checked", color: CS.primary };
-    return { icon: "radio_button_unchecked", color: "#9ca3af" };
-  };
-
   return (
     <PageShell title="Project Timeline" subtitle="Track every phase of your engagement with The Copper Studio.">
       {loading ? (
@@ -511,8 +505,21 @@ export function ClientTimelinePage() {
                 )}
 
                 {/* Stages timeline */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
+                <Card className="p-6 lg:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: CS.primaryFixed, color: CS.primary }}>
+                      <Route size={18} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
+                      {selected.stages?.length > 0 && (
+                        <p className="text-xs" style={{ color: CS.secondary }}>
+                          {selected.stages.filter((s) => s.status === "completed").length} of {selected.stages.length} stages completed
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   {!selected.stages?.length ? (
                     <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
                       <Route size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />
@@ -520,53 +527,50 @@ export function ClientTimelinePage() {
                       <p className="mt-1 text-xs" style={{ color: CS.secondary }}>Your engagement phases will appear here once The Copper Studio sets them up.</p>
                     </div>
                   ) : (
-                    <div className="relative space-y-5 ml-3">
+                    <div className="relative pl-6 space-y-6">
                       {selected.stages.length > 1 && (
-                        <div className="absolute left-[13px] top-3 bottom-3 w-0.5" style={{ background: CS.outlineVariant }} />
+                        <div className="absolute left-[19px] top-2 bottom-2 w-0.5" style={{ background: CS.outlineVariant }} />
                       )}
                       {selected.stages.map((stage, i) => {
-                        const sb = stageBadge(stage.status);
+                        const isCompleted = stage.status === "completed";
+                        const isActive = stage.status === "in_progress";
+                        const iconBg = isCompleted ? "#34d399" : isActive ? "#fef3c7" : "#ffffff";
+                        const iconBorder = isCompleted ? "#34d399" : isActive ? "#fbbf24" : CS.outlineVariant;
+                        const cardBg = isCompleted ? "#f0fdf4" : isActive ? "#fffbeb" : "#f9fafb";
+                        const cardBorder = isCompleted ? "#bbf7d0" : isActive ? "#fde68a" : "#e5e7eb";
                         return (
-                          <div key={i} className="relative flex gap-5 items-start">
-                            <div className="z-10 w-7 h-7 rounded-full flex items-center justify-center ring-4 ring-white flex-shrink-0 border"
-                              style={{
-                                background: stage.status === "completed" ? CS.primaryContainer : stage.status === "in_progress" ? CS.primaryFixed : "#f9fafb",
-                                borderColor: stage.status === "completed" || stage.status === "in_progress" ? "transparent" : "#e5e7eb",
-                              }}>
-                              {(() => {
-                                const StageIcon = stage.status === "completed" ? Check : stage.status === "in_progress" ? CircleDot : Clock;
-                                return <StageIcon size={14} style={{ color: sb.color }} />;
-                              })()}
+                          <div key={i} className="relative flex items-start gap-4">
+                            <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 shadow-sm"
+                              style={{ background: iconBg, borderColor: iconBorder }}>
+                              {isCompleted ? (
+                                <Check size={16} style={{ color: "#fff" }} />
+                              ) : isActive ? (
+                                <Zap size={15} style={{ color: "#d97706" }} />
+                              ) : (
+                                <span className="text-xs font-bold" style={{ color: "#9ca3af" }}>{i + 1}</span>
+                              )}
                             </div>
-                            <div className="flex-1 pb-1">
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                                <h4 className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{stage.name}</h4>
+                            <div className="flex-1 rounded-xl border p-4" style={{ background: cardBg, borderColor: cardBorder }}>
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
+                                <h4 className="font-bold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{stage.name}</h4>
                                 {stage.startDate && (
-                                  <span className="text-xs" style={{ color: CS.secondary }}>
+                                  <span className="text-xs font-medium" style={{ color: CS.secondary }}>
                                     {new Date(stage.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                                   </span>
                                 )}
                               </div>
-                              {stage.notes && <p className="text-xs leading-relaxed" style={{ color: CS.secondary }}>{stage.notes}</p>}
-                              {stage.status === "in_progress" && (
-                                <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ background: CS.primaryFixed, color: CS.primary }}>
-                                  <Clock size={12} />
-                                  In Progress
+                              {stage.notes && <p className="text-xs leading-relaxed mb-2" style={{ color: CS.secondary }}>{stage.notes}</p>}
+                              {isCompleted ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#166534" }}>
+                                  <CheckCircle2 size={12} /> Completed
                                 </span>
-                              )}
-                              {stage.status === "completed" && (
-                                <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ background: "#e8f5e9", color: "#388e3c" }}>
-                                  <CheckCircle2 size={12} />
-                                  Completed
+                              ) : isActive ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#d97706" }}>
+                                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#d97706" }} /> Currently Active
                                 </span>
-                              )}
-                              {(!stage.status || stage.status === "not_started") && (
-                                <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ background: "#f3f4f6", color: "#6b7280" }}>
-                                  <Clock size={12} />
-                                  Not Started
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#9ca3af" }}>
+                                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#d1d5db" }} /> Upcoming
                                 </span>
                               )}
                             </div>
