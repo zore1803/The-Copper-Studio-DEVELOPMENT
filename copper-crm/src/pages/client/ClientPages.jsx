@@ -1653,12 +1653,24 @@ export function ClientSettingsPage() {
 // "delete this repository" flow so a deactivation can't happen by accident.
 // Deactivating only flips the account to "disabled" (blocks login), it never
 // deletes any project/document/invoice data — permanent deletion is admin-only.
-function DeactivateAccountModal({ accountName, token, onClose, onDeactivated }) {
+function DeactivateAccountModal({ accountName: initialAccountName, token, onClose, onDeactivated }) {
   const { showToast } = useToast();
   const [phase, setPhase] = useState(1);
   const [typedName, setTypedName] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const nameMatches = typedName.trim().toLowerCase() === accountName.trim().toLowerCase();
+  // The cached auth.user.name (from login time) can drift from the database
+  // — a profile edit since then, or plain staleness — while the server's
+  // confirm check always compares against the current value. Re-fetch it
+  // fresh here so what the client-side gate accepts is exactly what the
+  // server will accept too, instead of "matched locally, rejected on save".
+  const [accountName, setAccountName] = useState(initialAccountName);
+  useEffect(() => {
+    apiGet("/api/client/profile", token)
+      .then((data) => { if (data?.user?.name) setAccountName(data.user.name); })
+      .catch(() => {});
+  }, [token]);
+  const normalize = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
+  const nameMatches = normalize(typedName) === normalize(accountName);
 
   async function confirmDeactivate() {
     setSubmitting(true);
