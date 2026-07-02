@@ -214,30 +214,25 @@ async function fetchProjectTasksWithRetry(projectId, token) {
   return [];
 }
 
-function ClientTaskGantt({ tasks }) {
+// Shared Gantt chart pattern: fed pre-normalised rows ({ id, title, status,
+// start, end, subtitle }), grouped by an ordered status list with its own
+// colour palette. Used for both the project's Stage Timeline and its Task
+// Timeline, so both charts look and behave identically instead of the app
+// growing two differently-styled Gantt implementations.
+function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabel, emptyTitle, emptyDescription, doneStatus, blockedStatus }) {
   const [zoom, setZoom] = useState("Week");
 
   const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
-    const mapped = tasks.map((task) => {
-      const start = task.startDate ? parseFullDate(task.startDate) : null;
-      const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
-      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
-      const safeEnd = end < start ? start : end;
-      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
-      return { ...task, start, end: safeEnd, status };
-    }).filter(Boolean);
-
-    const unscheduled = tasks.length - mapped.length;
-    if (!mapped.length) {
-      return { groups: [], minDate: GANTT_TODAY, maxDate: GANTT_TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
+    if (!rows.length) {
+      return { groups: [], minDate: GANTT_TODAY, maxDate: GANTT_TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0 } };
     }
 
-    const allDates = mapped.flatMap((t) => [t.start, t.end]);
+    const allDates = rows.flatMap((r) => [r.start, r.end]);
     const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
     const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
-    const groupList = GANTT_TASK_STATUSES
-      .map((status) => ({ status, tasks: mapped.filter((t) => t.status === status) }))
-      .filter((g) => g.tasks.length > 0);
+    const groupList = statusOrder
+      .map((status) => ({ status, rows: rows.filter((r) => r.status === status) }))
+      .filter((g) => g.rows.length > 0);
 
     const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
     const weekCount = Math.max(1, Math.ceil(totalDays / 7));
@@ -253,22 +248,21 @@ function ClientTaskGantt({ tasks }) {
       maxDate: max,
       weeks: weekCols,
       summary: {
-        total: mapped.length,
-        completed: mapped.filter((t) => t.status === "Completed").length,
-        blocked: mapped.filter((t) => t.status === "Blocked").length,
-        unscheduled,
+        total: rows.length,
+        completed: doneStatus ? rows.filter((r) => r.status === doneStatus).length : 0,
+        blocked: blockedStatus ? rows.filter((r) => r.status === blockedStatus).length : 0,
       },
     };
-  }, [tasks]);
+  }, [rows, statusOrder, doneStatus, blockedStatus]);
 
   if (!groups.length) {
     return (
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Task Timeline</h3>
+        <h3 className="text-lg font-semibold mb-3" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h3>
         <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
-          <CalendarDays size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />
-          <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>No scheduled tasks yet.</p>
-          <p className="mt-1 text-xs" style={{ color: CS.secondary }}>Tasks appear here once The Copper Studio sets their start and due dates.</p>
+          {Icon && <Icon size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />}
+          <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>{emptyTitle}</p>
+          <p className="mt-1 text-xs" style={{ color: CS.secondary }}>{emptyDescription}</p>
         </div>
       </Card>
     );
@@ -279,7 +273,7 @@ function ClientTaskGantt({ tasks }) {
   const timelineWidth = weeks.length * colWidth;
   const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
   const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
-  const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
+  const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
 
   return (
     <Card className="overflow-hidden">
@@ -287,17 +281,19 @@ function ClientTaskGantt({ tasks }) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }}>
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl" style={{ background: CS.primaryFixed, color: CS.primary }}>
-            <CalendarDays size={18} />
+            {Icon && <Icon size={18} />}
           </div>
           <div>
-            <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Task Timeline</h3>
-            <p className="text-xs" style={{ color: CS.secondary }}>{formatRange(minDate, maxDate)} · {summary.total} scheduled task{summary.total === 1 ? "" : "s"}</p>
+            <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h3>
+            <p className="text-xs" style={{ color: CS.secondary }}>{formatRange(minDate, maxDate)} · {summary.total} scheduled {rowLabel}{summary.total === 1 ? "" : "s"}</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#e8f5e9", color: "#388e3c" }}>
-            <CheckCircle2 size={14} /> {completionPct}% complete
-          </span>
+          {completionPct != null && (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#e8f5e9", color: "#388e3c" }}>
+              <CheckCircle2 size={14} /> {completionPct}% complete
+            </span>
+          )}
           {summary.blocked > 0 && (
             <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
           )}
@@ -321,31 +317,31 @@ function ClientTaskGantt({ tasks }) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b px-5 py-2.5" style={{ borderColor: CS.outlineVariant }}>
         {groups.map((g) => (
           <span key={g.status} className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: CS.secondary }}>
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: GANTT_STATUS_COLOR[g.status] }} /> {g.status}
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: statusColor[g.status] }} /> {g.status}
           </span>
         ))}
       </div>
 
       {/* Chart */}
       <div className="flex max-h-[560px] overflow-auto">
-        {/* Sticky left: stage / task names */}
+        {/* Sticky left: row names */}
         <div className="sticky left-0 z-20 w-56 shrink-0 border-r" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
           <div className="flex h-11 items-center px-4 text-[10px] font-bold uppercase tracking-wider" style={{ color: CS.secondary, background: CS.surfaceLow }}>
-            Stage / Task
+            {rowLabel}
           </div>
           {groups.map((group) => (
             <div key={group.status} className="border-b" style={{ borderColor: CS.outlineVariant }}>
               <div className="flex h-9 items-center gap-2 px-3" style={{ background: CS.surfaceLow }}>
-                <span className="h-2 w-2 rounded-full" style={{ background: GANTT_STATUS_COLOR[group.status] }} />
+                <span className="h-2 w-2 rounded-full" style={{ background: statusColor[group.status] }} />
                 <span className="text-xs font-bold" style={{ color: CS.onSurface }}>{group.status}</span>
-                <span className="ml-auto text-[10px] font-bold" style={{ color: CS.secondary }}>{group.tasks.length}</span>
+                <span className="ml-auto text-[10px] font-bold" style={{ color: CS.secondary }}>{group.rows.length}</span>
               </div>
-              {group.tasks.map((task) => (
-                <div key={task.id || task._id} className="flex h-12 flex-col justify-center px-5">
-                  <span className="truncate text-xs font-semibold" style={{ color: CS.onSurface }}>{task.title || task.taskName || "Untitled task"}</span>
+              {group.rows.map((row) => (
+                <div key={row.id} className="flex h-12 flex-col justify-center px-5">
+                  <span className="truncate text-xs font-semibold" style={{ color: CS.onSurface }}>{row.title}</span>
                   <span className="truncate text-[10px]" style={{ color: CS.secondary }}>
-                    {formatRange(task.start, task.end)}
-                    {task.assignedTo || task.assignee ? ` · ${task.assignedTo || task.assignee}` : ""}
+                    {formatRange(row.start, row.end)}
+                    {row.subtitle ? ` · ${row.subtitle}` : ""}
                   </span>
                 </div>
               ))}
@@ -372,19 +368,19 @@ function ClientTaskGantt({ tasks }) {
               {groups.map((group) => (
                 <div key={group.status}>
                   <div className="h-9 border-b" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }} />
-                  {group.tasks.map((task) => {
-                    const left = toPct(task.start);
-                    const width = Math.max(toPct(task.end) - left, 3);
-                    const days = Math.max(1, Math.round((task.end - task.start) / DAY_MS) + 1);
-                    const color = GANTT_STATUS_COLOR[group.status];
+                  {group.rows.map((row) => {
+                    const left = toPct(row.start);
+                    const width = Math.max(toPct(row.end) - left, 3);
+                    const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS) + 1);
+                    const color = statusColor[group.status];
                     return (
-                      <div key={task.id || task._id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
+                      <div key={row.id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
                         <div
                           className="absolute top-2.5 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg px-2 text-[10px] font-bold text-white shadow-sm"
                           style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 70, background: color }}
-                          title={`${task.title || task.taskName}\n${group.status}${task.assignedTo || task.assignee ? ` · ${task.assignedTo || task.assignee}` : ""}\n${formatRange(task.start, task.end)} (${days}d)`}
+                          title={`${row.title}\n${group.status}${row.subtitle ? ` · ${row.subtitle}` : ""}\n${formatRange(row.start, row.end)} (${days}d)`}
                         >
-                          <span className="truncate">{task.title || task.taskName}</span>
+                          <span className="truncate">{row.title}</span>
                           <span className="ml-auto shrink-0 rounded bg-white/25 px-1">{days}d</span>
                         </div>
                       </div>
@@ -397,6 +393,75 @@ function ClientTaskGantt({ tasks }) {
         </div>
       </div>
     </Card>
+  );
+}
+
+const STAGE_STATUS_ORDER = ["Upcoming", "In Progress", "Completed"];
+const STAGE_STATUS_COLOR = { Upcoming: "#9ca3af", "In Progress": "#f59e0b", Completed: "#10b981" };
+const STAGE_STATUS_LABEL = { not_started: "Upcoming", in_progress: "In Progress", completed: "Completed" };
+
+function ClientStageGantt({ stages }) {
+  const rows = useMemo(() => (stages || [])
+    .map((stage, i) => {
+      const start = stage.startDate ? parseFullDate(stage.startDate) : null;
+      const end = stage.endDate ? parseFullDate(stage.endDate) : start;
+      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+      return {
+        id: stage._id || i,
+        title: stage.name || `Stage ${i + 1}`,
+        status: STAGE_STATUS_LABEL[stage.status] || "Upcoming",
+        start,
+        end: end < start ? start : end,
+      };
+    })
+    .filter(Boolean), [stages]);
+
+  return (
+    <GanttChart
+      title="Stage Timeline"
+      icon={Route}
+      rows={rows}
+      statusOrder={STAGE_STATUS_ORDER}
+      statusColor={STAGE_STATUS_COLOR}
+      rowLabel="stage"
+      doneStatus="Completed"
+      emptyTitle="No dated stages yet."
+      emptyDescription="This chart fills in once your roadmap stages have start and end dates."
+    />
+  );
+}
+
+function ClientTaskGantt({ tasks }) {
+  const rows = useMemo(() => tasks
+    .map((task) => {
+      const start = task.startDate ? parseFullDate(task.startDate) : null;
+      const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
+      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
+      return {
+        id: task.id || task._id,
+        title: task.title || task.taskName || "Untitled task",
+        status,
+        start,
+        end: end < start ? start : end,
+        subtitle: task.assignedTo || task.assignee || "",
+      };
+    })
+    .filter(Boolean), [tasks]);
+
+  return (
+    <GanttChart
+      title="Task Timeline"
+      icon={CalendarDays}
+      rows={rows}
+      statusOrder={GANTT_TASK_STATUSES}
+      statusColor={GANTT_STATUS_COLOR}
+      rowLabel="task"
+      doneStatus="Completed"
+      blockedStatus="Blocked"
+      emptyTitle="No scheduled tasks yet."
+      emptyDescription="Tasks appear here once The Copper Studio sets their start and due dates."
+    />
   );
 }
 
@@ -580,6 +645,8 @@ export function ClientTimelinePage() {
                     </div>
                   )}
                 </Card>
+
+                <ClientStageGantt stages={selected.stages} />
 
                 <ClientTaskGantt tasks={tasks} />
               </>
