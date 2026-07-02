@@ -165,8 +165,12 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
     >
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 shrink-0 rounded-full bg-[#f3f4f6] border border-[#e5e7eb] flex items-center justify-center">
-            <Building2 size={14} className="text-[#9ca3af]" />
+          <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-[#f3f4f6] border border-[#e5e7eb] flex items-center justify-center">
+            {company.logo ? (
+              <img src={company.logo} alt={`${company.name} logo`} className="h-full w-full object-cover" />
+            ) : (
+              <Building2 size={14} className="text-[#9ca3af]" />
+            )}
           </div>
           <span className="text-sm font-semibold text-[#111827]">{company.name}</span>
         </div>
@@ -304,8 +308,12 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
                 <X size={14} />
               </button>
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-[#f3f4f6]">
-                  <Building2 size={15} className="text-[#9ca3af]" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#e5e7eb] bg-[#f3f4f6]">
+                  {c.logo ? (
+                    <img src={c.logo} alt={`${c.name} logo`} className="h-full w-full object-cover" />
+                  ) : (
+                    <Building2 size={15} className="text-[#9ca3af]" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-[#111827]">{c.name}</p>

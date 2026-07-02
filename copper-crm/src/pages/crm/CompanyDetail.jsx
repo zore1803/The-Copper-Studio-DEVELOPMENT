@@ -183,11 +183,11 @@ function EmptyState({ icon: Icon, title, text, action }) {
   );
 }
 
-function KpiChip({ label, value, icon: Icon }) {
+function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -1077,11 +1077,11 @@ export default function CompanyDetail() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
-          <KpiChip label="Total Revenue" value={formatINR(collected)} icon={CreditCard} />
-          <KpiChip label="Outstanding Due" value={formatINR(outstanding)} icon={AlertTriangle} />
-          <KpiChip label="Active Projects" value={activeProjects} icon={FolderKanban} />
-          <KpiChip label="Completed Projects" value={projectsCompleted} icon={CheckCircle2} />
-          <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} />
+          <KpiChip label="Total Revenue" value={formatINR(collected)} icon={CreditCard} color="#16a34a" />
+          <KpiChip label="Outstanding Due" value={formatINR(outstanding)} icon={AlertTriangle} color="#ef4444" />
+          <KpiChip label="Active Projects" value={activeProjects} icon={FolderKanban} color="#3b82f6" />
+          <KpiChip label="Completed Projects" value={projectsCompleted} icon={CheckCircle2} color="#0d9488" />
+          <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} color="#8D3118" />
         </div>
 
         <div className="overflow-x-auto px-6 pb-5">
