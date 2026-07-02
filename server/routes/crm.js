@@ -311,9 +311,19 @@ async function unlinkUserFromCompanies(userId) {
 async function cascadeDelete(type, record) {
   if (type === "contacts") {
     // A contact IS a client: drop its portal login and unlink it everywhere.
-    if (record.userId) {
-      await User.findByIdAndDelete(record.userId).catch(() => {});
-      await unlinkUserFromCompanies(record.userId);
+    // The login is looked up by userId when linked, but also falls back to a
+    // match on email — client-portal auth matches contacts by email, so a
+    // User record can exist (and still be able to log in) even when it was
+    // never linked back via contact.userId.
+    const email = String(record.email || "").trim().toLowerCase();
+    const user = record.userId
+      ? await User.findById(record.userId).catch(() => null)
+      : email
+        ? await User.findOne({ email }).catch(() => null)
+        : null;
+    if (user) {
+      await User.findByIdAndDelete(user._id).catch(() => {});
+      await unlinkUserFromCompanies(user._id);
     }
     return;
   }
@@ -323,10 +333,17 @@ async function cascadeDelete(type, record) {
     const contacts = await Contact.find({ $or: [{ companyId }, { company: record.name }] }).catch(() => []);
 
     // Delete every portal login linked to the company (its own + its contacts').
+    // Contacts without a stored userId still fall back to an email match, same
+    // as the single-contact delete path above.
+    const contactsWithoutUserId = contacts.filter((c) => !c.userId && c.email);
+    const emailMatchedUsers = contactsWithoutUserId.length
+      ? await User.find({ email: { $in: contactsWithoutUserId.map((c) => String(c.email).trim().toLowerCase()) } }).catch(() => [])
+      : [];
     const userIds = [
       ...(record.userIds || []),
       ...(record.userId ? [record.userId] : []),
-      ...contacts.map((c) => c.userId).filter(Boolean)
+      ...contacts.map((c) => c.userId).filter(Boolean),
+      ...emailMatchedUsers.map((u) => u._id)
     ];
     await Promise.all(
       [...new Set(userIds.map(String))].map((uid) => User.findByIdAndDelete(uid).catch(() => {}))
