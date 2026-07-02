@@ -869,7 +869,7 @@ export default function Companies() {
                 <div className="flex items-center justify-between px-1">
                   <p className="text-sm text-[#525866]">{visibleFolders.length} folders</p>
                   <div className="flex items-center gap-1.5">
-                    <div className="inline-flex h-8 items-center rounded-full border border-[#EAECF0] bg-white p-1">
+                    <div className="inline-flex items-center gap-1 rounded-full border border-[#EAECF0] bg-white p-1">
                       <button
                         onClick={() => setFolderView("list")}
                         title="List view"

@@ -1391,12 +1391,12 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
 
 function WorkspaceToggle({ options, value, onChange }) {
   return (
-    <div className="inline-flex h-8 items-center rounded-full border border-[#e5e7eb] bg-white p-1">
+    <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
       {options.map((option) => (
         <button
           key={option}
           onClick={() => onChange(option)}
-          className={`rounded-full px-3 py-1.5 text-xs font-bold ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
+          className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
         >
           {option}
         </button>
