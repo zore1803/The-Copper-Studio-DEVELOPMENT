@@ -1,13 +1,24 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
-import { clientApi } from "../lib/clientApi";
+import { apiGet } from "../lib/api";
 import { storeGet, storeSet } from "../lib/store";
 
 const ClientProjectContext = createContext(null);
 const STORAGE_KEY = "cs_client_selected_project";
 
 const pid = (p) => String(p?._id || p?.id || "");
+
+// The backend free tier spins down when idle and can take 50s+ to wake on the
+// first request, which can time out client-side. Retry a couple of times with
+// backoff before giving up on a fresh fetch — otherwise a single cold-start
+// timeout leaves the client stuck showing whatever stages/progress were
+// cached from before, even after the admin updates them.
+const RETRY_DELAYS_MS = [3000, 6000, 12000, 20000];
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 /**
  * Holds the client's projects and which one is currently selected, so every
@@ -28,19 +39,34 @@ export function ClientProjectProvider({ children }) {
 
   useEffect(() => {
     let alive = true;
-    clientApi.getProjects(token)
-      .then((data) => {
-        if (!alive) return;
-        const list = Array.isArray(data) ? data : [];
-        storeSet("projects", list);
-        setProjects(list);
-        setSelectedId((prev) => {
-          const stillValid = list.some((p) => pid(p) === String(prev));
-          return stillValid && prev ? prev : pid(list[0]);
-        });
-      })
-      .catch(() => {})
-      .finally(() => { if (alive) setLoading(false); });
+
+    async function load() {
+      for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+        try {
+          // Call the API directly rather than clientApi.getProjects, which
+          // swallows every failure (including a transient cold-start
+          // timeout) and silently resolves with stale cached data — that
+          // masked genuine failures and defeated retrying entirely.
+          const data = await apiGet("/api/client/projects", token);
+          if (!alive) return;
+          const list = Array.isArray(data) ? data : [];
+          storeSet("projects", list);
+          setProjects(list);
+          setSelectedId((prev) => {
+            const stillValid = list.some((p) => pid(p) === String(prev));
+            return stillValid && prev ? prev : pid(list[0]);
+          });
+          return;
+        } catch {
+          if (!alive) return;
+          if (attempt < RETRY_DELAYS_MS.length) {
+            await wait(RETRY_DELAYS_MS[attempt]);
+          }
+        }
+      }
+    }
+
+    load().finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [token]);
 

@@ -364,14 +364,40 @@ export default function ProjectFiles() {
               </select>
             </>
           )}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={(!activeFolder && !allFolderDefs.length) || uploadProgress !== null}
-            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
-          </button>
-          <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {/* Search */}
+            <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
+              <Search size={14} className="text-[#525866] shrink-0" />
+              <input
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                placeholder="Search files…"
+                className="w-40 bg-transparent text-xs text-[#111827] outline-none placeholder:text-[#525866]"
+              />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery("")} className="text-[#9ca3af] hover:text-[#6b7280]">
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+            {/* Type filter */}
+            <select
+              value={typeFilter}
+              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+              className="h-8 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#374151] outline-none focus:border-[#8D3118]"
+            >
+              <option value="">All types</option>
+              {typeOptions.map((key) => <option key={key} value={key}>{TYPE_META[key].label}</option>)}
+            </select>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={(!activeFolder && !allFolderDefs.length) || uploadProgress !== null}
+              className="flex items-center gap-1.5 rounded-full bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
+            </button>
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+          </div>
         </div>
         {uploadProgress !== null && (
           <div className="mt-3">
@@ -474,44 +500,18 @@ export default function ProjectFiles() {
           ) : (
             <h3 className="font-display text-lg font-semibold text-[#211a17]">All Documents</h3>
           )}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search */}
-            <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
-              <Search size={14} className="text-[#525866] shrink-0" />
-              <input
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                placeholder="Search files…"
-                className="w-40 bg-transparent text-xs text-[#111827] outline-none placeholder:text-[#525866]"
-              />
-              {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery("")} className="text-[#9ca3af] hover:text-[#6b7280]">
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-            {/* Type filter */}
-            <select
-              value={typeFilter}
-              onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
-              className="h-8 rounded-lg border border-[#e5e7eb] bg-white px-2 text-xs text-[#374151] outline-none focus:border-[#8D3118]"
+          {(activeFolder || searchQuery || typeFilter) && (
+            <button
+              type="button"
+              onClick={() => { setActiveFolder(null); setSearchQuery(""); setTypeFilter(""); setPage(1); }}
+              className="text-xs font-bold text-[#8D3118] hover:underline"
             >
-              <option value="">All types</option>
-              {typeOptions.map((key) => <option key={key} value={key}>{TYPE_META[key].label}</option>)}
-            </select>
-            {(activeFolder || searchQuery || typeFilter) && (
-              <button
-                type="button"
-                onClick={() => { setActiveFolder(null); setSearchQuery(""); setTypeFilter(""); setPage(1); }}
-                className="text-xs font-bold text-[#8D3118] hover:underline"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+              Clear filters
+            </button>
+          )}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#d8c2b9] bg-[#fff8f6] shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
+        <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-[0_18px_40px_rgba(79,39,16,0.06)]">
           {pageDocuments.length ? (
             <table className="w-full border-collapse text-left">
               <thead>
@@ -524,13 +524,13 @@ export default function ProjectFiles() {
                   <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-wider text-white">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#ead8d1]">
+              <tbody className="divide-y divide-[#f3f4f6]">
                 {pageDocuments.map((doc, index) => {
                   const meta = TYPE_META[doc.type] || TYPE_META.doc;
                   const Icon = meta.icon;
                   const menuKey = doc._id || doc.name;
                   return (
-                    <tr key={menuKey || index} className="transition-colors hover:bg-[#fff1ec]/60">
+                    <tr key={menuKey || index} className="transition-colors hover:bg-[#fafafa]">
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
                           <button
@@ -621,7 +621,7 @@ export default function ProjectFiles() {
 
           {/* Pagination */}
           {filteredDocuments.length > PAGE_SIZE && (
-            <div className="flex items-center justify-between border-t border-[#ead8d1] bg-[#fff1ec]/40 px-6 py-3">
+            <div className="flex items-center justify-between border-t border-[#e5e7eb] bg-[#fafafa] px-6 py-3">
               <p className="text-[11px] text-[#6b7280]">
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredDocuments.length)} of {filteredDocuments.length}
               </p>
