@@ -533,24 +533,23 @@ export default function ProjectDetail() {
           <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} color="#0d9488" />
         </div>
 
-        <section className="space-y-5">
-        <div className="space-y-5">
-          <div className="rounded-xl border border-[#e5e7eb] bg-white p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-bold text-[#111827] flex items-center gap-2">
-                  <ListChecks className="text-[#8D3118]" size={20} />
-                  Project Roadmap
-                </h3>
-                <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">
-                  {stages.length} stages
-                </span>
-                <span className="rounded-full bg-[#dcfce7] px-2.5 py-1 text-[11px] font-bold text-[#166534]">
-                  {stages.filter(s => s.status === 'completed').length}/{stages.length} done
-                </span>
-              </div>
+        <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+          <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
+            <div className="flex items-center gap-3">
+              <h3 className="text-sm font-bold text-[#111827] flex items-center gap-2">
+                <ListChecks className="text-[#8D3118]" size={16} />
+                Project Roadmap
+              </h3>
+              <span className="rounded-full bg-[#f3f4f6] px-2.5 py-1 text-[11px] font-bold text-[#374151]">
+                {stages.length} stages
+              </span>
+              <span className="rounded-full bg-[#dcfce7] px-2.5 py-1 text-[11px] font-bold text-[#166534]">
+                {stages.filter(s => s.status === 'completed').length}/{stages.length} done
+              </span>
             </div>
+          </div>
 
+          <div className="bg-white p-5">
             <div className="relative pl-6 space-y-8 before:absolute before:left-10 before:top-4 before:bottom-4 before:w-0.5 before:bg-[#e5e7eb]">
               {displayPhases.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-[#E1E4EA] bg-white p-10 text-center">
@@ -628,8 +627,6 @@ export default function ProjectDetail() {
               })}
             </div>
           </div>
-
-        </div>
         </section>
       </div>
 
