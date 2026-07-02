@@ -186,7 +186,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]" title="Back to all folders">
+          <button onClick={onBack} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]" title="Back to all folders">
             <ChevronLeft size={16} />
           </button>
           <div className="flex items-center gap-2">
@@ -216,7 +216,7 @@ function FolderDetail({ folder, contacts, companyMap, onBack, onAdd, onOpenConta
             const companyName = company?.companyName || company?.name || c.company || "Not linked";
             return (
               <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
-                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
+                <button onClick={() => onRemove(c)} className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-full text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex" title="Remove from folder">
                   <X size={14} />
                 </button>
                 <div className="flex items-center gap-3">
@@ -311,7 +311,7 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
           const id = idOf(c);
           const checked = selected.has(id);
           return (
-            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-[25px] border px-3 py-2.5 transition-colors ${checked ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}>
+            <label key={id} className={`flex cursor-pointer items-center gap-3 rounded-full border px-3 py-2.5 transition-colors ${checked ? "border-[#8D3118] bg-[#fff8f6]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}>
               <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="rounded border-[#d1d5db] accent-[#8D3118]" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[#111827]">{contactFullName(c)}</p>
@@ -515,7 +515,7 @@ export default function Contacts() {
                     <button
                       key={opt.value}
                       onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                      className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                      className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                     >
                       {opt.label}
                       {sortBy === opt.value && <Check size={14} />}
@@ -539,9 +539,9 @@ export default function Contacts() {
             {/* View toggle */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-              className={`flex h-8 items-center gap-1.5 rounded-[25px] p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
+              className={`flex h-8 items-center gap-1.5 rounded-full p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
             >
-              <span className="flex h-7 items-center gap-1.5 rounded-[25px] bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
+              <span className="flex h-7 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
                 <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"} />
                 <span className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"}>Hotlist</span>
               </span>
@@ -588,7 +588,7 @@ export default function Contacts() {
                   <button
                     disabled={page === 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
@@ -608,7 +608,7 @@ export default function Contacts() {
                   <button
                     disabled={page === totalPages}
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] transition-colors hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <ChevronRight size={14} />
                   </button>
@@ -657,23 +657,23 @@ export default function Contacts() {
                     <button
                       onClick={() => setFolderView((v) => (v === "grid" ? "list" : "grid"))}
                       title={folderView === "grid" ? "Switch to list view" : "Switch to grid view"}
-                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] transition-colors"
                     >
                       {folderView === "grid" ? <List size={16} /> : <Grid2x2 size={16} />}
                     </button>
-                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.max(1, p - 1))} disabled={folderPage === 1} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronLeft size={16} />
                     </button>
                     {Array.from({ length: folderTotalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
                       <button
                         key={p}
                         onClick={() => setFolderPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-[25px] text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors ${p === folderPage ? "bg-[#8D3118] text-white" : "border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
                     ))}
-                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                    <button onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))} disabled={folderPage === folderTotalPages} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       <ChevronRight size={16} />
                     </button>
                   </div>

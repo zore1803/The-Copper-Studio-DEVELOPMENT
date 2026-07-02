@@ -515,7 +515,7 @@ export default function Invoices() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -586,7 +586,7 @@ export default function Invoices() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -606,7 +606,7 @@ export default function Invoices() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={14} />
                 </button>

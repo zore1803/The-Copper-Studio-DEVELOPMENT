@@ -248,8 +248,8 @@ function ClockPicker({ value, onChange, onClose }) {
       </div>
 
       <div className="flex gap-2 px-2 pb-2 pt-1">
-        <button onClick={onClose} className="flex-1 rounded-[25px] border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
-        <button onClick={apply} className="flex-1 rounded-[25px] bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
+        <button onClick={onClose} className="flex-1 rounded-full border border-[#e5e7eb] py-1.5 text-xs font-semibold text-[#6b7280] hover:bg-[#f9fafb] transition-colors">Cancel</button>
+        <button onClick={apply} className="flex-1 rounded-full bg-[#8D3118] py-1.5 text-xs font-semibold text-white hover:bg-[#8D3118] transition-colors">Set</button>
       </div>
     </div>
   );
@@ -508,7 +508,7 @@ function CouponCard({ coupon, copied, onCopy, onDelete }) {
           <Status value={coupon.status || "Draft"} />
           <button
             onClick={() => onDelete(coupon)}
-            className="flex h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
+            className="flex h-7 w-7 items-center justify-center rounded-full text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
             title="Delete coupon"
           >
             <Trash2 size={14} />
@@ -549,7 +549,7 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
       </div>
       <button
         onClick={() => onDelete(coupon)}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[25px] text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#9ca3af] hover:bg-red-50 hover:text-red-500 transition-colors"
         title="Delete coupon"
       >
         <Trash2 size={14} />
@@ -709,7 +709,7 @@ export default function Coupons() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -797,7 +797,7 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -805,7 +805,7 @@ export default function Coupons() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-[25px] text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors ${p === page ? "bg-[#8D3118] text-white" : "border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb]"}`}
                       >
                         {p}
                       </button>
@@ -813,7 +813,7 @@ export default function Coupons() {
                     <button
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={14} />
                     </button>

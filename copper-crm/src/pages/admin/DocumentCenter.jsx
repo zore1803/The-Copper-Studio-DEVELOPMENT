@@ -508,8 +508,8 @@ export default function DocumentCenter() {
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
-          <button onClick={() => setView("grid")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
-          <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
+          <button onClick={() => setView("grid")} className={`flex h-8 w-8 items-center justify-center rounded-full border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
+          <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-full border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
           <Button onClick={() => setUploading(true)}><Upload size={14} /> Upload</Button>
         </div>
       </div>

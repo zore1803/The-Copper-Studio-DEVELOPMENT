@@ -340,7 +340,7 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
             </div>
             <Button variant="secondary" onClick={onClose}>Cancel</Button>
             <Button onClick={() => onSave(form)}><Save size={14} /> Save</Button>
-            <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-[25px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>
+            <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>
           </div>
         </div>
 
@@ -495,9 +495,9 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
                     {template.subject && <p className="mt-2 text-sm text-[#374151]">{template.subject}</p>}
                   </div>
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
-                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
-                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
+                    <button onClick={() => onEdit(template)} title="Edit" className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Pencil size={13} /></button>
+                    <button onClick={() => onCopy(template)} title="Duplicate" className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"><Copy size={13} /></button>
+                    <button onClick={() => onDelete(template)} title="Delete" className="flex h-8 w-8 items-center justify-center rounded-full border border-[#fbdcd2] text-red-500 hover:bg-red-50"><Trash2 size={13} /></button>
                   </div>
                 </div>
               </div>

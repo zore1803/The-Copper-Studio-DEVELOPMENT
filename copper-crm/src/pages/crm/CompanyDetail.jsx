@@ -271,7 +271,7 @@ function ContactClientLinkRow({ contact, projects, clients, onSave, onUnlink }) 
             return (
               <label
                 key={id}
-                className={`flex items-center justify-between rounded-[25px] border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
+                className={`flex items-center justify-between rounded-full border px-3 py-2 text-sm cursor-pointer transition-colors ${checked ? "border-[#8D3118] bg-[#fff1ec]" : "border-[#e5e7eb] hover:bg-[#f9fafb]"}`}
               >
                 <span className="font-semibold text-[#111827]">{project.name}</span>
                 <input type="checkbox" checked={checked} onChange={() => toggleProject(id)} className="h-4 w-4 rounded border-[#d1d5db] accent-[#8D3118]" />
@@ -1377,7 +1377,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
               <td className="py-3 pr-4 text-[#374151]">{project.projectManager || project.manager || "Unassigned"}</td>
               <td className="py-3 pr-4 text-right font-semibold text-[#111827]">{formatINR(Number(project.budget || project.value || 0))}</td>
               <td className="py-3 pl-2 pr-5 text-right" onClick={(event) => event.stopPropagation()}>
-                <button onClick={() => onDelete(project)} className="rounded-[25px] p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                <button onClick={() => onDelete(project)} className="rounded-full p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -1565,10 +1565,10 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
               <td className="py-3 pr-4"><StatusBadge status={contact.status || "Active"} /></td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
-                  <button onClick={() => onEdit(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Edit2 size={14} /></button>
-                  <button onClick={() => onPrimary(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
-                  <button onClick={() => onDelete(contact)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
+                  <button onClick={() => onView(contact)} className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onEdit(contact)} className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Edit2 size={14} /></button>
+                  <button onClick={() => onPrimary(contact)} className="rounded-full p-2 text-[#6b7280] hover:bg-emerald-50 hover:text-emerald-700"><CheckCircle2 size={14} /></button>
+                  <button onClick={() => onDelete(contact)} className="rounded-full p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600"><Trash2 size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1607,8 +1607,8 @@ function InvoicesTable({ invoices, onView, onDownload }) {
               <td className="py-3 pr-4 font-mono text-xs text-[#6b7280]">{invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked"}</td>
               <td className="py-3 pr-5 text-right">
                 <div className="inline-flex items-center gap-2">
-                  <button onClick={() => onView(invoice)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
-                  <button onClick={() => onDownload(invoice)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Download size={14} /></button>
+                  <button onClick={() => onView(invoice)} className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Eye size={14} /></button>
+                  <button onClick={() => onDownload(invoice)} className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#8D3118]"><Download size={14} /></button>
                 </div>
               </td>
             </tr>
@@ -1791,7 +1791,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 <button
                   type="button"
                   onClick={(e) => { e.stopPropagation(); onDeleteGroup(group.name); }}
-                  className="absolute right-2 top-2 rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                  className="absolute right-2 top-2 rounded-full p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                   title="Delete group"
                 >
                   <Trash2 size={13} />
@@ -1867,7 +1867,7 @@ function DocumentList({ documents, onDelete }) {
                 <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
               )}
               {onDelete ? (
-                <button onClick={() => onDelete(doc)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                <button onClick={() => onDelete(doc)} className="rounded-full p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                   <Trash2 size={14} />
                 </button>
               ) : null}
@@ -1905,7 +1905,7 @@ function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload })
                     <span className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs font-semibold text-[#9ca3af]">No file</span>
                   )}
                   {onDelete ? (
-                    <button onClick={() => onDelete(doc)} className="rounded-[25px] p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
+                    <button onClick={() => onDelete(doc)} className="rounded-full p-2 text-[#6b7280] hover:bg-red-50 hover:text-red-600" title="Delete document">
                       <Trash2 size={14} />
                     </button>
                   ) : null}
@@ -1974,7 +1974,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
                                 <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); onDelete(task); }}
-                                  className="shrink-0 rounded-[25px] p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
+                                  className="shrink-0 rounded-full p-1 text-[#9ca3af] hover:bg-red-50 hover:text-red-600"
                                   title="Delete task"
                                 >
                                   <Trash2 size={13} />
@@ -2081,7 +2081,7 @@ function TasksTable({ tasks, projects, onDelete }) {
               <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
               <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
               <td className="py-3 pr-4 text-right">
-                <button onClick={() => onDelete(task)} className="rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
+                <button onClick={() => onDelete(task)} className="rounded-full p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
                   <Trash2 size={14} />
                 </button>
               </td>
@@ -2182,9 +2182,9 @@ function CalendarTaskView({ tasks, onCreate }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="rounded-[25px] border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+          <button onClick={() => navigate(-1)} className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
           <p className="text-sm font-bold text-[#111827]">{headerLabel}</p>
-          <button onClick={() => navigate(1)} className="rounded-[25px] border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
+          <button onClick={() => navigate(1)} className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
         </div>
         <WorkspaceToggle options={CALENDAR_VIEWS} value={calendarView} onChange={setCalendarView} />
       </div>
@@ -2449,7 +2449,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
                   <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
                     <Edit2 size={14} />
                   </button>
-                  <button type="button" onClick={() => onDelete(note)} className="rounded-[25px] p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
+                  <button type="button" onClick={() => onDelete(note)} className="rounded-full p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete note">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -2478,7 +2478,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronLeft size={14} />
             </button>
@@ -2486,7 +2486,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb] disabled:opacity-40"
             >
               <ChevronRight size={14} />
             </button>

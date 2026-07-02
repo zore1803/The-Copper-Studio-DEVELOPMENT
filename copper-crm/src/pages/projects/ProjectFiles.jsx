@@ -356,7 +356,7 @@ export default function ProjectFiles() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={!allFolderDefs.length || uploadProgress !== null}
-            className="ml-auto flex items-center gap-1.5 rounded-[25px] bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+            className="ml-auto flex items-center gap-1.5 rounded-full bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#9A4113] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
           >
             <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
           </button>
@@ -397,7 +397,7 @@ export default function ProjectFiles() {
               <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#8D3118] text-white hover:bg-[#9A4113]">
                 <Check size={13} />
               </button>
-              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
+              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
                 <X size={13} />
               </button>
             </form>
@@ -622,7 +622,7 @@ export default function ProjectFiles() {
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setPage(currentPage - 1)}
-                  className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -631,7 +631,7 @@ export default function ProjectFiles() {
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setPage(currentPage + 1)}
-                  className="grid h-7 w-7 place-items-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="grid h-7 w-7 place-items-center rounded-full border border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronRight size={14} />
                 </button>

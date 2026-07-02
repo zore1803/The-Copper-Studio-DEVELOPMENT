@@ -91,9 +91,9 @@ function MeetingCalendarView({ meetings }) {
   return (
     <div className="p-5">
       <div className="mb-3 flex items-center justify-between">
-        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} className="rounded-[25px] border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">← Prev</button>
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">← Prev</button>
         <p className="text-sm font-bold text-gray-900">{monthLabel}</p>
-        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} className="rounded-[25px] border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">Next →</button>
+        <button onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">Next →</button>
       </div>
       <div className="overflow-hidden rounded-xl border border-gray-200">
         <div className="grid grid-cols-7 bg-gray-50">
@@ -255,7 +255,7 @@ export function TasksPage() {
         </div>
         <div className="flex items-center gap-2">
           {tab === "Tasks" && (
-            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-8 items-center gap-1.5 rounded-[25px] bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
+            <button onClick={() => setSelected({ title: "", relatedTo: "", assigned: "", due: "", status: "Backlog", priority: "Medium" })} className="flex h-8 items-center gap-1.5 rounded-full bg-[#2563EB] px-3 text-xs font-semibold text-white hover:bg-blue-600">
               <Plus size={14} /> New Activity
             </button>
           )}
@@ -275,7 +275,7 @@ export function TasksPage() {
               <input className="w-44 bg-transparent outline-none placeholder:text-[#525866] text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
             </div>
             <div className="relative">
-              <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border transition-colors ${statusFilter !== "All" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>
+              <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${statusFilter !== "All" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>
                 <SlidersHorizontal size={13} />
               </button>
               {filtersOpen && (
@@ -285,7 +285,7 @@ export function TasksPage() {
                     <button
                       key={status}
                       onClick={() => { setStatusFilter(status); setPage(1); setFiltersOpen(false); }}
-                      className={`flex w-full items-center rounded-[25px] px-2 py-1.5 text-left text-xs font-semibold capitalize ${statusFilter === status ? "bg-blue-50 text-[#2563EB]" : "text-gray-600 hover:bg-gray-50"}`}
+                      className={`flex w-full items-center rounded-full px-2 py-1.5 text-left text-xs font-semibold capitalize ${statusFilter === status ? "bg-blue-50 text-[#2563EB]" : "text-gray-600 hover:bg-gray-50"}`}
                     >
                       {status}
                     </button>
@@ -293,10 +293,10 @@ export function TasksPage() {
                 </div>
               )}
             </div>
-            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
-            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-[25px] border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
+            <button onClick={() => setView("list")} className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${view === "list" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><List size={13} /></button>
+            <button onClick={() => setView("kanban")} className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${view === "kanban" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}><LayoutGrid size={13} /></button>
             {tab === "Meetings" && (
-              <button onClick={() => setView("calendar")} className={`flex h-8 items-center gap-1.5 rounded-[25px] border px-2.5 text-xs font-semibold transition-colors ${view === "calendar" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
+              <button onClick={() => setView("calendar")} className={`flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold transition-colors ${view === "calendar" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
                 <Calendar size={12} /> View in Calendar
               </button>
             )}
@@ -373,12 +373,12 @@ export function TasksPage() {
                             <div className="flex items-center gap-1.5">
                               {mtg.status === "requested" && (
                                 <>
-                                  <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-[25px] bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Accept</button>
-                                  <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-[25px] border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50">Reject</button>
+                                  <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-emerald-700">Accept</button>
+                                  <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-full border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-600 hover:bg-red-50">Reject</button>
                                 </>
                               )}
                               {mtg.status === "confirmed" && (
-                                <button onClick={() => updateMeetingStatus(mtg, "completed")} className="rounded-[25px] bg-[#2563EB] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-blue-600">Mark Done</button>
+                                <button onClick={() => updateMeetingStatus(mtg, "completed")} className="rounded-full bg-[#2563EB] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-blue-600">Mark Done</button>
                               )}
                               <button onClick={() => handleDeleteMeeting(mtg)} className="text-gray-400 hover:text-red-500" title="Delete"><Trash2 size={14} /></button>
                             </div>
@@ -394,11 +394,11 @@ export function TasksPage() {
             <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
               <span className="text-xs text-gray-500">Showing {Math.min((page - 1) * PAGE_SIZE + 1, activeRows.length)}–{Math.min(page * PAGE_SIZE, activeRows.length)} of {activeRows.length} {tab}</span>
               <div className="flex items-center gap-1">
-                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-[25px] border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">‹</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-[25px] border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
+                  <button key={p} onClick={() => setPage(p)} className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold ${p === page ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>{p}</button>
                 ))}
-                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-[25px] border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-xs text-gray-500 disabled:opacity-40 hover:bg-gray-50">›</button>
               </div>
             </div>
           </>
@@ -441,8 +441,8 @@ export function TasksPage() {
                           <p className="mt-1 text-[11px] text-gray-400">{mtg.contact || "No contact linked"}</p>
                           {mtg.status === "requested" && (
                             <div className="mt-2 flex gap-1.5">
-                              <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-[25px] bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-700">Accept</button>
-                              <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-[25px] border border-red-200 px-2 py-1 text-[10px] font-bold text-red-600 hover:bg-red-50">Reject</button>
+                              <button onClick={() => updateMeetingStatus(mtg, "confirmed")} className="rounded-full bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-emerald-700">Accept</button>
+                              <button onClick={() => updateMeetingStatus(mtg, "cancelled")} className="rounded-full border border-red-200 px-2 py-1 text-[10px] font-bold text-red-600 hover:bg-red-50">Reject</button>
                             </div>
                           )}
                         </div>
@@ -715,7 +715,7 @@ function DataFieldList({ label, hint, values, onChange }) {
           placeholder="Add option…"
           className="h-8 flex-1 rounded-lg border border-[#e5e7eb] bg-[#fafafa] px-3 text-xs text-[#111827] outline-none transition-all focus:border-[#8D3118] focus:bg-white focus:ring-2 focus:ring-[#8D3118]/20"
         />
-        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-[25px] border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#374151] hover:border-[#8D3118] hover:text-[#8D3118] transition-colors">
+        <button type="button" onClick={addValue} className="flex h-8 items-center gap-1 rounded-full border border-[#e5e7eb] bg-white px-2.5 text-xs font-semibold text-[#374151] hover:border-[#8D3118] hover:text-[#8D3118] transition-colors">
           <Plus size={12} /> Add
         </button>
       </div>
@@ -758,7 +758,7 @@ function DataFieldsSection({ onSave, saving }) {
             <button
               key={group.label}
               onClick={() => setActiveGroup(group.label)}
-              className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+              className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
             >
               <span>{group.label}</span>
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{totalOptions}</span>
@@ -970,7 +970,7 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
             type="button"
             onClick={() => navigate("/admin/settings")}
             title="Back to Settings"
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-[25px] border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
           >
             <ArrowLeft size={16} />
           </button>
@@ -1276,7 +1276,7 @@ function PricingSection({ onSave, saving }) {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
+              className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm transition-colors ${isActive ? "bg-[#fff1ec] font-semibold text-[#8D3118]" : "text-[#374151] hover:bg-[#f9fafb]"}`}
             >
               <span>{cat}</span>
               <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${isActive ? "bg-[#8D3118]/10 text-[#8D3118]" : "bg-[#f3f4f6] text-[#9ca3af]"}`}>{count}</span>

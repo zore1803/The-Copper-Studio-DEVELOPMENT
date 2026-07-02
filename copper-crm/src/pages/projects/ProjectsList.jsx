@@ -229,7 +229,7 @@ export default function ProjectsList() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-8 items-center gap-1.5 rounded-[25px] border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={14} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -240,7 +240,7 @@ export default function ProjectsList() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
-                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -362,7 +362,7 @@ export default function ProjectsList() {
                     {formatINR(project.finalAmount || project.budget || 0)}
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button onClick={() => handleDeleteProject(project)} className="rounded-[25px] p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
+                    <button onClick={() => handleDeleteProject(project)} className="rounded-full p-2 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete project">
                       <Trash2 size={14} />
                     </button>
                   </td>

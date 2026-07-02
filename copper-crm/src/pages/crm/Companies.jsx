@@ -267,7 +267,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-[#525866] transition-colors hover:bg-[#f9fafb]"
             title="Back to all folders"
           >
             <ChevronLeft size={16} />
@@ -305,7 +305,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
             <div key={c._id || c.id} className="group relative flex flex-col gap-2 rounded-xl border border-[#E1E4EA] bg-white p-4">
               <button
                 onClick={() => onRemove(c)}
-                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-[25px] text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
+                className="absolute right-2 top-2 hidden h-7 w-7 items-center justify-center rounded-full text-[#9ca3af] transition-colors hover:bg-red-50 hover:text-red-600 group-hover:flex"
                 title="Remove from folder"
               >
                 <X size={14} />
@@ -692,10 +692,10 @@ export default function Companies() {
             </button>
             {actionsOpen && (
               <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-[25px] px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <Download size={14} /> Export filtered CSV
                 </button>
-                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-[25px] px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
+                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
                   <X size={14} /> Clear filters
                 </button>
               </div>
@@ -716,7 +716,7 @@ export default function Companies() {
                   <button
                     key={opt.value}
                     onClick={() => { setSortBy(opt.value); setSortOpen(false); setPage(1); }}
-                    className={`flex w-full items-center justify-between rounded-[25px] px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
+                    className={`flex w-full items-center justify-between rounded-full px-3 py-2 text-left text-sm hover:bg-[#f9fafb] ${sortBy === opt.value ? "font-semibold text-[#8D3118]" : "text-[#374151]"}`}
                   >
                     {opt.label}
                     {sortBy === opt.value && <Check size={14} />}
@@ -739,9 +739,9 @@ export default function Companies() {
           {/* View toggle */}
           <button
             onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-            className={`flex h-8 items-center gap-1.5 rounded-[25px] p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
+            className={`flex h-8 items-center gap-1.5 rounded-full p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
           >
-            <span className="flex h-7 items-center gap-1.5 rounded-[25px] bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
+            <span className="flex h-7 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
               <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"} />
               <span className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"}>Hotlist</span>
             </span>
@@ -836,7 +836,7 @@ export default function Companies() {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -856,7 +856,7 @@ export default function Companies() {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-[#374151] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -930,7 +930,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.max(1, p - 1))}
                       disabled={folderPage === 1}
-                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft size={16} />
                     </button>
@@ -948,7 +948,7 @@ export default function Companies() {
                     <button
                       onClick={() => setFolderPage((p) => Math.min(folderTotalPages, p + 1))}
                       disabled={folderPage === folderTotalPages}
-                      className="flex h-8 w-8 items-center justify-center rounded-[25px] border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[#EAECF0] text-[#525866] hover:bg-[#f9fafb] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight size={16} />
                     </button>
