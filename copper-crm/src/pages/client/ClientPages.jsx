@@ -911,6 +911,16 @@ function fileIcon(type) {
   return map[type?.toLowerCase()] || File;
 }
 
+// Invoice PDFs come back from the API as a relative "/api/..." path (they're
+// generated on the fly, not stored in cloud storage like uploaded documents).
+// Used directly as an <a href>, a relative path resolves against the SPA's
+// own origin instead of the API's, so the client-side router swallows the
+// navigation and bounces to the dashboard instead of downloading anything.
+function resolveFileUrl(url) {
+  if (!url) return url;
+  return url.startsWith("/api/") ? `${import.meta.env.VITE_API_BASE_URL || ""}${url}` : url;
+}
+
 function docStatusBadge(s) {
   return {
     pending_review: { type: "warning", label: "Pending Review" },
@@ -1005,7 +1015,7 @@ export function ClientDocumentsPage() {
               </div>
               <div className="pt-3 border-t flex gap-2" style={{ borderColor: CS.outlineVariant }}>
                 {doc.fileUrl ? (
-                  <a href={doc.fileUrl} target="_blank" rel="noreferrer"
+                  <a href={resolveFileUrl(doc.fileUrl)} target="_blank" rel="noreferrer"
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
                     style={{ background: CS.primary, color: CS.onPrimary }}>
                     <Download size={15} />
