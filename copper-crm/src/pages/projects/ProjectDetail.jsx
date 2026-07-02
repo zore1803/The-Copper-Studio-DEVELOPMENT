@@ -13,6 +13,7 @@ import SidePanel from "../../components/SidePanel";
 import SearchableSelectField from "../../components/SearchableSelect";
 import ProjectHeader from "./ProjectHeader";
 import { roadmapProgress, isRoadmapComplete, nextPhaseForStages } from "../../lib/stageProgress";
+import { useDataFields } from "../../lib/dataFields";
 
 const PHASES = [
   { key: "Requirement Gathering", label: "Requirement", icon: ListChecks },
@@ -100,9 +101,14 @@ function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   );
 }
 
-function ManageProjectPanel({ project, invoices = [], managers = [], onClose, onSave, onDelete }) {
+function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete }) {
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
+  // Shared list managed from Settings > Data Fields ("Company Owner / Project
+  // Manager") — same registry used everywhere else, instead of deriving a
+  // thin list from whichever projects happen to already have a manager set.
+  const dataFields = useDataFields();
+  const managers = dataFields.companyOwner || [];
 
   // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
   // deleting every stage would make them reappear. Use "+ Add Stage" to add new ones.
@@ -410,10 +416,6 @@ export default function ProjectDetail() {
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
-  const projectManagers = useMemo(
-    () => Array.from(new Set(allProjects.map((p) => p.projectManager || p.manager).filter(Boolean))),
-    [allProjects]
-  );
   const [managing, setManaging] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -657,7 +659,6 @@ export default function ProjectDetail() {
         <ManageProjectPanel
           project={project}
           invoices={invoices}
-          managers={projectManagers}
           onClose={() => setManaging(false)}
           onSave={handleSaveProject}
           onDelete={() => setConfirmingDelete(true)}

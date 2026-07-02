@@ -7,7 +7,7 @@ import ContactFormPanel from "./ContactFormPanel";
 import { useToast } from "./useToast";
 import { isGstin } from "../lib/validators";
 import { INDUSTRIES, LEAD_SOURCES, REGISTRATION_TYPES, INDIAN_STATES, INDIAN_CITIES } from "../lib/companyOptions";
-import { loadCompanyOwners } from "../lib/companyOwners";
+import { useDataFields } from "../lib/dataFields";
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
@@ -100,7 +100,8 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
   // after the company is saved — see saveCompany in Companies.jsx.
   const [primaryContact, setPrimaryContact] = useState(company.__primaryContact || null);
   const [showContactForm, setShowContactForm] = useState(false);
-  const companyOwners = loadCompanyOwners();
+  const dataFields = useDataFields();
+  const companyOwners = dataFields.companyOwner || [];
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
