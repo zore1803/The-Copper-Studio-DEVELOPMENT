@@ -130,7 +130,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
             </button>
           </div>
           {detailsOpen && (
-            <div className="grid grid-cols-2 gap-4 border-t border-[#FFFFFF] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 border-t border-[#FFFFFF] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
               <InfoLine label="Status" value={liveStatus} />
               <InfoLine label="Client Status" value={project.clientStatus?.replace(/_/g, " ")} />
               <InfoLine label="Payment Status" value={project.paymentStatus} />
