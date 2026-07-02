@@ -3,6 +3,7 @@ import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
+import FilterButton from "../../components/FilterButton";
 import {
   Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
   CircleDot, StickyNote, History, X, Copy, Video, Search, Download,
@@ -911,19 +912,13 @@ export function ClientDocumentsPage() {
               style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
             />
           </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {filterOpts.map(o => (
-              <button key={o.value} onClick={() => setFilter(o.value)}
-                className="h-8 px-3 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
-                style={{
-                  background: filter === o.value ? CS.primary : "#fff",
-                  color: filter === o.value ? CS.onPrimary : CS.secondary,
-                  border: `1px solid ${filter === o.value ? CS.primary : CS.outlineVariant}`,
-                }}>
-                {o.label}
-              </button>
-            ))}
-          </div>
+          <FilterButton
+            buttonClassName="h-8 w-8"
+            onReset={() => setFilter("all")}
+            fields={[
+              { key: "status", label: "Status", type: "select", value: filter, onChange: setFilter, options: filterOpts, allValue: "all" }
+            ]}
+          />
         </>
       }
     >
