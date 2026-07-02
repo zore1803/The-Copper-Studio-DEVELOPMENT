@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
 import { apiGet } from "../../lib/api";
@@ -8,6 +8,7 @@ import { useClientProject, belongsToProject, orderBelongsToProject } from "../..
 import FilterButton from "../../components/FilterButton";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
+import { useRevalidate } from "../../hooks/useRevalidate";
 import {
   Loader2, CalendarDays, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
   CircleDot, StickyNote, History, Copy, Video, Search, Download,
@@ -405,14 +406,18 @@ export function ClientTimelinePage() {
   const selected = selectedProject;
   const [tasks, setTasks] = useState([]);
 
-  useEffect(() => {
-    if (!selectedId) return;
-    let alive = true;
-    fetchProjectTasksWithRetry(selectedId, token)
-      .then((data) => { if (alive) setTasks(Array.isArray(data) ? data : []); })
-      .catch(() => { if (alive) setTasks([]); });
-    return () => { alive = false; };
+  const loadTasks = useCallback(() => {
+    if (!selectedId) return Promise.resolve();
+    return fetchProjectTasksWithRetry(selectedId, token)
+      .then((data) => setTasks(Array.isArray(data) ? data : []))
+      .catch(() => setTasks([]));
   }, [selectedId, token]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
+  useRevalidate(loadTasks);
 
   const statusBadge = (s) => {
     const map = {
@@ -715,25 +720,30 @@ export function ClientMeetingsPage() {
     return () => window.removeEventListener("message", onCalendlyMessage);
   }, [token]);
 
-  useEffect(() => {
-    let alive = true;
-    Promise.all([
-      clientApi.getMeetings(token),
-      clientApi.getCalendlyEventTypes(token),
-    ])
-      .then(([m, events]) => {
-        if (!alive) return;
-        storeSet("meetings", m);
-        setAllMeetings(m);
+  // Direct apiGet for meetings, not clientApi.getMeetings, which swallows
+  // failures and silently resolves with stale cached data instead of
+  // retrying — that could leave a booked/cancelled meeting stuck showing
+  // its old state until a hard refresh.
+  const loadMeetingsAndEvents = useCallback(() => {
+    return Promise.all([
+      apiGet("/api/client/meetings", token).catch(() => null),
+      clientApi.getCalendlyEventTypes(token).catch(() => null),
+    ]).then(([m, events]) => {
+      if (Array.isArray(m)) { storeSet("meetings", m); setAllMeetings(m); }
+      if (Array.isArray(events)) {
         setEventTypes(events);
         // Default straight to the first slot's Calendly widget instead of
         // making the client click through a picker first.
         setBookingEvent((prev) => prev || events[0] || null);
-      })
-      .catch(() => {})
-      .finally(() => { if (alive) { setLoading(false); setEventTypesLoading(false); } });
-    return () => { alive = false; };
+      }
+    });
   }, [token]);
+
+  useEffect(() => {
+    loadMeetingsAndEvents().finally(() => { setLoading(false); setEventTypesLoading(false); });
+  }, [loadMeetingsAndEvents]);
+
+  useRevalidate(loadMeetingsAndEvents);
 
   const statusBadge = (s) => MEETING_STATUS_BADGE[s] || { type: "neutral", label: s };
 
@@ -989,12 +999,19 @@ export function ClientDocumentsPage() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-    clientApi.getDocuments(token)
-      .then((data) => { storeSet("documents", data); setDocs(data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const loadDocuments = useCallback(() => {
+    // Direct apiGet, not clientApi.getDocuments, which swallows failures and
+    // silently resolves with stale cached data instead of retrying.
+    return apiGet("/api/client/documents", token)
+      .then((data) => { if (Array.isArray(data)) { storeSet("documents", data); setDocs(data); } })
+      .catch(() => {});
   }, [token]);
+
+  useEffect(() => {
+    loadDocuments().finally(() => setLoading(false));
+  }, [loadDocuments]);
+
+  useRevalidate(loadDocuments);
 
   const filtered = docs.filter(d => {
     const matchesProject = belongsToProject(d, selectedId);
@@ -1101,12 +1118,19 @@ export function ClientBillingPage() {
   const [loading, setLoading] = useState(() => storeGet("orders").length === 0);
   const [selectedOrderRaw, setSelectedOrder] = useState(null);
 
-  useEffect(() => {
-    clientApi.getOrders(token)
-      .then((data) => { storeSet("orders", data); setAllOrders(data); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const loadOrders = useCallback(() => {
+    // Direct apiGet, not clientApi.getOrders, which swallows failures and
+    // silently resolves with stale cached data instead of retrying.
+    return apiGet("/api/client/orders", token)
+      .then((data) => { if (Array.isArray(data)) { storeSet("orders", data); setAllOrders(data); } })
+      .catch(() => {});
   }, [token]);
+
+  useEffect(() => {
+    loadOrders().finally(() => setLoading(false));
+  }, [loadOrders]);
+
+  useRevalidate(loadOrders);
 
   // Only the selected project's invoices/orders.
   const orders = useMemo(

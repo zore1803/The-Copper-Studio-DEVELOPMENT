@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
-import { clientApi } from "../../lib/clientApi";
+import { apiGet } from "../../lib/api";
 import { storeGet, storeSet } from "../../lib/store";
 import { useClientProject, belongsToProject } from "../../context/ClientProjectContext";
+import { useRevalidate } from "../../hooks/useRevalidate";
 import {
   Package, Activity, Video, ArrowRight, CheckCircle2, CircleDot, Circle,
   Loader2,
@@ -51,17 +52,26 @@ export default function ClientDashboard() {
   const [allMeetings, setAllMeetings] = useState(() => storeGet("meetings"));
   const [loading, setLoading] = useState(() => storeGet("orders").length === 0 && storeGet("meetings").length === 0);
 
-  useEffect(() => {
-    Promise.all([
-      clientApi.getOrders(token).catch(() => []),
-      clientApi.getMeetings(token).catch(() => []),
+  // Call the API directly rather than clientApi.getOrders/getMeetings, which
+  // swallow every failure (including a transient cold-start timeout on the
+  // free-tier backend) and silently resolve with stale cached data.
+  const loadDashboardData = useCallback(() => {
+    return Promise.all([
+      apiGet("/api/client/orders", token).catch(() => null),
+      apiGet("/api/client/meetings", token).catch(() => null),
     ]).then(([o, m]) => {
-      storeSet("orders", o);
-      storeSet("meetings", m);
-      setAllOrders(o);
-      setAllMeetings(m);
-    }).finally(() => setLoading(false));
+      if (Array.isArray(o)) { storeSet("orders", o); setAllOrders(o); }
+      if (Array.isArray(m)) { storeSet("meetings", m); setAllMeetings(m); }
+    });
   }, [token]);
+
+  useEffect(() => {
+    loadDashboardData().finally(() => setLoading(false));
+  }, [loadDashboardData]);
+
+  // Revalidate on focus/interval so admin-side changes (new orders, meetings,
+  // project updates) show up without the client having to hard-refresh.
+  useRevalidate(loadDashboardData);
 
   // The summary cards and purchases list show the whole account; meetings
   // and the active-project card scope to the project chosen in the switcher.

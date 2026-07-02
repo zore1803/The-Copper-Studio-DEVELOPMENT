@@ -1,8 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { apiGet } from "../lib/api";
 import { storeGet, storeSet } from "../lib/store";
+import { useRevalidate } from "../hooks/useRevalidate";
 
 const ClientProjectContext = createContext(null);
 const STORAGE_KEY = "cs_client_selected_project";
@@ -37,38 +38,54 @@ export function ClientProjectProvider({ children }) {
     try { return localStorage.getItem(STORAGE_KEY) || ""; } catch { return ""; }
   });
 
+  // Guards against overlapping loads (e.g. a focus revalidation firing while
+  // the initial retry loop is still in flight).
+  const loadingRef = useRef(false);
+  const revalidateRef = useRef(() => {});
+
   useEffect(() => {
     let alive = true;
 
     async function load() {
-      for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
-        try {
-          // Call the API directly rather than clientApi.getProjects, which
-          // swallows every failure (including a transient cold-start
-          // timeout) and silently resolves with stale cached data — that
-          // masked genuine failures and defeated retrying entirely.
-          const data = await apiGet("/api/client/projects", token);
-          if (!alive) return;
-          const list = Array.isArray(data) ? data : [];
-          storeSet("projects", list);
-          setProjects(list);
-          setSelectedId((prev) => {
-            const stillValid = list.some((p) => pid(p) === String(prev));
-            return stillValid && prev ? prev : pid(list[0]);
-          });
-          return;
-        } catch {
-          if (!alive) return;
-          if (attempt < RETRY_DELAYS_MS.length) {
-            await wait(RETRY_DELAYS_MS[attempt]);
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+      try {
+        for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+          try {
+            // Call the API directly rather than clientApi.getProjects, which
+            // swallows every failure (including a transient cold-start
+            // timeout) and silently resolves with stale cached data — that
+            // masked genuine failures and defeated retrying entirely.
+            const data = await apiGet("/api/client/projects", token);
+            if (!alive) return;
+            const list = Array.isArray(data) ? data : [];
+            storeSet("projects", list);
+            setProjects(list);
+            setSelectedId((prev) => {
+              const stillValid = list.some((p) => pid(p) === String(prev));
+              return stillValid && prev ? prev : pid(list[0]);
+            });
+            return;
+          } catch {
+            if (!alive) return;
+            if (attempt < RETRY_DELAYS_MS.length) {
+              await wait(RETRY_DELAYS_MS[attempt]);
+            }
           }
         }
+      } finally {
+        loadingRef.current = false;
       }
     }
 
     load().finally(() => { if (alive) setLoading(false); });
+    // Keep the shared ref updated so useRevalidate below always calls the
+    // latest closure (it captures `load` once per render via the hook).
+    revalidateRef.current = load;
     return () => { alive = false; };
   }, [token]);
+
+  useRevalidate(() => revalidateRef.current());
 
   // Persist the selection so it survives navigation and reloads.
   useEffect(() => {
