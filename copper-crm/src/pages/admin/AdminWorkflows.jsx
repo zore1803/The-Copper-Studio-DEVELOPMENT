@@ -270,7 +270,7 @@ export function TasksPage() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-2.5 text-xs text-[#525866]">
+            <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-2.5 text-xs text-[#525866] transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
               <Search size={12} className="shrink-0" />
               <input className="w-44 bg-transparent outline-none placeholder:text-[#525866] text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
             </div>

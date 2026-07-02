@@ -304,7 +304,7 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+      <div className="mb-3 flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
         <Search size={14} className="text-[#525866] shrink-0" />
         <input
           className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -503,7 +503,7 @@ export default function Contacts() {
           <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
@@ -631,7 +631,7 @@ export default function Contacts() {
                 <p className="text-xs text-[#525866] mt-0.5">Organise your contacts into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+                <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
                   <Search size={14} className="text-[#525866] shrink-0" />
                   <input
                     className="w-full bg-transparent text-xs outline-none placeholder:text-[#525866]"

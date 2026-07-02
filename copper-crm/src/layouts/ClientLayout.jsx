@@ -119,7 +119,7 @@ function HeaderSearch() {
 
   return (
     <div className="relative w-64 hidden md:block">
-      <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+      <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
         <Search size={14} className="text-[#525866] shrink-0" />
         <input
           ref={inputRef}

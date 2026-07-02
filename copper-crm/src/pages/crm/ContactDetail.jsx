@@ -626,7 +626,7 @@ export default function ContactDetail() {
             </div>
             {linkedNotes.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+                <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
                   <Search size={13} className="text-[#525866] shrink-0" />
                   <input
                     value={noteSearch}

@@ -1291,7 +1291,7 @@ function Section({ title, action, flush = false, children }) {
 // across tabs instead of each module inventing its own toolbar.
 function ModuleSearch({ value, onChange, placeholder }) {
   return (
-    <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+    <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
       <Search size={14} className="text-[#525866] shrink-0" />
       <input
         value={value}
@@ -2399,7 +2399,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
       title="Notes"
       action={
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+          <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={13} className="text-[#525866] shrink-0" />
             <input
               value={search}
