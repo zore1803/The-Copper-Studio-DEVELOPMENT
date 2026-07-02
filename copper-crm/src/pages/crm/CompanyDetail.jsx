@@ -1746,7 +1746,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             </button>
           </div>
           <Button variant="secondary" onClick={() => setCreatingGroup((open) => !open)}><FolderPlus size={14} /> New Group</Button>
-          <Button variant="secondary" onClick={onUpload}><Plus size={14} /> Upload Document</Button>
+          <Button onClick={onUpload}><Plus size={14} /> Upload Document</Button>
         </div>
       }
     >
