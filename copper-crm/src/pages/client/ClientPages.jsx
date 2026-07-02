@@ -674,11 +674,11 @@ export function ClientMeetingsPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr style={{ background: CS.surfaceLow, color: CS.secondary, fontSize: 12, letterSpacing: "0.05em" }}>
-                        <th className="px-6 py-3 text-left font-semibold uppercase">Meeting</th>
-                        <th className="px-6 py-3 text-left font-semibold uppercase">Type</th>
-                        <th className="px-6 py-3 text-left font-semibold uppercase">Date / Time</th>
-                        <th className="px-6 py-3 text-left font-semibold uppercase">Status</th>
+                      <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
+                        <th className="px-6 py-3 text-left font-bold uppercase">Meeting</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase">Type</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase">Date / Time</th>
+                        <th className="px-6 py-3 text-left font-bold uppercase">Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1020,12 +1020,12 @@ export function ClientBillingPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
-                        <tr style={{ background: CS.surfaceLow, color: CS.secondary, fontSize: 12, letterSpacing: "0.05em" }}>
-                          <th className="px-6 py-3 text-left font-semibold uppercase">Invoice</th>
-                          <th className="px-6 py-3 text-left font-semibold uppercase">Package</th>
-                          <th className="px-6 py-3 text-left font-semibold uppercase">Date</th>
-                          <th className="px-6 py-3 text-right font-semibold uppercase">Amount</th>
-                          <th className="px-6 py-3 text-left font-semibold uppercase">Status</th>
+                        <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
+                          <th className="px-6 py-3 text-left font-bold uppercase">Invoice</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase">Package</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase">Date</th>
+                          <th className="px-6 py-3 text-right font-bold uppercase">Amount</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase">Status</th>
                         </tr>
                       </thead>
                       <tbody>
