@@ -8,7 +8,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import {
   Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
-  CircleDot, StickyNote, History, X, Copy, Video, Search, Download,
+  CircleDot, StickyNote, History, Copy, Video, Search, Download,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage,
   FileSpreadsheet, FileArchive, File,
@@ -637,6 +637,9 @@ export function ClientMeetingsPage() {
         if (!alive) return;
         setAllMeetings(m);
         setEventTypes(events);
+        // Default straight to the first slot's Calendly widget instead of
+        // making the client click through a picker first.
+        setBookingEvent((prev) => prev || events[0] || null);
       })
       .catch(() => {})
       .finally(() => alive && setLoading(false));
@@ -662,9 +665,9 @@ export function ClientMeetingsPage() {
       {loading ? (
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left: all meetings list, admin list pattern */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <div className="overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
               {filteredMeetings.length === 0 ? (
                 <EmptyState icon={Video} title="No meetings" description={statusFilter === "all" ? "You don't have any meetings yet." : "No meetings match this filter."} />
@@ -745,54 +748,36 @@ export function ClientMeetingsPage() {
             </div>
           </div>
 
-          {/* Right: book a meeting */}
-          <div className="space-y-5">
-            {eventTypes.length > 0 && !bookingEvent && (
-              <Card className="p-5">
-                <h3 className="text-sm font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
-                <p className="text-xs mb-4" style={{ color: CS.secondary }}>Choose an available Calendly slot. Confirmed bookings will appear on the left automatically.</p>
-                <div className="space-y-2.5">
-                  {eventTypes.map((eventType) => (
-                    <button
-                      key={eventType.schedulingUrl || eventType.slug}
-                      type="button"
-                      onClick={() => setBookingEvent(eventType)}
-                      className="w-full text-left rounded-xl border p-3.5 transition-all hover:-translate-y-0.5 hover:shadow-sm"
-                      style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{eventType.name}</p>
-                          <p className="text-xs mt-1" style={{ color: CS.secondary }}>{eventType.durationMinutes || 30} minutes</p>
-                        </div>
-                        <CalendarPlus size={18} style={{ color: eventType.color || CS.primary }} />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </Card>
-            )}
-
-            {bookingEvent && (
+          {/* Right: book a meeting — Calendly widget shown directly */}
+          <div>
+            {bookingEvent ? (
               <Card>
-                <div className="px-4 py-3 border-b flex items-center justify-between gap-3" style={{ borderColor: CS.outlineVariant }}>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{bookingEvent.name}</h3>
-                    <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time to complete booking.</p>
-                  </div>
-                  <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors shrink-0" style={{ color: CS.secondary }} title="Close booking">
-                    <X size={18} />
-                  </button>
+                <div className="px-4 py-3 border-b" style={{ borderColor: CS.outlineVariant }}>
+                  <h3 className="font-semibold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
+                  {eventTypes.length > 1 ? (
+                    <select
+                      value={bookingEvent.schedulingUrl || bookingEvent.slug}
+                      onChange={(e) => setBookingEvent(eventTypes.find((et) => (et.schedulingUrl || et.slug) === e.target.value) || bookingEvent)}
+                      className="mt-1.5 w-full rounded-lg px-2 py-1.5 text-xs border outline-none"
+                      style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+                    >
+                      {eventTypes.map((et) => (
+                        <option key={et.schedulingUrl || et.slug} value={et.schedulingUrl || et.slug}>
+                          {et.name} ({et.durationMinutes || 30} min)
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>{bookingEvent.name} · {bookingEvent.durationMinutes || 30} minutes</p>
+                  )}
                 </div>
                 <iframe
                   title={`Book ${bookingEvent.name}`}
                   src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
-                  className="h-[600px] w-full"
+                  className="h-[720px] w-full"
                 />
               </Card>
-            )}
-
-            {eventTypes.length === 0 && !bookingEvent && (
+            ) : (
               <Card className="p-6">
                 <EmptyState icon={CalendarPlus} title="Booking unavailable" description="No booking slots are configured right now. Please check back later." />
               </Card>
