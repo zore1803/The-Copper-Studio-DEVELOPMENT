@@ -478,9 +478,9 @@ function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onD
       {/* Templates — fixed height, scrollable list */}
       <section className="flex max-h-[calc(100vh-120px)] flex-col rounded-xl border border-[#e5e7eb] bg-white">
         <div className="flex shrink-0 items-center justify-between border-b border-[#f3f4f6] px-4 py-3">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3">
-            <Search size={14} className="text-[#9ca3af]" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${type} templates`} className="w-60 bg-transparent text-sm outline-none" />
+          <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+            <Search size={14} className="text-[#525866] shrink-0" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={`Search ${type} templates`} className="w-60 bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
           <Button onClick={onCreate}><Plus size={14} /> New Template</Button>
         </div>

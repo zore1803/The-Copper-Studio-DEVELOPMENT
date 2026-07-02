@@ -282,7 +282,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
         </div>
         <button
           onClick={onAdd}
-          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto"
+          className="flex h-[42px] items-center gap-1.5 self-start rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white transition-colors hover:bg-[#8D3118] sm:self-auto"
         >
           <Plus size={15} />
           Add companies
@@ -294,7 +294,7 @@ function FolderDetail({ folder, companies, onBack, onAdd, onOpenCompany, onRemov
           <p className="text-sm text-[#6b7280]">No companies in this folder yet.</p>
           <button
             onClick={onAdd}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#8D3118] px-3.5 py-2 text-xs font-medium text-[#8D3118] transition-colors hover:bg-[#fff8f6]"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[#8D3118] px-3 py-2 text-xs font-medium text-[#8D3118] transition-colors hover:bg-[#fff8f6]"
           >
             <Plus size={14} /> Add companies
           </button>
@@ -396,10 +396,10 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
         </div>
       }
     >
-      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5">
-        <Search size={15} className="text-[#1F2937]/50 shrink-0" />
+      <div className="mb-3 flex h-11 items-center gap-2 rounded-full border border-[#E1E4EA] px-3">
+        <Search size={14} className="text-[#525866] shrink-0" />
         <input
-          className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
           placeholder="Search companies…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -677,10 +677,10 @@ export default function Companies() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-            <Search size={16} className="text-[#1F2937]/50 shrink-0" />
+          <div className="flex h-11 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+            <Search size={14} className="text-[#525866] shrink-0" />
             <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-[#1F2937]/50"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
               placeholder="Search by name, industry, or status…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
@@ -705,7 +705,7 @@ export default function Companies() {
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
-              className={`flex h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+              className={`flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
             >
               <ArrowUpDown size={15} />
               <span className="hidden sm:inline">{SORT_OPTIONS.find((o) => o.value === sortBy)?.label || "Sort"}</span>
@@ -872,10 +872,10 @@ export default function Companies() {
                 <p className="text-xs text-[#525866] mt-0.5">Organise your companies into custom folders</p>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#1F2937]/10 px-3.5 sm:w-72">
-                  <Search size={15} className="text-[#1F2937]/50 shrink-0" />
+                <div className="flex h-[42px] w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72">
+                  <Search size={14} className="text-[#525866] shrink-0" />
                   <input
-                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#1F2937]/50"
+                    className="w-full bg-transparent text-xs outline-none placeholder:text-[#525866]"
                     placeholder="Search folders…"
                     value={folderSearch}
                     onChange={(e) => { setFolderSearch(e.target.value); setFolderPage(1); }}
@@ -883,7 +883,7 @@ export default function Companies() {
                 </div>
                 <button
                   onClick={() => setCreatingFolder(true)}
-                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3.5 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors"
+                  className="flex h-[42px] items-center gap-1.5 whitespace-nowrap rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors"
                 >
                   <FolderPlus size={15} />
                   New Folder

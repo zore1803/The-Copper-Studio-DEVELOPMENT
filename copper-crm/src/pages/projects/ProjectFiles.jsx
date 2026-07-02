@@ -465,13 +465,13 @@ export default function ProjectFiles() {
           )}
           <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3">
-              <Search size={14} className="text-[#9ca3af]" />
+            <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+              <Search size={14} className="text-[#525866] shrink-0" />
               <input
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
                 placeholder="Search files…"
-                className="w-40 bg-transparent text-xs text-[#111827] outline-none placeholder:text-[#9ca3af]"
+                className="w-40 bg-transparent text-xs text-[#111827] outline-none placeholder:text-[#525866]"
               />
               {searchQuery && (
                 <button type="button" onClick={() => setSearchQuery("")} className="text-[#9ca3af] hover:text-[#6b7280]">

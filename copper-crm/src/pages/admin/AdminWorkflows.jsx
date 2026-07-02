@@ -270,9 +270,9 @@ export function TasksPage() {
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <div className="flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-xs text-gray-500">
-              <Search size={12} />
-              <input className="w-44 bg-transparent outline-none placeholder:text-gray-400 text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-2.5 text-xs text-[#525866]">
+              <Search size={12} className="shrink-0" />
+              <input className="w-44 bg-transparent outline-none placeholder:text-[#525866] text-xs" placeholder={tab === "Tasks" ? "Search by task by title, description, or status..." : "Search by meeting by title, priority, or contact..."} value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
             </div>
             <div className="relative">
               <button onClick={() => setFiltersOpen((v) => !v)} className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${statusFilter !== "All" ? "border-[#2563EB] bg-blue-50 text-[#2563EB]" : "border-gray-200 text-gray-400 hover:bg-gray-50"}`}>

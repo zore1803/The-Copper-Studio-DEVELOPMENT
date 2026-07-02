@@ -216,13 +216,13 @@ export default function ProjectsList() {
           <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
-            <Search size={14} className="text-[#9ca3af]" />
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
+            <Search size={14} className="text-[#525866] shrink-0" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search projects or clients"
-              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#9ca3af]"
+              className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#525866]"
             />
           </div>
           {/* Sort */}

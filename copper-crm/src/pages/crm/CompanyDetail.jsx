@@ -1275,13 +1275,13 @@ function Section({ title, action, flush = false, children }) {
 // across tabs instead of each module inventing its own toolbar.
 function ModuleSearch({ value, onChange, placeholder }) {
   return (
-    <div className="flex h-11 items-center gap-2 rounded-full border border-[#e5e7eb] bg-white px-3.5">
-      <Search size={14} className="text-[#9ca3af]" />
+    <div className="flex h-11 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+      <Search size={14} className="text-[#525866] shrink-0" />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="w-44 bg-transparent text-sm outline-none placeholder:text-[#9ca3af]"
+        className="w-44 bg-transparent text-sm outline-none placeholder:text-[#525866]"
       />
     </div>
   );
@@ -2381,13 +2381,13 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   return (
     <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-2.5">
-          <Search size={13} className="text-[#9ca3af]" />
+        <div className="flex h-9 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+          <Search size={13} className="text-[#525866] shrink-0" />
           <input
             value={search}
             onChange={(event) => resetToFirstPage(setSearch)(event.target.value)}
             placeholder="Search notes…"
-            className="w-40 bg-transparent text-xs outline-none placeholder:text-[#9ca3af]"
+            className="w-40 bg-transparent text-xs outline-none placeholder:text-[#525866]"
           />
         </div>
         <input

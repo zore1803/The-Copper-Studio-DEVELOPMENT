@@ -85,13 +85,13 @@ export default function TimelinePage() {
           <p className="text-xs text-[#525866] mt-0.5">All project stages plotted on a master Gantt chart.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-9 items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3">
-            <Search size={14} className="text-[#9ca3af]" />
+          <div className="flex h-9 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3">
+            <Search size={14} className="text-[#525866] shrink-0" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects..."
-              className="w-44 bg-transparent text-sm text-[#111827] outline-none"
+              className="w-44 bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#525866]"
             />
           </div>
           <select

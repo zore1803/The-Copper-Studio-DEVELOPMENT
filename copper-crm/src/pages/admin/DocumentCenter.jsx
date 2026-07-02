@@ -504,9 +504,9 @@ export default function DocumentCenter() {
               ))}
             </select>
           )}
-          <div className="flex h-9 w-full items-center gap-2 rounded-lg border border-[#E1E4EA] bg-white px-3 sm:w-64">
-            <Search size={14} className="text-[#9ca3af]" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none" />
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64">
+            <Search size={14} className="text-[#525866] shrink-0" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search documents" className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
           <button onClick={() => setView("grid")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "grid" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><Grid3X3 size={15} /></button>
           <button onClick={() => setView("list")} className={`flex h-9 w-9 items-center justify-center rounded-lg border ${view === "list" ? "border-[#8D3118] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280]"}`}><List size={15} /></button>
