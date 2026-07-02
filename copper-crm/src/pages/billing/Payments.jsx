@@ -274,6 +274,7 @@ export default function Payments() {
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Method</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">Status</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Invoice No.</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white">Coupon</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
@@ -287,6 +288,7 @@ export default function Payments() {
                       <td className="px-4 py-3 text-sm text-[#374151]">{row.gateway || row.paymentMethod || row.method || "Razorpay"}</td>
                       <td className="px-4 py-3 text-center"><Status value={row.status || "Pending"} /></td>
                       <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.invoiceNumber || "Not linked"}</td>
+                      <td className="px-4 py-3 text-sm font-mono text-[#374151]">{row.couponCode || "-"}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -142,6 +142,7 @@ router.get("/orders", async (req, res, next) => {
           payment: {
             status: inv.paymentStatus || inv.status || "paid",
             invoiceId: inv.invoiceNumber || inv.invoiceId,
+            couponCode: inv.couponCode || "",
             paidAt: inv.paidAt || inv.issueDate || inv.date || inv.createdAt,
           },
           createdAt: inv.issueDate || inv.date || inv.createdAt,

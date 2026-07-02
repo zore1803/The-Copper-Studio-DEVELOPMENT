@@ -562,6 +562,7 @@ export default function Invoices() {
                     <th className="px-4 py-3 text-right text-xs font-bold text-white">GST</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Issue Date</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Due Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white">Coupon</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">Status</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">PDF</th>
                   </tr>
@@ -576,6 +577,7 @@ export default function Invoices() {
                       <td className="px-4 py-3 text-right text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
+                      <td className="px-4 py-3 text-sm font-mono text-[#374151]">{invoice.couponCode || "-"}</td>
                       <td className="px-4 py-3 text-center"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
                       <td className="px-4 py-3 text-center"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
                     </tr>

@@ -560,6 +560,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
         invoiceId: `INV-${Date.now().toString().slice(-6)}`,
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
+        couponCode: couponResult.coupon?.code || "",
         paidAt: new Date()
       }
     });
@@ -717,6 +718,7 @@ app.post("/api/orders", async (req, res, next) => {
         status: paymentStatus === "paid" ? "paid" : "pending",
         provider: "razorpay",
         invoiceId: invoiceId || `INV-${Date.now().toString().slice(-6)}`,
+        couponCode: couponResult.coupon?.code || "",
         paidAt: paidAt ? new Date(paidAt) : new Date()
       }
     });

@@ -50,6 +50,7 @@ const schema = new mongoose.Schema(
       invoiceId: { type: String, required: true },
       razorpayOrderId: { type: String, default: "" },
       razorpayPaymentId: { type: String, default: "" },
+      couponCode: { type: String, default: "" },
       paidAt: { type: Date }
     },
     email: {
@@ -77,6 +78,7 @@ export default defineModel({
       invoiceId: "",
       razorpayOrderId: "",
       razorpayPaymentId: "",
+      couponCode: "",
       paidAt: null
     },
     email: { credentialsQueued: true, invoiceQueued: true, welcomeQueued: true },

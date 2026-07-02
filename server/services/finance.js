@@ -97,6 +97,7 @@ export async function syncFinanceForOrder(orderInput) {
     invoiceNumber,
     razorpayOrderId: order.payment?.razorpayOrderId || "",
     razorpayPaymentId: order.payment?.razorpayPaymentId || "",
+    couponCode: order.payment?.couponCode || "",
     paidAt
   };
 

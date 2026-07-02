@@ -1242,6 +1242,7 @@ export function ClientBillingPage() {
                           <th className="px-6 py-3 text-left font-bold uppercase text-white">Package</th>
                           <th className="px-6 py-3 text-left font-bold uppercase text-white">Date</th>
                           <th className="px-6 py-3 text-right font-bold uppercase text-white">Amount</th>
+                          <th className="px-6 py-3 text-left font-bold uppercase text-white">Coupon</th>
                           <th className="px-6 py-3 text-left font-bold uppercase text-white">Status</th>
                         </tr>
                       </thead>
@@ -1267,6 +1268,9 @@ export function ClientBillingPage() {
                             </td>
                             <td className="px-6 py-4 text-sm font-semibold text-right" style={{ color: CS.onSurface }}>
                               ₹{(o.package?.total || 0).toLocaleString("en-IN")}
+                            </td>
+                            <td className="px-6 py-4 text-sm font-mono" style={{ color: CS.secondary }}>
+                              {o.payment?.couponCode || "-"}
                             </td>
                             <td className="px-6 py-4">
                               <Badge
