@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, FolderOpen, FolderPlus,
-  Folder as FolderIcon, Globe, Grid2x2, List, MoreVertical, Plus, Save, Search,
+  Folder as FolderIcon, Grid2x2, List, MoreVertical, Plus, Save, Search,
   Trash2, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
@@ -117,7 +117,17 @@ function DocSignedBadge({ status, onChange }) {
   );
 }
 
-function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocument }) {
+function CompanyStatusBadge({ status }) {
+  const value = status || "Prospect";
+  const tone = value === "Active"
+    ? "bg-emerald-50 text-emerald-700"
+    : value === "Inactive" || value === "Churned"
+      ? "bg-red-50 text-red-600"
+      : "bg-amber-50 text-amber-700";
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${tone}`}>{value}</span>;
+}
+
+function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const btnRef = useRef(null);
@@ -161,29 +171,12 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen, onVerifyDocume
           <span className="text-sm font-semibold text-[#111827]">{company.name}</span>
         </div>
       </td>
-      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.industry || "—"}</td>
-      <td className="px-4 py-3.5 text-sm text-[#374151] max-w-[140px] truncate">
-        {company.address ? company.address.slice(0, 22) + (company.address.length > 22 ? "…" : "") : "—"}
-      </td>
-      <td className="px-4 py-3.5">
-        {company.website ? (
-          <a
-            href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-            onClick={(e) => e.stopPropagation()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-sm text-[#8D3118] hover:underline"
-          >
-            <Globe size={12} />
-            {company.website.replace(/^https?:\/\//, "").slice(0, 22)}…
-          </a>
-        ) : "—"}
-      </td>
-      <td className="px-4 py-3.5 text-sm font-mono text-[#6b7280]">{company.gstin || "—"}</td>
-      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-        <DocSignedBadge status={docStatusOf(company)} onChange={(next) => onVerifyDocument(company, next)} />
-      </td>
+      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.contact || "—"}</td>
+      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.city || "—"}</td>
+      <td className="px-4 py-3.5"><CompanyStatusBadge status={company.status} /></td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.leadSource || "—"}</td>
+      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.owner || "—"}</td>
+      <td className="px-4 py-3.5 text-sm text-[#374151]">{company.industry || "—"}</td>
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
         <button
           ref={btnRef}
@@ -771,7 +764,7 @@ export default function Companies() {
                     </th>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        Industry
+                        Contact Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
@@ -781,22 +774,22 @@ export default function Companies() {
                     </th>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        Website
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        GSTIN
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
-                        Document Signed
+                        Status
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
                         Lead Source
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        Owner
+                      </div>
+                    </th>
+                    <th className="px-4 py-3 text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                        Industry
                       </div>
                     </th>
                     <th className="px-4 py-3 w-10" />
@@ -819,7 +812,6 @@ export default function Companies() {
                       onDelete={deleteCompany}
                       onOpen={openCompany}
                       onClick={() => openCompany(company)}
-                      onVerifyDocument={verifyDocument}
                     />
                   ))}
                 </tbody>

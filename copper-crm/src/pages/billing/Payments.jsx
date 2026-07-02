@@ -38,6 +38,13 @@ function parseMoney(value) {
   return Number(String(value || "").replace(/[^\d.-]/g, "")) || 0;
 }
 
+function formatDate(value) {
+  if (!value) return "Not set";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not set";
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 function Metric({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
@@ -259,18 +266,16 @@ export default function Payments() {
               <table className="min-w-full">
                 <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                   <tr>
-                    {["Payment ID", "Company", "Amount", "Method", "Gateway", "Status"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
+                    {["Payment Date", "Payment ID", "Company", "Amount"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
                   {paginated.map((row) => (
                     <tr key={row._id || row.id || row.paymentId} className="hover:bg-[#fafafa]">
+                      <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(row.paidAt || row.createdAt || row.date)}</td>
                       <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.paymentId || row.id || row._id}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{row.company || "Not linked"}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(row.amount))}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{row.paymentMethod || row.method || "Not added"}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{row.gateway || "Razorpay"}</td>
-                      <td className="px-4 py-3"><Status value={row.status || "Pending"} /></td>
                     </tr>
                   ))}
                 </tbody>
