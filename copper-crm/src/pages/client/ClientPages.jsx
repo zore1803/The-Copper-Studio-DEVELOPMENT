@@ -5,11 +5,12 @@ import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
 import FilterButton from "../../components/FilterButton";
 import { useToast } from "../../components/useToast";
+import SidePanel from "../../components/SidePanel";
 import {
   Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
   CircleDot, StickyNote, History, X, Copy, Video, Search, Download,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
-  Send, Save, Lock, AlertTriangle, Activity, FileText, FileImage,
+  Save, Lock, AlertTriangle, Activity, FileText, FileImage,
   FileSpreadsheet, FileArchive, File,
 } from "lucide-react";
 
@@ -546,6 +547,34 @@ function meetingTypelabel(type) {
   return MEETING_TYPES.find(t => t.value === type)?.label || type;
 }
 
+const MEETING_STATUS_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "new", label: "New" },
+  { value: "current", label: "Current" },
+  { value: "past", label: "Past" },
+];
+
+// Buckets a meeting into New (awaiting confirmation) / Current (confirmed &
+// upcoming) / Past (completed, cancelled, or already elapsed) for the filter.
+function meetingCategory(m) {
+  if (m.status === "completed" || m.status === "cancelled") return "past";
+  if (m.status === "requested") return "new";
+  if (m.status === "confirmed") {
+    if (m.scheduledAt && new Date(m.scheduledAt) < new Date()) return "past";
+    return "current";
+  }
+  return "new";
+}
+
+const MEETING_STATUS_BADGE = {
+  requested: { type: "warning", label: "Requested" },
+  confirmed: { type: "primary", label: "Confirmed" },
+  completed: { type: "success", label: "Completed" },
+  cancelled: { type: "neutral", label: "Cancelled" },
+};
+
+const MEETINGS_PAGE_SIZE = 10;
+
 export function ClientMeetingsPage() {
   const { token, user } = useAuth();
   const { selectedId } = useClientProject();
@@ -554,6 +583,8 @@ export function ClientMeetingsPage() {
   const [eventTypes, setEventTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRaw, setSelected] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
 
   // Only this project's meetings (plus any general, project-less ones).
   const meetings = useMemo(
@@ -561,16 +592,19 @@ export function ClientMeetingsPage() {
     [allMeetings, selectedId]
   );
 
-  // Keep the open detail valid when the project (and thus the list) changes.
-  const mid = (m) => String(m?._id || m?.id || "");
-  const selected = (selectedRaw && meetings.some((m) => mid(m) === mid(selectedRaw)))
-    ? selectedRaw
-    : (meetings[0] || null);
+  const filteredMeetings = useMemo(
+    () => statusFilter === "all" ? meetings : meetings.filter((m) => meetingCategory(m) === statusFilter),
+    [meetings, statusFilter]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredMeetings.length / MEETINGS_PAGE_SIZE));
+  // Clamp instead of resetting via effect — filtering/project changes can leave
+  // `page` past the new last page without needing a synchronous setState effect.
+  const safePage = Math.min(page, totalPages);
+  const paginated = filteredMeetings.slice((safePage - 1) * MEETINGS_PAGE_SIZE, safePage * MEETINGS_PAGE_SIZE);
+
+  const selected = selectedRaw;
   const [bookingEvent, setBookingEvent] = useState(null);
-  const [form, setForm] = useState({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
 
   // Calendly's embedded scheduler posts this message to the parent window once
   // the invitee finishes booking. The Meeting record itself is created by the
@@ -609,59 +643,121 @@ export function ClientMeetingsPage() {
     return () => { alive = false; };
   }, [token]);
 
-  async function handleRequest(e) {
-    e.preventDefault();
-    if (!form.title.trim()) { setError("Meeting title is required."); return; }
-    setSubmitting(true);
-    setError("");
-    try {
-      const m = await clientApi.requestMeeting({ ...form, projectId: selectedId || undefined }, token);
-      setAllMeetings(prev => [m, ...prev]);
-      setSelected(m);
-      setForm({ title: "", type: "discovery_session", preferredDate: "", preferredTime: "", agenda: "" });
-      setSuccess("Meeting request sent! We'll confirm shortly.");
-      setTimeout(() => setSuccess(""), 5000);
-      showToast({ title: "Meeting requested", message: `"${m.title}" is awaiting confirmation from the Copper Studio team.` });
-    } catch (err) {
-      setError(err.message || "Failed to request meeting.");
-      showToast({ type: "error", title: "Meeting request failed", message: err.message || "Please try again." });
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const statusBadge = (s) => {
-    const map = {
-      requested: { type: "warning", label: "Requested" },
-      confirmed: { type: "primary", label: "Confirmed" },
-      completed: { type: "success", label: "Completed" },
-      cancelled: { type: "neutral", label: "Cancelled" },
-    };
-    return map[s] || { type: "neutral", label: s };
-  };
+  const statusBadge = (s) => MEETING_STATUS_BADGE[s] || { type: "neutral", label: s };
 
   return (
-    <PageShell title="Meetings" subtitle="Manage your scheduled calls and request new sessions with our team.">
+    <PageShell
+      title="Meetings"
+      subtitle="Manage your scheduled calls and book new sessions with our team."
+      action={
+        <FilterButton
+          buttonClassName="h-8 w-8"
+          onReset={() => setStatusFilter("all")}
+          fields={[
+            { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: MEETING_STATUS_FILTERS, allValue: "all" }
+          ]}
+        />
+      }
+    >
       {loading ? (
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-5">
-            {eventTypes.length > 0 && (
-              <Card className="p-6">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-5">
-                  <div>
-                    <h3 className="text-lg font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
-                    <p className="text-sm mt-1" style={{ color: CS.secondary }}>Choose an available Calendly slot. Confirmed bookings will appear here automatically.</p>
+          {/* Left: all meetings list, admin list pattern */}
+          <div className="lg:col-span-2">
+            <div className="overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
+              {filteredMeetings.length === 0 ? (
+                <EmptyState icon={Video} title="No meetings" description={statusFilter === "all" ? "You don't have any meetings yet." : "No meetings match this filter."} />
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr style={{ background: "#8D3118" }}>
+                          <th className="px-6 py-3 text-left text-xs font-bold uppercase text-white">Meeting</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold uppercase text-white">Type</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold uppercase text-white">Date / Time</th>
+                          <th className="px-6 py-3 text-left text-xs font-bold uppercase text-white">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginated.map(m => (
+                          <tr key={m._id}
+                            className="cursor-pointer transition-colors border-t"
+                            onClick={() => setSelected(m)}
+                            style={{ borderColor: CS.outlineVariant }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = CS.surfaceLow; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}>
+                            <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{m.title}</td>
+                            <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>{meetingTypelabel(m.type)}</td>
+                            <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>
+                              {m.scheduledAt
+                                ? new Date(m.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                                : m.preferredDate
+                                  ? `Preferred: ${new Date(m.preferredDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                                  : "TBD"}
+                            </td>
+                            <td className="px-6 py-4"><Badge {...statusBadge(m.status)} /></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+
+                  {/* Pagination */}
+                  <div className="flex items-center justify-between px-6 py-3.5 border-t" style={{ borderColor: CS.outlineVariant }}>
+                    <p className="text-xs" style={{ color: CS.secondary }}>
+                      Showing {paginated.length} of {filteredMeetings.length} meetings
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setPage(Math.max(1, safePage - 1))}
+                        disabled={safePage === 1}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        style={{ borderColor: CS.outlineVariant, color: CS.secondary }}
+                      >
+                        ‹
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors"
+                          style={p === safePage
+                            ? { background: CS.primary, color: CS.onPrimary }
+                            : { border: `1px solid ${CS.outlineVariant}`, color: CS.secondary }}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setPage(Math.min(totalPages, safePage + 1))}
+                        disabled={safePage === totalPages}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        style={{ borderColor: CS.outlineVariant, color: CS.secondary }}
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Right: book a meeting */}
+          <div className="space-y-5">
+            {eventTypes.length > 0 && !bookingEvent && (
+              <Card className="p-5">
+                <h3 className="text-sm font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Book a Meeting</h3>
+                <p className="text-xs mb-4" style={{ color: CS.secondary }}>Choose an available Calendly slot. Confirmed bookings will appear on the left automatically.</p>
+                <div className="space-y-2.5">
                   {eventTypes.map((eventType) => (
                     <button
                       key={eventType.schedulingUrl || eventType.slug}
                       type="button"
                       onClick={() => setBookingEvent(eventType)}
-                      className="text-left rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                      className="w-full text-left rounded-xl border p-3.5 transition-all hover:-translate-y-0.5 hover:shadow-sm"
                       style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -679,181 +775,103 @@ export function ClientMeetingsPage() {
 
             {bookingEvent && (
               <Card>
-                <div className="px-5 py-4 border-b flex items-center justify-between gap-3" style={{ borderColor: CS.outlineVariant }}>
-                  <div>
-                    <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{bookingEvent.name}</h3>
-                    <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time and complete the Calendly booking form.</p>
+                <div className="px-4 py-3 border-b flex items-center justify-between gap-3" style={{ borderColor: CS.outlineVariant }}>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{bookingEvent.name}</h3>
+                    <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>Select a time to complete booking.</p>
                   </div>
-                  <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors" style={{ color: CS.secondary }} title="Close booking">
+                  <button onClick={() => setBookingEvent(null)} className="p-2 rounded-lg transition-colors shrink-0" style={{ color: CS.secondary }} title="Close booking">
                     <X size={18} />
                   </button>
                 </div>
                 <iframe
                   title={`Book ${bookingEvent.name}`}
                   src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
-                  className="h-[720px] w-full"
+                  className="h-[600px] w-full"
                 />
               </Card>
             )}
 
-            {/* Past meetings table */}
-            {meetings.length > 0 && (
-              <Card>
-                <div className="px-6 py-4 border-b" style={{ borderColor: CS.outlineVariant }}>
-                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>All Meetings</h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
-                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Meeting</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Type</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Date / Time</th>
-                        <th className="px-6 py-3 text-left font-bold uppercase text-white">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {meetings.map(m => (
-                        <tr key={m._id}
-                          className="cursor-pointer transition-colors"
-                          onClick={() => setSelected(m)}
-                          style={{ background: selected?._id === m._id ? CS.surfaceLow : "transparent" }}>
-                          <td className="px-6 py-4 text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{m.title}</td>
-                          <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>{meetingTypelabel(m.type)}</td>
-                          <td className="px-6 py-4 text-sm" style={{ color: CS.secondary }}>
-                            {m.scheduledAt
-                              ? new Date(m.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
-                              : m.preferredDate
-                                ? `Preferred: ${new Date(m.preferredDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-                                : "TBD"}
-                          </td>
-                          <td className="px-6 py-4"><Badge {...statusBadge(m.status)} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            )}
-
-            {/* Request form */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Request a Meeting</h3>
-              <form onSubmit={handleRequest} className="space-y-4">
-                <CsInput label="Meeting Title *" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="e.g. Brand strategy review" required />
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <CsSelect
-                    label="Meeting Type"
-                    value={form.type}
-                    onChange={v => setForm(f => ({ ...f, type: v }))}
-                    options={MEETING_TYPES}
-                  />
-                  <CsInput label="Preferred Date" type="date" value={form.preferredDate} onChange={v => setForm(f => ({ ...f, preferredDate: v }))} />
-                  <CsInput label="Preferred Time" type="time" value={form.preferredTime} onChange={v => setForm(f => ({ ...f, preferredTime: v }))} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Message (Optional)</label>
-                  <textarea
-                    value={form.agenda}
-                    onChange={e => setForm(f => ({ ...f, agenda: e.target.value }))}
-                    placeholder="Tell us about the meeting goals..."
-                    rows={3}
-                    className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none resize-none copper-focus"
-                    style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
-                  />
-                </div>
-                {error && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#fde8e8", color: CS.error }}>{error}</p>}
-                {success && <p className="text-xs font-medium px-3 py-2 rounded-lg" style={{ background: "#e8f5e9", color: "#388e3c" }}>{success}</p>}
-                <div className="flex justify-end">
-                  <CsBtn type="submit" disabled={submitting} loading={submitting} icon={Send}>
-                    {submitting ? "Sending…" : "Request Meeting"}
-                  </CsBtn>
-                </div>
-              </form>
-            </Card>
-          </div>
-
-          {/* Right: selected meeting detail */}
-          <div className="space-y-5">
-            {selected ? (
-              <Card>
-                <div className="px-5 py-4 border-b" style={{ borderColor: CS.outlineVariant, background: `${CS.surfaceLow}80` }}>
-                  <h3 className="font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{selected.title}</h3>
-                  <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: CS.secondary }}>
-                    <Clock size={15} />
-                    {selected.scheduledAt
-                      ? new Date(selected.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hour12: true })
-                      : "Awaiting confirmation"}
-                    {selected.duration ? ` (${selected.duration} mins)` : ""}
-                  </div>
-                </div>
-                <div className="p-5 space-y-5">
-                  <div><Badge {...{ requested: { type: "warning", label: "Requested" }, confirmed: { type: "primary", label: "Confirmed" }, completed: { type: "success", label: "Completed" }, cancelled: { type: "neutral", label: "Cancelled" } }[selected.status] || { type: "neutral", label: selected.status }} /></div>
-
-                  {selected.meetingLink && (
-                    <div>
-                      <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Meeting Link</p>
-                      <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: CS.surfaceContainer }}>
-                        <code className="text-xs flex-1 truncate" style={{ color: CS.primary }}>{selected.meetingLink}</code>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(selected.meetingLink)}
-                          className="p-1 rounded transition-colors"
-                          style={{ color: CS.primary }}
-                          title="Copy link">
-                          <Copy size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {selected.agenda && (
-                    <div>
-                      <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Agenda / Notes</p>
-                      <p className="text-sm leading-relaxed" style={{ color: CS.onSurface }}>{selected.agenda}</p>
-                    </div>
-                  )}
-
-                  {selected.participants?.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold mb-3" style={{ color: CS.secondary }}>Participants</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selected.participants.map((p, i) => (
-                          <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
-                            style={{ background: CS.surfaceLow, borderColor: CS.outlineVariant }}>
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-                              style={{ background: CS.primaryFixed, color: CS.primary }}>
-                              {p.initials || p.name?.slice(0, 2).toUpperCase()}
-                            </div>
-                            <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{p.name}</span>
-                          </div>
-                        ))}
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
-                          style={{ background: CS.surfaceLow, borderColor: CS.outlineVariant }}>
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                            style={{ background: CS.primary }}>CS</div>
-                          <span className="text-xs font-medium" style={{ color: CS.onSurface }}>Copper Studio</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selected.status === "confirmed" && selected.meetingLink && (
-                    <a href={selected.meetingLink} target="_blank" rel="noreferrer"
-                      className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-95"
-                      style={{ background: CS.primary, color: CS.onPrimary }}>
-                      <Video size={18} />
-                      Join Video Call
-                    </a>
-                  )}
-                </div>
-              </Card>
-            ) : (
+            {eventTypes.length === 0 && !bookingEvent && (
               <Card className="p-6">
-                <EmptyState icon={Video} title="Select a meeting" description="Click on a meeting to view its details, or request a new one." />
+                <EmptyState icon={CalendarPlus} title="Booking unavailable" description="No booking slots are configured right now. Please check back later." />
               </Card>
             )}
           </div>
         </div>
+      )}
+
+      {/* Meeting detail panel */}
+      {selected && (
+        <SidePanel title={selected.title} subtitle={meetingTypelabel(selected.type)} onClose={() => setSelected(null)}>
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 text-xs" style={{ color: CS.secondary }}>
+              <Clock size={15} />
+              {selected.scheduledAt
+                ? new Date(selected.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hour12: true })
+                : "Awaiting confirmation"}
+              {selected.duration ? ` (${selected.duration} mins)` : ""}
+            </div>
+
+            <div><Badge {...statusBadge(selected.status)} /></div>
+
+            {selected.meetingLink && (
+              <div>
+                <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Meeting Link</p>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: CS.surfaceContainer }}>
+                  <code className="text-xs flex-1 truncate" style={{ color: CS.primary }}>{selected.meetingLink}</code>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(selected.meetingLink)}
+                    className="p-1 rounded transition-colors"
+                    style={{ color: CS.primary }}
+                    title="Copy link">
+                    <Copy size={18} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {selected.agenda && (
+              <div>
+                <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Agenda / Notes</p>
+                <p className="text-sm leading-relaxed" style={{ color: CS.onSurface }}>{selected.agenda}</p>
+              </div>
+            )}
+
+            {selected.participants?.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold mb-3" style={{ color: CS.secondary }}>Participants</p>
+                <div className="flex flex-wrap gap-2">
+                  {selected.participants.map((p, i) => (
+                    <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+                      style={{ background: CS.surfaceLow, borderColor: CS.outlineVariant }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+                        style={{ background: CS.primaryFixed, color: CS.primary }}>
+                        {p.initials || p.name?.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="text-xs font-medium" style={{ color: CS.onSurface }}>{p.name}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border"
+                    style={{ background: CS.surfaceLow, borderColor: CS.outlineVariant }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                      style={{ background: CS.primary }}>CS</div>
+                    <span className="text-xs font-medium" style={{ color: CS.onSurface }}>Copper Studio</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selected.status === "confirmed" && selected.meetingLink && (
+              <a href={selected.meetingLink} target="_blank" rel="noreferrer"
+                className="w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all active:scale-95"
+                style={{ background: CS.primary, color: CS.onPrimary }}>
+                <Video size={18} />
+                Join Video Call
+              </a>
+            )}
+          </div>
+        </SidePanel>
       )}
     </PageShell>
   );
