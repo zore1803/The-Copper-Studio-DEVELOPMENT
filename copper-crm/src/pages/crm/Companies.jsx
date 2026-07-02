@@ -173,15 +173,15 @@ function CompanyRow({ company, onEdit, onDelete, onClick, onOpen }) {
       </td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.contact || "—"}</td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.city || "—"}</td>
-      <td className="px-4 py-3.5"><CompanyStatusBadge status={company.status} /></td>
+      <td className="px-4 py-3.5 text-center"><CompanyStatusBadge status={company.status} /></td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.leadSource || "—"}</td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.owner || "—"}</td>
       <td className="px-4 py-3.5 text-sm text-[#374151]">{company.industry || "—"}</td>
-      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+      <td className="px-4 py-3.5 text-center" onClick={(e) => e.stopPropagation()}>
         <button
           ref={btnRef}
           onClick={toggleMenu}
-          className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+          className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors mx-auto"
         >
           <MoreVertical size={14} />
         </button>
@@ -772,8 +772,8 @@ export default function Companies() {
                         Location
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">
+                    <th className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-[#525866]">
                         Status
                       </div>
                     </th>
@@ -792,7 +792,9 @@ export default function Companies() {
                         Industry
                       </div>
                     </th>
-                    <th className="px-4 py-3 w-10" />
+                    <th className="px-4 py-3 w-10 text-center">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white">

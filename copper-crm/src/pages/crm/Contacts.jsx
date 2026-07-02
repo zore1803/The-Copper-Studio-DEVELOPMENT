@@ -116,8 +116,12 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Building2 size={13} className="text-[#9ca3af]" /> <span className="truncate">{companyName}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><MessageCircle size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Mail size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
-      <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked ? "Yes" : "No"}</span>
-      <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
+      <span className="flex items-center justify-center">
+        <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked ? "Yes" : "No"}</span>
+      </span>
+      <span className="flex items-center justify-center">
+        <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
+      </span>
       <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <ContactExportMenu contact={contact} companyName={companyName} />
         <button
@@ -565,7 +569,7 @@ export default function Contacts() {
             <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
               <div className="grid grid-cols-[minmax(200px,1.2fr)_minmax(160px,1fr)_150px_minmax(160px,1fr)_120px_110px_auto] gap-4 border-b border-[#f3e5e0] bg-[#fff1ec] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
                 <span className="flex items-center gap-1.5"><SlidersHorizontal size={12} /> Contact</span>
-                <span>Associated Company</span><span>Mobile No.</span><span>Email</span><span>Portal Access</span><span>Status</span><span />
+                <span>Associated Company</span><span>Mobile No.</span><span>Email</span><span className="text-center">Portal Access</span><span className="text-center">Status</span><span className="text-right pr-1">Actions</span>
               </div>
               {loading ? (
                 <div className="p-10 text-center text-sm text-[#6b7280]">Loading contacts...</div>

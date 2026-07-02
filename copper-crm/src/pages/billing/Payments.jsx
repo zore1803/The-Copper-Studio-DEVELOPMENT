@@ -266,7 +266,14 @@ export default function Payments() {
               <table className="min-w-full">
                 <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                   <tr>
-                    {["Payment Date", "Payment ID", "Company", "Amount"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Payment Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Payment ID</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Contact</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Method</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Invoice No.</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
@@ -275,7 +282,11 @@ export default function Payments() {
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(row.paidAt || row.createdAt || row.date)}</td>
                       <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.paymentId || row.id || row._id}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{row.company || "Not linked"}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(row.amount))}</td>
+                      <td className="px-4 py-3 text-sm text-[#374151]">{row.client || "Not linked"}</td>
+                      <td className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">{money(parseMoney(row.amount))}</td>
+                      <td className="px-4 py-3 text-sm text-[#374151]">{row.gateway || row.paymentMethod || row.method || "Razorpay"}</td>
+                      <td className="px-4 py-3 text-center"><Status value={row.status || "Pending"} /></td>
+                      <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{row.invoiceNumber || "Not linked"}</td>
                     </tr>
                   ))}
                 </tbody>

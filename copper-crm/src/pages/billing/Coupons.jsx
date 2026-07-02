@@ -543,9 +543,9 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
         </div>
         <span className="text-[#374151] truncate">{coupon.assignedCompany || coupon.companyName || <span className="text-[#c4c9d4]">—</span>}</span>
         <span className="text-[#374151] truncate">{coupon.assignedContact || coupon.clientName || <span className="text-[#c4c9d4]">—</span>}</span>
-        <span className="text-[#374151]">{displayAmount} off</span>
+        <span className="text-right text-[#374151]">{displayAmount} off</span>
         <span className="text-[#374151] truncate">{coupon.validUntil ? formatDateTime(coupon.validUntil) : (coupon.validity || <span className="text-[#c4c9d4]">—</span>)}</span>
-        <Status value={coupon.status || "Draft"} />
+        <span className="flex justify-center"><Status value={coupon.status || "Draft"} /></span>
       </div>
       <button
         onClick={() => onDelete(coupon)}
@@ -769,7 +769,7 @@ export default function Coupons() {
           {/* List header */}
           {viewMode === "list" && sorted.length > 0 && (
             <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)] gap-3 border-b border-[#f3f4f6] px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">
-              <span>Code</span><span>Company</span><span>Contact</span><span>Amount</span><span>Validity</span><span>Status</span>
+              <span>Code</span><span>Company</span><span>Contact</span><span className="text-right">Amount</span><span>Validity</span><span className="text-center">Status</span>
             </div>
           )}
 

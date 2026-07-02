@@ -555,7 +555,15 @@ export default function Invoices() {
               <table className="min-w-full">
                 <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
                   <tr>
-                    {["Invoice Number", "Company", "Project", "Amount", "GST", "Issue Date", "Due Date", "Status", "PDF"].map((head) => <th key={head} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{head}</th>)}
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Invoice Number</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Project</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">Amount</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-[#525866]">GST</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Issue Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Due Date</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">Status</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#525866]">PDF</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
@@ -564,12 +572,12 @@ export default function Invoices() {
                       <td className="px-4 py-3 font-mono text-xs text-[#6b7280]">{invoice.invoiceNumber || invoice.id || invoice._id}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{invoice.company || invoice.client || "Not linked"}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{invoice.project || "Not linked"}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
-                      <td className="px-4 py-3 text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
+                      <td className="px-4 py-3 text-right text-sm font-semibold text-[#111827]">{money(parseMoney(invoice.total || invoice.amount))}</td>
+                      <td className="px-4 py-3 text-right text-sm text-[#374151]">{money(parseMoney(invoice.tax || invoice.gst))}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
-                      <td className="px-4 py-3"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
-                      <td className="px-4 py-3"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
+                      <td className="px-4 py-3 text-center"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
+                      <td className="px-4 py-3 text-center"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
                     </tr>
                   ))}
                 </tbody>
