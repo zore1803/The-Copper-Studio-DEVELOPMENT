@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
+import { apiGet } from "../../lib/api";
 import { storeGet, storeSet } from "../../lib/store";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
@@ -8,11 +9,11 @@ import FilterButton from "../../components/FilterButton";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import {
-  Loader2, CalendarDays, Calendar, CalendarPlus, CheckCircle2, Check, Clock,
+  Loader2, CalendarDays, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
   CircleDot, StickyNote, History, Copy, Video, Search, Download,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage,
-  FileSpreadsheet, FileArchive, File,
+  FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route,
 } from "lucide-react";
 
 /* ─── Shared primitives ─── */
@@ -174,6 +175,43 @@ function Spinner() {
 }
 
 /* ─── PROJECT TIMELINE ─── */
+
+function TimelineKpiChip({ label, value, icon: Icon, color }) {
+  return (
+    <div className="rounded-xl border px-4 py-3.5 flex items-start gap-3" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
+        <Icon size={17} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-medium" style={{ color: CS.secondary }}>{label}</p>
+        <p className="mt-0.5 truncate text-base font-bold leading-tight" style={{ color: CS.onSurface }} title={String(value)}>{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// The backend free tier spins down when idle and can time out on the first
+// request; retry with backoff instead of leaving the Gantt permanently empty
+// after one transient failure.
+const TASK_RETRY_DELAYS_MS = [3000, 6000, 12000];
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+async function fetchProjectTasksWithRetry(projectId, token) {
+  for (let attempt = 0; attempt <= TASK_RETRY_DELAYS_MS.length; attempt++) {
+    try {
+      // Call the API directly rather than clientApi.getProjectTasks, which
+      // swallows every failure (including a transient cold-start timeout)
+      // and silently resolves with an empty array — that masked genuine
+      // failures and made retrying pointless.
+      return await apiGet(`/api/client/projects/${projectId}/tasks`, token);
+    } catch (err) {
+      if (attempt === TASK_RETRY_DELAYS_MS.length) throw err;
+      await wait(TASK_RETRY_DELAYS_MS[attempt]);
+    }
+  }
+  return [];
+}
 
 function ClientTaskGantt({ tasks }) {
   const [zoom, setZoom] = useState("Week");
@@ -370,8 +408,8 @@ export function ClientTimelinePage() {
   useEffect(() => {
     if (!selectedId) return;
     let alive = true;
-    clientApi.getProjectTasks(selectedId, token)
-      .then((data) => { if (alive) setTasks(data); })
+    fetchProjectTasksWithRetry(selectedId, token)
+      .then((data) => { if (alive) setTasks(Array.isArray(data) ? data : []); })
       .catch(() => { if (alive) setTasks([]); });
     return () => { alive = false; };
   }, [selectedId, token]);
@@ -413,26 +451,26 @@ export function ClientTimelinePage() {
                       <h2 className="text-2xl font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{selected.name}</h2>
                       {selected.description && <p className="text-sm mt-1" style={{ color: CS.secondary }}>{selected.description}</p>}
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: CS.secondary }}>Expected Completion</p>
-                      <p className="font-bold" style={{ color: CS.primary }}>
-                        {selected.expectedEndDate
-                          ? new Date(selected.expectedEndDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-                          : "TBD"}
-                      </p>
-                    </div>
+                    <Badge {...statusBadge(selected.status)} />
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm" style={{ color: CS.onSurface }}>
-                      Current Phase: <span className="font-semibold" style={{ color: CS.primary }}>{selected.currentPhase || "In Progress"}</span>
-                    </span>
-                    <span className="font-bold" style={{ color: CS.primary }}>{selected.progress || 0}%</span>
-                  </div>
-                  <div className="w-full h-3 rounded-full overflow-hidden relative" style={{ background: CS.surfaceLow }}>
+
+                  <div className="w-full h-2.5 rounded-full overflow-hidden relative mb-5" style={{ background: CS.surfaceLow }}>
                     <div className="h-full rounded-full transition-all duration-700 relative overflow-hidden"
                       style={{ width: `${selected.progress || 0}%`, background: CS.primaryContainer }}>
                       <div className="absolute inset-0 bg-white/20 animate-pulse" />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <TimelineKpiChip label="Progress" value={`${selected.progress || 0}%`} icon={Zap} color="#3b82f6" />
+                    <TimelineKpiChip label="Current Phase" value={selected.currentPhase || "In Progress"} icon={ListChecks} color="#8D3118" />
+                    <TimelineKpiChip
+                      label="Expected Completion"
+                      value={selected.expectedEndDate ? new Date(selected.expectedEndDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "TBD"}
+                      icon={CalendarCheck}
+                      color="#16a34a"
+                    />
+                    <TimelineKpiChip label="Roadmap Stages" value={`${(selected.stages || []).filter((s) => s.status === "completed").length}/${(selected.stages || []).length}`} icon={Route} color="#0d9488" />
                   </div>
                 </Card>
 
@@ -468,9 +506,15 @@ export function ClientTimelinePage() {
                 )}
 
                 {/* Stages timeline */}
-                {selected.stages?.length > 0 && (
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
+                  {!selected.stages?.length ? (
+                    <div className="rounded-xl border border-dashed py-10 text-center" style={{ borderColor: CS.outlineVariant }}>
+                      <Route size={32} className="mx-auto" style={{ color: CS.outlineVariant }} />
+                      <p className="mt-2 text-sm font-semibold" style={{ color: CS.onSurface }}>No roadmap stages yet.</p>
+                      <p className="mt-1 text-xs" style={{ color: CS.secondary }}>Your engagement phases will appear here once The Copper Studio sets them up.</p>
+                    </div>
+                  ) : (
                     <div className="relative space-y-5 ml-3">
                       {selected.stages.length > 1 && (
                         <div className="absolute left-[13px] top-3 bottom-3 w-0.5" style={{ background: CS.outlineVariant }} />
@@ -525,8 +569,8 @@ export function ClientTimelinePage() {
                         );
                       })}
                     </div>
-                  </Card>
-                )}
+                  )}
+                </Card>
 
                 <ClientTaskGantt tasks={tasks} />
               </>
