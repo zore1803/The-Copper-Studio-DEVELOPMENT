@@ -397,6 +397,29 @@ export default function ProjectFiles() {
               <FilePlus2 size={13} /> {uploadProgress !== null ? "Uploading…" : "Upload File"}
             </button>
             <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+            {!activeFolder && (
+              newFolderMode ? (
+                <form onSubmit={handleAddFolder} className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    placeholder="Folder name…"
+                    className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs outline-none focus:border-[#8D3118] w-36"
+                  />
+                  <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#8D3118] text-white hover:bg-[#9A4113]">
+                    <Check size={13} />
+                  </button>
+                  <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
+                    <X size={13} />
+                  </button>
+                </form>
+              ) : (
+                <Button variant="primary" size="sm" onClick={() => setNewFolderMode(true)}>
+                  <FolderPlus size={14} /> New Folder
+                </Button>
+              )
+            )}
           </div>
         </div>
         {uploadProgress !== null && (
@@ -417,32 +440,9 @@ export default function ProjectFiles() {
 
       {!activeFolder && (
       <section>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-display text-lg font-semibold text-[#211a17]">Directory</h3>
-            <p className="mt-1 text-xs text-[#6b7280]">{documents.length} files across {folders.filter((f) => f.count > 0).length} folders</p>
-          </div>
-          {newFolderMode ? (
-            <form onSubmit={handleAddFolder} className="flex items-center gap-2">
-              <input
-                autoFocus
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                placeholder="Folder name…"
-                className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-xs outline-none focus:border-[#8D3118] w-36"
-              />
-              <button type="submit" className="grid h-7 w-7 place-items-center rounded-lg bg-[#8D3118] text-white hover:bg-[#9A4113]">
-                <Check size={13} />
-              </button>
-              <button type="button" onClick={() => { setNewFolderMode(false); setNewFolderName(""); }} className="grid h-7 w-7 place-items-center rounded-full border border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]">
-                <X size={13} />
-              </button>
-            </form>
-          ) : (
-            <Button variant="primary" size="sm" onClick={() => setNewFolderMode(true)}>
-              <FolderPlus size={14} /> New Folder
-            </Button>
-          )}
+        <div className="mb-5">
+          <h3 className="font-display text-lg font-semibold text-[#211a17]">Directory</h3>
+          <p className="mt-1 text-xs text-[#6b7280]">{documents.length} files across {folders.filter((f) => f.count > 0).length} folders</p>
         </div>
 
         {folders.length ? (
