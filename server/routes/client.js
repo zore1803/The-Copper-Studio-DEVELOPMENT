@@ -273,8 +273,17 @@ router.get("/documents", async (req, res, next) => {
       });
 
     // A project should only ever have one invoice attached — if duplicates
-    // exist, keep the most recent (userInvoices is already sorted newest-first).
-    const latestInvoicePerProject = [...new Map(invoiceDocs.map((doc) => [String(doc.projectId), doc])).values()];
+    // exist, keep only the most recent. invoiceDocs is already sorted
+    // newest-first, so keep the first occurrence per projectId (a plain Map
+    // built from [key, value] pairs would instead keep the *last* — i.e.
+    // oldest — occurrence, since later .set() calls for the same key win).
+    const seenInvoiceProjectIds = new Set();
+    const latestInvoicePerProject = invoiceDocs.filter((doc) => {
+      const key = String(doc.projectId);
+      if (seenInvoiceProjectIds.has(key)) return false;
+      seenInvoiceProjectIds.add(key);
+      return true;
+    });
 
     const allDocs = [...collectionDocs, ...embeddedDocs, ...latestInvoicePerProject];
     // Sort combined list by createdAt descending
