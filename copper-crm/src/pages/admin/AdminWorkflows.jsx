@@ -310,7 +310,7 @@ export function TasksPage() {
             <div className="overflow-x-auto">
               {tab === "Tasks" ? (
                 <table className="w-full min-w-[800px]">
-                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                  <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
                     <tr>
                       <th className="w-10 px-4 py-3"><input type="checkbox" checked={allTasksSelected} onChange={toggleSelectAllTasks} className="rounded border-gray-300" /></th>
                       {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
@@ -343,7 +343,7 @@ export function TasksPage() {
                 </table>
               ) : (
                 <table className="w-full min-w-[800px]">
-                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                  <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
                     <tr>
                       {["Meeting", "Scheduled", "Status", "With", "Actions"].map((h) => (
                         <th key={h} className="px-4 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>

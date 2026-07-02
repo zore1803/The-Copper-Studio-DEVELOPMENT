@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, FolderOpen, FolderPlus,
+  ArrowUpDown, Building2, Check, ChevronLeft, ChevronRight, Edit2, Eye, FolderOpen, FolderPlus,
   Folder as FolderIcon, Grid2x2, List, MoreVertical, Plus, Save, Search,
   Trash2, X
 } from "lucide-react";
@@ -442,7 +442,6 @@ export default function Companies() {
   // return so we can hand the new company back. Captured once before the
   // openCreate effect clears location.state.
   const returnToRef = useRef(location.state?.returnTo || null);
-  const [actionsOpen, setActionsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [industryFilter, setIndustryFilter] = useState("All");
   const [cityFilter, setCityFilter] = useState("All");
@@ -464,9 +463,7 @@ export default function Companies() {
   const { save: saveContact } = useCrmRecords("contacts");
   const { token } = useAuth();
   const { showToast } = useToast();
-  const actionsRef = useRef(null);
   const sortRef = useRef(null);
-  useClickOutside(actionsRef, () => setActionsOpen(false), actionsOpen);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
   useEffect(() => {
@@ -646,20 +643,6 @@ export default function Companies() {
     setPage(1);
   }
 
-  function exportCompanies() {
-    const headers = ["Company Name", "Industry", "GSTIN", "Status", "Lead Source", "Website"];
-    const rows = filtered.map((company) => [company.name, company.industry, company.gstin, company.status, company.leadSource, company.website]);
-    const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell || "").replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "companies.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-    setActionsOpen(false);
-  }
-
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Sub-header */}
@@ -678,21 +661,6 @@ export default function Companies() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
-          </div>
-          <div className="relative" ref={actionsRef}>
-            <button onClick={() => setActionsOpen((value) => !value)} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb] transition-colors">
-              <MoreVertical size={16} />
-            </button>
-            {actionsOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
-                <button onClick={exportCompanies} className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
-                  <Download size={14} /> Export filtered CSV
-                </button>
-                <button onClick={() => { resetFilters(); setActionsOpen(false); }} className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]">
-                  <X size={14} /> Clear filters
-                </button>
-              </div>
-            )}
           </div>
           {/* Sort */}
           <div className="relative" ref={sortRef}>
@@ -755,7 +723,7 @@ export default function Companies() {
           <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
-                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
                   <tr>
                     <th className="px-4 py-3 text-left">
                       <div className="flex items-center gap-1.5 text-xs font-medium text-[#525866]">

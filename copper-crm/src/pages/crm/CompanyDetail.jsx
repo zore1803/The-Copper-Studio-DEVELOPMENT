@@ -1354,7 +1354,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
           <tr>
             <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Project</th>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Package</th>
@@ -1533,7 +1533,7 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
           <tr>
             <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Contact</th>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Email</th>
@@ -1583,7 +1583,7 @@ function InvoicesTable({ invoices, onView, onDownload }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
           <tr>
             <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-[#525866]">Invoice ID</th>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Amount</th>
@@ -2060,7 +2060,7 @@ function TasksTable({ tasks, projects, onDelete }) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+        <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
           <tr>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Task</th>
             <th className="py-3 pr-4 text-left text-xs font-medium text-[#525866]">Assigned To</th>

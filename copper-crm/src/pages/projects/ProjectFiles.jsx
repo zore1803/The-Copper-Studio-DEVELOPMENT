@@ -507,7 +507,7 @@ export default function ProjectFiles() {
           {pageDocuments.length ? (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-[#ead8d1] bg-[#fff1ec]">
+                <tr className="border-b border-[#8D3118]/20 bg-[#8D3118]/30">
                   <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Name</th>
                   <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280]">Folder</th>
                   <th className="hidden px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-[#6b7280] sm:table-cell">Size</th>

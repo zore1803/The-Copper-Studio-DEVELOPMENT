@@ -553,7 +553,7 @@ export default function Invoices() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Invoice Number</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-[#525866]">Company</th>

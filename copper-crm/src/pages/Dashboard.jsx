@@ -293,7 +293,7 @@ function CrmTab({ companies, contacts }) {
           <p className="p-5 text-sm text-[#9ca3af]">No companies added yet.</p>
         ) : (
           <table className="min-w-full text-xs">
-            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+            <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
               <tr>
                 {["Name", "Industry", "Status"].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
@@ -360,7 +360,7 @@ function InvoicesTab({ invoices }) {
         </div>
         {recentInvoices.length ? (
           <table className="min-w-full">
-            <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+            <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
               <tr>
                 {["Invoice", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>
@@ -526,7 +526,7 @@ export default function Dashboard() {
                 <p className="p-5 text-sm text-[#9ca3af]">No active projects.</p>
               ) : (
                 <table className="min-w-full">
-                  <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+                  <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
                     <tr>
                       {["Project", "Client", "Progress", "Due", "Status"].map(h => (
                         <th key={h} className="px-5 py-3 text-left text-xs font-medium text-[#525866]">{h}</th>

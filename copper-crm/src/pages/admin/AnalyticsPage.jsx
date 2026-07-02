@@ -1320,7 +1320,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
             <tr>
               <th className="px-5 py-3 text-left text-xs font-medium text-[#525866]">Project Name</th>
               <th className="px-5 py-3 text-left text-xs font-medium text-[#525866]">Company / Contact</th>
@@ -1459,7 +1459,7 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm whitespace-nowrap">
-          <thead className="bg-[#fff1ec] border-b border-[#f3e5e0]">
+          <thead className="bg-[#8D3118]/30 border-b border-[#8D3118]/20">
             <tr>
               <th className="px-5 py-3 text-left text-xs font-medium text-[#525866]">Date</th>
               <th className="px-5 py-3 text-left text-xs font-medium text-[#525866]">Company / Contact</th>

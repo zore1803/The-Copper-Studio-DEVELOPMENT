@@ -567,7 +567,7 @@ export default function Contacts() {
         {view === "table" ? (
           <>
             <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
-              <div className="grid grid-cols-[minmax(200px,1.2fr)_minmax(160px,1fr)_150px_minmax(160px,1fr)_120px_110px_auto] gap-4 border-b border-[#f3e5e0] bg-[#fff1ec] px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+              <div className="grid grid-cols-[minmax(200px,1.2fr)_minmax(160px,1fr)_150px_minmax(160px,1fr)_120px_110px_auto] gap-4 border-b border-[#8D3118]/20 bg-[#8D3118]/30 px-4 py-3 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
                 <span className="flex items-center gap-1.5"><SlidersHorizontal size={12} /> Contact</span>
                 <span>Associated Company</span><span>Mobile No.</span><span>Email</span><span className="text-center">Portal Access</span><span className="text-center">Status</span><span className="text-right pr-1">Actions</span>
               </div>
