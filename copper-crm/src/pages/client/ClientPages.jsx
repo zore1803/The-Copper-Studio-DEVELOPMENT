@@ -10,7 +10,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { useRevalidate } from "../../hooks/useRevalidate";
 import {
-  Loader2, CalendarDays, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
+  Loader2, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
   StickyNote, History, Copy, Video, Search, Download,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage,
@@ -35,16 +35,6 @@ const CS = {
   error: "var(--cs-error)",
 };
 
-/* Gantt status palette — shared with the admin task Gantt for visual parity. */
-const GANTT_TASK_STATUSES = ["Backlog", "To Do", "In Progress", "Review", "Completed", "Blocked"];
-const GANTT_STATUS_COLOR = {
-  Backlog: "#9ca3af",
-  "To Do": "#0ea5e9",
-  "In Progress": "#f59e0b",
-  Review: "#6366f1",
-  Completed: "#10b981",
-  Blocked: "#ef4444",
-};
 const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
 // Computed once at module load (matches the admin Gantt) to keep render pure.
 const GANTT_TODAY = today();
@@ -189,29 +179,6 @@ function TimelineKpiChip({ label, value, icon: Icon, color }) {
       </div>
     </div>
   );
-}
-
-// The backend free tier spins down when idle and can time out on the first
-// request; retry with backoff instead of leaving the Gantt permanently empty
-// after one transient failure.
-const TASK_RETRY_DELAYS_MS = [3000, 6000, 12000];
-function wait(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-async function fetchProjectTasksWithRetry(projectId, token) {
-  for (let attempt = 0; attempt <= TASK_RETRY_DELAYS_MS.length; attempt++) {
-    try {
-      // Call the API directly rather than clientApi.getProjectTasks, which
-      // swallows every failure (including a transient cold-start timeout)
-      // and silently resolves with an empty array — that masked genuine
-      // failures and made retrying pointless.
-      return await apiGet(`/api/client/projects/${projectId}/tasks`, token);
-    } catch (err) {
-      if (attempt === TASK_RETRY_DELAYS_MS.length) throw err;
-      await wait(TASK_RETRY_DELAYS_MS[attempt]);
-    }
-  }
-  return [];
 }
 
 // Shared Gantt chart pattern: fed pre-normalised rows ({ id, title, status,
@@ -431,58 +398,9 @@ function ClientStageGantt({ stages }) {
   );
 }
 
-function ClientTaskGantt({ tasks }) {
-  const rows = useMemo(() => tasks
-    .map((task) => {
-      const start = task.startDate ? parseFullDate(task.startDate) : null;
-      const end = task.dueDate ? parseFullDate(task.dueDate) : task.deadline ? parseFullDate(task.deadline) : null;
-      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
-      const status = GANTT_TASK_STATUSES.includes(task.status) ? task.status : "Backlog";
-      return {
-        id: task.id || task._id,
-        title: task.title || task.taskName || "Untitled task",
-        status,
-        start,
-        end: end < start ? start : end,
-        subtitle: task.assignedTo || task.assignee || "",
-      };
-    })
-    .filter(Boolean), [tasks]);
-
-  return (
-    <GanttChart
-      title="Task Timeline"
-      icon={CalendarDays}
-      rows={rows}
-      statusOrder={GANTT_TASK_STATUSES}
-      statusColor={GANTT_STATUS_COLOR}
-      rowLabel="task"
-      doneStatus="Completed"
-      blockedStatus="Blocked"
-      emptyTitle="No scheduled tasks yet."
-      emptyDescription="Tasks appear here once The Copper Studio sets their start and due dates."
-    />
-  );
-}
-
 export function ClientTimelinePage() {
-  const { token } = useAuth();
-  const { projects, loading, selectedProject, selectedId } = useClientProject();
+  const { projects, loading, selectedProject } = useClientProject();
   const selected = selectedProject;
-  const [tasks, setTasks] = useState([]);
-
-  const loadTasks = useCallback(() => {
-    if (!selectedId) return Promise.resolve();
-    return fetchProjectTasksWithRetry(selectedId, token)
-      .then((data) => setTasks(Array.isArray(data) ? data : []))
-      .catch(() => setTasks([]));
-  }, [selectedId, token]);
-
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
-
-  useRevalidate(loadTasks);
 
   const statusBadge = (s) => {
     const map = {
@@ -647,8 +565,6 @@ export function ClientTimelinePage() {
                 </Card>
 
                 <ClientStageGantt stages={selected.stages} />
-
-                <ClientTaskGantt tasks={tasks} />
               </>
             ) : (
               <Card className="py-4">
