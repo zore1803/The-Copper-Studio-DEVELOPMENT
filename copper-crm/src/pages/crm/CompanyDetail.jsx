@@ -2062,25 +2062,25 @@ function TasksTable({ tasks, projects, onDelete }) {
       <table className="min-w-full text-sm">
         <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Task</th>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Assigned To</th>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Priority</th>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Status</th>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Due Date</th>
-            <th className="py-3 pr-4 text-left text-xs font-bold text-white">Project</th>
-            <th className="py-3 pr-4" />
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Task</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Assigned To</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Priority</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Status</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Due Date</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-white">Project</th>
+            <th className="px-4 py-3" />
           </tr>
         </thead>
         <tbody className="divide-y divide-[#f3f4f6] bg-white">
           {tasks.map((task) => (
             <tr key={task.id || task._id}>
-              <td className="py-3 pr-4 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</td>
-              <td className="py-3 pr-4 text-[#374151]">{task.assignedTo || task.assigned || "Unassigned"}</td>
-              <td className="py-3 pr-4"><StatusBadge status={task.priority || "Medium"} /></td>
-              <td className="py-3 pr-4"><StatusBadge status={task.status || "Backlog"} /></td>
-              <td className="py-3 pr-4 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
-              <td className="py-3 pr-4 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
-              <td className="py-3 pr-4 text-right">
+              <td className="px-4 py-3 font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</td>
+              <td className="px-4 py-3 text-[#374151]">{task.assignedTo || task.assigned || "Unassigned"}</td>
+              <td className="px-4 py-3"><StatusBadge status={task.priority || "Medium"} /></td>
+              <td className="px-4 py-3"><StatusBadge status={task.status || "Backlog"} /></td>
+              <td className="px-4 py-3 text-[#374151]">{task.dueDate || task.deadline || "No due date"}</td>
+              <td className="px-4 py-3 text-[#374151]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}</td>
+              <td className="px-4 py-3 text-right">
                 <button onClick={() => onDelete(task)} className="rounded-full p-1.5 text-[#9ca3af] hover:bg-red-50 hover:text-red-600" title="Delete task">
                   <Trash2 size={14} />
                 </button>
