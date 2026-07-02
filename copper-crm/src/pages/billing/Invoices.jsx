@@ -555,15 +555,15 @@ export default function Invoices() {
               <table className="min-w-full">
                 <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Invoice Number</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Company</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Project</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-white/90">Amount</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-white/90">GST</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Issue Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/90">Due Date</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-white/90">Status</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-white/90">PDF</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/90">Invoice Number</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/90">Company</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/90">Project</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-white/90">Amount</th>
+                    <th className="px-4 py-3 text-right text-xs font-bold text-white/90">GST</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/90">Issue Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/90">Due Date</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-white/90">Status</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-white/90">PDF</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">

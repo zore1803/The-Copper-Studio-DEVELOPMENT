@@ -285,14 +285,14 @@ export default function ProjectsList() {
         <table className="w-full text-left text-sm text-[#6b7280]">
           <thead className="bg-[#8D3118] text-xs uppercase text-white/90">
             <tr>
-              <th className="px-5 py-3 font-semibold">Project Name</th>
-              <th className="px-5 py-3 font-semibold">Company</th>
-              <th className="px-5 py-3 font-semibold">Template</th>
-              <th className="px-5 py-3 font-semibold">Current Stage</th>
-              <th className="px-5 py-3 font-semibold">Progress</th>
-              <th className="px-5 py-3 font-semibold">Status</th>
-              <th className="px-5 py-3 font-semibold">Timeline</th>
-              <th className="px-5 py-3 font-semibold text-right">Value</th>
+              <th className="px-5 py-3 font-bold">Project Name</th>
+              <th className="px-5 py-3 font-bold">Company</th>
+              <th className="px-5 py-3 font-bold">Template</th>
+              <th className="px-5 py-3 font-bold">Current Stage</th>
+              <th className="px-5 py-3 font-bold">Progress</th>
+              <th className="px-5 py-3 font-bold">Status</th>
+              <th className="px-5 py-3 font-bold">Timeline</th>
+              <th className="px-5 py-3 font-bold text-right">Value</th>
               <th className="px-5 py-3 w-10" />
             </tr>
           </thead>

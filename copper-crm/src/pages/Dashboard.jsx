@@ -296,7 +296,7 @@ function CrmTab({ companies, contacts }) {
             <thead className="bg-[#8D3118] border-b border-[#6E2412]">
               <tr>
                 {["Name", "Industry", "Status"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-white/90">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold text-white/90">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -363,7 +363,7 @@ function InvoicesTab({ invoices }) {
             <thead className="bg-[#8D3118] border-b border-[#6E2412]">
               <tr>
                 {["Invoice", "Customer", "Package", "Amount", "Status", "Date"].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-medium text-white/90">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold text-white/90">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -529,7 +529,7 @@ export default function Dashboard() {
                   <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                     <tr>
                       {["Project", "Client", "Progress", "Due", "Status"].map(h => (
-                        <th key={h} className="px-5 py-3 text-left text-xs font-medium text-white/90">{h}</th>
+                        <th key={h} className="px-5 py-3 text-left text-xs font-bold text-white/90">{h}</th>
                       ))}
                     </tr>
                   </thead>

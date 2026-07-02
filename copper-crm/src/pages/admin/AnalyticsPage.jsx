@@ -1322,12 +1322,12 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-[#8D3118] border-b border-[#6E2412]">
             <tr>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Project Name</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Company / Contact</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Package</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Timeline</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Progress</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Priority</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Project Name</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Company / Contact</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Package</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Timeline</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Progress</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Priority</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-[#ffffff]">
@@ -1461,11 +1461,11 @@ function RecentPaymentsTable({ payments, page, setPage, search, setSearch, navig
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="bg-[#8D3118] border-b border-[#6E2412]">
             <tr>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Date</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Company / Contact</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Package / Order ID</th>
-              <th className="px-5 py-3 text-right text-xs font-medium text-white/90">Amount</th>
-              <th className="px-5 py-3 text-left text-xs font-medium text-white/90">Status</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Date</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Company / Contact</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Package / Order ID</th>
+              <th className="px-5 py-3 text-right text-xs font-bold text-white/90">Amount</th>
+              <th className="px-5 py-3 text-left text-xs font-bold text-white/90">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-[#ffffff]">
