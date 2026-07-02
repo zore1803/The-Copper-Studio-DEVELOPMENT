@@ -87,6 +87,25 @@ router.post("/clients/invite", async (req, res, next) => {
   }
 });
 
+// Reactivates (or otherwise updates the status of) a client's portal login —
+// used from the Contacts list to undo a self-service deactivation. Restoring
+// only flips User.status back to "active"; it never touches or restores
+// anything else, since deactivating never deleted anything in the first place.
+router.put("/clients/:clientId/status", async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (!["active", "disabled", "invited"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status." });
+    }
+    const user = await User.findByIdAndUpdate(req.params.clientId, { status }, { new: true })
+      .select("-passwordHash -invite -resetPassword");
+    if (!user) return res.status(404).json({ message: "Client not found." });
+    res.json({ user });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/clients/:clientId", async (req, res, next) => {
   try {
     const user = await User.findById(req.params.clientId).select("-passwordHash -invite -resetPassword");

@@ -227,7 +227,21 @@ router.get("/:type", validateType, async (req, res, next) => {
       await syncScheduledEventsToMeetings().catch((err) => console.error("Calendly sync failed:", err.message));
     }
     const records = await Model.find({}).sort({ updatedAt: -1 });
-    res.json(records.map(asPublicRecord));
+    let mapped = records.map(asPublicRecord);
+
+    // Attach each linked portal login's status so the Contacts list can flag
+    // a self-deactivated account (and let admin reactivate it) without a
+    // separate lookup per row.
+    if (req.params.type === "contacts") {
+      const userIds = [...new Set(mapped.map((c) => c.userId).filter(Boolean).map(String))];
+      if (userIds.length) {
+        const users = await User.find({ _id: { $in: userIds } }).select("status").catch(() => []);
+        const statusById = new Map(users.map((u) => [String(u._id), u.status]));
+        mapped = mapped.map((c) => (c.userId ? { ...c, portalStatus: statusById.get(String(c.userId)) || null } : c));
+      }
+    }
+
+    res.json(mapped);
   } catch (error) {
     next(error);
   }

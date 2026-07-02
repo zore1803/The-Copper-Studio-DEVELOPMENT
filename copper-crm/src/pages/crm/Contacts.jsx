@@ -14,6 +14,8 @@ import ContactExportMenu from "../../components/ContactExportMenu";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
 import { contactFullName } from "../../lib/contacts";
+import { useAuth } from "../../auth/useAuth";
+import { apiPut } from "../../lib/api";
 
 const PAGE_SIZE = 25;
 const FOLDER_PAGE_SIZE = 8;
@@ -82,7 +84,7 @@ function EmptyState({ onCreate }) {
   );
 }
 
-function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
+function ContactRow({ contact, companyName, onEdit, onDelete, onOpen, onReactivate }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const btnRef = useRef(null);
@@ -100,6 +102,7 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
   }
 
   const portalLinked = Boolean(contact.userId);
+  const isDeactivated = portalLinked && contact.portalStatus === "disabled";
 
   return (
     <div
@@ -116,8 +119,19 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen }) {
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Building2 size={13} className="text-[#9ca3af]" /> <span className="truncate">{companyName}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><MessageCircle size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Mail size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
-      <span className="flex items-center justify-center">
-        <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked ? "Yes" : "No"}</span>
+      <span className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+        {isDeactivated ? (
+          <select
+            value="deactivated"
+            onChange={(e) => { if (e.target.value === "active") onReactivate(contact); }}
+            className="h-fit rounded-full border-0 bg-red-50 px-2 py-1 text-center text-xs font-semibold text-red-600 outline-none cursor-pointer"
+          >
+            <option value="deactivated">Deactivated</option>
+            <option value="active">Activate</option>
+          </select>
+        ) : (
+          <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked ? "Yes" : "No"}</span>
+        )}
       </span>
       <span className="flex items-center justify-center">
         <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
@@ -340,13 +354,24 @@ export default function Contacts() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
+  const { token } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(() => (location.state?.openCreate
     ? { salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" }
     : null));
-  const { records: contacts, save, remove, loading } = useCrmRecords("contacts");
+  const { records: contacts, save, remove, setRecords: setContacts, loading } = useCrmRecords("contacts");
   const { records: companies } = useCrmRecords("companies");
+
+  async function handleReactivateContact(contact) {
+    try {
+      await apiPut(`/api/admin/clients/${contact.userId}/status`, { status: "active" }, token);
+      setContacts((prev) => prev.map((c) => (c._id === contact._id ? { ...c, portalStatus: "active" } : c)));
+      showToast({ title: "Portal access restored", message: `${contactFullName(contact)}'s login is active again.` });
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't reactivate", message: err.message || "Something went wrong." });
+    }
+  }
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -582,6 +607,7 @@ export default function Contacts() {
                     onEdit={setEditing}
                     onDelete={deleteContact}
                     onOpen={(c) => navigate(`/admin/contacts/${c._id || c.id}`)}
+                    onReactivate={handleReactivateContact}
                   />
                 ))
               ) : <div className="p-5"><EmptyState onCreate={() => setEditing({ status: "Active" })} /></div>}
