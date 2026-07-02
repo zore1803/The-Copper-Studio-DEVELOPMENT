@@ -84,11 +84,11 @@ function PanelSection({ title, children }) {
   );
 }
 
-function KpiChip({ label, value, icon: Icon }) {
+function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -526,11 +526,11 @@ export default function ProjectDetail() {
 
       <div className="flex-1 space-y-5 p-6">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-          <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} />
-          <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} />
-          <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} />
-          <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} />
-          <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} />
+          <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} color="#3b82f6" />
+          <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} color="#8D3118" />
+          <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} color="#16a34a" />
+          <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} color="#ef4444" />
+          <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} color="#0d9488" />
         </div>
 
         <section className="space-y-5">
