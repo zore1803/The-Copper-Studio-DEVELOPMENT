@@ -390,7 +390,7 @@ export function ClientTimelinePage() {
   const stageBadge = (s) => {
     if (s === "completed") return { icon: "check_circle", color: "#388e3c" };
     if (s === "in_progress") return { icon: "radio_button_checked", color: CS.primary };
-    return { icon: "radio_button_unchecked", color: CS.outlineVariant };
+    return { icon: "radio_button_unchecked", color: "#9ca3af" };
   };
 
   return (
@@ -472,16 +472,17 @@ export function ClientTimelinePage() {
                   <Card className="p-6">
                     <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Engagement Roadmap</h3>
                     <div className="relative space-y-5 ml-3">
-                      <div className="absolute left-[11px] top-3 bottom-3 w-0.5" style={{ background: CS.outlineVariant }} />
+                      {selected.stages.length > 1 && (
+                        <div className="absolute left-[13px] top-3 bottom-3 w-0.5" style={{ background: CS.outlineVariant }} />
+                      )}
                       {selected.stages.map((stage, i) => {
                         const sb = stageBadge(stage.status);
                         return (
                           <div key={i} className="relative flex gap-5 items-start">
-                            <div className={`z-10 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-white flex-shrink-0 ${
-                              stage.status === "completed" ? "" : stage.status === "in_progress" ? "" : ""
-                            }`}
+                            <div className="z-10 w-7 h-7 rounded-full flex items-center justify-center ring-4 ring-white flex-shrink-0 border"
                               style={{
-                                background: stage.status === "completed" ? CS.primaryContainer : stage.status === "in_progress" ? CS.primaryFixed : CS.surfaceContainer,
+                                background: stage.status === "completed" ? CS.primaryContainer : stage.status === "in_progress" ? CS.primaryFixed : "#f9fafb",
+                                borderColor: stage.status === "completed" || stage.status === "in_progress" ? "transparent" : "#e5e7eb",
                               }}>
                               {(() => {
                                 const StageIcon = stage.status === "completed" ? Check : stage.status === "in_progress" ? CircleDot : Clock;
@@ -510,6 +511,13 @@ export function ClientTimelinePage() {
                                   style={{ background: "#e8f5e9", color: "#388e3c" }}>
                                   <CheckCircle2 size={12} />
                                   Completed
+                                </span>
+                              )}
+                              {(!stage.status || stage.status === "not_started") && (
+                                <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                                  style={{ background: "#f3f4f6", color: "#6b7280" }}>
+                                  <Clock size={12} />
+                                  Not Started
                                 </span>
                               )}
                             </div>

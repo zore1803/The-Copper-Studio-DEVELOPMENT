@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FolderPlus, FilePlus2, FileText, FileType, Image, Frame,
@@ -102,6 +103,82 @@ function openDocument(doc, onError) {
   }
 }
 
+// Closes the row action menu when clicking outside its trigger/panel.
+function useClickOutside(refs, onOutside, active) {
+  useEffect(() => {
+    if (!active) return;
+    function onDown(e) {
+      if (refs.some((ref) => ref.current?.contains(e.target))) return;
+      onOutside();
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [refs, onOutside, active]);
+}
+
+// Row action menu, portaled to <body> and positioned from the trigger
+// button's own bounding rect — anchoring it inside the table cell instead
+// clipped/misplaced it whenever the row sat near the table's bottom edge.
+function DocRowActions({ doc, onOpen, onInfo, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useClickOutside([btnRef, menuRef], () => setOpen(false), open);
+
+  function toggle() {
+    if (!open) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: rect.right - 160 });
+    }
+    setOpen((v) => !v);
+  }
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={toggle}
+        className="text-[#6b7280] transition-colors hover:text-[#8D3118]"
+      >
+        <MoreHorizontal size={18} />
+      </button>
+      {open && pos && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", top: pos.top, left: pos.left }}
+          className="z-50 w-40 rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg text-left"
+        >
+          <button
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb] disabled:text-[#9ca3af]"
+            disabled={!doc.fileUrl}
+            onClick={() => { onOpen(); setOpen(false); }}
+          >
+            <ExternalLink size={14} /> Open file
+          </button>
+          <button
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+            onClick={() => { onInfo(); setOpen(false); }}
+          >
+            <Info size={14} /> View Info
+          </button>
+          {doc._source === "embedded" && (
+            <button
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+              onClick={() => { onDelete(); setOpen(false); }}
+            >
+              <Trash2 size={14} /> Delete
+            </button>
+          )}
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
 export default function ProjectFiles() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
@@ -111,7 +188,6 @@ export default function ProjectFiles() {
   const [uploadFolder, setUploadFolder] = useState("");
   const [newFolderMode, setNewFolderMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
-  const [docMenu, setDocMenu] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -285,7 +361,6 @@ export default function ProjectFiles() {
   async function handleDeleteDoc(doc) {
     const updated = { ...project, documents: (project.documents || []).filter((d) => d._id !== doc._id && d.name !== doc.name) };
     await saveProject(updated);
-    setDocMenu(null);
     showToast({ title: "File removed", message: `${doc.name} deleted.` });
   }
 
@@ -336,7 +411,7 @@ export default function ProjectFiles() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-[#f8fafc]" onClick={() => setDocMenu(null)}>
+    <div className="flex min-h-full flex-col bg-[#f8fafc]">
       <ProjectHeader company={company} project={project} activeTab="Files" />
 
       <div className="flex-1 space-y-5 p-6">
@@ -562,39 +637,13 @@ export default function ProjectFiles() {
                           <span className="text-sm text-[#211a17]">{doc.uploadedBy}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-right relative" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          type="button"
-                          onClick={() => setDocMenu(docMenu === menuKey ? null : menuKey)}
-                          className="text-[#6b7280] transition-colors hover:text-[#8D3118]"
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-                        {docMenu === menuKey && (
-                          <div className="absolute right-6 top-full z-20 mt-1 w-40 rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg text-left">
-                            <button
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb] disabled:text-[#9ca3af]"
-                              disabled={!doc.fileUrl}
-                              onClick={() => { openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg })); setDocMenu(null); }}
-                            >
-                              <ExternalLink size={14} /> Open file
-                            </button>
-                            <button
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-                              onClick={() => { setInfoDoc(doc); setDocMenu(null); }}
-                            >
-                              <Info size={14} /> View Info
-                            </button>
-                            {doc._source === "embedded" && (
-                              <button
-                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                                onClick={() => handleDeleteDoc(doc)}
-                              >
-                                <Trash2 size={14} /> Delete
-                              </button>
-                            )}
-                          </div>
-                        )}
+                      <td className="px-6 py-5 text-right">
+                        <DocRowActions
+                          doc={doc}
+                          onOpen={() => openDocument(doc, (msg) => showToast({ type: "error", title: "Can't open", message: msg }))}
+                          onInfo={() => setInfoDoc(doc)}
+                          onDelete={() => handleDeleteDoc(doc)}
+                        />
                       </td>
                     </tr>
                   );
@@ -619,8 +668,8 @@ export default function ProjectFiles() {
             </div>
           )}
 
-          {/* Pagination */}
-          {filteredDocuments.length > PAGE_SIZE && (
+          {/* Footer / pagination */}
+          {filteredDocuments.length > 0 && (
             <div className="flex items-center justify-between border-t border-[#e5e7eb] bg-[#fafafa] px-6 py-3">
               <p className="text-[11px] text-[#6b7280]">
                 Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredDocuments.length)} of {filteredDocuments.length}

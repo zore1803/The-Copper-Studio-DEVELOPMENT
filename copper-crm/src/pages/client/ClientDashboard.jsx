@@ -130,7 +130,7 @@ export default function ClientDashboard() {
                       <div key={i} className="flex items-center gap-3">
                         {(() => {
                           const StageIcon = stage.status === "completed" ? CheckCircle2 : stage.status === "in_progress" ? CircleDot : Circle;
-                          return <StageIcon size={18} style={{ color: stage.status === "completed" ? "#4caf50" : stage.status === "in_progress" ? "var(--cs-primary)" : "var(--cs-outline-variant)" }} />;
+                          return <StageIcon size={18} style={{ color: stage.status === "completed" ? "#4caf50" : stage.status === "in_progress" ? "var(--cs-primary)" : "#9ca3af" }} />;
                         })()}
                         <span className="text-sm" style={{
                           color: stage.status === "completed" ? "var(--cs-on-surface)" : stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
