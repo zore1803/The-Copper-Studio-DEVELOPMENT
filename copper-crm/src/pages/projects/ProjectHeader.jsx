@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FolderKanban, Calendar, Clock3, AlertCircle, CalendarCheck, Package } from "lucide-react";
+import { FolderKanban, Calendar, Clock3, AlertCircle, ChevronDown } from "lucide-react";
 import { Badge, Button, Avatar } from "../../components/ui";
 import { isRoadmapComplete } from "../../lib/stageProgress";
+
+function InfoLine({ label, value }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+      <p className="mt-0.5 truncate text-sm font-semibold text-[#111827]" title={value ? String(value) : undefined}>{value || "—"}</p>
+    </div>
+  );
+}
 
 const statusColor = {
   "Not Started": "gray",
@@ -34,7 +44,8 @@ function tabsFor(base) {
   ];
 }
 
-export default function ProjectHeader({ company, project, activeTab, actionLabel, actionIcon: ActionIcon, onAction }) {
+export default function ProjectHeader({ company, project, activeTab, actionLabel, actionIcon: ActionIcon, onAction, children }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const pill = priorityPill[project.priority] || priorityPill["on-track"];
   const location = useLocation();
   // Keep the tabs (and thus the active sidebar section) in whichever section the
@@ -90,19 +101,6 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
                   </div>
                 )}
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-[#6b7280]">
-                <span className="flex items-center gap-1.5">
-                  <Calendar size={13} className="text-[#8D3118]" /> Start: <span className="font-semibold text-[#111827]">{startDate}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <CalendarCheck size={13} className="text-[#8D3118]" /> Expected: <span className="font-semibold text-[#111827]">{expectedDate}</span>
-                </span>
-                {packageName && (
-                  <span className="flex items-center gap-1.5">
-                    <Package size={13} className="text-[#8D3118]" /> Package: <span className="font-semibold text-[#111827]">{packageName}</span>
-                  </span>
-                )}
-              </div>
             </div>
           </div>
           <div className="flex flex-wrap shrink-0 gap-2">
@@ -114,6 +112,35 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
             )}
           </div>
         </div>
+
+        <div className="mt-5 rounded-xl border border-[#FFFFFF] bg-[#fafafa]">
+          <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+            <InfoLine label="Package" value={packageName} />
+            <InfoLine label="Start Date" value={startDate} />
+            <InfoLine label="Expected Date" value={expectedDate} />
+            <InfoLine label="Priority" value={pill.label} />
+            <button
+              type="button"
+              onClick={() => setDetailsOpen((open) => !open)}
+              aria-expanded={detailsOpen}
+              title={detailsOpen ? "Hide project details" : "Show project details"}
+              className="flex h-8 w-8 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
+            >
+              <ChevronDown size={18} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
+            </button>
+          </div>
+          {detailsOpen && (
+            <div className="grid grid-cols-2 gap-4 border-t border-[#FFFFFF] px-4 pb-4 pt-3 sm:grid-cols-3 lg:grid-cols-4">
+              <InfoLine label="Status" value={liveStatus} />
+              <InfoLine label="Client Status" value={project.clientStatus?.replace(/_/g, " ")} />
+              <InfoLine label="Payment Status" value={project.paymentStatus} />
+              <InfoLine label="Final Amount" value={project.finalAmount || project.budget ? `₹${Number(project.finalAmount || project.budget).toLocaleString("en-IN")}` : ""} />
+              {team.length > 0 && <InfoLine label="Team" value={team.join(", ")} />}
+            </div>
+          )}
+        </div>
+
+        {children}
       </div>
 
       <div className="overflow-x-auto px-6 pb-5">

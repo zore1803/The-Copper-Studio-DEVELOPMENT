@@ -522,17 +522,17 @@ export default function ProjectDetail() {
         actionLabel="Manage Stages"
         actionIcon={Settings2}
         onAction={() => setManaging(true)}
-      />
-
-      <div className="flex-1 space-y-5 p-6">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      >
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           <KpiChip label="Progress" value={`${liveProgress}%`} icon={Zap} color="#3b82f6" />
           <KpiChip label="Current Phase" value={displayPhases[phaseIndex]?.label || project.currentPhase || "—"} icon={ListChecks} color="#8D3118" />
           <KpiChip label="Final Amount" value={formatINR(project.finalAmount || project.budget)} icon={ListChecks} color="#16a34a" />
           <KpiChip label="Payment Status" value={project.paymentStatus || "Pending"} icon={ListChecks} color="#ef4444" />
           <KpiChip label="Client Status" value={CLIENT_STATUSES.find(s => s.value === project.clientStatus)?.label || "In Progress"} icon={Settings2} color="#0d9488" />
         </div>
+      </ProjectHeader>
 
+      <div className="flex-1 space-y-5 p-6">
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
             <div className="flex items-center gap-3">
