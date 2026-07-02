@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
@@ -7,6 +7,7 @@ import {
   FolderKanban, ChevronDown, Check, Plus,
 } from "lucide-react";
 import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
+import { useToast } from "../components/useToast";
 
 const QUICK_ACTIONS = [
   { icon: Video, label: "Request a meeting", to: "/client/meetings" },
@@ -126,6 +127,17 @@ export default function ClientLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const quickAddRef = useRef(null);
+  const notifRef = useRef(null);
+  const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
+
+  useEffect(() => {
+    function onOutside(e) {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
+    }
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, []);
 
   const name = auth.user?.name || "Client";
   const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -233,31 +245,47 @@ export default function ClientLayout() {
 
           <div className="flex items-center gap-4">
             {/* Bell */}
-            <div className="relative">
+            <div ref={notifRef} className="relative">
               <button
-                onClick={() => setNotifOpen((v) => !v)}
+                onClick={() => { setNotifOpen((v) => !v); markAllRead(); }}
                 className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#E1E4EA] text-black hover:bg-[#f9fafb] transition-colors"
               >
                 <Bell size={16} />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#8D3118]" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-[#DF120B] text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50">
-                  <div className="px-4 py-3 border-b border-[#e5e7eb]">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#e5e7eb]">
                     <p className="font-semibold text-sm text-[#111827]">Notifications</p>
+                    {notifHistory.length > 0 && (
+                      <button onClick={clearHistory} className="text-[10px] font-semibold text-[#9ca3af] hover:text-red-500 transition-colors">
+                        Clear all
+                      </button>
+                    )}
                   </div>
-                  <div className="p-3 space-y-1.5">
-                    {[
-                      { text: "Meeting scheduled for tomorrow", time: "2h ago" },
-                      { text: "New document available for review", time: "1d ago" },
-                    ].map((n, i) => (
-                      <div key={i} className="flex gap-3 p-2.5 rounded-lg bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors cursor-pointer">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-[#111827]">{n.text}</p>
-                          <p className="text-xs mt-0.5 text-[#6b7280]">{n.time}</p>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="max-h-96 overflow-y-auto divide-y divide-[#f3f4f6]">
+                    {notifHistory.length ? (
+                      notifHistory.map((n) => {
+                        const dotColor = n.type === "error" ? "bg-red-400" : n.type === "info" ? "bg-blue-400" : "bg-emerald-400";
+                        const timeStr = n.ts ? new Date(n.ts).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) + ", " + new Date(n.ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "";
+                        return (
+                          <div key={n.id} className="flex gap-3 px-4 py-3 hover:bg-[#fafafa] transition-colors">
+                            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor}`} />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-[#111827]">{n.title}</p>
+                              {n.message && <p className="mt-0.5 text-xs text-[#6b7280] leading-relaxed">{n.message}</p>}
+                              <p className="mt-1 text-[10px] text-[#9ca3af]">{timeStr}</p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="px-4 py-6 text-center text-xs text-[#9ca3af]">No notifications yet.</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -272,21 +300,18 @@ export default function ClientLayout() {
                 <Plus size={16} />
               </button>
               {quickAddOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setQuickAddOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
-                    {QUICK_ACTIONS.map((item) => (
-                      <button
-                        key={item.to}
-                        onClick={() => { setQuickAddOpen(false); go(item.to); }}
-                        className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
-                      >
-                        <item.icon size={14} className="text-[#9ca3af]" />
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </>
+                <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
+                  {QUICK_ACTIONS.map((item) => (
+                    <button
+                      key={item.to}
+                      onClick={() => { setQuickAddOpen(false); go(item.to); }}
+                      className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                    >
+                      <item.icon size={14} className="text-[#9ca3af]" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
 
