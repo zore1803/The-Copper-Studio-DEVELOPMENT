@@ -9,6 +9,7 @@ import FilterButton from "../../components/FilterButton";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { useRevalidate } from "../../hooks/useRevalidate";
+import { isNotificationSupported, requestBrowserNotificationPermission } from "../../lib/browserNotifications";
 import {
   Loader2, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
   StickyNote, History, Copy, Video, Search, Download, Eye,
@@ -1418,6 +1419,7 @@ export function ClientSettingsPage() {
   const auth = useAuth();
   const token = auth.token;
   const user = auth.user;
+  const { showToast } = useToast();
 
   const [tab, setTab] = useState("Account");
   const [form, setForm] = useState({
@@ -1438,6 +1440,29 @@ export function ClientSettingsPage() {
   const [savingPw, setSavingPw] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  // Browser notifications need the OS/browser's own permission grant, which
+  // can only be requested from a user gesture — this toggle click is one.
+  // If the user denies (or has denied before), the toggle snaps back off
+  // instead of silently claiming to be enabled.
+  async function handlePrefToggle(key, value) {
+    if (key === "browser" && value) {
+      if (!isNotificationSupported()) {
+        showToast({ type: "error", title: "Not supported", message: "This browser doesn't support notifications." });
+        return;
+      }
+      const granted = await requestBrowserNotificationPermission();
+      if (!granted) {
+        showToast({
+          type: "error",
+          title: "Permission denied",
+          message: "Allow notifications for this site in your browser settings, then try again.",
+        });
+        return;
+      }
+    }
+    setPrefs((p) => ({ ...p, [key]: value }));
+  }
 
   async function saveProfile(e) {
     e.preventDefault();
@@ -1541,7 +1566,7 @@ export function ClientSettingsPage() {
                     <p className="text-sm font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{item.label}</p>
                     <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>{item.description}</p>
                   </div>
-                  <Toggle checked={prefs[item.key]} onChange={v => setPrefs(p => ({ ...p, [item.key]: v }))} />
+                  <Toggle checked={prefs[item.key]} onChange={v => handlePrefToggle(item.key, v)} />
                 </div>
               ))}
             </div>

@@ -57,6 +57,25 @@ app.use("/api/admin/settings", settingsRoutes);
 app.use("/api/calendly", calendlyRoutes);
 app.use("/api/invoices", invoiceRoutes);
 
+// Client-facing notification emails (invoice, payment, reminders) are gated by
+// the recipient's own portal preferences (Settings > Notifications). The
+// master "Email Notifications" toggle blocks everything covered here; a
+// specific category toggle (e.g. "billingAlerts") can additionally suppress
+// just that kind. Critical account emails (portal invite, password reset)
+// intentionally do NOT go through this check — those aren't "notifications",
+// they're required to use the account at all. A missing account (no User
+// record yet, e.g. the very first invoice at checkout) always sends, since
+// there's no preference to honor yet.
+async function shouldSendNotificationEmail(email, category) {
+  if (!email) return true;
+  const user = await User.findOne({ email: String(email).toLowerCase() }).select("preferences").catch(() => null);
+  if (!user) return true;
+  const notif = user.preferences?.notifications || {};
+  if (notif.email === false) return false;
+  if (category && notif[category] === false) return false;
+  return true;
+}
+
 // Build + email the tax invoice for a paid order. Failures are logged but never
 // block the order/payment response (the invoice is always retrievable via the API).
 async function emailInvoiceForOrder(order, invoice) {
@@ -64,6 +83,7 @@ async function emailInvoiceForOrder(order, invoice) {
     if (!order || order.payment?.status !== "paid") return;
     const customer = order.customer || {};
     if (!customer.customerEmail) return;
+    if (!(await shouldSendNotificationEmail(customer.customerEmail, "billingAlerts"))) return;
 
     const project = await Project.findOne({ orderId: order._id }).catch(() => null);
     const model = buildInvoiceModel({ order, invoice, project });

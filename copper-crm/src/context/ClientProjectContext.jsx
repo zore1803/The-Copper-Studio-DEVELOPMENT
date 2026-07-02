@@ -4,6 +4,7 @@ import { useAuth } from "../auth/useAuth";
 import { apiGet } from "../lib/api";
 import { storeGet, storeSet } from "../lib/store";
 import { useRevalidate } from "../hooks/useRevalidate";
+import { checkProjectNotifications } from "../lib/projectNotifications";
 
 const ClientProjectContext = createContext(null);
 const STORAGE_KEY = "cs_client_selected_project";
@@ -27,7 +28,16 @@ function wait(ms) {
  * itself to a single project. The selection is persisted across reloads.
  */
 export function ClientProjectProvider({ children }) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const browserNotifEnabled = user?.preferences?.notifications?.browser === true;
+  const browserNotifEnabledRef = useRef(browserNotifEnabled);
+  useEffect(() => {
+    browserNotifEnabledRef.current = browserNotifEnabled;
+  }, [browserNotifEnabled]);
+  // Seeded from cache so the first live fetch after reopening the app still
+  // diffs against what the client last saw (not an empty list), letting a
+  // stage change made while they were away still trigger a notification.
+  const projectsRef = useRef(storeGet("projects"));
   // Paint instantly from the last-known cache instead of blocking the whole
   // client shell (sidebar switcher, dashboard) behind a network round trip —
   // matches the admin side's useCrmRecords cache-first behavior. Revalidates
@@ -59,6 +69,8 @@ export function ClientProjectProvider({ children }) {
             const data = await apiGet("/api/client/projects", token);
             if (!alive) return;
             const list = Array.isArray(data) ? data : [];
+            checkProjectNotifications(projectsRef.current, list, browserNotifEnabledRef.current);
+            projectsRef.current = list;
             storeSet("projects", list);
             setProjects(list);
             setSelectedId((prev) => {
