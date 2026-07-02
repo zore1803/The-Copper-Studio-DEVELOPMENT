@@ -272,8 +272,8 @@ export default function ProjectFiles() {
       const updated = { ...project, documents: [newDoc, ...(project.documents || [])] };
       await saveProject(updated);
       showToast({ title: "File uploaded", message: `${file.name} added to ${category}.` });
-    } catch {
-      showToast({ type: "error", title: "Upload failed", message: "Could not read that file. Try again." });
+    } catch (err) {
+      showToast({ type: "error", title: "Upload failed", message: err?.message || "Could not save that file. Try again." });
     } finally {
       setUploadProgress(null);
       e.target.value = "";

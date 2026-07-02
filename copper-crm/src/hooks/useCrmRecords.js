@@ -107,6 +107,12 @@ export function useCrmRecords(type, fallback = EMPTY_FALLBACK) {
       } catch (err) {
         console.error(`Failed to persist ${type} record to the database:`, err);
         setError(err.message || `Failed to save ${type}.`);
+        // Keep the optimistic local write for offline resilience, but rethrow
+        // so the caller's own try/catch (which usually shows a "save failed"
+        // toast) actually runs — previously this swallowed every save error,
+        // so callers always reported success even when the database write
+        // never happened.
+        throw err;
       }
 
       return optimistic;
