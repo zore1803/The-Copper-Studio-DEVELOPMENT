@@ -109,6 +109,30 @@ router.put("/change-password", async (req, res, next) => {
   }
 });
 
+// Deactivates the client's own portal login — sets status to "disabled" so
+// the /auth/login route rejects any future sign-in, but never deletes or
+// touches their projects/documents/invoices. Data is only ever permanently
+// removed via the admin-side contact/company delete flow. The client must
+// type their exact account name to confirm, checked here (not just in the
+// UI) so the safeguard can't be bypassed by calling the API directly.
+router.post("/deactivate", async (req, res, next) => {
+  try {
+    const { confirmName } = req.body;
+    const user = await User.findById(req.auth.sub);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    if (!confirmName || confirmName.trim().toLowerCase() !== String(user.name || "").trim().toLowerCase()) {
+      return res.status(400).json({ message: "The typed name doesn't match your account name." });
+    }
+
+    user.status = "disabled";
+    await user.save();
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/orders", async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.sub);

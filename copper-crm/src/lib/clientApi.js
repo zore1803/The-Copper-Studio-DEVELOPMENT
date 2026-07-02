@@ -27,6 +27,10 @@ export const clientApi = {
     () => ({ success: true, message: "Password updated locally." })
   ),
 
+  // No offline fallback on purpose — a failure (wrong confirm name, backend
+  // down) must surface as a real error, never silently "succeed" locally.
+  deactivateAccount: (confirmName, token) => apiPost("/api/client/deactivate", { confirmName }, token),
+
   getOrders: (token) => withFallback(
     () => apiGet("/api/client/orders", token),
     () => storeGet("orders")

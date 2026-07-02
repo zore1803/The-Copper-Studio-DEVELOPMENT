@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
 import { apiGet } from "../../lib/api";
@@ -1420,6 +1421,8 @@ export function ClientSettingsPage() {
   const token = auth.token;
   const user = auth.user;
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const [deactivateModal, setDeactivateModal] = useState(false);
 
   const [tab, setTab] = useState("Account");
   const [form, setForm] = useState({
@@ -1462,6 +1465,12 @@ export function ClientSettingsPage() {
       }
     }
     setPrefs((p) => ({ ...p, [key]: value }));
+  }
+
+  function handleAccountDeactivated() {
+    showToast({ title: "Account deactivated", message: "Your portal access has been revoked. Your data has been retained." });
+    auth.logout();
+    navigate("/login", { replace: true });
   }
 
   async function saveProfile(e) {
@@ -1618,14 +1627,111 @@ export function ClientSettingsPage() {
             <div className="rounded-xl border p-6" style={{ borderColor: `${CS.error}30`, background: "#fde8e810" }}>
               <h3 className="text-lg font-semibold mb-1" style={{ color: CS.error, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Danger Zone</h3>
               <p className="text-sm mb-4" style={{ color: CS.secondary }}>
-                Deactivating your account will archive all your data and revoke portal access immediately.
+                Deactivating your account revokes your portal access immediately. Your projects, documents, and invoices are
+                kept exactly as they are — nothing is deleted. Only The Copper Studio team can permanently delete your data,
+                from the admin side.
               </p>
-              <CsBtn variant="danger" icon={AlertTriangle}>Deactivate Account</CsBtn>
+              <CsBtn variant="danger" icon={AlertTriangle} onClick={() => setDeactivateModal(true)}>Deactivate Account</CsBtn>
             </div>
           </>
         )}
       </div>
+      {deactivateModal && (
+        <DeactivateAccountModal
+          accountName={user?.name || ""}
+          token={token}
+          onClose={() => setDeactivateModal(false)}
+          onDeactivated={handleAccountDeactivated}
+        />
+      )}
     </PageShell>
+  );
+}
+
+// GitHub-style two-phase confirmation: type the exact account name, then a
+// final "are you sure" step — matches the deliberate friction of GitHub's own
+// "delete this repository" flow so a deactivation can't happen by accident.
+// Deactivating only flips the account to "disabled" (blocks login), it never
+// deletes any project/document/invoice data — permanent deletion is admin-only.
+function DeactivateAccountModal({ accountName, token, onClose, onDeactivated }) {
+  const { showToast } = useToast();
+  const [phase, setPhase] = useState(1);
+  const [typedName, setTypedName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const nameMatches = typedName.trim().toLowerCase() === accountName.trim().toLowerCase();
+
+  async function confirmDeactivate() {
+    setSubmitting(true);
+    try {
+      await clientApi.deactivateAccount(typedName.trim(), token);
+      onDeactivated();
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't deactivate", message: err.message || "Something went wrong. Try again." });
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 px-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-2xl border bg-white shadow-2xl"
+        style={{ borderColor: CS.outlineVariant }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3 border-b p-5" style={{ borderColor: CS.outlineVariant }}>
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ background: "#fde8e8", color: CS.error }}>
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+              {phase === 1 ? "Deactivate your account" : "Are you absolutely sure?"}
+            </h3>
+            <p className="mt-0.5 text-xs" style={{ color: CS.secondary }}>
+              {phase === 1
+                ? "This immediately revokes your portal login. Your data is kept, not deleted."
+                : "This is your last chance to back out."}
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {phase === 1 ? (
+            <>
+              <p className="text-sm" style={{ color: CS.onSurface }}>
+                Type <span className="font-bold">{accountName}</span> to confirm you want to deactivate this account.
+              </p>
+              <input
+                autoFocus
+                value={typedName}
+                onChange={(e) => setTypedName(e.target.value)}
+                placeholder={accountName}
+                className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition-all copper-focus"
+                style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+              />
+            </>
+          ) : (
+            <div className="rounded-xl border p-4" style={{ borderColor: `${CS.error}40`, background: "#fde8e810" }}>
+              <p className="text-sm font-semibold" style={{ color: CS.error }}>You will be signed out immediately.</p>
+              <p className="mt-1 text-xs" style={{ color: CS.secondary }}>
+                Your projects, documents, and invoices stay exactly as they are. Reach out to The Copper Studio to
+                reactivate, or to permanently delete your data.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t p-4" style={{ borderColor: CS.outlineVariant }}>
+          <CsBtn variant="secondary" onClick={onClose} disabled={submitting}>Cancel</CsBtn>
+          {phase === 1 ? (
+            <CsBtn variant="danger" disabled={!nameMatches} onClick={() => setPhase(2)}>Continue</CsBtn>
+          ) : (
+            <CsBtn variant="danger" icon={AlertTriangle} loading={submitting} onClick={confirmDeactivate}>
+              Deactivate Account
+            </CsBtn>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
