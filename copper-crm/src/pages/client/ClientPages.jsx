@@ -45,15 +45,20 @@ const GANTT_TODAY = today();
 
 function PageShell({ title, subtitle, children, action }) {
   return (
-    <div className="p-5 xl:p-6 max-w-7xl mx-auto">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="flex flex-col min-h-full">
+      <div
+        className="flex flex-col gap-4 border-b bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0"
+        style={{ borderColor: CS.outlineVariant }}
+      >
         <div className="min-w-0">
-          <h1 className="text-lg font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h1>
-          {subtitle && <p className="mt-0.5 text-xs" style={{ color: CS.secondary }}>{subtitle}</p>}
+          <h1 className="text-base font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h1>
+          {subtitle && <p className="mt-0.5 text-xs truncate" style={{ color: CS.secondary }}>{subtitle}</p>}
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      {children}
+      <div className="p-5 xl:p-6 max-w-7xl mx-auto w-full">
+        {children}
+      </div>
     </div>
   );
 }
@@ -564,6 +569,26 @@ export function ClientMeetingsPage() {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
+  // Calendly's embedded scheduler posts this message to the parent window once
+  // the invitee finishes booking. The Meeting record itself is created by the
+  // Calendly webhook on the server (async), so poll a few times after the
+  // event fires to pick it up as soon as it lands instead of leaving the
+  // client staring at a stale list.
+  useEffect(() => {
+    function onCalendlyMessage(e) {
+      if (e.data?.event !== "calendly.event_scheduled") return;
+      setBookingEvent(null);
+      let attempts = 0;
+      const poll = setInterval(() => {
+        attempts += 1;
+        clientApi.getMeetings(token).then(setAllMeetings).catch(() => {});
+        if (attempts >= 5) clearInterval(poll);
+      }, 2000);
+    }
+    window.addEventListener("message", onCalendlyMessage);
+    return () => window.removeEventListener("message", onCalendlyMessage);
+  }, [token]);
+
   useEffect(() => {
     let alive = true;
     Promise.all([
@@ -870,35 +895,38 @@ export function ClientDocumentsPage() {
   ];
 
   return (
-    <PageShell title="Documents & Deliverables" subtitle="Access all files shared with you by The Copper Studio team.">
-      {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={18} style={{ color: CS.secondary }} />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search documents..."
-            className="w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm outline-none copper-focus"
-            style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
-          />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {filterOpts.map(o => (
-            <button key={o.value} onClick={() => setFilter(o.value)}
-              className="px-3 py-2 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                background: filter === o.value ? CS.primary : "#fff",
-                color: filter === o.value ? CS.onPrimary : CS.secondary,
-                border: `1px solid ${filter === o.value ? CS.primary : CS.outlineVariant}`,
-              }}>
-              {o.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <PageShell
+      title="Documents & Deliverables"
+      subtitle="Access all files shared with you by The Copper Studio team."
+      action={
+        <>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={14} style={{ color: CS.secondary }} />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search documents..."
+              className="w-full h-8 pl-8 pr-3 rounded-full border text-sm outline-none copper-focus"
+              style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
+            />
+          </div>
+          <div className="flex gap-1.5 flex-wrap">
+            {filterOpts.map(o => (
+              <button key={o.value} onClick={() => setFilter(o.value)}
+                className="h-8 px-3 rounded-full text-xs font-semibold transition-all whitespace-nowrap"
+                style={{
+                  background: filter === o.value ? CS.primary : "#fff",
+                  color: filter === o.value ? CS.onPrimary : CS.secondary,
+                  border: `1px solid ${filter === o.value ? CS.primary : CS.outlineVariant}`,
+                }}>
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </>
+      }
+    >
       {loading ? (
         <div className="flex justify-center py-20"><Spinner /></div>
       ) : filtered.length === 0 ? (
