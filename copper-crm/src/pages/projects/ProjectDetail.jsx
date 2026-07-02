@@ -102,6 +102,7 @@ function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
 
 function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete }) {
   const { showToast } = useToast();
+  const [saving, setSaving] = useState(false);
 
   // Reflect the project's actual stages — don't silently re-inject defaults, otherwise
   // deleting every stage would make them reappear. Use "+ Add Stage" to add new ones.
@@ -184,7 +185,7 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
 
   const finalAmount = Math.max(parseMoney(form.budget) - parseMoney(form.discount), 0);
 
-  function handleSaveClick() {
+  async function handleSaveClick() {
     const pStartStr = form.startDate;
     const pEndStr = form.expectedEndDate;
 
@@ -198,7 +199,14 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
       }
     }
 
-    onSave(form);
+    setSaving(true);
+    try {
+      await onSave(form);
+    } catch (err) {
+      showToast({ type: "error", title: "Save failed", message: err?.message || "Could not save these changes. Try again." });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -213,8 +221,8 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
             <Trash2 size={14} /> Delete Project
           </button>
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSaveClick}><Save size={14} /> Save & Publish</Button>
+            <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button onClick={handleSaveClick} disabled={saving}><Save size={14} /> {saving ? "Saving…" : "Save & Publish"}</Button>
           </div>
         </div>
       }
