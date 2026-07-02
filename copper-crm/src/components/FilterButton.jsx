@@ -10,7 +10,11 @@ import { Button } from "./ui";
  * change after Apply is clicked, which keeps dropdown browsing from instantly
  * changing the underlying list.
  */
-export default function FilterButton({ fields, onReset, panelWidth = 640, panelClassName = "", buttonClassName = "" }) {
+export default function FilterButton({ fields, onReset, panelWidth, panelClassName = "", buttonClassName = "" }) {
+  // A panel sized for 3 columns of fields looks mostly empty with just one
+  // or two — scale the default width down to the field count unless the
+  // caller explicitly asks for a specific width.
+  const resolvedPanelWidth = panelWidth ?? (fields.length <= 1 ? 240 : fields.length === 2 ? 420 : 640);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState(() => fieldsToDraft(fields));
   const [panelStyle, setPanelStyle] = useState({});
@@ -39,7 +43,7 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       if (!button) return;
 
       const rect = button.getBoundingClientRect();
-      const width = Math.min(panelWidth, Math.max(280, window.innerWidth - 24));
+      const width = Math.min(resolvedPanelWidth, Math.max(280, window.innerWidth - 24));
       const left = Math.min(Math.max(12, rect.right - width), window.innerWidth - width - 12);
       const below = window.innerHeight - rect.bottom - 12;
       const above = rect.top - 12;
@@ -74,7 +78,7 @@ export default function FilterButton({ fields, onReset, panelWidth = 640, panelC
       window.removeEventListener("resize", updatePanelPosition);
       window.removeEventListener("scroll", updatePanelPosition, true);
     };
-  }, [open, panelWidth]);
+  }, [open, resolvedPanelWidth]);
 
   function setDraftValue(key, value) {
     setDraft((prev) => ({ ...prev, [key]: value }));
