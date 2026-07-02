@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import {
   LayoutDashboard, GitBranch, Video, FileText,
   Receipt, Settings, LogOut, Bell, ChevronsLeft, ChevronsRight, Menu, X,
-  FolderKanban, ChevronDown, Check
+  FolderKanban, ChevronDown, Check, Plus,
 } from "lucide-react";
 import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
+
+const QUICK_ACTIONS = [
+  { icon: Video, label: "Request a meeting", to: "/client/meetings" },
+  { icon: FileText, label: "View documents", to: "/client/documents" },
+  { icon: Receipt, label: "View invoices", to: "/client/invoices" },
+];
 
 function ProjectSwitcher() {
   const { projects, selectedProject, selectedId, setSelectedId } = useClientProject();
@@ -118,6 +124,8 @@ export default function ClientLayout() {
   const collapsed = !pinned && !hovering;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const quickAddRef = useRef(null);
 
   const name = auth.user?.name || "Client";
   const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
@@ -252,6 +260,33 @@ export default function ClientLayout() {
                     ))}
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* + Quick actions */}
+            <div ref={quickAddRef} className="relative">
+              <button
+                onClick={() => setQuickAddOpen((v) => !v)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white shadow-[inset_0_0_0_1.8px_rgba(255,255,255,0.25)] hover:bg-[#8D3118] transition-colors"
+              >
+                <Plus size={16} />
+              </button>
+              {quickAddOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setQuickAddOpen(false)} />
+                  <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
+                    {QUICK_ACTIONS.map((item) => (
+                      <button
+                        key={item.to}
+                        onClick={() => { setQuickAddOpen(false); go(item.to); }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                      >
+                        <item.icon size={14} className="text-[#9ca3af]" />
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
 
