@@ -144,6 +144,9 @@ table th {
   font-family: "DM Sans", system-ui, sans-serif;
   letter-spacing: 0.05em;
 }
+table th.text-white {
+  color: #ffffff !important;
+}
 table td {
   border-color: var(--studio-border) !important;
 }
