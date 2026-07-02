@@ -2379,44 +2379,49 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   const hasFilters = Boolean(dateFilter || needle || sortDir);
 
   return (
-    <Section title="Notes" action={<Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>}>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
-          <Search size={13} className="text-[#525866] shrink-0" />
+    <Section
+      title="Notes"
+      action={
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3">
+            <Search size={13} className="text-[#525866] shrink-0" />
+            <input
+              value={search}
+              onChange={(event) => resetToFirstPage(setSearch)(event.target.value)}
+              placeholder="Search notes…"
+              className="w-40 bg-transparent text-xs outline-none placeholder:text-[#525866]"
+            />
+          </div>
           <input
-            value={search}
-            onChange={(event) => resetToFirstPage(setSearch)(event.target.value)}
-            placeholder="Search notes…"
-            className="w-40 bg-transparent text-xs outline-none placeholder:text-[#525866]"
+            type="date"
+            value={dateFilter}
+            onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
+            className="h-8 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
-        </div>
-        <input
-          type="date"
-          value={dateFilter}
-          onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
-          className="h-8 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
-        />
-        <button
-          type="button"
-          onClick={cycleSort}
-          className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-            sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
-          }`}
-          title="Sort by created date"
-        >
-          <ArrowUpDown size={13} />
-          {sortDir === "asc" ? "Oldest first" : sortDir === "desc" ? "Newest first" : "Manual order"}
-        </button>
-        {hasFilters && (
           <button
             type="button"
-            onClick={() => { setSearch(""); setDateFilter(""); setSortDir(null); setPage(1); }}
-            className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
+            onClick={cycleSort}
+            className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
+              sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+            }`}
+            title="Sort by created date"
           >
-            Clear
+            <ArrowUpDown size={13} />
+            {sortDir === "asc" ? "Oldest first" : sortDir === "desc" ? "Newest first" : "Manual order"}
           </button>
-        )}
-      </div>
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={() => { setSearch(""); setDateFilter(""); setSortDir(null); setPage(1); }}
+              className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
+            >
+              Clear
+            </button>
+          )}
+          <Button size="sm" onClick={onCreate}><Plus size={14} /> Note</Button>
+        </div>
+      }
+    >
       {pagedNotes.length ? (
         <div className="grid gap-3 sm:grid-cols-2">
           {pagedNotes.map((note, localIndex) => (
