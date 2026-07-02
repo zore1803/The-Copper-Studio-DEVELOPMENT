@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
+import { storeGet, storeSet } from "../../lib/store";
 import { useClientProject, belongsToProject } from "../../context/ClientProjectContext";
 import {
   Package, Activity, Video, ArrowRight, CheckCircle2, CircleDot, Circle,
@@ -43,15 +44,20 @@ export default function ClientDashboard() {
   const name = user?.name?.split(" ")[0] || "there";
 
   const { projects, selectedProject, selectedId } = useClientProject();
-  const [allOrders, setAllOrders] = useState([]);
-  const [allMeetings, setAllMeetings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Paint instantly from cache (same pattern as the admin side's
+  // useCrmRecords) instead of showing a blank/spinner state until the
+  // network round trip resolves — revalidates in the background.
+  const [allOrders, setAllOrders] = useState(() => storeGet("orders"));
+  const [allMeetings, setAllMeetings] = useState(() => storeGet("meetings"));
+  const [loading, setLoading] = useState(() => storeGet("orders").length === 0 && storeGet("meetings").length === 0);
 
   useEffect(() => {
     Promise.all([
       clientApi.getOrders(token).catch(() => []),
       clientApi.getMeetings(token).catch(() => []),
     ]).then(([o, m]) => {
+      storeSet("orders", o);
+      storeSet("meetings", m);
       setAllOrders(o);
       setAllMeetings(m);
     }).finally(() => setLoading(false));

@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../auth/useAuth";
 import { clientApi } from "../lib/clientApi";
+import { storeGet, storeSet } from "../lib/store";
 
 const ClientProjectContext = createContext(null);
 const STORAGE_KEY = "cs_client_selected_project";
@@ -15,8 +16,12 @@ const pid = (p) => String(p?._id || p?.id || "");
  */
 export function ClientProjectProvider({ children }) {
   const { token } = useAuth();
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Paint instantly from the last-known cache instead of blocking the whole
+  // client shell (sidebar switcher, dashboard) behind a network round trip —
+  // matches the admin side's useCrmRecords cache-first behavior. Revalidates
+  // in the background once the real fetch resolves.
+  const [projects, setProjects] = useState(() => storeGet("projects"));
+  const [loading, setLoading] = useState(() => storeGet("projects").length === 0);
   const [selectedId, setSelectedId] = useState(() => {
     try { return localStorage.getItem(STORAGE_KEY) || ""; } catch { return ""; }
   });
@@ -27,6 +32,7 @@ export function ClientProjectProvider({ children }) {
       .then((data) => {
         if (!alive) return;
         const list = Array.isArray(data) ? data : [];
+        storeSet("projects", list);
         setProjects(list);
         setSelectedId((prev) => {
           const stillValid = list.some((p) => pid(p) === String(prev));

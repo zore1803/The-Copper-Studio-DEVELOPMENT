@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
+import { storeGet, storeSet } from "../../lib/store";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
 import FilterButton from "../../components/FilterButton";
@@ -579,9 +580,12 @@ export function ClientMeetingsPage() {
   const { token, user } = useAuth();
   const { selectedId } = useClientProject();
   const { showToast } = useToast();
-  const [allMeetings, setAllMeetings] = useState([]);
+  // Paint instantly from cache (same as the admin side's useCrmRecords)
+  // instead of blocking on the network round trip — revalidates in the
+  // background once the real fetch resolves.
+  const [allMeetings, setAllMeetings] = useState(() => storeGet("meetings"));
   const [eventTypes, setEventTypes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => storeGet("meetings").length === 0);
   const [selectedRaw, setSelected] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -606,14 +610,18 @@ export function ClientMeetingsPage() {
   const selected = selectedRaw;
   const [bookingEvent, setBookingEvent] = useState(null);
   const [bookingFrameHeight, setBookingFrameHeight] = useState(520);
+  // Bumped after every booking to force the iframe to remount with a fresh
+  // src instead of sitting on Calendly's own "waiting for confirmation" /
+  // thank-you screen from the just-completed booking.
+  const [bookingFrameKey, setBookingFrameKey] = useState(0);
 
   // Calendly's embedded scheduler posts messages to the parent window: a
   // page-height update whenever its content size changes (so the iframe can
   // be sized to fit instead of leaving blank space or clipping), and an
   // event_scheduled message once the invitee finishes booking. The Meeting
-  // record itself is created by the Calendly webhook on the server (async),
-  // so poll a few times after booking to pick it up as soon as it lands
-  // instead of leaving the client staring at a stale list.
+  // record itself lands via the Calendly webhook (if configured) or the
+  // server-side API sync — both async — so poll repeatedly after booking to
+  // pick it up as soon as it exists instead of requiring a manual refresh.
   useEffect(() => {
     function onCalendlyMessage(e) {
       if (e.data?.event === "calendly.page_height") {
@@ -622,14 +630,19 @@ export function ClientMeetingsPage() {
         return;
       }
       if (e.data?.event !== "calendly.event_scheduled") return;
-      setBookingEvent(null);
-      showToast({ title: "Meeting booked", message: "Your meeting has been scheduled and will appear here shortly." });
+      showToast({ title: "Meeting booked", message: "Your meeting has been scheduled and will appear below shortly." });
+      setBookingFrameHeight(520);
+      setBookingFrameKey((k) => k + 1); // reset the widget to a fresh, bookable state
       let attempts = 0;
-      const poll = setInterval(() => {
+      const poll = () => {
         attempts += 1;
-        clientApi.getMeetings(token).then(setAllMeetings).catch(() => {});
-        if (attempts >= 5) clearInterval(poll);
-      }, 2000);
+        clientApi.getMeetings(token).then((m) => { storeSet("meetings", m); setAllMeetings(m); }).catch(() => {});
+      };
+      poll(); // check immediately, don't wait for the first interval tick
+      const interval = setInterval(() => {
+        if (attempts >= 8) { clearInterval(interval); return; }
+        poll();
+      }, 3000);
     }
     window.addEventListener("message", onCalendlyMessage);
     return () => window.removeEventListener("message", onCalendlyMessage);
@@ -643,6 +656,7 @@ export function ClientMeetingsPage() {
     ])
       .then(([m, events]) => {
         if (!alive) return;
+        storeSet("meetings", m);
         setAllMeetings(m);
         setEventTypes(events);
         // Default straight to the first slot's Calendly widget instead of
@@ -781,6 +795,7 @@ export function ClientMeetingsPage() {
                   )}
                 </div>
                 <iframe
+                  key={bookingFrameKey}
                   title={`Book ${bookingEvent.name}`}
                   src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&hide_event_type_details=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
                   style={{ height: bookingFrameHeight }}
@@ -890,13 +905,16 @@ function docStatusBadge(s) {
 export function ClientDocumentsPage() {
   const { token } = useAuth();
   const { selectedId } = useClientProject();
-  const [docs, setDocs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [docs, setDocs] = useState(() => storeGet("documents"));
+  const [loading, setLoading] = useState(() => storeGet("documents").length === 0);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    clientApi.getDocuments(token).then(setDocs).catch(() => {}).finally(() => setLoading(false));
+    clientApi.getDocuments(token)
+      .then((data) => { storeSet("documents", data); setDocs(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [token]);
 
   const filtered = docs.filter(d => {
@@ -1000,12 +1018,15 @@ export function ClientDocumentsPage() {
 export function ClientBillingPage() {
   const { token } = useAuth();
   const { selectedProject } = useClientProject();
-  const [allOrders, setAllOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [allOrders, setAllOrders] = useState(() => storeGet("orders"));
+  const [loading, setLoading] = useState(() => storeGet("orders").length === 0);
   const [selectedOrderRaw, setSelectedOrder] = useState(null);
 
   useEffect(() => {
-    clientApi.getOrders(token).then(setAllOrders).catch(() => {}).finally(() => setLoading(false));
+    clientApi.getOrders(token)
+      .then((data) => { storeSet("orders", data); setAllOrders(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [token]);
 
   // Only the selected project's invoices/orders.
