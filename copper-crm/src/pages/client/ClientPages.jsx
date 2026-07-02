@@ -750,7 +750,7 @@ export function ClientMeetingsPage() {
           </div>
 
           {/* Right: book a meeting — Calendly widget shown directly */}
-          <div className="w-full lg:w-[680px] shrink-0">
+          <div className="w-full lg:w-[480px] shrink-0">
             {bookingEvent ? (
               <Card>
                 <div className="px-4 py-3 border-b" style={{ borderColor: CS.outlineVariant }}>
@@ -774,8 +774,8 @@ export function ClientMeetingsPage() {
                 </div>
                 <iframe
                   title={`Book ${bookingEvent.name}`}
-                  src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
-                  className="h-[720px] w-full"
+                  src={`${bookingEvent.schedulingUrl}?hide_gdpr_banner=1&hide_event_type_details=1&name=${encodeURIComponent(user?.name || "")}&email=${encodeURIComponent(user?.email || "")}`}
+                  className="h-[640px] w-full"
                 />
               </Card>
             ) : (
