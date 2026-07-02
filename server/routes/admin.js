@@ -8,6 +8,7 @@ import Contact from "../models/Contact.js";
 import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { ensureClientAccount, sendPortalInvite } from "../services/portalInvite.js";
+import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 
 const router = express.Router();
 
@@ -180,6 +181,7 @@ router.delete("/documents/:id", async (req, res, next) => {
 
 router.get("/meetings", async (req, res, next) => {
   try {
+    await syncScheduledEventsToMeetings().catch((err) => console.error("Calendly sync failed:", err.message));
     const meetings = await Meeting.find({}).sort({ createdAt: -1 }).populate("clientId", "name email");
     res.json(meetings);
   } catch (error) {

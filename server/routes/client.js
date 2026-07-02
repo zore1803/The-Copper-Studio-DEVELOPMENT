@@ -9,6 +9,7 @@ import Task from "../models/Task.js";
 import Contact from "../models/Contact.js";
 import Invoice from "../models/Invoice.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
+import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 
 const router = express.Router();
 
@@ -273,6 +274,11 @@ router.get("/documents", async (req, res, next) => {
 
 router.get("/meetings", async (req, res, next) => {
   try {
+    // Pull in anything booked directly through Calendly that the webhook
+    // hasn't (or never will) deliver — safe to skip on failure since the
+    // client should still see whatever's already in the database.
+    await syncScheduledEventsToMeetings().catch((err) => console.error("Calendly sync failed:", err.message));
+
     // Meetings are personal, not project-shared: a client should only ever see
     // a meeting they themselves requested/booked, matched either by their
     // account id (portal requests) or the email they used to book with

@@ -1,3 +1,7 @@
+import Meeting from "../models/Meeting.js";
+import User from "../models/User.js";
+import Company from "../models/Company.js";
+
 const API_BASE = "https://api.calendly.com";
 
 function token() {
@@ -56,6 +60,62 @@ export async function getScheduledEvents({ minStartTime, maxStartTime } = {}) {
 export async function getEventInvitees(eventUri) {
   const data = await calendlyFetch(`/scheduled_events/${eventUri.split("/").pop()}/invitees`);
   return data.collection;
+}
+
+async function matchClient(email) {
+  const user = await User.findOne({ email: String(email || "").toLowerCase() });
+  if (!user) return { clientId: null, companyId: null };
+  const companies = await Company.find({}).select("_id userId userIds");
+  const id = String(user._id);
+  const company = companies.find((c) => String(c.userId || "") === id || (c.userIds || []).map(String).includes(id));
+  return { clientId: user._id, companyId: company?._id || null };
+}
+
+// Pulls recently scheduled/canceled Calendly events directly via the API and
+// upserts them into the Meeting collection, matched by calendlyEventUri. This
+// is the fallback path for when the Calendly webhook isn't registered or
+// isn't reachable (e.g. local/dev, or the subscription was never set up) —
+// called opportunistically before serving meeting lists so bookings show up
+// even without webhook delivery. Errors are swallowed by the caller so a
+// misconfigured Calendly token doesn't break the meetings list.
+export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
+  const minStartTime = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
+  const events = await getScheduledEvents({ minStartTime });
+
+  for (const event of events) {
+    const nextStatus = event.status === "canceled" ? "cancelled" : "confirmed";
+    const existing = await Meeting.findOne({ calendlyEventUri: event.uri });
+    if (existing) {
+      if (existing.status !== nextStatus && existing.status !== "completed") {
+        existing.status = nextStatus;
+        await existing.save();
+      }
+      continue;
+    }
+
+    let invitee = null;
+    try {
+      const invitees = await getEventInvitees(event.uri);
+      invitee = invitees[0] || null;
+    } catch {
+      // Invitee lookup failing shouldn't block creating the meeting record.
+    }
+    const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
+
+    await Meeting.create({
+      title: event.name || "Calendly Meeting",
+      status: nextStatus,
+      clientId,
+      companyId,
+      scheduledAt: event.start_time ? new Date(event.start_time) : undefined,
+      duration: event.start_time && event.end_time
+        ? Math.round((new Date(event.end_time) - new Date(event.start_time)) / 60000)
+        : 30,
+      meetingLink: event.location?.join_url || event.location?.location || "",
+      calendlyEventUri: event.uri,
+      participants: invitee ? [{ name: invitee.name, email: invitee.email }] : [],
+    });
+  }
 }
 
 export async function registerWebhookSubscription(callbackUrl) {

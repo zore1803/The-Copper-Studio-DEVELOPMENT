@@ -16,6 +16,7 @@ import User from "../models/User.js";
 import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "../services/projectNaming.js";
 import { sendContactCreatedEmail } from "../services/email.js";
+import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = express.Router();
@@ -222,6 +223,9 @@ router.get("/:type", validateType, async (req, res, next) => {
     if (req.params.type === "coupons") await expireOldCoupons();
     if (["payments", "invoices"].includes(req.params.type)) await syncPaidOrderFinance();
     if (req.params.type === "invoices") await syncStandaloneProjectInvoices();
+    if (req.params.type === "meetings") {
+      await syncScheduledEventsToMeetings().catch((err) => console.error("Calendly sync failed:", err.message));
+    }
     const records = await Model.find({}).sort({ updatedAt: -1 });
     res.json(records.map(asPublicRecord));
   } catch (error) {
