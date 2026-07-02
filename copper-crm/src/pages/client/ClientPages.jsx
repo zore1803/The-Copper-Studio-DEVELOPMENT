@@ -11,7 +11,7 @@ import SidePanel from "../../components/SidePanel";
 import { useRevalidate } from "../../hooks/useRevalidate";
 import {
   Loader2, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
-  StickyNote, History, Copy, Video, Search, Download,
+  StickyNote, History, Copy, Video, Search, Download, Eye,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage,
   FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route,
@@ -970,6 +970,33 @@ function resolveFileUrl(url) {
   return url.startsWith("/api/") ? `${import.meta.env.VITE_API_BASE_URL || ""}${url}` : url;
 }
 
+// The browser's plain <a download> attribute is ignored for most
+// cross-origin URLs (the file API lives on a different domain than the
+// SPA), so the filename fell back to whatever random id/hash was last in
+// the URL path instead of the document's real name. Fetching it as a blob
+// first and downloading that local object URL works regardless of origin.
+async function downloadDocument(doc) {
+  const url = resolveFileUrl(doc.fileUrl);
+  const filename = doc.fileName || doc.name || "document";
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Download failed");
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+  } catch {
+    // Fall back to a plain navigation so the file still opens even if the
+    // blob fetch itself failed (e.g. a CORS-restricted response).
+    window.open(url, "_blank", "noopener");
+  }
+}
+
 function docStatusBadge(s) {
   return {
     pending_review: { type: "warning", label: "Pending Review" },
@@ -1059,7 +1086,7 @@ export function ClientDocumentsPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{doc.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>
-                    {doc.fileType?.toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""} · v{doc.version || "1.0"}
+                    {doc.fileType?.toUpperCase()} {doc.fileSize ? `· ${doc.fileSize}` : ""}
                   </p>
                 </div>
               </div>
@@ -1071,12 +1098,20 @@ export function ClientDocumentsPage() {
               </div>
               <div className="pt-3 border-t flex gap-2" style={{ borderColor: CS.outlineVariant }}>
                 {doc.fileUrl ? (
-                  <a href={resolveFileUrl(doc.fileUrl)} target="_blank" rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
-                    style={{ background: CS.primary, color: CS.onPrimary }}>
-                    <Download size={15} />
-                    Download
-                  </a>
+                  <>
+                    <a href={resolveFileUrl(doc.fileUrl)} target="_blank" rel="noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all border"
+                      style={{ borderColor: CS.outlineVariant, color: CS.onSurface }}>
+                      <Eye size={15} />
+                      View
+                    </a>
+                    <button type="button" onClick={() => downloadDocument(doc)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                      style={{ background: CS.primary, color: CS.onPrimary }}>
+                      <Download size={15} />
+                      Download
+                    </button>
+                  </>
                 ) : (
                   <button disabled className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold opacity-40 cursor-not-allowed"
                     style={{ background: CS.surfaceContainer, color: CS.secondary }}>
