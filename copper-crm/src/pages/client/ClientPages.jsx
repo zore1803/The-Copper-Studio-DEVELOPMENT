@@ -101,24 +101,6 @@ function CsInput({ label, value, onChange, type = "text", disabled, placeholder,
   );
 }
 
-function CsSelect({ label, value, onChange, options }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{label}</label>}
-      <select
-        value={value}
-        onChange={e => onChange?.(e.target.value)}
-        className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none transition-all copper-focus"
-        style={{ background: "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}
-      >
-        {options.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 function Toggle({ checked, onChange }) {
   return (
     <label className="cs-toggle">
@@ -1541,22 +1523,6 @@ export function ClientSettingsPage() {
               </form>
             </Card>
 
-            {/* Account Preferences */}
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-5" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Account Preferences</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <CsSelect label="Language" value="en" onChange={() => {}} options={[
-                  { value: "en", label: "English - US" },
-                  { value: "en-uk", label: "English - UK" },
-                  { value: "hi", label: "Hindi" },
-                ]} />
-                <CsSelect label="Timezone" value="Asia/Kolkata" onChange={() => {}} options={[
-                  { value: "Asia/Kolkata", label: "(GMT +5:30) Mumbai, New Delhi" },
-                  { value: "UTC", label: "(GMT +0:00) London" },
-                  { value: "America/New_York", label: "(GMT -5:00) New York" },
-                ]} />
-              </div>
-            </Card>
           </>
         )}
 
