@@ -314,7 +314,7 @@ export function TasksPage() {
                     <tr>
                       <th className="w-10 px-4 py-3"><input type="checkbox" checked={allTasksSelected} onChange={toggleSelectAllTasks} className="rounded border-gray-300" /></th>
                       {["Task", "Related To", "Status", "Assigned", "Due Date", "Actions"].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-white/90">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-white">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -346,7 +346,7 @@ export function TasksPage() {
                   <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                     <tr>
                       {["Meeting", "Scheduled", "Status", "With", "Actions"].map((h) => (
-                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-white/90">{h}</th>
+                        <th key={h} className="px-4 py-3 text-left text-xs font-bold text-white">{h}</th>
                       ))}
                     </tr>
                   </thead>

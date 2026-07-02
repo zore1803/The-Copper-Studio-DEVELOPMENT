@@ -283,7 +283,7 @@ export default function ProjectsList() {
         }
       >
         <table className="w-full text-left text-sm text-[#6b7280]">
-          <thead className="bg-[#8D3118] text-xs uppercase text-white/90">
+          <thead className="bg-[#8D3118] text-xs uppercase text-white">
             <tr>
               <th className="px-5 py-3 font-bold">Project Name</th>
               <th className="px-5 py-3 font-bold">Company</th>

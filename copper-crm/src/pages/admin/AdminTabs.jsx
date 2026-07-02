@@ -640,7 +640,7 @@ function DataTablePreview({ type, title }) {
           <thead className="bg-[#8D3118] border-b border-[#6E2412]">
             <tr>
               {columns.map((column) => (
-                <th key={column} className="px-4 py-3 text-left text-xs font-bold text-white/90">{column}</th>
+                <th key={column} className="px-4 py-3 text-left text-xs font-bold text-white">{column}</th>
               ))}
             </tr>
           </thead>

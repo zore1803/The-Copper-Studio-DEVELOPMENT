@@ -726,37 +726,37 @@ export default function Companies() {
                 <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                   <tr>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Company Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Contact Name
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Location
                       </div>
                     </th>
                     <th className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-white">
                         Status
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Lead Source
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Owner
                       </div>
                     </th>
                     <th className="px-4 py-3 text-left">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-white/90">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                         Industry
                       </div>
                     </th>
