@@ -80,6 +80,47 @@ export default function ClientDashboard() {
   const activeProject = selectedProject;
   const upcomingMeeting = meetings.find(m => m.status === "confirmed") || meetings[0];
 
+  // A single recency-ordered feed merged from everything the dashboard already
+  // loads (and revalidates) — meetings, purchases, and per-project progress —
+  // so any new activity of any kind surfaces at the top, instead of only ever
+  // showing the two newest meetings plus one fixed project line.
+  const recentActivity = useMemo(() => {
+    const items = [];
+    for (const m of meetings) {
+      const when = m.updatedAt || m.createdAt;
+      if (!when) continue;
+      items.push({
+        key: `meeting-${m._id || m.id}`,
+        title: m.status === "requested" ? "Meeting requested" : m.status === "confirmed" ? "Meeting confirmed" : m.status === "cancelled" ? "Meeting cancelled" : "Meeting update",
+        detail: m.title || "Meeting",
+        time: new Date(when),
+      });
+    }
+    for (const o of allOrders) {
+      if (!o.createdAt) continue;
+      items.push({
+        key: `order-${o._id || o.id}`,
+        title: "Package purchased",
+        detail: o.package?.name || o.packageName || "New order",
+        time: new Date(o.createdAt),
+      });
+    }
+    for (const p of projects) {
+      const when = p.updatedAt || p.createdAt;
+      if (!when) continue;
+      items.push({
+        key: `project-${p._id || p.id}`,
+        title: "Project update",
+        detail: `${p.name} · ${p.progress || 0}% complete`,
+        time: new Date(when),
+      });
+    }
+    return items
+      .filter((it) => !Number.isNaN(it.time.getTime()))
+      .sort((a, b) => b.time - a.time)
+      .slice(0, 5);
+  }, [meetings, allOrders, projects]);
+
   const stats = [
     { icon: Package, label: "Total Packages", value: allOrders.length || "—", color: "var(--cs-primary)" },
     { icon: Activity, label: "Live Projects", value: projects.length || "—", color: "#4caf50" },
@@ -219,35 +260,20 @@ export default function ClientDashboard() {
             <div className="absolute left-[9px] top-2 bottom-2 w-0.5" style={{ background: "var(--cs-outline-variant)" }} />
             {loading ? (
               <p className="text-xs ml-7" style={{ color: "var(--cs-secondary)" }}>Loading…</p>
-            ) : !activeProject && meetings.length === 0 ? (
+            ) : recentActivity.length === 0 ? (
               <p className="text-xs ml-7" style={{ color: "var(--cs-secondary)" }}>No recent activity.</p>
             ) : (
-              <>
-                {meetings.slice(0, 2).map((m, i) => (
-                  <div key={i} className="relative flex gap-4 items-start">
-                    <ActivityDot active={i === 0} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium" style={{ color: "var(--cs-on-surface)" }}>
-                        {m.status === "requested" ? "Meeting requested" : m.status === "confirmed" ? "Meeting confirmed" : "Meeting update"}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
-                        {m.title} · {new Date(m.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                      </p>
-                    </div>
+              recentActivity.map((item, i) => (
+                <div key={item.key} className="relative flex gap-4 items-start">
+                  <ActivityDot active={i === 0} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium" style={{ color: "var(--cs-on-surface)" }}>{item.title}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
+                      {item.detail} · {item.time.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                    </p>
                   </div>
-                ))}
-                {activeProject && (
-                  <div className="relative flex gap-4 items-start">
-                    <ActivityDot active={meetings.length === 0} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium" style={{ color: "var(--cs-on-surface)" }}>Project update</p>
-                      <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
-                        {activeProject.name} · {activeProject.progress || 0}% complete
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </>
+                </div>
+              ))
             )}
           </div>
         </div>
