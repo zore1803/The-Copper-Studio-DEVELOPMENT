@@ -2329,38 +2329,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   const [page, setPage] = useState(1);
   const [dragIndex, setDragIndex] = useState(null);
   const [overIndex, setOverIndex] = useState(null);
-  const [preview, setPreview] = useState(null); // { note, top|bottom, left, width }
-  const hideTimer = useRef(null);
-  useEffect(() => () => clearTimeout(hideTimer.current), []);
-
-  // Portal the preview to <body> at a viewport-fixed position computed from the
-  // hovered card's own rect, instead of a CSS-only popover anchored inside the
-  // card — that approach clipped/overflowed off-screen for cards in the last
-  // row, since it could only ever open downward relative to its own box.
-  // Default to opening *above* the hovered note so the preview sits over its own
-  // row instead of the next one down (which read like it belonged to a different
-  // note); fall back to below only when the row is too close to the top to fit.
-  function showPreview(event, note) {
-    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
-    const rect = event.currentTarget.getBoundingClientRect();
-    const estimatedHeight = 220;
-    const openUp = rect.top > estimatedHeight;
-    setPreview({
-      note,
-      left: rect.left,
-      width: rect.width,
-      top: openUp ? undefined : rect.bottom + 6,
-      bottom: openUp ? window.innerHeight - rect.top + 6 : undefined,
-    });
-  }
-
-  function scheduleHidePreview() {
-    hideTimer.current = setTimeout(() => setPreview(null), 150);
-  }
-
-  function cancelHidePreview() {
-    if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null; }
-  }
+  const [viewingNote, setViewingNote] = useState(null);
 
   const needle = search.trim().toLowerCase();
   let visibleNotes = notes
@@ -2449,8 +2418,6 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
               onDragLeave={() => setOverIndex((prev) => (prev === localIndex ? null : prev))}
               onDrop={(event) => { event.preventDefault(); handleDrop(localIndex); }}
               onDragEnd={() => { setDragIndex(null); setOverIndex(null); }}
-              onMouseEnter={(event) => showPreview(event, note)}
-              onMouseLeave={scheduleHidePreview}
               className={`relative rounded-xl border bg-white p-4 transition-shadow ${
                 dragIndex === localIndex ? "opacity-50" : overIndex === localIndex ? "border-[#8D3118]/50 shadow-md" : "border-[#e5e7eb]"
               }`}
@@ -2467,6 +2434,9 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
                   />
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
+                  <button type="button" onClick={() => setViewingNote(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="View note">
+                    <Eye size={14} />
+                  </button>
                   <button type="button" onClick={() => onEdit(note)} className="rounded-lg p-1.5 text-[#9ca3af] hover:bg-[#fff1ec] hover:text-[#8D3118]" title="Edit note">
                     <Edit2 size={14} />
                   </button>
@@ -2514,23 +2484,65 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
           </div>
         </div>
       )}
-      {preview && createPortal(
-        <div
-          onMouseEnter={cancelHidePreview}
-          onMouseLeave={scheduleHidePreview}
-          style={{ position: "fixed", left: preview.left, width: preview.width, top: preview.top, bottom: preview.bottom }}
-          className="z-50 max-h-72 overflow-y-auto rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-xl"
-        >
-          <p className="font-bold text-[#111827]">{preview.note.title || "Untitled note"}</p>
-          <div
-            className="mt-1.5 text-sm text-[#374151] [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4"
-            dangerouslySetInnerHTML={{ __html: preview.note.body || "No content." }}
-          />
-        </div>,
-        document.body
-      )}
+      {viewingNote && <NoteViewModal note={viewingNote} onClose={() => setViewingNote(null)} />}
     </Section>
   );
+}
+
+// Renders the note's title + rich-text body inside a sandboxed iframe (its own
+// document, so the note's own HTML/styles can't leak into or clash with the
+// app's), then measures the iframe's rendered content on load and resizes the
+// iframe to match — so the popup fits exactly, however long the note is.
+function NoteViewModal({ note, onClose }) {
+  const iframeRef = useRef(null);
+  const [height, setHeight] = useState(120);
+
+  const srcDoc = `<!doctype html><html><head><meta charset="utf-8"><style>
+    body { margin:0; padding:20px; font-family: Inter, Arial, sans-serif; color:#111827; }
+    h2 { margin:0 0 12px; font-size:17px; }
+    p { margin:0 0 10px; }
+    ul, ol { margin:0 0 10px; padding-left:20px; }
+    img { max-width:100%; }
+  </style></head><body>
+    <h2>${escapeHtml(note.title || "Untitled note")}</h2>
+    <div>${note.body || "No content."}</div>
+  </body></html>`;
+
+  function handleLoad() {
+    const doc = iframeRef.current?.contentDocument;
+    if (doc) setHeight(doc.documentElement.scrollHeight);
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div
+        className="max-h-[85vh] w-full max-w-xl overflow-y-auto rounded-xl bg-white shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-2.5">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#9ca3af]">Note</p>
+          <button type="button" onClick={onClose} className="rounded-lg p-1 text-[#9ca3af] hover:bg-[#f9fafb] hover:text-[#6b7280]">
+            <X size={16} />
+          </button>
+        </div>
+        <iframe
+          ref={iframeRef}
+          title="Note detail"
+          srcDoc={srcDoc}
+          onLoad={handleLoad}
+          style={{ width: "100%", height, border: "none", display: "block" }}
+        />
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 function NotePanel({ company, note, onClose, onSave }) {
