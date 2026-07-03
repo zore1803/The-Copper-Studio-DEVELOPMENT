@@ -37,7 +37,14 @@ const CS = {
   error: "var(--cs-error)",
 };
 
-const GANTT_ZOOM = { Week: 130, Month: 74, Quarter: 38 };
+// `colWidth` is the px width of one column. Day zoom renders one column per
+// day; the rest render one column per week (denser = zoomed out further).
+const GANTT_ZOOM = {
+  Day: { unit: "day", colWidth: 48 },
+  Week: { unit: "week", colWidth: 130 },
+  Month: { unit: "week", colWidth: 74 },
+  Quarter: { unit: "week", colWidth: 38 },
+};
 // Computed once at module load (matches the admin Gantt) to keep render pure.
 const GANTT_TODAY = today();
 
@@ -225,14 +232,20 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
     didInitialScroll.current = false;
   }, [dataMin, dataMax]);
 
-  const colWidth = GANTT_ZOOM[zoom];
-  const dayWidth = colWidth / 7;
-  const weekCount = Math.max(1, Math.round((windowEnd - windowStart) / (7 * DAY_MS)));
-  const weeks = Array.from({ length: weekCount }, (_, i) => {
-    const ws = new Date(windowStart.getTime() + i * 7 * DAY_MS);
-    return { label: formatRange(ws, new Date(ws.getTime() + 6 * DAY_MS)) };
-  });
-  const timelineWidth = weekCount * colWidth;
+  const { unit, colWidth } = GANTT_ZOOM[zoom];
+  const isDay = unit === "day";
+  const dayWidth = isDay ? colWidth : colWidth / 7;
+  const windowDays = Math.max(1, Math.round((windowEnd - windowStart) / DAY_MS));
+  const columns = isDay
+    ? Array.from({ length: windowDays }, (_, i) => {
+        const d = new Date(windowStart.getTime() + i * DAY_MS);
+        return { label: d.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) };
+      })
+    : Array.from({ length: Math.max(1, Math.round(windowDays / 7)) }, (_, i) => {
+        const ws = new Date(windowStart.getTime() + i * 7 * DAY_MS);
+        return { label: formatRange(ws, new Date(ws.getTime() + 6 * DAY_MS)) };
+      });
+  const timelineWidth = columns.length * colWidth;
   const leftPx = (date) => ((date - windowStart) / DAY_MS) * dayWidth;
   const todayPx = leftPx(GANTT_TODAY);
   const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
@@ -261,9 +274,11 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
     if (el.scrollLeft === lastScrollLeft.current) return;
     const movingLeft = el.scrollLeft < lastScrollLeft.current;
     lastScrollLeft.current = el.scrollLeft;
-    const edge = colWidth * 2;
+    const edge = Math.max(colWidth * 3, 200);
     if (movingLeft && el.scrollLeft < edge) {
-      pendingPrependPx.current += EXTEND_WEEKS * colWidth;
+      // Pixel width of the prepended span, so the scrollLeft compensation is
+      // correct at any zoom (dayWidth already accounts for day vs week columns).
+      pendingPrependPx.current += EXTEND_WEEKS * 7 * dayWidth;
       setWindowStart((prev) => new Date(prev.getTime() - EXTEND_WEEKS * 7 * DAY_MS));
     } else if (!movingLeft && el.scrollWidth - el.scrollLeft - el.clientWidth < edge) {
       setWindowEnd((prev) => new Date(prev.getTime() + EXTEND_WEEKS * 7 * DAY_MS));
@@ -353,9 +368,9 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
         <div className="flex-1">
           <div style={{ minWidth: `${timelineWidth}px` }}>
             <div className="sticky top-0 z-10 flex h-11" style={{ background: CS.surfaceLowest }}>
-              {weeks.map((week, index) => (
+              {columns.map((col, index) => (
                 <div key={index} style={{ width: `${colWidth}px`, borderColor: CS.outlineVariant }} className="flex shrink-0 items-center justify-center border-b border-l text-[10px] font-bold uppercase" >
-                  <span style={{ color: CS.secondary }}>{week.label}</span>
+                  <span style={{ color: CS.secondary }}>{col.label}</span>
                 </div>
               ))}
             </div>
