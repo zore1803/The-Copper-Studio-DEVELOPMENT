@@ -286,6 +286,12 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
     if (type === "contacts" && (record.companyId || record.company)) {
       await adoptOrphanRecordsForContact(record);
     }
+    // A contact IS the client's portal login — keep the linked User's display
+    // name in sync so a name edit here (Contacts) actually shows up on the
+    // client side (dashboard greeting, sidebar, etc.), not just in the CRM.
+    if (type === "contacts" && record.userId && Object.prototype.hasOwnProperty.call(payload, "name") && record.name) {
+      await User.findByIdAndUpdate(record.userId, { name: record.name }).catch(() => {});
+    }
     res.json(asPublicRecord(record));
   } catch (error) {
     next(error);

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
 import { useToast } from "../components/useToast";
+import { useRevalidate } from "../hooks/useRevalidate";
 
 const QUICK_ACTIONS = [
   { icon: Video, label: "Request a meeting", to: "/client/meetings" },
@@ -219,6 +220,12 @@ export default function ClientLayout() {
   const quickAddRef = useRef(null);
   const notifRef = useRef(null);
   const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
+
+  // The session's name/email/preferences are only ever fetched at login —
+  // an admin editing the linked contact's name (or anything else on the
+  // profile) otherwise never shows up client-side until the next login.
+  // Revalidate on focus/interval like the rest of the client data does.
+  useRevalidate(auth.refresh);
 
   useEffect(() => {
     function onOutside(e) {
