@@ -88,6 +88,7 @@ export default function GanttChart({
   const didInitialScroll = useRef(false);
   const pendingZoom = useRef(null);
   const dayWidthRef = useRef(0);
+  const scaleRef = useRef(1);
 
   const { allRows, orderedRows, legendStatuses, dataMin, dataMax, summary } = useMemo(() => {
     const flat = isGrouped ? groups.flatMap((g) => g.rows) : (rows || []);
@@ -117,12 +118,16 @@ export default function GanttChart({
     };
   }, [isGrouped, groups, rows, statusOrder, doneStatus, blockedStatus]);
 
-  const [windowStart, setWindowStart] = useState(() => startOfWeek(dataMin.getTime() - PAD_WEEKS * 7 * DAY_MS));
-  const [windowEnd, setWindowEnd] = useState(() => startOfWeek(dataMax.getTime() + (PAD_WEEKS + 1) * 7 * DAY_MS));
+  // The seeded window always spans today too (not just the data), so today can
+  // be centred on load even when every stage is dated far in the future/past.
+  const seedStart = () => startOfWeek(Math.min(dataMin.getTime(), GANTT_TODAY.getTime()) - PAD_WEEKS * 7 * DAY_MS);
+  const seedEnd = () => startOfWeek(Math.max(dataMax.getTime(), GANTT_TODAY.getTime()) + (PAD_WEEKS + 1) * 7 * DAY_MS);
+  const [windowStart, setWindowStart] = useState(seedStart);
+  const [windowEnd, setWindowEnd] = useState(seedEnd);
 
   useEffect(() => {
-    setWindowStart(startOfWeek(dataMin.getTime() - PAD_WEEKS * 7 * DAY_MS));
-    setWindowEnd(startOfWeek(dataMax.getTime() + (PAD_WEEKS + 1) * 7 * DAY_MS));
+    setWindowStart(seedStart());
+    setWindowEnd(seedEnd());
     didInitialScroll.current = false;
   }, [dataMin, dataMax]);
 
@@ -131,6 +136,7 @@ export default function GanttChart({
   const isDay = unit === "day";
   const dayWidth = isDay ? colWidth : colWidth / 7;
   dayWidthRef.current = dayWidth;
+  scaleRef.current = scale;
   const windowDays = Math.max(1, Math.round((windowEnd - windowStart) / DAY_MS));
   const columns = isDay
     ? Array.from({ length: windowDays }, (_, i) => {
@@ -173,7 +179,9 @@ export default function GanttChart({
       lastScrollLeft.current = el.scrollLeft;
     }
     if (!didInitialScroll.current && allRows.length) {
-      el.scrollLeft = Math.max(0, leftPx(dataMin) - colWidth);
+      // Land with today centred in the viewport (accounting for the sticky name
+      // rail), so "now" is always the visual anchor across every Gantt.
+      el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + leftPx(GANTT_TODAY) - el.clientWidth / 2);
       lastScrollLeft.current = el.scrollLeft;
       didInitialScroll.current = true;
     }
@@ -182,20 +190,53 @@ export default function GanttChart({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return undefined;
+
+    // Applies a zoom anchored to a given viewport x (cursor or pinch midpoint),
+    // so the date under that point stays put while the columns resize.
+    const zoomTo = (viewportX, nextScale) => {
+      const dw = dayWidthRef.current || 1;
+      pendingZoom.current = { anchorDays: (el.scrollLeft + viewportX - GANTT_LEFT_PANEL_PX) / dw, cursorX: viewportX };
+      setScale(Math.min(GANTT_SCALE_MAX, Math.max(GANTT_SCALE_MIN, Math.round(nextScale * 100) / 100)));
+    };
+
+    // Trackpad pinch / Ctrl+wheel on desktop.
     function onWheel(e) {
       if (!e.ctrlKey) return;
       e.preventDefault();
       const rect = el.getBoundingClientRect();
-      const cursorX = e.clientX - rect.left;
-      const dw = dayWidthRef.current || 1;
-      pendingZoom.current = { anchorDays: (el.scrollLeft + cursorX - GANTT_LEFT_PANEL_PX) / dw, cursorX };
-      setScale((s) => {
-        const next = s * (1 - e.deltaY * 0.01);
-        return Math.min(GANTT_SCALE_MAX, Math.max(GANTT_SCALE_MIN, Math.round(next * 100) / 100));
-      });
+      zoomTo(e.clientX - rect.left, scaleRef.current * (1 - e.deltaY * 0.01));
     }
+
+    // Two-finger pinch on touchscreens. Single-finger drag is left to native
+    // scrolling (touch-action: pan-x pan-y on the container).
+    let pinchStart = null;
+    const touchDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    function onTouchStart(e) {
+      if (e.touches.length === 2) pinchStart = { dist: touchDist(e.touches), scale: scaleRef.current };
+    }
+    function onTouchMove(e) {
+      if (e.touches.length !== 2 || !pinchStart) return;
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+      zoomTo(midX, pinchStart.scale * (touchDist(e.touches) / pinchStart.dist));
+    }
+    function onTouchEnd(e) {
+      if (e.touches.length < 2) pinchStart = null;
+    }
+
     el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
   }, [allRows.length]);
 
   function handleScroll(event) {
@@ -275,7 +316,7 @@ export default function GanttChart({
       )}
 
       {/* Chart */}
-      <div ref={scrollRef} onScroll={handleScroll} className="flex max-h-[560px] overflow-auto">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex max-h-[560px] overflow-auto" style={{ touchAction: "pan-x pan-y" }}>
         {/* Sticky left: names */}
         <div className="sticky left-0 z-20 w-56 shrink-0 border-r" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
           <div className="flex h-11 items-center px-4 text-[10px] font-bold uppercase tracking-wider" style={{ color: CS.secondary, background: CS.surfaceLow }}>
