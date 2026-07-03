@@ -28,10 +28,11 @@ const schema = new mongoose.Schema(
     // accounts (e.g. multiple contacts) to one company.
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
     userIds: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] },
-    // The Contact treated as this company's main point of contact — used to
-    // notify someone at the company when one of their team's portal logins
+    // Set via the "Make Primary" action on a contact (CompanyDetail.jsx) —
+    // used to notify someone at the company when a teammate's portal login
     // is deactivated/reactivated, since Company itself has no email field.
-    primaryContactId: { type: mongoose.Schema.Types.ObjectId, ref: "Contact", default: null },
+    primaryContact: { type: String, trim: true, default: "" },
+    primaryContactEmail: { type: String, trim: true, lowercase: true, default: "" },
     activity: [activitySchema]
   },
   { timestamps: true, strict: false }
@@ -52,7 +53,8 @@ export default defineModel({
     notes: "",
     userId: null,
     userIds: [],
-    primaryContactId: null,
+    primaryContact: "",
+    primaryContactEmail: "",
     activity: []
   }
 });

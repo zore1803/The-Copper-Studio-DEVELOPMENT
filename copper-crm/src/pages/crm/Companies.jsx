@@ -593,16 +593,12 @@ export default function Companies() {
         // strip it, save the real contact, then send the invite only now that the
         // company + contact actually exist (prevents orphan portal accounts).
         const { sendPortalInvite, ...contactFields } = __primaryContact;
-        const savedContact = await saveContact({
+        await saveContact({
           ...contactFields,
           companyId: savedCompanyId,
           company: companyFields.name,
           companyName: companyFields.name,
         });
-        const savedContactId = savedContact?._id || savedContact?.id;
-        if (savedContactId) {
-          await save({ ...companyFields, _id: savedCompanyId, primaryContactId: savedContactId });
-        }
         if (sendPortalInvite && contactFields.email) {
           try {
             await apiPost("/api/admin/clients/invite", {

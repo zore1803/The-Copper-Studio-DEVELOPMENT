@@ -1213,7 +1213,7 @@ export default function CompanyDetail() {
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
 
-      {editingCompany && <CompanyFormPanel company={company} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
+      {editingCompany && <CompanyFormPanel company={company} contacts={contacts} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
       {linkingClient && (
         <LinkClientPanel
           company={company}

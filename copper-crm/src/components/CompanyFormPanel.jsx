@@ -100,7 +100,7 @@ export default function CompanyFormPanel({ company, contacts = [], onClose, onSa
   // after the company is saved — see saveCompany in Companies.jsx.
   const [primaryContact, setPrimaryContact] = useState(
     company.__primaryContact
-      || (company.primaryContactId ? { name: company.contact } : null)
+      || (company.primaryContactEmail ? { name: company.primaryContact, email: company.primaryContactEmail } : null)
   );
   const [showContactForm, setShowContactForm] = useState(false);
   const dataFields = useDataFields();
@@ -214,14 +214,14 @@ export default function CompanyFormPanel({ company, contacts = [], onClose, onSa
             <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm">
               <span className="truncate text-[#111827]">{form.contact || primaryContact.name || "Contact"}</span>
               <span className="flex shrink-0 items-center gap-1">
-                {!form.primaryContactId && (
+                {!form.primaryContactEmail && (
                   <button type="button" onClick={() => setShowContactForm(true)} className="text-[#8D3118] hover:text-[#9A4113]" title="Edit contact">
                     <Pencil size={13} />
                   </button>
                 )}
                 <button
                   type="button"
-                  onClick={() => { setPrimaryContact(null); set("contact")(""); set("primaryContactId")(""); }}
+                  onClick={() => { setPrimaryContact(null); set("contact")(""); set("primaryContact")(""); set("primaryContactEmail")(""); }}
                   className="text-[#9ca3af] hover:text-[#6b7280]"
                   title="Remove"
                 >
@@ -237,7 +237,8 @@ export default function CompanyFormPanel({ company, contacts = [], onClose, onSa
                   onChange={(e) => {
                     const chosen = companyContacts.find((c) => String(c._id || c.id) === e.target.value);
                     if (!chosen) return;
-                    set("primaryContactId")(chosen._id || chosen.id);
+                    set("primaryContact")(chosen.name || "");
+                    set("primaryContactEmail")(chosen.email || "");
                     set("contact")(chosen.name || "");
                     setPrimaryContact(chosen);
                   }}
@@ -304,6 +305,8 @@ export default function CompanyFormPanel({ company, contacts = [], onClose, onSa
             // Hold the contact locally; it's created once the company is saved.
             setPrimaryContact({ ...payload, isPrimary: true });
             set("contact")(payload.name || "");
+            set("primaryContact")(payload.name || "");
+            set("primaryContactEmail")(payload.email || "");
             setShowContactForm(false);
           }}
         />
