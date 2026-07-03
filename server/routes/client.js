@@ -111,6 +111,20 @@ router.put("/change-password", async (req, res, next) => {
   }
 });
 
+// Called when the client explicitly logs out, so their session is actually
+// revoked server-side — logging out only ever cleared the token locally
+// before, leaving the session listed as "active" until it aged out.
+router.post("/logout", async (req, res, next) => {
+  try {
+    if (req.auth.sid) {
+      await User.updateOne({ _id: req.auth.sub }, { $pull: { sessions: { sid: req.auth.sid } } });
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/sessions", async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.sub).select("sessions");

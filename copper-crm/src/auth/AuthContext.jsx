@@ -104,6 +104,13 @@ export function AuthProvider({ children }) {
       saveSession(nextSession);
     },
     logout() {
+      // Revoke this session server-side (client portal only — there's no
+      // equivalent endpoint for superadmin) so it actually drops off the
+      // Active Sessions list instead of lingering until the token expires.
+      // Fire-and-forget: local logout must succeed even if this fails.
+      if (session?.token && session?.user?.role === "user" && !session.user._isDemo) {
+        apiPost("/api/client/logout", {}, session.token).catch(() => {});
+      }
       setSession(null);
       localStorage.removeItem(STORAGE_KEY);
     }

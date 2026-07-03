@@ -33,6 +33,7 @@ export const clientApi = {
 
   getSessions: (token) => apiGet("/api/client/sessions", token),
   revokeSession: (sid, token) => apiDelete(`/api/client/sessions/${sid}`, token),
+  logout: (token) => apiPost("/api/client/logout", {}, token),
 
   getOrders: (token) => withFallback(
     () => apiGet("/api/client/orders", token),
