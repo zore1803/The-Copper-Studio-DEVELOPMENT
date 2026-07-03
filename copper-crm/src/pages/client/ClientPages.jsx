@@ -347,9 +347,9 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
   );
 }
 
-const STAGE_STATUS_ORDER = ["Upcoming", "In Progress", "Completed"];
-const STAGE_STATUS_COLOR = { Upcoming: "#9ca3af", "In Progress": "#f59e0b", Completed: "#10b981" };
-const STAGE_STATUS_LABEL = { not_started: "Upcoming", in_progress: "In Progress", completed: "Completed" };
+const STAGE_STATUS_ORDER = ["Upcoming", "In Progress", "In Review", "Completed"];
+const STAGE_STATUS_COLOR = { Upcoming: "#9ca3af", "In Progress": "#f59e0b", "In Review": "#7c3aed", Completed: "#10b981" };
+const STAGE_STATUS_LABEL = { not_started: "Upcoming", in_progress: "In Progress", review: "In Review", completed: "Completed" };
 
 function ClientStageGantt({ stages }) {
   const rows = useMemo(() => (stages || [])
@@ -500,17 +500,20 @@ export function ClientTimelinePage() {
                       )}
                       {selected.stages.map((stage, i) => {
                         const isCompleted = stage.status === "completed";
+                        const isReview = stage.status === "review";
                         const isActive = stage.status === "in_progress";
-                        const iconBg = isCompleted ? "#34d399" : isActive ? "#fef3c7" : "#ffffff";
-                        const iconBorder = isCompleted ? "#34d399" : isActive ? "#fbbf24" : CS.outlineVariant;
-                        const cardBg = isCompleted ? "#f0fdf4" : isActive ? "#fffbeb" : "#f9fafb";
-                        const cardBorder = isCompleted ? "#bbf7d0" : isActive ? "#fde68a" : "#e5e7eb";
+                        const iconBg = isCompleted ? "#34d399" : isReview ? "#ede9fe" : isActive ? "#fef3c7" : "#ffffff";
+                        const iconBorder = isCompleted ? "#34d399" : isReview ? "#a78bfa" : isActive ? "#fbbf24" : CS.outlineVariant;
+                        const cardBg = isCompleted ? "#f0fdf4" : isReview ? "#f5f3ff" : isActive ? "#fffbeb" : "#f9fafb";
+                        const cardBorder = isCompleted ? "#bbf7d0" : isReview ? "#ddd6fe" : isActive ? "#fde68a" : "#e5e7eb";
                         return (
                           <div key={i} className="relative flex items-start gap-4">
                             <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 shadow-sm"
                               style={{ background: iconBg, borderColor: iconBorder }}>
                               {isCompleted ? (
                                 <Check size={16} style={{ color: "#fff" }} />
+                              ) : isReview ? (
+                                <Eye size={15} style={{ color: "#7c3aed" }} />
                               ) : isActive ? (
                                 <Zap size={15} style={{ color: "#d97706" }} />
                               ) : (
@@ -530,6 +533,10 @@ export function ClientTimelinePage() {
                               {isCompleted ? (
                                 <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#166534" }}>
                                   <CheckCircle2 size={12} /> Completed
+                                </span>
+                              ) : isReview ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#7c3aed" }}>
+                                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#7c3aed" }} /> In Review
                                 </span>
                               ) : isActive ? (
                                 <span className="inline-flex items-center gap-1 text-xs font-bold" style={{ color: "#d97706" }}>
