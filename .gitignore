@@ -11,3 +11,5 @@ dist/
 .local/
 # Replit config holds local secrets — managed in the Replit workspace, not git.
 .replit
+# Local dev mongod data/logs — accidentally committed and blew the Git LFS budget, breaking Render deploys.
+.mongodb/
