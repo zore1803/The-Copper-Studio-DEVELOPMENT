@@ -12,6 +12,7 @@ import Note from "../models/Note.js";
 import Order from "../models/Order.js";
 import Payment from "../models/Payment.js";
 import Invoice from "../models/Invoice.js";
+import EmailTemplate from "../models/EmailTemplate.js";
 import User from "../models/User.js";
 import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "../services/projectNaming.js";
@@ -47,7 +48,8 @@ const models = {
   notes: Note,
   orders: Order,
   payments: Payment,
-  invoices: Invoice
+  invoices: Invoice,
+  emailTemplates: EmailTemplate
 };
 
 const companyLinkedTypes = new Set(["projects", "documents", "meetings", "notes"]);
