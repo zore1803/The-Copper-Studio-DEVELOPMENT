@@ -152,6 +152,15 @@ export default function GanttChart({
   const todayPx = leftPx(GANTT_TODAY);
   const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
 
+  // Jump the viewport back to today, centred — the seeded window always
+  // includes today, so this works however far the user has scrolled.
+  function scrollToToday() {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + leftPx(GANTT_TODAY) - el.clientWidth / 2);
+    lastScrollLeft.current = el.scrollLeft;
+  }
+
   // A single flat list of what to render (group headers + rows), so the left
   // rail and the bar area stay perfectly aligned in both modes.
   const items = [];
@@ -290,6 +299,15 @@ export default function GanttChart({
           {summary.blocked > 0 && (
             <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
           )}
+          <button
+            type="button"
+            onClick={scrollToToday}
+            className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none transition-colors hover:bg-black/[0.03]"
+            style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
+            title="Jump to today"
+          >
+            Today
+          </button>
           <select
             value={zoom}
             onChange={(e) => setZoom(e.target.value)}
