@@ -1261,6 +1261,14 @@ export function ClientSettingsPage() {
     phone: user?.phone || "",
     jobTitle: user?.jobTitle || "",
   });
+  // Company socials are shared with the admin Company edit form — a change
+  // on either side updates the same record, so this stays in sync both ways.
+  const [socials, setSocials] = useState({
+    linkedin: user?.socials?.linkedin || "",
+    instagram: user?.socials?.instagram || "",
+    facebook: user?.socials?.facebook || "",
+    twitter: user?.socials?.twitter || "",
+  });
   const [prefs, setPrefs] = useState({
     email: user?.preferences?.notifications?.email ?? true,
     browser: user?.preferences?.notifications?.browser ?? false,
@@ -1333,7 +1341,8 @@ export function ClientSettingsPage() {
     try {
       const updated = await clientApi.updateProfile({
         ...form,
-        preferences: { notifications: prefs }
+        preferences: { notifications: prefs },
+        socials
       }, token);
       if (auth.updateUser) auth.updateUser(updated.user);
       setSuccess("Profile updated successfully.");
@@ -1402,6 +1411,18 @@ export function ClientSettingsPage() {
                     <CsInput label="Company" value={user?.company || ""} disabled hint="Set by The Copper Studio — contact us to update it." wrapperClass="sm:col-span-2" />
                   </div>
                 </div>
+
+                <div className="pt-2 border-t" style={{ borderColor: CS.outlineVariant }}>
+                  <p className="text-sm font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Company Socials</p>
+                  <p className="text-xs mb-4" style={{ color: CS.secondary }}>Shared with your company profile — changes here (or made by The Copper Studio) show up on both sides.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CsInput label="LinkedIn" value={socials.linkedin} onChange={v => setSocials(s => ({ ...s, linkedin: v }))} placeholder="https://linkedin.com/company/…" />
+                    <CsInput label="Instagram" value={socials.instagram} onChange={v => setSocials(s => ({ ...s, instagram: v }))} placeholder="https://instagram.com/…" />
+                    <CsInput label="Facebook" value={socials.facebook} onChange={v => setSocials(s => ({ ...s, facebook: v }))} placeholder="https://facebook.com/…" />
+                    <CsInput label="X (Twitter)" value={socials.twitter} onChange={v => setSocials(s => ({ ...s, twitter: v }))} placeholder="https://x.com/…" />
+                  </div>
+                </div>
+
                 <div className="flex justify-end pt-2">
                   <CsBtn type="submit" disabled={saving} loading={saving} icon={Save}>
                     {saving ? "Saving…" : "Save Changes"}

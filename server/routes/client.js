@@ -7,6 +7,7 @@ import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
 import Task from "../models/Task.js";
 import Contact from "../models/Contact.js";
+import Company from "../models/Company.js";
 import Invoice from "../models/Invoice.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
@@ -49,33 +50,37 @@ async function projectScopedVisibilityFilter(clientId) {
 
 // The client's own `company` free-text field predates real Company linkage
 // and was editable + never synced anywhere — looking up the actual linked
-// Company (via their Contact) gives the real, admin-controlled name instead,
-// which the client can see but never edit here.
-async function resolveCompanyName(user) {
+// Company (via their Contact) gives the real, admin-controlled record
+// instead. Name is admin-only (shown read-only to the client); the social
+// links are shared/editable from either side, so a change made here also
+// shows up in the admin Company edit form and vice versa.
+async function resolveLinkedCompany(user) {
   try {
-    const contact = await Contact.findOne({ userId: user._id }).select("companyId company");
-    if (!contact) return user.company || "";
-    if (contact.companyId) {
-      const company = await Company.findById(contact.companyId).select("name");
-      if (company?.name) return company.name;
-    }
-    return contact.company || user.company || "";
+    const contact = await Contact.findOne({ userId: user._id }).select("companyId");
+    if (!contact?.companyId) return null;
+    return await Company.findById(contact.companyId).select("name linkedin instagram facebook twitter");
   } catch {
-    return user.company || "";
+    return null;
   }
 }
 
-async function publicUser(user) {
+async function publicUser(user, company) {
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     phone: user.phone || "",
-    company: await resolveCompanyName(user),
+    company: company?.name || user.company || "",
     jobTitle: user.jobTitle || "",
     role: user.role,
     status: user.status,
-    preferences: user.preferences || {}
+    preferences: user.preferences || {},
+    socials: {
+      linkedin: company?.linkedin || "",
+      instagram: company?.instagram || "",
+      facebook: company?.facebook || "",
+      twitter: company?.twitter || ""
+    }
   };
 }
 
@@ -83,7 +88,8 @@ router.get("/profile", async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.sub);
     if (!user) return res.status(404).json({ message: "User not found." });
-    res.json({ user: await publicUser(user) });
+    const company = await resolveLinkedCompany(user);
+    res.json({ user: await publicUser(user, company) });
   } catch (error) {
     next(error);
   }
@@ -91,9 +97,10 @@ router.get("/profile", async (req, res, next) => {
 
 router.put("/profile", async (req, res, next) => {
   try {
-    // `company` is deliberately not accepted here — it's the linked Company's
-    // real name (admin-controlled), not something the client edits.
-    const { name, phone, jobTitle, preferences } = req.body;
+    // `company` (the name) is deliberately not accepted here — it's the
+    // linked Company's admin-controlled name. `socials` are shared/editable
+    // from either side and get written straight to that same Company record.
+    const { name, phone, jobTitle, preferences, socials } = req.body;
     const user = await User.findById(req.auth.sub);
     if (!user) return res.status(404).json({ message: "User not found." });
 
@@ -104,7 +111,18 @@ router.put("/profile", async (req, res, next) => {
       user.preferences = { ...(user.preferences || {}), ...preferences };
     }
     await user.save();
-    res.json({ user: await publicUser(user) });
+
+    let company = await resolveLinkedCompany(user);
+    if (socials && typeof socials === "object" && company) {
+      const update = {};
+      for (const key of ["linkedin", "instagram", "facebook", "twitter"]) {
+        if (socials[key] !== undefined) update[key] = String(socials[key]).trim();
+      }
+      if (Object.keys(update).length) {
+        company = await Company.findByIdAndUpdate(company._id, update, { new: true }).select("name linkedin instagram facebook twitter");
+      }
+    }
+    res.json({ user: await publicUser(user, company) });
   } catch (error) {
     next(error);
   }
