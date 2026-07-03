@@ -2381,12 +2381,12 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
             type="date"
             value={dateFilter}
             onChange={(event) => resetToFirstPage(setDateFilter)(event.target.value)}
-            className="h-8 rounded-lg border border-[#e5e7eb] px-2.5 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+            className="h-8 rounded-full border border-[#e5e7eb] px-3 text-xs outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
           />
           <button
             type="button"
             onClick={cycleSort}
-            className={`flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
+            className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
               sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
             }`}
             title="Sort by created date"
@@ -2398,7 +2398,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
             <button
               type="button"
               onClick={() => { setSearch(""); setDateFilter(""); setSortDir(null); setPage(1); }}
-              className="rounded-lg px-2 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
+              className="rounded-full px-2.5 py-1.5 text-xs font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
             >
               Clear
             </button>
