@@ -170,9 +170,14 @@ export default function ClientDashboard() {
                   </span>
                   <span className="text-sm font-bold" style={{ color: "var(--cs-primary)" }}>{activeProject.progress || 0}%</span>
                 </div>
-                <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: "var(--cs-surface-container-low)" }}>
-                  <div className="h-full rounded-full transition-all duration-700"
-                    style={{ width: `${activeProject.progress || 0}%`, background: "var(--cs-primary-container)" }} />
+                <div className="w-full rounded-full border p-[3px]" style={{ background: "var(--cs-surface-container-low)", borderColor: "var(--cs-outline-variant)" }}>
+                  <div className="h-2.5 rounded-full transition-all duration-700"
+                    style={{
+                      width: `${activeProject.progress || 0}%`,
+                      minWidth: activeProject.progress ? "0.625rem" : 0,
+                      background: "linear-gradient(90deg, #8D3118, #b1512f)",
+                      boxShadow: "inset 0 1px 1px rgba(255,255,255,0.25), 0 1px 2px rgba(141,49,24,0.35)",
+                    }} />
                 </div>
                 {/* Stages */}
                 {activeProject.stages?.length > 0 && (
