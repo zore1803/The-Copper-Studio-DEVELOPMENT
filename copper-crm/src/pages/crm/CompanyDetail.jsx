@@ -24,6 +24,7 @@ import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/Ric
 import FilterButton from "../../components/FilterButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import GanttChart from "../../components/GanttChart";
+import ProgressBar from "../../components/ProgressBar";
 
 // Shared bar colours for the Gantt charts — covers both task statuses and the
 // project lifecycle statuses, so tasks and the project-timeline mini both tint
@@ -1545,9 +1546,7 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
                 <span>Progress</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-[#f3f4f6]">
-                <div className="h-full rounded-full bg-[#8D3118]" style={{ width: `${Math.min(progress, 100)}%` }} />
-              </div>
+              <ProgressBar progress={progress} height={8} />
             </div>
           </button>
         );

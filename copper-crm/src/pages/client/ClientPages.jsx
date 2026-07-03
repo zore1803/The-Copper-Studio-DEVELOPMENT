@@ -8,6 +8,7 @@ import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
 import FilterButton from "../../components/FilterButton";
 import GanttChart from "../../components/GanttChart";
+import ProgressBar from "../../components/ProgressBar";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import { useRevalidate } from "../../hooks/useRevalidate";
@@ -240,11 +241,8 @@ export function ClientTimelinePage() {
                     <Badge {...statusBadge(selected.status)} />
                   </div>
 
-                  <div className="w-full h-2.5 rounded-full overflow-hidden relative mb-5" style={{ background: CS.surfaceLow }}>
-                    <div className="h-full rounded-full transition-all duration-700 relative overflow-hidden"
-                      style={{ width: `${selected.progress || 0}%`, background: CS.primaryContainer }}>
-                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                    </div>
+                  <div className="mb-5">
+                    <ProgressBar progress={selected.progress || 0} trackColor={CS.surfaceLow} borderColor={CS.outlineVariant} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

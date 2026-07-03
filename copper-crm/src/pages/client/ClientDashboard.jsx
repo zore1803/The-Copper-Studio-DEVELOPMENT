@@ -5,6 +5,7 @@ import { apiGet } from "../../lib/api";
 import { storeGet, storeSet } from "../../lib/store";
 import { useClientProject, belongsToProject } from "../../context/ClientProjectContext";
 import { useRevalidate } from "../../hooks/useRevalidate";
+import ProgressBar from "../../components/ProgressBar";
 import {
   Package, Activity, Video, ArrowRight, CheckCircle2, CircleDot, Circle,
   Loader2,
@@ -173,31 +174,11 @@ export default function ClientDashboard() {
                   </span>
                   <span className="text-sm font-bold" style={{ color: "var(--cs-primary)" }}>{activeProject.progress || 0}%</span>
                 </div>
-                <div className="relative w-full rounded-full border p-[3px]" style={{ background: "var(--cs-surface-container-low)", borderColor: "var(--cs-outline-variant)" }}>
-                  <div className="relative h-2.5 rounded-full transition-all duration-700"
-                    style={{
-                      width: `${activeProject.progress || 0}%`,
-                      minWidth: activeProject.progress ? "0.625rem" : 0,
-                      background: "linear-gradient(90deg, #5c1f0f, #8D3118 45%, #e8734a)",
-                      boxShadow: "inset 0 1px 1px rgba(255,255,255,0.35), 0 1px 2px rgba(141,49,24,0.35)",
-                    }}
-                  >
-                    {/* A knob at the fill's leading edge signals the bar is still
-                        moving toward completion, not a static/finished state. */}
-                    {activeProject.progress > 0 && activeProject.progress < 100 && (
-                      <span
-                        className="absolute top-1/2 h-3.5 w-3.5 rounded-full border-2"
-                        style={{
-                          right: "-3px",
-                          transform: "translateY(-50%)",
-                          background: "#e8734a",
-                          borderColor: "#fff",
-                          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
+                <ProgressBar
+                  progress={activeProject.progress || 0}
+                  trackColor="var(--cs-surface-container-low)"
+                  borderColor="var(--cs-outline-variant)"
+                />
                 {/* Stages */}
                 {activeProject.stages?.length > 0 && (
                   <div className="mt-5 space-y-3">
