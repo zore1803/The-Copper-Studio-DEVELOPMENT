@@ -19,7 +19,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: CRM_PUBLIC_URL
-        value: https://your-vercel-domain.vercel.app
+        value: https://portal.thecopperstudio.com
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET
