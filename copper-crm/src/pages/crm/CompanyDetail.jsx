@@ -2621,7 +2621,7 @@ function CalendlyBookingModal({ url, onClose }) {
   );
 }
 
-const DEFAULT_CALENDLY_URL = "https://calendly.com/rohit-zore-datacircles/30min";
+const DEFAULT_CALENDLY_URL = "https://calendly.com/thecopperstudio/30min";
 
 function MeetingsTab({ calendlyUrl }) {
   const [booking, setBooking] = useState(false);
