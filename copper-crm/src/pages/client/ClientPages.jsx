@@ -186,6 +186,9 @@ function startOfWeek(ms) {
 
 const GANTT_SCALE_MIN = 0.4;
 const GANTT_SCALE_MAX = 4;
+// Width of the sticky "STAGE" name rail (w-56) — the timeline area starts after
+// it, so anchoring a zoom to the cursor's date has to account for this offset.
+const GANTT_LEFT_PANEL_PX = 224;
 
 function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabel, emptyTitle, emptyDescription, doneStatus, blockedStatus }) {
   const [zoom, setZoom] = useState("Week");
@@ -197,6 +200,10 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
   const pendingPrependPx = useRef(0);
   const lastScrollLeft = useRef(0);
   const didInitialScroll = useRef(false);
+  // Set on pinch so the layout effect can re-anchor scrollLeft to the same
+  // date/cursor after the columns resize — keeps the bars visually stable.
+  const pendingZoom = useRef(null);
+  const dayWidthRef = useRef(0);
 
   const { groups, orderedRows, dataMin, dataMax, summary } = useMemo(() => {
     if (!rows.length) {
@@ -243,6 +250,7 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
   const colWidth = baseColWidth * scale;
   const isDay = unit === "day";
   const dayWidth = isDay ? colWidth : colWidth / 7;
+  dayWidthRef.current = dayWidth;
   const windowDays = Math.max(1, Math.round((windowEnd - windowStart) / DAY_MS));
   const columns = isDay
     ? Array.from({ length: windowDays }, (_, i) => {
@@ -263,6 +271,12 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    if (pendingZoom.current) {
+      const { anchorDays, cursorX } = pendingZoom.current;
+      pendingZoom.current = null;
+      el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + anchorDays * dayWidth - cursorX);
+      lastScrollLeft.current = el.scrollLeft;
+    }
     if (pendingPrependPx.current) {
       el.scrollLeft += pendingPrependPx.current;
       pendingPrependPx.current = 0;
@@ -285,6 +299,16 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
     function onWheel(e) {
       if (!e.ctrlKey) return;
       e.preventDefault();
+      // Anchor the zoom to the date under the cursor: remember how many days
+      // from the window start that point is, and where the cursor sits, so the
+      // layout effect can restore the same date to the same spot after resize.
+      const rect = el.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const dw = dayWidthRef.current || 1;
+      pendingZoom.current = {
+        anchorDays: (el.scrollLeft + cursorX - GANTT_LEFT_PANEL_PX) / dw,
+        cursorX,
+      };
       setScale((s) => {
         const next = s * (1 - e.deltaY * 0.01);
         return Math.min(GANTT_SCALE_MAX, Math.max(GANTT_SCALE_MIN, Math.round(next * 100) / 100));
