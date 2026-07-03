@@ -373,13 +373,20 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true, service: "the-copper-studio-api" });
 });
 
-app.get("/api/packages", async (_req, res) => {
+// Shared DB-backed package lookup for every route that needs to resolve a
+// package by id (coupon validation, order creation) — mirrors GET /api/packages
+// so admin price edits are honored everywhere, not just on the pricing page.
+async function getPackages() {
   try {
     const docs = await Package.find({}).sort({ category: 1 }).lean();
-    res.json(docs.length ? docs : SEED_PACKAGES);
+    return docs.length ? docs : SEED_PACKAGES;
   } catch {
-    res.json(SEED_PACKAGES);
+    return SEED_PACKAGES;
   }
+}
+
+app.get("/api/packages", async (_req, res) => {
+  res.json(await getPackages());
 });
 
 app.put("/api/admin/packages/:id", requireAuth, requireRole("superadmin"), async (req, res) => {
@@ -439,7 +446,7 @@ app.post("/api/coupons/validate", async (req, res, next) => {
   try {
     const { code, selectedPackageId } = req.body;
     if (!code) return res.status(400).json({ message: "Coupon code is required." });
-    const selectedPackage = packages.find((item) => item.id === selectedPackageId);
+    const selectedPackage = (await getPackages()).find((item) => item.id === selectedPackageId);
     if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
 
     const result = await validateCouponForPackage(code, selectedPackage);
@@ -475,7 +482,7 @@ app.post("/api/razorpay/order", async (req, res, next) => {
     }
 
     const { selectedPackageId, couponCode } = req.body;
-    const selectedPackage = packages.find((item) => item.id === selectedPackageId);
+    const selectedPackage = (await getPackages()).find((item) => item.id === selectedPackageId);
     if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
 
     const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
@@ -549,7 +556,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       return res.status(400).json({ message: "Invalid Razorpay payment signature." });
     }
 
-    const selectedPackage = packages.find((item) => item.id === selectedPackageId);
+    const selectedPackage = (await getPackages()).find((item) => item.id === selectedPackageId);
     if (!selectedPackage) return res.status(400).json({ message: "Invalid package selected." });
 
     if (!customer?.customerName || !customer?.customerPhone || !customer?.customerEmail) {
@@ -706,7 +713,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
 app.post("/api/orders", async (req, res, next) => {
   try {
     const { selectedPackageId, customer, verified, paymentStatus, paidAt, invoiceId, couponCode } = req.body;
-    const selectedPackage = packages.find((item) => item.id === selectedPackageId);
+    const selectedPackage = (await getPackages()).find((item) => item.id === selectedPackageId);
 
     if (!selectedPackage) {
       return res.status(400).json({ message: "Invalid package selected." });
