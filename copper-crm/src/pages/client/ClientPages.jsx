@@ -1261,8 +1261,9 @@ export function ClientSettingsPage() {
     phone: user?.phone || "",
     jobTitle: user?.jobTitle || "",
   });
-  // Company socials are shared with the admin Company edit form — a change
-  // on either side updates the same record, so this stays in sync both ways.
+  // The client's own socials (their personal LinkedIn/Instagram/etc as a
+  // contact) — shared with the admin's Contact edit form, so a change on
+  // either side updates the same record.
   const [socials, setSocials] = useState({
     linkedin: user?.socials?.linkedin || "",
     instagram: user?.socials?.instagram || "",
@@ -1413,8 +1414,8 @@ export function ClientSettingsPage() {
                 </div>
 
                 <div className="pt-2 border-t" style={{ borderColor: CS.outlineVariant }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Company Socials</p>
-                  <p className="text-xs mb-4" style={{ color: CS.secondary }}>Shared with your company profile — changes here (or made by The Copper Studio) show up on both sides.</p>
+                  <p className="text-sm font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Your Socials</p>
+                  <p className="text-xs mb-4" style={{ color: CS.secondary }}>Your own profile links — changes here (or made by The Copper Studio) show up on both sides.</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <CsInput label="LinkedIn" value={socials.linkedin} onChange={v => setSocials(s => ({ ...s, linkedin: v }))} placeholder="https://linkedin.com/company/…" />
                     <CsInput label="Instagram" value={socials.instagram} onChange={v => setSocials(s => ({ ...s, instagram: v }))} placeholder="https://instagram.com/…" />
