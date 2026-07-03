@@ -45,7 +45,6 @@ const ProposalGeneratorPage = lazy(() => import("./pages/admin/AdminTabs").then(
 const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage").then((m) => ({ default: m.AnalyticsPage })));
 const CommunicationCenter = lazy(() => import("./pages/admin/CommunicationCenter"));
 const DocumentCenter = lazy(() => import("./pages/admin/DocumentCenter"));
-const PublicPackages = lazy(() => import("./pages/public/PublicPackages"));
 
 export default function App() {
   return (
@@ -58,8 +57,6 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/set-password" element={<SetPasswordPage />} />
           <Route path="/client-secure-onboarding/access-setup" element={<SetPasswordPage />} />
-          <Route path="/packages" element={<PublicPackages />} />
-          <Route path="/pricing" element={<PublicPackages />} />
 
           {/* Admin */}
           <Route element={<ProtectedRoute role="superadmin" />}>
