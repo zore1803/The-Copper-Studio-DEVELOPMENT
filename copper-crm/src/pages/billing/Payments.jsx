@@ -122,6 +122,7 @@ export default function Payments() {
   const [status, setStatus] = useState("All");
   const [methodFilter, setMethodFilter] = useState("All");
   const [gatewayFilter, setGatewayFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -141,15 +142,20 @@ export default function Payments() {
     () => ["All", ...Array.from(new Set(payments.map((p) => p.gateway).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
     [payments]
   );
+  const companyNames = useMemo(
+    () => ["All", ...Array.from(new Set(payments.map((p) => p.company).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
+    [payments]
+  );
 
   const filtered = useMemo(() => payments.filter((row) => {
     const rowStatus = row.status || "Pending";
     const matchesStatus = status === "All" || rowStatus === status;
     const matchesMethod = methodFilter === "All" || (row.paymentMethod || row.method) === methodFilter;
     const matchesGateway = gatewayFilter === "All" || (row.gateway || "Razorpay") === gatewayFilter;
+    const matchesCompany = companyFilter === "All" || row.company === companyFilter;
     const haystack = `${row.paymentId || row.id || ""} ${row.company || ""} ${rowStatus}`.toLowerCase();
-    return matchesStatus && matchesMethod && matchesGateway && haystack.includes(query.toLowerCase());
-  }), [query, payments, status, methodFilter, gatewayFilter]);
+    return matchesStatus && matchesMethod && matchesGateway && matchesCompany && haystack.includes(query.toLowerCase());
+  }), [query, payments, status, methodFilter, gatewayFilter, companyFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -177,6 +183,7 @@ export default function Payments() {
     setStatus("All");
     setMethodFilter("All");
     setGatewayFilter("All");
+    setCompanyFilter("All");
     setQuery("");
     setPage(1);
   }
@@ -239,7 +246,8 @@ export default function Payments() {
             fields={[
               { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...dataFields.paymentStatusPayments] },
               { key: "method", label: "Method", type: "select", value: methodFilter, onChange: (value) => { setMethodFilter(value); setPage(1); }, options: methodNames },
-              { key: "gateway", label: "Gateway", type: "select", value: gatewayFilter, onChange: (value) => { setGatewayFilter(value); setPage(1); }, options: gatewayNames }
+              { key: "gateway", label: "Gateway", type: "select", value: gatewayFilter, onChange: (value) => { setGatewayFilter(value); setPage(1); }, options: gatewayNames },
+              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames }
             ]}
           />
           <button

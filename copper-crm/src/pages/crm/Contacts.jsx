@@ -384,6 +384,7 @@ export default function Contacts() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [designationFilter, setDesignationFilter] = useState("All");
   const [companyFilter, setCompanyFilter] = useState("All");
+  const [portalAccessFilter, setPortalAccessFilter] = useState("All");
   const [sortBy, setSortBy] = useState("name_asc");
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef(null);
@@ -418,9 +419,11 @@ export default function Contacts() {
       const matchesStatus = statusFilter === "All" || (contact.status || "Active") === statusFilter;
       const matchesDesignation = designationFilter === "All" || contact.designation === designationFilter;
       const matchesCompany = companyFilter === "All" || companyNameOf(contact) === companyFilter;
-      return matchesQuery && matchesStatus && matchesDesignation && matchesCompany;
+      const hasPortalAccess = Boolean(contact.userId) && contact.portalStatus !== "disabled";
+      const matchesPortalAccess = portalAccessFilter === "All" || (portalAccessFilter === "Yes" ? hasPortalAccess : !hasPortalAccess);
+      return matchesQuery && matchesStatus && matchesDesignation && matchesCompany && matchesPortalAccess;
     });
-  }, [contacts, search, statusFilter, designationFilter, companyFilter, companyNameOf]);
+  }, [contacts, search, statusFilter, designationFilter, companyFilter, portalAccessFilter, companyNameOf]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -517,6 +520,7 @@ export default function Contacts() {
     setStatusFilter("All");
     setDesignationFilter("All");
     setCompanyFilter("All");
+    setPortalAccessFilter("All");
     setPage(1);
   }
 
@@ -564,7 +568,8 @@ export default function Contacts() {
               fields={[
                 { key: "status", label: "Status", type: "select", value: statusFilter, onChange: (value) => { setStatusFilter(value); setPage(1); }, options: statuses },
                 { key: "designation", label: "Designation", type: "select", value: designationFilter, onChange: (value) => { setDesignationFilter(value); setPage(1); }, options: designations },
-                { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames }
+                { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames },
+                { key: "portalAccess", label: "Portal Access", type: "select", value: portalAccessFilter, onChange: (value) => { setPortalAccessFilter(value); setPage(1); }, options: ["All", "Yes", "No"] }
               ]}
             />
 

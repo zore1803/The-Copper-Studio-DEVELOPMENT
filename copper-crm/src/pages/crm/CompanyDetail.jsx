@@ -569,6 +569,7 @@ export default function CompanyDetail() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [invoiceQuery, setInvoiceQuery] = useState("");
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState("All");
+  const [invoicePaymentStatusFilter, setInvoicePaymentStatusFilter] = useState("All");
   const [linkingClient, setLinkingClient] = useState(false);
   const [clientUsers, setClientUsers] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
@@ -665,8 +666,9 @@ export default function CompanyDetail() {
     const matchesQuery = `${invoice.invoiceId || invoice.id || invoice._id || ""} ${invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || ""}`
       .toLowerCase().includes(invoiceQuery.toLowerCase());
     const matchesStatus = invoiceStatusFilter === "All" || (invoice.status || "Pending") === invoiceStatusFilter;
-    return matchesQuery && matchesStatus;
-  }), [invoiceQuery, invoiceStatusFilter, linked.invoices]);
+    const matchesPaymentStatus = invoicePaymentStatusFilter === "All" || (invoice.paymentStatus || invoice.status || "Pending") === invoicePaymentStatusFilter;
+    return matchesQuery && matchesStatus && matchesPaymentStatus;
+  }), [invoiceQuery, invoiceStatusFilter, invoicePaymentStatusFilter, linked.invoices]);
 
   if (!company && companiesLoading) {
     return (
@@ -1167,10 +1169,11 @@ export default function CompanyDetail() {
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <ModuleSearch value={invoiceQuery} onChange={setInvoiceQuery} placeholder="Search invoices…" />
                 <FilterButton
-                  panelWidth={320}
-                  onReset={() => setInvoiceStatusFilter("All")}
+                  panelWidth={420}
+                  onReset={() => { setInvoiceStatusFilter("All"); setInvoicePaymentStatusFilter("All"); }}
                   fields={[
-                    { key: "status", label: "Status", type: "select", value: invoiceStatusFilter, onChange: setInvoiceStatusFilter, options: ["All", "Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"] }
+                    { key: "status", label: "Status", type: "select", value: invoiceStatusFilter, onChange: setInvoiceStatusFilter, options: ["All", "Draft", "Generated", "Sent", "Paid", "Overdue", "Cancelled"] },
+                    { key: "paymentStatus", label: "Payment", type: "select", value: invoicePaymentStatusFilter, onChange: setInvoicePaymentStatusFilter, options: ["All", "Pending", "Paid", "Failed", "Refunded"] }
                   ]}
                 />
               </div>
@@ -2028,18 +2031,24 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
   const [ganttProjectFilter, setGanttProjectFilter] = useState("All");
   const [ganttStatusFilter, setGanttStatusFilter] = useState("All");
   const [ganttPriorityFilter, setGanttPriorityFilter] = useState("All");
+  const [ganttAssignedToFilter, setGanttAssignedToFilter] = useState("All");
 
   if (!tasks.length) {
     return <EmptyState icon={StickyNote} title="No tasks linked." action={<Button onClick={onCreate}><Plus size={14} /> New Task</Button>} />;
   }
 
   const projectOptions = ["All", ...projects.map((project) => project.name).filter(Boolean)];
-  const ganttTasks = tasks.filter((task) => {
+  const assignedToOptions = ["All", ...Array.from(new Set(tasks.map((task) => task.assignedTo).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))];
+  // Applied to every view (List/Board/Calendar/Gantt), not just Gantt — it
+  // previously only filtered the Gantt tab, leaving the other three views
+  // showing every task regardless of the filter panel's selection.
+  const filteredTasks = tasks.filter((task) => {
     const projectName = projects.find((project) => String(project.id || project._id) === String(task.projectId || task.project))?.name || task.projectName;
     const projectOk = ganttProjectFilter === "All" || projectName === ganttProjectFilter;
     const statusOk = ganttStatusFilter === "All" || (task.status || "Backlog") === ganttStatusFilter;
     const priorityOk = ganttPriorityFilter === "All" || (task.priority || "Medium") === ganttPriorityFilter;
-    return projectOk && statusOk && priorityOk;
+    const assignedToOk = ganttAssignedToFilter === "All" || task.assignedTo === ganttAssignedToFilter;
+    return projectOk && statusOk && priorityOk && assignedToOk;
   });
 
   return (
@@ -2047,26 +2056,31 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
       title="Tasks"
       action={
         <div className="flex flex-wrap items-center gap-2">
-          {view === "Gantt" && (
-            <FilterButton
-              panelWidth={480}
-              onReset={() => { setGanttProjectFilter("All"); setGanttStatusFilter("All"); setGanttPriorityFilter("All"); }}
-              fields={[
-                { key: "project", label: "Project", type: "select", value: ganttProjectFilter, onChange: setGanttProjectFilter, options: projectOptions },
-                { key: "status", label: "Status", type: "select", value: ganttStatusFilter, onChange: setGanttStatusFilter, options: ["All", ...TASK_BOARD_STATUSES] },
-                { key: "priority", label: "Priority", type: "select", value: ganttPriorityFilter, onChange: setGanttPriorityFilter, options: ["All", "Low", "Medium", "High", "Critical"] }
-              ]}
-            />
-          )}
+          <FilterButton
+            panelWidth={480}
+            onReset={() => { setGanttProjectFilter("All"); setGanttStatusFilter("All"); setGanttPriorityFilter("All"); setGanttAssignedToFilter("All"); }}
+            fields={[
+              { key: "project", label: "Project", type: "select", value: ganttProjectFilter, onChange: setGanttProjectFilter, options: projectOptions },
+              { key: "status", label: "Status", type: "select", value: ganttStatusFilter, onChange: setGanttStatusFilter, options: ["All", ...TASK_BOARD_STATUSES] },
+              { key: "priority", label: "Priority", type: "select", value: ganttPriorityFilter, onChange: setGanttPriorityFilter, options: ["All", "Low", "Medium", "High", "Critical"] },
+              { key: "assignedTo", label: "Assigned To", type: "select", value: ganttAssignedToFilter, onChange: setGanttAssignedToFilter, options: assignedToOptions }
+            ]}
+          />
           <WorkspaceToggle options={TASK_VIEWS} value={view} onChange={onView} />
           <Button size="sm" onClick={onCreate}><Plus size={14} /> Task</Button>
         </div>
       }
     >
-      {view === "List" && <TasksTable tasks={tasks} projects={projects} onDelete={onDelete} />}
-      {view === "Board" && <TaskKanbanBoard tasks={tasks} onMoveTask={onMoveTask} onDelete={onDelete} />}
-      {view === "Calendar" && <CalendarTaskView tasks={tasks} onCreate={onCreate} />}
-      {view === "Gantt" && (ganttTasks.length ? <TaskGantt tasks={ganttTasks} projects={projects} /> : <EmptyState icon={Filter} title="No tasks match these filters." />)}
+      {filteredTasks.length ? (
+        <>
+          {view === "List" && <TasksTable tasks={filteredTasks} projects={projects} onDelete={onDelete} />}
+          {view === "Board" && <TaskKanbanBoard tasks={filteredTasks} onMoveTask={onMoveTask} onDelete={onDelete} />}
+          {view === "Calendar" && <CalendarTaskView tasks={filteredTasks} onCreate={onCreate} />}
+          {view === "Gantt" && <TaskGantt tasks={filteredTasks} projects={projects} />}
+        </>
+      ) : (
+        <EmptyState icon={Filter} title="No tasks match these filters." />
+      )}
     </Section>
   );
 }

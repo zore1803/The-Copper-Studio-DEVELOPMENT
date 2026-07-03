@@ -86,6 +86,8 @@ export default function ProjectsList() {
   }, []);
 
   const [statusFilter, setStatusFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
+  const [templateFilter, setTemplateFilter] = useState("All");
   const [deletingProject, setDeletingProject] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [sortBy, setSortBy] = useState("created_desc");
@@ -123,17 +125,29 @@ export default function ProjectsList() {
 
       const company = companies.find(c => c.id === p.companyId || c._id === p.companyId);
       const companyName = company ? company.name || company.companyName : p.clientCompany || p.company || p.client || "-";
+      const templateName = p.template || p.packageName || "Custom";
 
-      return { ...p, computedProgress: progress, currentStage, effectiveStatus, computedCompanyName: companyName };
+      return { ...p, computedProgress: progress, currentStage, effectiveStatus, computedCompanyName: companyName, computedTemplateName: templateName };
     });
   }, [projects, companies]);
+
+  const companyFilterOptions = useMemo(
+    () => ["All", ...Array.from(new Set(computedProjects.map((p) => p.computedCompanyName).filter((n) => n && n !== "-"))).sort((a, b) => String(a).localeCompare(String(b)))],
+    [computedProjects]
+  );
+  const templateFilterOptions = useMemo(
+    () => ["All", ...Array.from(new Set(computedProjects.map((p) => p.computedTemplateName).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
+    [computedProjects]
+  );
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     const arr = computedProjects.filter((project) => {
       const matchesQuery = !query || `${project.name} ${project.client} ${project.template}`.toLowerCase().includes(query);
       const matchesStatus = statusFilter === "All" || project.effectiveStatus === statusFilter;
-      return matchesQuery && matchesStatus;
+      const matchesCompany = companyFilter === "All" || project.computedCompanyName === companyFilter;
+      const matchesTemplate = templateFilter === "All" || project.computedTemplateName === templateFilter;
+      return matchesQuery && matchesStatus && matchesCompany && matchesTemplate;
     });
     const byCreated = (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
     const byValue = (a, b) => (Number(b.finalAmount || b.budget) || 0) - (Number(a.finalAmount || a.budget) || 0);
@@ -145,7 +159,7 @@ export default function ProjectsList() {
       case "created_desc":
       default: return arr.sort((a, b) => byCreated(b, a));
     }
-  }, [computedProjects, search, statusFilter, sortBy]);
+  }, [computedProjects, search, statusFilter, companyFilter, templateFilter, sortBy]);
 
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
@@ -243,10 +257,12 @@ export default function ProjectsList() {
             )}
           </div>
           <FilterButton
-            onReset={() => setStatusFilter("All")}
+            onReset={() => { setStatusFilter("All"); setCompanyFilter("All"); setTemplateFilter("All"); }}
             buttonClassName="h-8 w-8"
             fields={[
-              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: statusFilters }
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: setStatusFilter, options: statusFilters },
+              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: setCompanyFilter, options: companyFilterOptions },
+              { key: "template", label: "Template", type: "select", value: templateFilter, onChange: setTemplateFilter, options: templateFilterOptions }
             ]}
           />
           <Button onClick={() => setCreating(true)}><Plus size={14} /> New Project</Button>

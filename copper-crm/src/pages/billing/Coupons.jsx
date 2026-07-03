@@ -70,6 +70,10 @@ const PACKAGES_BY_CATEGORY = {
   ],
 };
 
+const PACKAGE_NAME_BY_ID = Object.fromEntries(
+  Object.values(PACKAGES_BY_CATEGORY).flat().map((pkg) => [pkg.id, pkg.name])
+);
+
 const VALIDITY_OPTIONS = [
   { label: "24 hours", value: 24 },
   { label: "48 hours", value: 48 },
@@ -561,6 +565,8 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
 export default function Coupons() {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [packageFilter, setPackageFilter] = useState("All");
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
   const [copied, setCopied] = useState("");
@@ -618,12 +624,19 @@ export default function Coupons() {
     }
   }
 
+  const packageOptions = useMemo(() => {
+    const ids = Array.from(new Set(coupons.map((c) => c.packageName).filter(Boolean)));
+    return ["All", ...ids.map((id) => ({ value: id, label: PACKAGE_NAME_BY_ID[id] || id }))];
+  }, [coupons]);
+
   const filtered = useMemo(() => coupons.filter((coupon) => {
     const couponStatus = coupon.status || "Draft";
     const matchesStatus = statusFilter === "All" || couponStatus === statusFilter;
+    const matchesCategory = categoryFilter === "All" || coupon.category === categoryFilter;
+    const matchesPackage = packageFilter === "All" || coupon.packageName === packageFilter;
     const haystack = `${coupon.code || ""} ${coupon.assignedCompany || coupon.companyName || ""} ${coupon.assignedContact || coupon.clientName || ""} ${couponStatus}`.toLowerCase();
-    return matchesStatus && haystack.includes(query.toLowerCase());
-  }), [coupons, query, statusFilter]);
+    return matchesStatus && matchesCategory && matchesPackage && haystack.includes(query.toLowerCase());
+  }), [coupons, query, statusFilter, categoryFilter, packageFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -639,7 +652,7 @@ export default function Coupons() {
     }
   }, [filtered, sortBy]);
 
-  useEffect(() => { setPage(1); }, [query, statusFilter, sortBy]);
+  useEffect(() => { setPage(1); }, [query, statusFilter, categoryFilter, packageFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -743,9 +756,9 @@ export default function Coupons() {
             <div className="flex items-center gap-2">
               {/* Filter */}
               <FilterButton
-                panelWidth={220}
+                panelWidth={420}
                 buttonClassName="h-8 w-8"
-                onReset={() => setStatusFilter("All")}
+                onReset={() => { setStatusFilter("All"); setCategoryFilter("All"); setPackageFilter("All"); }}
                 fields={[
                   {
                     key: "status",
@@ -754,6 +767,22 @@ export default function Coupons() {
                     value: statusFilter,
                     onChange: setStatusFilter,
                     options: ["All", "Draft", "Active", "Redeemed", "Expired", "Cancelled", "Revoked"],
+                  },
+                  {
+                    key: "category",
+                    label: "Category",
+                    type: "select",
+                    value: categoryFilter,
+                    onChange: setCategoryFilter,
+                    options: ["All", ...PACKAGE_CATEGORIES],
+                  },
+                  {
+                    key: "package",
+                    label: "Package",
+                    type: "select",
+                    value: packageFilter,
+                    onChange: setPackageFilter,
+                    options: packageOptions,
                   },
                 ]}
               />
