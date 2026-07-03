@@ -84,7 +84,7 @@ function Badge({ label, type = "neutral" }) {
   );
 }
 
-function CsInput({ label, value, onChange, type = "text", disabled, placeholder, required, wrapperClass = "" }) {
+function CsInput({ label, value, onChange, type = "text", disabled, placeholder, required, hint, wrapperClass = "" }) {
   return (
     <div className={`flex flex-col gap-1.5 ${wrapperClass}`}>
       {label && <label className="text-xs font-semibold" style={{ color: CS.secondary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{label}</label>}
@@ -98,6 +98,7 @@ function CsInput({ label, value, onChange, type = "text", disabled, placeholder,
         className="w-full rounded-lg px-3 py-2.5 text-sm border outline-none transition-all copper-focus"
         style={{ background: disabled ? CS.surfaceLow : "#fff", borderColor: CS.outlineVariant, color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif", opacity: disabled ? 0.7 : 1 }}
       />
+      {hint && <p className="text-[11px]" style={{ color: CS.secondary }}>{hint}</p>}
     </div>
   );
 }
@@ -1252,10 +1253,12 @@ export function ClientSettingsPage() {
   const [deactivateModal, setDeactivateModal] = useState(false);
 
   const [tab, setTab] = useState("Account");
+  // Company is deliberately excluded — it's the linked Company's real name
+  // (admin-controlled, shown read-only from `user.company`), not something
+  // saved back through this form.
   const [form, setForm] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
-    company: user?.company || "",
     jobTitle: user?.jobTitle || "",
   });
   const [prefs, setPrefs] = useState({
@@ -1396,7 +1399,7 @@ export function ClientSettingsPage() {
                     <CsInput label="Email Address" value={user?.email || ""} disabled />
                     <CsInput label="Job Title" value={form.jobTitle} onChange={v => setForm(f => ({ ...f, jobTitle: v }))} placeholder="e.g. Marketing Director" />
                     <CsInput label="Phone Number" type="tel" value={form.phone} onChange={v => setForm(f => ({ ...f, phone: v }))} placeholder="+91 98765 43210" />
-                    <CsInput label="Company" value={form.company} onChange={v => setForm(f => ({ ...f, company: v }))} placeholder="Your company name" wrapperClass="sm:col-span-2" />
+                    <CsInput label="Company" value={user?.company || ""} disabled hint="Set by The Copper Studio — contact us to update it." wrapperClass="sm:col-span-2" />
                   </div>
                 </div>
                 <div className="flex justify-end pt-2">

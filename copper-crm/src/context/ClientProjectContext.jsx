@@ -5,6 +5,7 @@ import { apiGet } from "../lib/api";
 import { storeGet, storeSet } from "../lib/store";
 import { useRevalidate } from "../hooks/useRevalidate";
 import { checkProjectNotifications } from "../lib/projectNotifications";
+import { useToast } from "../components/useToast";
 
 const ClientProjectContext = createContext(null);
 const STORAGE_KEY = "cs_client_selected_project";
@@ -29,6 +30,7 @@ function wait(ms) {
  */
 export function ClientProjectProvider({ children }) {
   const { token, user } = useAuth();
+  const { showToast } = useToast();
   const browserNotifEnabled = user?.preferences?.notifications?.browser === true;
   const browserNotifEnabledRef = useRef(browserNotifEnabled);
   useEffect(() => {
@@ -73,7 +75,7 @@ export function ClientProjectProvider({ children }) {
             // masquerade as a fetch failure (which would retry the network
             // call pointlessly and, worse, skip the state update below).
             try {
-              checkProjectNotifications(projectsRef.current, list, browserNotifEnabledRef.current);
+              checkProjectNotifications(projectsRef.current, list, browserNotifEnabledRef.current, (title, message) => showToast({ title, message, type: "info" }));
             } catch (notifyError) {
               console.error("Project notification check failed:", notifyError);
             }

@@ -76,7 +76,9 @@ async function respond(res, data, format) {
     const pdf = await Promise.race([pdfPromise, timeoutPromise]);
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${safeFileName(model.invoiceNumber)}"`);
+    // "attachment" (not "inline") so clicking Download actually saves the file
+    // instead of opening a new browser tab/viewer.
+    res.setHeader("Content-Disposition", `attachment; filename="${safeFileName(model.invoiceNumber)}"`);
     res.send(Buffer.from(pdf));
   } catch (error) {
     // Graceful fallback for any PDF rendering failure (missing Chromium, OOM

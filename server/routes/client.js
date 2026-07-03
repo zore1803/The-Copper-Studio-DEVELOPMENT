@@ -47,13 +47,31 @@ async function projectScopedVisibilityFilter(clientId) {
     : { clientId };
 }
 
-function publicUser(user) {
+// The client's own `company` free-text field predates real Company linkage
+// and was editable + never synced anywhere — looking up the actual linked
+// Company (via their Contact) gives the real, admin-controlled name instead,
+// which the client can see but never edit here.
+async function resolveCompanyName(user) {
+  try {
+    const contact = await Contact.findOne({ userId: user._id }).select("companyId company");
+    if (!contact) return user.company || "";
+    if (contact.companyId) {
+      const company = await Company.findById(contact.companyId).select("name");
+      if (company?.name) return company.name;
+    }
+    return contact.company || user.company || "";
+  } catch {
+    return user.company || "";
+  }
+}
+
+async function publicUser(user) {
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     phone: user.phone || "",
-    company: user.company || "",
+    company: await resolveCompanyName(user),
     jobTitle: user.jobTitle || "",
     role: user.role,
     status: user.status,
@@ -65,7 +83,7 @@ router.get("/profile", async (req, res, next) => {
   try {
     const user = await User.findById(req.auth.sub);
     if (!user) return res.status(404).json({ message: "User not found." });
-    res.json({ user: publicUser(user) });
+    res.json({ user: await publicUser(user) });
   } catch (error) {
     next(error);
   }
@@ -73,19 +91,20 @@ router.get("/profile", async (req, res, next) => {
 
 router.put("/profile", async (req, res, next) => {
   try {
-    const { name, phone, company, jobTitle, preferences } = req.body;
+    // `company` is deliberately not accepted here — it's the linked Company's
+    // real name (admin-controlled), not something the client edits.
+    const { name, phone, jobTitle, preferences } = req.body;
     const user = await User.findById(req.auth.sub);
     if (!user) return res.status(404).json({ message: "User not found." });
 
     if (name) user.name = name.trim();
     if (phone !== undefined) user.phone = phone.trim();
-    if (company !== undefined) user.company = company.trim();
     if (jobTitle !== undefined) user.jobTitle = jobTitle.trim();
     if (preferences && typeof preferences === "object") {
       user.preferences = { ...(user.preferences || {}), ...preferences };
     }
     await user.save();
-    res.json({ user: publicUser(user) });
+    res.json({ user: await publicUser(user) });
   } catch (error) {
     next(error);
   }

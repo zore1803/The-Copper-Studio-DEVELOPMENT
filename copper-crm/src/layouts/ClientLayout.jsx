@@ -9,6 +9,9 @@ import {
 import { ClientProjectProvider, useClientProject } from "../context/ClientProjectContext";
 import { useToast } from "../components/useToast";
 import { useRevalidate } from "../hooks/useRevalidate";
+import { apiGet } from "../lib/api";
+import { storeGet, storeSet } from "../lib/store";
+import { checkMeetingNotifications } from "../lib/projectNotifications";
 
 const QUICK_ACTIONS = [
   { icon: Video, label: "Request a meeting", to: "/client/meetings", color: "#ff9800" },
@@ -226,6 +229,27 @@ export default function ClientLayout() {
   // profile) otherwise never shows up client-side until the next login.
   // Revalidate on focus/interval like the rest of the client data does.
   useRevalidate(auth.refresh);
+
+  // Meeting status changes (booked, confirmed, cancelled) feed the bell too —
+  // checked here (not a specific page) so it fires regardless of which
+  // client page is open, same as the project/stage checks in
+  // ClientProjectContext.
+  const prevMeetingsRef = useRef(storeGet("meetings"));
+  const browserNotifEnabled = auth.user?.preferences?.notifications?.browser === true;
+  useRevalidate(() => {
+    apiGet("/api/client/meetings", auth.token)
+      .then((list) => {
+        if (!Array.isArray(list)) return;
+        try {
+          checkMeetingNotifications(prevMeetingsRef.current, list, browserNotifEnabled, (title, message) => showToast({ title, message, type: "info" }));
+        } catch (notifyError) {
+          console.error("Meeting notification check failed:", notifyError);
+        }
+        prevMeetingsRef.current = list;
+        storeSet("meetings", list);
+      })
+      .catch(() => {});
+  });
 
   useEffect(() => {
     function onOutside(e) {
