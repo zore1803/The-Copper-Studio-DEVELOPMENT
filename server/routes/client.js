@@ -11,6 +11,7 @@ import Invoice from "../models/Invoice.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 import { runScheduledNotifications } from "../services/scheduledNotifications.js";
+import { notifyAccountStatusChange } from "../services/accountNotifications.js";
 
 const router = express.Router();
 
@@ -131,6 +132,7 @@ router.post("/deactivate", async (req, res, next) => {
 
     user.status = "disabled";
     await user.save();
+    notifyAccountStatusChange(user, false);
     res.json({ ok: true });
   } catch (error) {
     next(error);

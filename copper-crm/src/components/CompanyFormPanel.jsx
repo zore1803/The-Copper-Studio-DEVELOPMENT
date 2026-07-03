@@ -86,7 +86,7 @@ function SelectField({ label, value, onChange, options, placeholder = "Select…
   );
 }
 
-export default function CompanyFormPanel({ company, onClose, onSave }) {
+export default function CompanyFormPanel({ company, contacts = [], onClose, onSave }) {
   const { showToast } = useToast();
   const [form, setForm] = useState(() => ({
     ...company,
@@ -98,10 +98,17 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
   // A primary contact captured via the contact form. It can't be persisted yet
   // (the company has no id until saved), so it's held here and created right
   // after the company is saved — see saveCompany in Companies.jsx.
-  const [primaryContact, setPrimaryContact] = useState(company.__primaryContact || null);
+  const [primaryContact, setPrimaryContact] = useState(
+    company.__primaryContact
+      || (company.primaryContactId ? { name: company.contact } : null)
+  );
   const [showContactForm, setShowContactForm] = useState(false);
   const dataFields = useDataFields();
   const companyOwners = dataFields.companyOwner || [];
+  const companyId = company._id || company.id;
+  const companyContacts = companyId
+    ? contacts.filter((c) => String(c.companyId) === String(companyId))
+    : [];
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
@@ -203,22 +210,49 @@ export default function CompanyFormPanel({ company, onClose, onSave }) {
             <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg border border-[#e5e7eb] bg-[#f9fafb] px-3 py-2 text-sm">
               <span className="truncate text-[#111827]">{form.contact || primaryContact.name || "Contact"}</span>
               <span className="flex shrink-0 items-center gap-1">
-                <button type="button" onClick={() => setShowContactForm(true)} className="text-[#8D3118] hover:text-[#9A4113]" title="Edit contact">
-                  <Pencil size={13} />
-                </button>
-                <button type="button" onClick={() => { setPrimaryContact(null); set("contact")(""); }} className="text-[#9ca3af] hover:text-[#6b7280]" title="Remove">
+                {!form.primaryContactId && (
+                  <button type="button" onClick={() => setShowContactForm(true)} className="text-[#8D3118] hover:text-[#9A4113]" title="Edit contact">
+                    <Pencil size={13} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => { setPrimaryContact(null); set("contact")(""); set("primaryContactId")(""); }}
+                  className="text-[#9ca3af] hover:text-[#6b7280]"
+                  title="Remove"
+                >
                   <X size={13} />
                 </button>
               </span>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setShowContactForm(true)}
-              className="mt-1.5 flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
-            >
-              <UserPlus size={14} /> Add primary contact
-            </button>
+            <div className="mt-1.5 flex flex-col gap-1.5">
+              {companyContacts.length > 0 && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const chosen = companyContacts.find((c) => String(c._id || c.id) === e.target.value);
+                    if (!chosen) return;
+                    set("primaryContactId")(chosen._id || chosen.id);
+                    set("contact")(chosen.name || "");
+                    setPrimaryContact(chosen);
+                  }}
+                  className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none transition-all focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20 bg-white"
+                >
+                  <option value="">Select an existing contact…</option>
+                  {companyContacts.map((c) => (
+                    <option key={c._id || c.id} value={c._id || c.id}>{c.name}{c.email ? ` (${c.email})` : ""}</option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowContactForm(true)}
+                className="flex w-full items-center gap-1.5 rounded-lg border border-dashed border-[#e5e7eb] px-3 py-2 text-sm font-semibold text-[#8D3118] hover:bg-[#fff1ec]"
+              >
+                <UserPlus size={14} /> Add primary contact
+              </button>
+            </div>
           )}
         </label>
         <Field label="Projects" type="number" value={form.projects} onChange={set("projects")} />

@@ -322,6 +322,33 @@ export async function sendTestEmail({ to, subject, body }) {
   });
 }
 
+// Sent to the client themselves when their own portal login is
+// deactivated/reactivated, and separately to their company's primary
+// contact (a heads-up that a teammate's portal access changed).
+export async function sendAccountStatusEmail({ to, recipientName, clientName, activated, forCompany }) {
+  const action = activated ? "reactivated" : "deactivated";
+  const subject = forCompany
+    ? `Client account ${action}: ${clientName} | The Copper Studio`
+    : `Your account has been ${action} | The Copper Studio`;
+  const greeting = `Hello${recipientName ? ` ${recipientName}` : ""},`;
+  const body = forCompany
+    ? `<p>${greeting}</p><p>Your client <strong>${clientName}</strong>'s portal account has been <strong>${action}</strong>.</p>`
+    : `<p>${greeting}</p><p>Your portal account has been <strong>${action}</strong>.</p>${
+        activated ? "" : `<p style="font-size:13px;color:#6b7280">Your projects, documents, and invoices are kept exactly as they are. Contact The Copper Studio to reactivate, or to permanently delete your data.</p>`
+      }`;
+
+  return sendMail({
+    to,
+    subject,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;line-height:1.6;color:#111827;max-width:560px">
+        <h2 style="margin:0 0 12px">${forCompany ? `Client account ${action}` : `Your account has been ${action}`}</h2>
+        ${body}
+      </div>
+    `
+  });
+}
+
 export async function sendForgotPasswordOtpEmail({ to, name, otp }) {
   return sendMail({
     to,

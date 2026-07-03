@@ -9,6 +9,7 @@ import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { ensureClientAccount, sendPortalInvite } from "../services/portalInvite.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
+import { notifyAccountStatusChange } from "../services/accountNotifications.js";
 
 const router = express.Router();
 
@@ -97,9 +98,13 @@ router.put("/clients/:clientId/status", async (req, res, next) => {
     if (!["active", "disabled", "invited"].includes(status)) {
       return res.status(400).json({ message: "Invalid status." });
     }
+    const previous = await User.findById(req.params.clientId).select("status");
     const user = await User.findByIdAndUpdate(req.params.clientId, { status }, { new: true })
       .select("-passwordHash -invite -resetPassword");
     if (!user) return res.status(404).json({ message: "Client not found." });
+    if (previous && previous.status !== status && (status === "active" || status === "disabled")) {
+      notifyAccountStatusChange(user, status === "active");
+    }
     res.json({ user });
   } catch (error) {
     next(error);

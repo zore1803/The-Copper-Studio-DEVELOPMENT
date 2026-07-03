@@ -468,7 +468,7 @@ export default function Companies() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const { records: companies, save, remove, loading } = useCrmRecords("companies");
-  const { save: saveContact } = useCrmRecords("contacts");
+  const { records: allContacts, save: saveContact } = useCrmRecords("contacts");
   const { token } = useAuth();
   const { showToast } = useToast();
   const sortRef = useRef(null);
@@ -593,12 +593,16 @@ export default function Companies() {
         // strip it, save the real contact, then send the invite only now that the
         // company + contact actually exist (prevents orphan portal accounts).
         const { sendPortalInvite, ...contactFields } = __primaryContact;
-        await saveContact({
+        const savedContact = await saveContact({
           ...contactFields,
           companyId: savedCompanyId,
           company: companyFields.name,
           companyName: companyFields.name,
         });
+        const savedContactId = savedContact?._id || savedContact?.id;
+        if (savedContactId) {
+          await save({ ...companyFields, _id: savedCompanyId, primaryContactId: savedContactId });
+        }
         if (sendPortalInvite && contactFields.email) {
           try {
             await apiPost("/api/admin/clients/invite", {
@@ -957,7 +961,7 @@ export default function Companies() {
         )}
       </div>
 
-      {editing && <CompanyFormPanel company={editing} onClose={() => setEditing(null)} onSave={saveCompany} />}
+      {editing && <CompanyFormPanel company={editing} contacts={allContacts} onClose={() => setEditing(null)} onSave={saveCompany} />}
       {creatingFolder && <FolderModal onClose={() => setCreatingFolder(false)} onCreate={createFolder} />}
       {assignOpen && openedFolder && (
         <AssignCompaniesModal
