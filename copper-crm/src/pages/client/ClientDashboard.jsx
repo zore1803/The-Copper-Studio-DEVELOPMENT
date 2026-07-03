@@ -186,15 +186,23 @@ export default function ClientDashboard() {
                         in_progress: { label: "Active", background: "var(--cs-primary-fixed)", color: "var(--cs-primary)" },
                         not_started: { label: "Not Started", background: "var(--cs-surface-container-low)", color: "#9ca3af" }
                       }[stage.status];
+                      // Only surface a stage's note to the client when the admin
+                      // has left the stage marked client-visible.
+                      const showNote = stage.clientVisible !== false && stage.notes;
                       return (
-                        <div key={i} className="flex items-center gap-3">
-                          <StageIcon size={18} style={{ color: iconColor }} />
-                          <span className="text-sm" style={{
-                            color: stage.status === "completed" || stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
-                            fontWeight: stage.status === "in_progress" ? 600 : 400
-                          }}>{stage.name}</span>
+                        <div key={i} className="flex items-start gap-3">
+                          <StageIcon size={18} className="mt-0.5 shrink-0" style={{ color: iconColor }} />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm" style={{
+                              color: stage.status === "completed" || stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
+                              fontWeight: stage.status === "in_progress" ? 600 : 400
+                            }}>{stage.name}</span>
+                            {showNote && (
+                              <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "var(--cs-secondary)" }}>{stage.notes}</p>
+                            )}
+                          </div>
                           {badge && (
-                            <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
+                            <span className="shrink-0 text-xs px-2 py-0.5 rounded-full font-semibold"
                               style={{ background: badge.background, color: badge.color }}>{badge.label}</span>
                           )}
                         </div>
