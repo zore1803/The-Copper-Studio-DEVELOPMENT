@@ -11,9 +11,9 @@ import { useToast } from "../components/useToast";
 import { useRevalidate } from "../hooks/useRevalidate";
 
 const QUICK_ACTIONS = [
-  { icon: Video, label: "Request a meeting", to: "/client/meetings" },
-  { icon: FileText, label: "View documents", to: "/client/documents" },
-  { icon: Receipt, label: "View invoices", to: "/client/invoices" },
+  { icon: Video, label: "Request a meeting", to: "/client/meetings", color: "#ff9800" },
+  { icon: FileText, label: "View documents", to: "/client/documents", color: "#2563eb" },
+  { icon: Receipt, label: "View invoices", to: "/client/invoices", color: "#4caf50" },
 ];
 
 const SEARCHABLE_PAGES = [
@@ -403,7 +403,9 @@ export default function ClientLayout() {
                       onClick={() => { setQuickAddOpen(false); go(item.to); }}
                       className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
-                      <item.icon size={14} className="text-[#9ca3af]" />
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: item.color + "1f" }}>
+                        <item.icon size={14} style={{ color: item.color }} />
+                      </span>
                       {item.label}
                     </button>
                   ))}
