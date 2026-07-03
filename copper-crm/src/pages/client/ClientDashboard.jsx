@@ -262,20 +262,39 @@ export default function ClientDashboard() {
                   </a>
                 )}
               </div>
-              {upcomingMeeting.participants?.length > 0 ? (
+              {upcomingMeeting.participants?.length > 0 && (
                 <div className="mt-3 pl-[52px]">
                   <p className="text-xs font-semibold" style={{ color: "var(--cs-on-surface)" }}>With</p>
                   <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
                     {upcomingMeeting.participants.map(p => p.name || p.email).filter(Boolean).join(", ")}
                   </p>
                 </div>
-              ) : nextMeeting && (
-                <div className="mt-3 pl-[52px]">
-                  <p className="text-xs font-semibold" style={{ color: "var(--cs-on-surface)" }}>Next meeting</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
-                    {nextMeeting.title}
-                    {nextMeeting.scheduledAt && ` · ${new Date(nextMeeting.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
-                  </p>
+              )}
+              {/* Always surface the next meeting too, not just when the first
+                  one has no participant details — the card shows the two
+                  soonest meetings, not just one. */}
+              {nextMeeting && (
+                <div className="mt-4 pt-3 border-t flex items-start gap-3" style={{ borderColor: "var(--cs-outline-variant)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: "var(--cs-surface-container-low)", color: "var(--cs-secondary)" }}>
+                    <Video size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm" style={{ color: "var(--cs-on-surface)" }}>{nextMeeting.title}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
+                      {nextMeeting.scheduledAt
+                        ? new Date(nextMeeting.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+                        : "TBD"}
+                    </p>
+                  </div>
+                  {nextMeeting.meetingLink && (
+                    <a href={nextMeeting.meetingLink} target="_blank" rel="noreferrer"
+                      className="shrink-0 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold border transition-all"
+                      style={{ borderColor: "var(--cs-primary)", color: "var(--cs-primary)" }}>
+                      <Video size={14} />
+                      Join
+                    </a>
+                  )}
                 </div>
               )}
             </div>
