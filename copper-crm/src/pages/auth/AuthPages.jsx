@@ -17,11 +17,7 @@ function AuthShell({ children, title, subtitle }) {
     <div className="min-h-screen bg-[#f0ede4] text-[#211a17] grid lg:grid-cols-[1.05fr_0.95fr]">
       <section className="studio-gradient hidden lg:flex flex-col justify-between border-r border-[#211a17] px-10 py-9 text-white">
         <div>
-          <img src="/copper-studio-logo.jpeg" alt="Copper Studio" className="h-24 w-80 rounded-xl object-cover shadow-2xl shadow-black/30" />
-          <div className="mt-4">
-            <p className="studio-logo-text text-xl leading-tight">The Copper Studio</p>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/60">DataCircles portal</p>
-          </div>
+          <img src="/copper-studio-wordmark.png" alt="Copper Studio" className="h-16 w-auto object-contain" />
         </div>
 
         <div className="max-w-xl">
