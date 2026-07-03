@@ -42,7 +42,10 @@ export default function ClientDashboard() {
   const auth = useAuth();
   const token = auth.token;
   const user = auth.user;
-  const name = user?.name?.split(" ")[0] || "there";
+  // The stored name can carry a salutation baked in (e.g. "Mr. Rohit Zore"),
+  // so just taking the first word greeted people with "Hello, Mr." — strip
+  // common salutations before picking the first name.
+  const name = user?.name?.replace(/^(mr|mrs|ms|miss|dr|prof)\.?\s+/i, "").trim().split(" ")[0] || "there";
 
   const { projects, selectedProject, selectedId } = useClientProject();
   // Paint instantly from cache (same pattern as the admin side's
