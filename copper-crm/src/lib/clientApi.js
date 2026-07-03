@@ -31,6 +31,9 @@ export const clientApi = {
   // down) must surface as a real error, never silently "succeed" locally.
   deactivateAccount: (confirmName, token) => apiPost("/api/client/deactivate", { confirmName }, token),
 
+  getSessions: (token) => apiGet("/api/client/sessions", token),
+  revokeSession: (sid, token) => apiDelete(`/api/client/sessions/${sid}`, token),
+
   getOrders: (token) => withFallback(
     () => apiGet("/api/client/orders", token),
     () => storeGet("orders")

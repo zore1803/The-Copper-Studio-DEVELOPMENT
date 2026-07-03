@@ -15,7 +15,7 @@ import {
   Loader2, Calendar, CalendarCheck, CalendarPlus, CheckCircle2, Check, Clock,
   StickyNote, History, Copy, Video, Search, Download, Eye,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
-  Save, Lock, AlertTriangle, Activity, FileText, FileImage,
+  Save, Lock, AlertTriangle, Activity, FileText, FileImage, LogOut,
   FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route,
 } from "lucide-react";
 
@@ -1450,6 +1450,30 @@ export function ClientSettingsPage() {
   const [savingPw, setSavingPw] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [sessions, setSessions] = useState(null);
+  const [revokingSid, setRevokingSid] = useState("");
+
+  useEffect(() => {
+    if (tab !== "Security" || !token) return;
+    let alive = true;
+    clientApi.getSessions(token)
+      .then((data) => { if (alive) setSessions(data.sessions || []); })
+      .catch(() => { if (alive) setSessions([]); });
+    return () => { alive = false; };
+  }, [tab, token]);
+
+  async function revokeSession(sid) {
+    setRevokingSid(sid);
+    try {
+      await clientApi.revokeSession(sid, token);
+      setSessions((prev) => (prev || []).filter((s) => s.sid !== sid));
+      showToast({ title: "Session signed out", message: "That device no longer has access." });
+    } catch (err) {
+      showToast({ type: "error", title: "Couldn't sign out that session", message: err.message || "Something went wrong." });
+    } finally {
+      setRevokingSid("");
+    }
+  }
 
   // Browser notifications need the OS/browser's own permission grant, which
   // can only be requested from a user gesture — this toggle click is one.
@@ -1613,21 +1637,47 @@ export function ClientSettingsPage() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-1" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Active Sessions</h3>
               <p className="text-sm mb-4" style={{ color: CS.secondary }}>Devices currently logged into your account.</p>
-              <div className="rounded-lg p-4 flex items-center gap-4" style={{ background: CS.surfaceLow }}>
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center border"
-                  style={{ background: "#fff", borderColor: CS.outlineVariant }}>
-                  <MonitorSmartphone size={20} style={{ color: CS.primary }} />
+              {sessions === null ? (
+                <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin" style={{ color: CS.secondary }} /></div>
+              ) : sessions.length === 0 ? (
+                <p className="text-sm" style={{ color: CS.secondary }}>No active sessions found.</p>
+              ) : (
+                <div className="space-y-2">
+                  {sessions.map((session) => (
+                    <div key={session.sid} className="rounded-lg p-4 flex items-center gap-4" style={{ background: CS.surfaceLow }}>
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center border shrink-0"
+                        style={{ background: "#fff", borderColor: CS.outlineVariant }}>
+                        <MonitorSmartphone size={20} style={{ color: CS.primary }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{session.device}</p>
+                          {session.current && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase" style={{ background: CS.primaryFixed, color: CS.primary }}>Current</span>
+                          )}
+                        </div>
+                        <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>
+                          Last active: {new Date(session.lastActiveAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                          {session.ip ? ` · ${session.ip}` : ""}
+                        </p>
+                      </div>
+                      {!session.current && (
+                        <button
+                          type="button"
+                          onClick={() => revokeSession(session.sid)}
+                          disabled={revokingSid === session.sid}
+                          title="Sign out this device"
+                          className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors hover:bg-red-50"
+                          style={{ color: CS.error }}
+                        >
+                          {revokingSid === session.sid ? <Loader2 size={13} className="animate-spin" /> : <LogOut size={13} />}
+                          Sign out
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>Current Browser</p>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase" style={{ background: CS.primaryFixed, color: CS.primary }}>Current</span>
-                  </div>
-                  <p className="text-xs mt-0.5" style={{ color: CS.secondary }}>
-                    Last active: Just now · {user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString("en-IN", { dateStyle: "medium" }) : ""}
-                  </p>
-                </div>
-              </div>
+              )}
             </Card>
 
             {/* Danger zone */}

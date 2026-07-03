@@ -12,6 +12,7 @@ import { requireAuth, requireRole } from "../middleware/auth.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 import { runScheduledNotifications } from "../services/scheduledNotifications.js";
 import { notifyAccountStatusChange } from "../services/accountNotifications.js";
+import { describeUserAgent } from "../services/userAgent.js";
 
 const router = express.Router();
 
@@ -104,6 +105,40 @@ router.put("/change-password", async (req, res, next) => {
 
     user.passwordHash = await bcrypt.hash(newPassword, 12);
     await user.save();
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/sessions", async (req, res, next) => {
+  try {
+    const user = await User.findById(req.auth.sub).select("sessions");
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    const sessions = (user.sessions || [])
+      .slice()
+      .sort((a, b) => new Date(b.lastActiveAt) - new Date(a.lastActiveAt))
+      .map((s) => ({
+        sid: s.sid,
+        device: describeUserAgent(s.userAgent),
+        ip: s.ip,
+        createdAt: s.createdAt,
+        lastActiveAt: s.lastActiveAt,
+        current: s.sid === req.auth.sid
+      }));
+    res.json({ sessions });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/sessions/:sid", async (req, res, next) => {
+  try {
+    if (req.params.sid === req.auth.sid) {
+      return res.status(400).json({ message: "Sign out from this device directly instead of revoking your current session here." });
+    }
+    await User.updateOne({ _id: req.auth.sub }, { $pull: { sessions: { sid: req.params.sid } } });
     res.json({ ok: true });
   } catch (error) {
     next(error);

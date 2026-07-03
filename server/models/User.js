@@ -33,7 +33,20 @@ const schema = new mongoose.Schema(
       verifiedAt: { type: Date }
     },
     lastLoginAt: { type: Date },
-    lastWeeklyReportAt: { type: Date }
+    lastWeeklyReportAt: { type: Date },
+    // One entry per issued login token (JWT `sid` claim) — powers the client
+    // portal's "Active Sessions" list and lets a session be individually
+    // revoked. Capped/pruned at write time so this never grows unbounded.
+    sessions: {
+      type: [{
+        sid: { type: String, required: true },
+        userAgent: { type: String, default: "" },
+        ip: { type: String, default: "" },
+        createdAt: { type: Date, default: Date.now },
+        lastActiveAt: { type: Date, default: Date.now }
+      }],
+      default: []
+    }
   },
   { timestamps: true }
 );
@@ -63,6 +76,7 @@ export default defineModel({
     invite: { tokenHash: "", expiresAt: null, sentAt: null },
     resetPassword: { otpHash: "", expiresAt: null, verifiedAt: null },
     lastLoginAt: null,
-    lastWeeklyReportAt: null
+    lastWeeklyReportAt: null,
+    sessions: []
   }
 });

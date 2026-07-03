@@ -8,13 +8,33 @@ import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 const jwtSecret = process.env.JWT_SECRET || "replace-this-development-secret";
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // matches the 7d token expiry below
+const SESSION_LIMIT = 10;
 
-function signUser(user) {
+function signUser(user, sid) {
   return jwt.sign(
-    { sub: user._id.toString(), role: user.role, email: user.email },
+    { sub: user._id.toString(), role: user.role, email: user.email, sid },
     jwtSecret,
     { expiresIn: "7d" }
   );
+}
+
+// Records this login as a new session (for the "Active Sessions" list) and
+// drops any that are past the token's own expiry or beyond the cap, so the
+// list never carries stale/revoked entries.
+function recordSession(user, req) {
+  const sid = crypto.randomUUID();
+  const now = Date.now();
+  const existing = (user.sessions || []).filter((s) => now - new Date(s.lastActiveAt || s.createdAt).getTime() < SESSION_MAX_AGE_MS);
+  existing.push({
+    sid,
+    userAgent: req.get("user-agent") || "",
+    ip: req.ip || "",
+    createdAt: new Date(),
+    lastActiveAt: new Date()
+  });
+  user.sessions = existing.slice(-SESSION_LIMIT);
+  return sid;
 }
 
 function publicUser(user) {
@@ -52,9 +72,10 @@ router.post("/login", async (req, res, next) => {
 
     user.lastLoginAt = new Date();
     user.status = "active";
+    const sid = recordSession(user, req);
     await user.save();
 
-    res.json({ token: signUser(user), user: publicUser(user) });
+    res.json({ token: signUser(user, sid), user: publicUser(user) });
   } catch (error) {
     next(error);
   }
@@ -87,9 +108,10 @@ router.post("/set-password", async (req, res, next) => {
     user.passwordHash = await bcrypt.hash(password, 12);
     user.status = "active";
     user.invite = {};
+    const sid = recordSession(user, req);
     await user.save();
 
-    res.json({ token: signUser(user), user: publicUser(user) });
+    res.json({ token: signUser(user, sid), user: publicUser(user) });
   } catch (error) {
     next(error);
   }
@@ -135,9 +157,10 @@ router.post("/reset-password", async (req, res, next) => {
     user.passwordHash = await bcrypt.hash(password, 12);
     user.status = "active";
     user.resetPassword = {};
+    const sid = recordSession(user, req);
     await user.save();
 
-    res.json({ token: signUser(user), user: publicUser(user) });
+    res.json({ token: signUser(user, sid), user: publicUser(user) });
   } catch (error) {
     next(error);
   }

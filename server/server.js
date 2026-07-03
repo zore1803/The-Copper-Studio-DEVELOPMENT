@@ -49,6 +49,7 @@ const razorpay =
       })
     : null;
 
+app.set("trust proxy", true); // Render sits behind a reverse proxy — needed for req.ip to reflect the real client IP
 app.use(cors({ origin: true }));
 app.use(express.json({ limit: "12mb", verify: (req, _res, buf) => { req.rawBody = buf.toString("utf8"); } }));
 app.use("/api/auth", authRoutes);
