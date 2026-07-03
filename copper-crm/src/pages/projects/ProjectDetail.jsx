@@ -586,11 +586,11 @@ export default function ProjectDetail() {
                 const isCompleted = stageData.status === 'completed';
                 const isReview = stageData.status === 'review';
                 const isActive = stageData.status === 'in_progress' || isReview || (stageData.status === 'not_started' && index === phaseIndex);
-                
-                const iconBg = isCompleted ? 'bg-[#34d399] border-[#34d399]' : isActive ? 'bg-[#fef3c7] border-[#fbbf24]' : 'bg-white border-[#E1E4EA]';
-                const iconColor = isCompleted ? 'text-white' : isActive ? 'text-[#d97706]' : 'text-[#9ca3af]';
-                
-                const cardBg = isCompleted ? 'bg-[#f0fdf4] border-[#bbf7d0]' : isActive ? 'bg-[#fffbeb] border-[#fde68a]' : 'bg-[#f3f4f6] border-[#e5e7eb]';
+
+                const iconBg = isCompleted ? 'bg-[#34d399] border-[#34d399]' : isReview ? 'bg-[#ede9fe] border-[#a78bfa]' : isActive ? 'bg-[#fef3c7] border-[#fbbf24]' : 'bg-white border-[#E1E4EA]';
+                const iconColor = isCompleted ? 'text-white' : isReview ? 'text-[#7c3aed]' : isActive ? 'text-[#d97706]' : 'text-[#9ca3af]';
+
+                const cardBg = isCompleted ? 'bg-[#f0fdf4] border-[#bbf7d0]' : isReview ? 'bg-[#f5f3ff] border-[#ddd6fe]' : isActive ? 'bg-[#fffbeb] border-[#fde68a]' : 'bg-[#f3f4f6] border-[#e5e7eb]';
                 
                 function formatDate(dateStr) {
                   if (!dateStr) return null;
@@ -600,7 +600,7 @@ export default function ProjectDetail() {
                 return (
                   <div key={phase.key || index} className="relative flex items-start gap-6">
                     <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${iconBg} shadow-sm`}>
-                      {isCompleted ? <CheckCircle2 size={20} className={iconColor} /> : isActive ? <Zap size={18} className={iconColor} /> : <div className="h-2.5 w-2.5 rounded-full bg-[#d1d5db]" />}
+                      {isCompleted ? <CheckCircle2 size={20} className={iconColor} /> : isReview ? <ClipboardCheck size={18} className={iconColor} /> : isActive ? <Zap size={18} className={iconColor} /> : <div className="h-2.5 w-2.5 rounded-full bg-[#d1d5db]" />}
                     </div>
                     
                     <div className={`flex-1 rounded-xl border p-5 transition-all ${cardBg}`}>
