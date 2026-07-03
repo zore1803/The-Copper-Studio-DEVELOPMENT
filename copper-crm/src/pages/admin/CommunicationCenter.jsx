@@ -338,7 +338,6 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
                 </div>
               )}
             </div>
-            <Button variant="secondary" onClick={onClose}>Cancel</Button>
             <Button onClick={() => onSave(form)}><Save size={14} /> Save</Button>
             <button onClick={onClose} className="ml-2 grid h-8 w-8 place-items-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"><X size={16} /></button>
           </div>
