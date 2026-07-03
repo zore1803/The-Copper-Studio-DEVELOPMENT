@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
+import { jsPDF } from "jspdf";
+import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, FileDown, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -355,6 +356,168 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
   );
 }
 
+// Matches server/data/sellerConfig.js's default (Maharashtra) — used only to
+// decide CGST+SGST vs IGST for the export, since that config isn't reachable
+// from the frontend.
+const SELLER_STATE_CODE = "27";
+
+const EXPORT_COLUMNS = [
+  ["srNo", "Sr No"],
+  ["invoiceDate", "Invoice Date"],
+  ["dueDate", "Due Date"],
+  ["companyName", "Company Name"],
+  ["addressLine1", "Billing Address Line 1"],
+  ["addressLine2", "Billing Address Line 2"],
+  ["city", "City"],
+  ["state", "State"],
+  ["pincode", "Pincode"],
+  ["gstNo", "GST No"],
+  ["stateCode", "State Code"],
+  ["customerName", "Customer Name"],
+  ["mobile", "Mobile No (Primary)"],
+  ["email", "Email ID"],
+  ["packageCategory", "Package Category"],
+  ["packagePlan", "Package Plan Name"],
+  ["packageAmount", "Package Amount"],
+  ["discount", "Discount"],
+  ["totalAmount", "Total Amount"],
+  ["sgst", "SGST (9%)"],
+  ["cgst", "CGST (9%)"],
+  ["igst", "IGST (18%)"],
+  ["grandTotal", "Grand Total Amount"],
+  ["modeOfPayment", "Mode of Payment"],
+  ["paymentMethod", "Payment Method"],
+  ["invoiceSerialNo", "Invoice Serial No"],
+  ["paymentId", "Payment ID"]
+];
+
+function exportDate(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// Builds one export row per invoice, cross-referencing companies/contacts/
+// packages/coupons (already loaded elsewhere on this page) to fill in fields
+// the Invoice record doesn't carry directly — billing address, GSTIN, phone,
+// package category, and discount. "Mode of Payment" (Card/UPI/etc.) isn't
+// captured anywhere in the system today, so it's left blank rather than guessed.
+function buildExportRows(list, { companies, contacts, packages, coupons }) {
+  const companyById = new Map();
+  const companyByName = new Map();
+  companies.forEach((c) => {
+    companyById.set(String(c._id || c.id), c);
+    if (c.name) companyByName.set(c.name.trim().toLowerCase(), c);
+  });
+  const contactByEmail = new Map();
+  contacts.forEach((c) => { if (c.email) contactByEmail.set(c.email.trim().toLowerCase(), c); });
+  const packageByName = new Map();
+  packages.forEach((p) => { if (p.name) packageByName.set(p.name.trim().toLowerCase(), p); });
+  const couponByCode = new Map();
+  coupons.forEach((c) => { if (c.code) couponByCode.set(c.code.trim().toUpperCase(), c); });
+
+  return list.map((invoice, index) => {
+    const company = companyById.get(String(invoice.companyId)) || companyByName.get(String(invoice.company || "").trim().toLowerCase()) || {};
+    const contact = contactByEmail.get(String(invoice.customerEmail || "").trim().toLowerCase());
+    const pkg = packageByName.get(String(invoice.package || "").trim().toLowerCase());
+    const coupon = invoice.couponCode ? couponByCode.get(String(invoice.couponCode).trim().toUpperCase()) : null;
+
+    const gstin = company.gstin || "";
+    const stateCode = gstin ? gstin.slice(0, 2) : "";
+    const isInterState = Boolean(stateCode) && stateCode !== SELLER_STATE_CODE;
+    const total = parseMoney(invoice.total || invoice.amount);
+    const gst = parseMoney(invoice.tax || invoice.gst);
+    const cgst = isInterState ? 0 : Math.round((gst / 2) * 100) / 100;
+    const sgst = isInterState ? 0 : gst - cgst;
+    const igst = isInterState ? gst : 0;
+    const discount = coupon
+      ? (coupon.amountType === "percentage" ? `${coupon.amount}%` : `-₹${coupon.amount}`)
+      : "";
+
+    return {
+      srNo: index + 1,
+      invoiceDate: exportDate(invoice.issueDate || invoice.date),
+      dueDate: exportDate(invoice.dueDate),
+      companyName: invoice.company || invoice.client || "",
+      addressLine1: company.addressLine1 || "",
+      addressLine2: company.addressLine2 || "",
+      city: company.city || "",
+      state: company.state || "",
+      pincode: company.pincode || "",
+      gstNo: gstin,
+      stateCode,
+      customerName: invoice.client || "",
+      mobile: contact?.phone || "",
+      email: invoice.customerEmail || "",
+      packageCategory: pkg?.category || "",
+      packagePlan: invoice.package || "",
+      packageAmount: pkg?.price ?? "",
+      discount,
+      totalAmount: total,
+      sgst,
+      cgst,
+      igst,
+      grandTotal: total + gst,
+      modeOfPayment: "",
+      paymentMethod: invoice.provider || "",
+      invoiceSerialNo: invoice.invoiceNumber || invoice.id || "",
+      paymentId: invoice.razorpayPaymentId || invoice.paymentId || ""
+    };
+  });
+}
+
+function downloadBlob(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(value) {
+  const str = String(value ?? "");
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+function exportAsDelimited(rows, delimiter, extension, mime) {
+  const header = EXPORT_COLUMNS.map(([, label]) => csvEscape(label)).join(delimiter);
+  const lines = rows.map((row) => EXPORT_COLUMNS.map(([key]) => csvEscape(row[key])).join(delimiter));
+  downloadBlob(`invoices-export-${Date.now()}.${extension}`, [header, ...lines].join("\n"), mime);
+}
+
+function exportAsPdf(rows) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt" });
+  const marginX = 24;
+  let y = 36;
+  doc.setFontSize(14);
+  doc.text("Invoices Export", marginX, y);
+  y += 20;
+  doc.setFontSize(8);
+
+  rows.forEach((row, i) => {
+    if (y > 560) { doc.addPage(); y = 36; }
+    doc.setFont(undefined, "bold");
+    doc.text(`${i + 1}. ${row.invoiceSerialNo || "Invoice"} — ${row.companyName || "—"}`, marginX, y);
+    doc.setFont(undefined, "normal");
+    y += 12;
+    EXPORT_COLUMNS.forEach(([key, label]) => {
+      if (key === "srNo") return;
+      const value = row[key];
+      if (value === "" || value === null || value === undefined) return;
+      if (y > 560) { doc.addPage(); y = 36; }
+      doc.text(`${label}: ${value}`, marginX + 10, y);
+      y += 11;
+    });
+    y += 10;
+  });
+
+  doc.save(`invoices-export-${Date.now()}.pdf`);
+}
+
 export default function Invoices() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -362,16 +525,20 @@ export default function Invoices() {
   const [status, setStatus] = useState("All");
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
   const { records: contacts } = useCrmRecords("contacts");
+  const { records: coupons } = useCrmRecords("coupons");
   const [packages, setPackages] = useState([]);
   const { showToast } = useToast();
   const sortRef = useRef(null);
+  const exportRef = useRef(null);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
+  useClickOutside(exportRef, () => setExportOpen(false), exportOpen);
 
   useEffect(() => {
     if (location.state?.openCreate) {
@@ -482,6 +649,22 @@ export default function Invoices() {
     window.open(`${base}${path}`, "_blank", "noopener");
   }
 
+  // Exports whatever the current search/status filter resolves to — the
+  // full list when nothing is filtered, or just the matching subset.
+  function handleExport(format) {
+    setExportOpen(false);
+    const rows = buildExportRows(sorted, { companies, contacts, packages, coupons });
+    if (!rows.length) {
+      showToast({ type: "error", title: "Nothing to export", message: "No invoices match the current filters." });
+      return;
+    }
+    if (format === "csv") exportAsDelimited(rows, ",", "csv", "text/csv");
+    else if (format === "excel") exportAsDelimited(rows, ",", "csv", "application/vnd.ms-excel");
+    else if (format === "txt") exportAsDelimited(rows, "\t", "txt", "text/plain");
+    else if (format === "pdf") exportAsPdf(rows);
+    showToast({ title: "Export ready", message: `${rows.length} invoice${rows.length === 1 ? "" : "s"} exported.` });
+  }
+
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
@@ -499,6 +682,37 @@ export default function Invoices() {
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1); }}
             />
+          </div>
+          {/* Export */}
+          <div className="relative" ref={exportRef}>
+            <button
+              onClick={() => setExportOpen((value) => !value)}
+              className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${exportOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
+            >
+              <FileDown size={15} />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+            {exportOpen && (
+              <div className="absolute right-0 z-20 mt-2 w-48 rounded-xl border border-[#e5e7eb] bg-white p-1 shadow-lg">
+                <p className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#9ca3af]">
+                  {status !== "All" || query ? "Export filtered" : "Export all"}
+                </p>
+                {[
+                  { value: "pdf", label: "PDF" },
+                  { value: "csv", label: "CSV" },
+                  { value: "excel", label: "Excel (.csv)" },
+                  { value: "txt", label: "Text (.txt)" }
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleExport(opt.value)}
+                    className="flex w-full items-center rounded-full px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           {/* Sort */}
           <div className="relative" ref={sortRef}>
