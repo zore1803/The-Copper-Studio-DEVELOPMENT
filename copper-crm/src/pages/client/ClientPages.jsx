@@ -614,7 +614,7 @@ function meetingCategory(m) {
 
 const MEETING_STATUS_BADGE = {
   requested: { type: "warning", label: "Requested" },
-  confirmed: { type: "primary", label: "Confirmed" },
+  confirmed: { type: "success", label: "Confirmed" },
   completed: { type: "success", label: "Completed" },
   cancelled: { type: "neutral", label: "Cancelled" },
 };
