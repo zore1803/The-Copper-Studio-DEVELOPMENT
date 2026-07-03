@@ -82,7 +82,15 @@ export default function ClientDashboard() {
   const meetings = useMemo(() => allMeetings.filter(m => belongsToProject(m, selectedId)), [allMeetings, selectedId]);
 
   const activeProject = selectedProject;
-  const upcomingMeeting = meetings.find(m => m.status === "confirmed") || meetings[0];
+  // Soonest-first so "the next meeting" (shown when the first has no
+  // with-whom details to display) is genuinely the next one chronologically,
+  // not just whatever happens to be first in the fetched list.
+  const sortedUpcomingMeetings = useMemo(() => {
+    const relevant = meetings.filter(m => m.status === "confirmed" || m.status === "requested");
+    return [...relevant].sort((a, b) => new Date(a.scheduledAt || a.preferredDate || 0) - new Date(b.scheduledAt || b.preferredDate || 0));
+  }, [meetings]);
+  const upcomingMeeting = sortedUpcomingMeetings[0] || meetings[0];
+  const nextMeeting = sortedUpcomingMeetings[1];
 
   // A single recency-ordered feed merged from everything the dashboard already
   // loads (and revalidates) — meetings, purchases, and per-project progress —
@@ -237,7 +245,7 @@ export default function ClientDashboard() {
                   style={{ background: "var(--cs-primary-fixed)", color: "var(--cs-primary)" }}>
                   <Video size={20} />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="font-semibold text-sm" style={{ color: "var(--cs-on-surface)" }}>{upcomingMeeting.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
                     {upcomingMeeting.scheduledAt
@@ -245,14 +253,30 @@ export default function ClientDashboard() {
                       : "TBD"}
                   </p>
                 </div>
+                {upcomingMeeting.meetingLink && (
+                  <a href={upcomingMeeting.meetingLink} target="_blank" rel="noreferrer"
+                    className="shrink-0 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all"
+                    style={{ background: "var(--cs-primary)", color: "var(--cs-on-primary)" }}>
+                    <Video size={16} />
+                    Join Call
+                  </a>
+                )}
               </div>
-              {upcomingMeeting.meetingLink && (
-                <a href={upcomingMeeting.meetingLink} target="_blank" rel="noreferrer"
-                  className="mt-3 w-full py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all"
-                  style={{ background: "var(--cs-primary)", color: "var(--cs-on-primary)" }}>
-                  <Video size={18} />
-                  Join Call
-                </a>
+              {upcomingMeeting.participants?.length > 0 ? (
+                <div className="mt-3 pl-[52px]">
+                  <p className="text-xs font-semibold" style={{ color: "var(--cs-on-surface)" }}>With</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
+                    {upcomingMeeting.participants.map(p => p.name || p.email).filter(Boolean).join(", ")}
+                  </p>
+                </div>
+              ) : nextMeeting && (
+                <div className="mt-3 pl-[52px]">
+                  <p className="text-xs font-semibold" style={{ color: "var(--cs-on-surface)" }}>Next meeting</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>
+                    {nextMeeting.title}
+                    {nextMeeting.scheduledAt && ` · ${new Date(nextMeeting.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
+                  </p>
+                </div>
               )}
             </div>
           ) : (
