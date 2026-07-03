@@ -1316,10 +1316,16 @@ const pageRenderers = {
   admin: renderAdminPage
 };
 
-// On the packages page, seed from the localStorage cache (last-known DB prices)
-// before the first render so a reload shows the correct prices instantly with no
-// flash of the hardcoded fallback.
-if (page === "packages") {
+// Every page that shows a package price (not just the pricing page itself)
+// needs the live DB prices — checkout/payment/success were previously left on
+// the hardcoded fallback list forever, since only "packages" ever fetched or
+// re-rendered after admin price edits.
+const PRICED_PAGES = ["packages", "checkout", "payment", "success"];
+
+// Seed from the localStorage cache (last-known DB prices) before the first
+// render so a reload shows the correct prices instantly with no flash of the
+// hardcoded fallback.
+if (PRICED_PAGES.includes(page)) {
   try {
     const cached = JSON.parse(localStorage.getItem(PACKAGES_CACHE_KEY) || "null");
     if (Array.isArray(cached) && cached.length && cached.some((p) => p.category)) {
@@ -1333,26 +1339,26 @@ pageRenderers[page]?.();
 
 // Pull the live pricing from the database so admin edits (Settings > Pricing)
 // show up without a redeploy, and refresh the cache for next time.
-if (page === "packages") {
+if (PRICED_PAGES.includes(page)) {
   apiRequest("/packages")
     .then((data) => {
       if (Array.isArray(data) && data.length && data.some((p) => p.category)) {
         packages = data;
         packagesLoaded = true;
         try { localStorage.setItem(PACKAGES_CACHE_KEY, JSON.stringify(data)); } catch { /* quota/full — non-fatal */ }
-        renderPackagesPage();
+        pageRenderers[page]?.();
       } else if (!packagesLoaded) {
         // API returned nothing usable and there was no cache — reveal the
         // hardcoded fallback rather than leaving the loading state stuck.
         packagesLoaded = true;
-        renderPackagesPage();
+        pageRenderers[page]?.();
       }
     })
     .catch(() => {
       // Offline / API down with no cache — fall back to the hardcoded list.
       if (!packagesLoaded) {
         packagesLoaded = true;
-        renderPackagesPage();
+        pageRenderers[page]?.();
       }
     });
 }
