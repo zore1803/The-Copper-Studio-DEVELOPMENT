@@ -2387,7 +2387,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
             type="button"
             onClick={cycleSort}
             className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
-              sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]"
+              sortDir ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] bg-white text-[#6b7280] hover:bg-[#f9fafb]"
             }`}
             title="Sort by created date"
           >
