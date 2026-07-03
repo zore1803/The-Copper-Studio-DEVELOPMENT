@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   CalendarRange, CheckCircle2, Columns3, GripVertical,
-  Plus, Save, Trash2, Sparkles, ZoomIn, ZoomOut, AlertTriangle
+  Plus, Save, Trash2, Sparkles, AlertTriangle
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -13,6 +13,15 @@ import ProjectHeader from "./ProjectHeader";
 import { today, DAY_MS, parseFullDate, parseShortDate, formatRange } from "../../lib/dates";
 import { TASK_STATUSES, normalizeTaskStatus, COLUMN_TO_STAGE_STATUS } from "../../lib/taskStatus";
 import { projectRollup } from "../../lib/stageProgress";
+import GanttChart from "../../components/GanttChart";
+
+// Bar/legend colours for the canonical stage statuses (mirrors STATUS_DOT).
+const STAGE_STATUS_COLOR = {
+  "To Do": "#0ea5e9",
+  "In Progress": "#f59e0b",
+  Review: "#8b5cf6",
+  Done: "#10b981",
+};
 
 function getProgressText(start, end, status, needsDates = false) {
   if (needsDates || status === "Done" || !start || !end) return "";
@@ -36,25 +45,11 @@ const STATUS_DOT = {
   Done: "bg-emerald-500",
 };
 
-const STATUS_BAR = {
-  "To Do": "from-sky-400 to-sky-600 text-white",
-  "In Progress": "from-amber-400 to-orange-500 text-white",
-  Review: "from-indigo-400 to-violet-600 text-white",
-  Done: "from-emerald-400 to-emerald-600 text-white",
-};
-
 const priorityConfig = {
   High: "bg-red-50 text-red-600 border-red-100",
   Medium: "bg-amber-50 text-amber-700 border-amber-100",
   Low: "bg-gray-50 text-gray-500 border-gray-200",
 };
-
-// Free continuous zoom: pixels per week column. Drag the slider or use +/- to zoom
-// the timeline smoothly in and out, like a calendar.
-const MIN_COL_WIDTH = 26;    // zoomed out — see many months at once
-const MAX_COL_WIDTH = 340;   // zoomed in — day-level detail
-const DEFAULT_COL_WIDTH = 150;
-const ZOOM_STEP = 28;
 
 function TaskField({ label, value, onChange, placeholder = "", type = "text", className = "", min, max }) {
   return (
@@ -212,307 +207,77 @@ export function KanbanView({ stages, onDragEnd, onOpenNew, onOpenEdit }) {
 }
 
 export function GanttView({ stages, onOpenEdit, groupBy = "status", groupCategories }) {
-  const [colWidth, setColWidth] = useState(DEFAULT_COL_WIDTH);
-  const scrollRef = useRef(null);
-
-
-  const updateZoom = (updater) => {
-    setColWidth((prevWidth) => {
-      const nextWidth = typeof updater === "function" ? updater(prevWidth) : updater;
-      if (nextWidth === prevWidth) return prevWidth;
-      return nextWidth;
-    });
-  };
-
-  const zoomOut = () => updateZoom((w) => Math.max(MIN_COL_WIDTH, w - ZOOM_STEP));
-  const zoomIn = () => updateZoom((w) => Math.min(MAX_COL_WIDTH, w + ZOOM_STEP));
-  const [collapsed, setCollapsed] = useState({});
-
-  // Pinch / Ctrl+scroll over the chart zooms the timeline instead of the whole page.
-  // Plain two-finger scrolling (no Ctrl) is left alone so the chart still scrolls.
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onWheel = (e) => {
-      if (!e.ctrlKey) return;
-      e.preventDefault();
-      updateZoom((w) => {
-        const next = w * Math.exp(-e.deltaY * 0.002);
-        return Math.min(MAX_COL_WIDTH, Math.max(MIN_COL_WIDTH, next));
-      });
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, [stages.length]);
-
-  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
-    const TODAY = today();
+  // Normalise each stage into the shared Gantt's row shape, grouped either by
+  // an explicit category list, by project, or by status. Undated stages carry
+  // null dates (rendered as "Dates not set", no bar) and near-deadline ones are
+  // flagged as danger. `raw`/`groupId` ride along so a click can open the editor.
+  const groups = useMemo(() => {
     const referenceYear = new Date().getFullYear();
-    // First pass: parse whatever dates a stage has, and flag the ones missing them.
-    const parsed = stages.map((card) => {
+    const TODAY = today();
+    const parsed = stages.map((card, i) => {
       const start = card.startDate ? parseFullDate(card.startDate) : null;
-      const end = card.dueDate ? parseFullDate(card.dueDate) : card.endDate ? parseFullDate(card.endDate) : card.deadline ? parseShortDate(card.deadline, referenceYear) : null;
+      const end = card.dueDate
+        ? parseFullDate(card.dueDate)
+        : card.endDate
+          ? parseFullDate(card.endDate)
+          : card.deadline
+            ? parseShortDate(card.deadline, referenceYear)
+            : null;
       const hasDates = !!start && !!end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime());
-      return { card, start, end, hasDates };
-    });
-
-    // Anchor undated stages to the earliest real start (or today) so EVERY stage still
-    // shows up on the chart — just flagged as "needs dates" instead of being hidden.
-    const dated = parsed.filter((p) => p.hasDates);
-    const anchor = dated.length ? new Date(Math.min(...dated.map((p) => p.start.getTime()))) : new Date(TODAY);
-
-    const mapped = parsed.map(({ card, start, end, hasDates }) => {
       const status = normalizeTaskStatus(card.status);
-      let isDanger = false;
-      if (hasDates && status !== "Done") {
-        const daysToDeadline = Math.round((end - TODAY) / DAY_MS);
-        if (daysToDeadline <= 3) {
-          isDanger = true;
-        }
-      }
-      
-      if (hasDates) {
-        return { ...card, start, end: end < start ? start : end, needsDates: false, status, isDanger };
-      }
-      return { ...card, start: new Date(anchor), end: new Date(anchor.getTime() + 3 * DAY_MS), needsDates: true, status, isDanger: false };
+      let danger = false;
+      if (hasDates && status !== "Done" && Math.round((end - TODAY) / DAY_MS) <= 3) danger = true;
+      return {
+        card,
+        status,
+        row: {
+          id: card.id || card._id || `stage-${i}`,
+          title: card.title || card.taskName || card.name || "Untitled",
+          status,
+          start: hasDates ? start : null,
+          end: hasDates ? (end < start ? start : end) : null,
+          subtitle: getProgressText(start, end, status, !hasDates) || "",
+          danger,
+          raw: card,
+        },
+      };
     });
-    const unscheduled = parsed.filter((p) => !p.hasDates).length;
-    if (!mapped.length && (!groupCategories || !groupCategories.length)) return { groups: [], minDate: TODAY, maxDate: TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0, unscheduled } };
 
-    const allDates = mapped.flatMap((t) => [t.start, t.end]);
-    const min = allDates.length > 0 ? new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS) : new Date(TODAY.getTime() - 3 * DAY_MS);
-    const max = allDates.length > 0 ? new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS) : new Date(TODAY.getTime() + 14 * DAY_MS);
-    min.setHours(0, 0, 0, 0);
-    max.setHours(23, 59, 59, 999);
-    
-    const groupList = groupCategories
-      ? groupCategories.map(cat => ({
-          id: cat.id,
-          title: cat.title,
-          tasks: mapped.filter((t) => (groupBy === "project" ? String(t.projectId) === String(cat.id) : t.status === cat.id)),
-        }))
-      : groupBy === "project"
-      ? Array.from(new Set(mapped.map((t) => t.projectName || "Unknown Project"))).map((name) => ({
-          id: name,
-          title: name,
-          tasks: mapped.filter((t) => (t.projectName || "Unknown Project") === name),
-        }))
-      : TASK_STATUSES
-          .map((status) => ({ id: status, title: status, tasks: mapped.filter((t) => t.status === status) }))
-          .filter((g) => g.tasks.length > 0);
+    const rowsFor = (predicate, groupId) =>
+      parsed.filter(predicate).map((p) => ({ ...p.row, groupId }));
 
-    const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
-    const weekCount = Math.max(1, Math.ceil(totalDays / 7));
-    const weekCols = Array.from({ length: weekCount }, (_, index) => {
-      const weekStart = new Date(min.getTime() + index * 7 * DAY_MS);
-      const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
-      return { label: formatRange(weekStart, weekEnd) };
-    });
-    return {
-      groups: groupList,
-      minDate: min,
-      maxDate: max,
-      weeks: weekCols,
-      summary: {
-        total: mapped.length,
-        completed: mapped.filter((task) => task.status === "Done").length,
-        blocked: 0,
-        unscheduled,
-      },
-    };
+    if (groupCategories) {
+      return groupCategories.map((cat) => ({
+        id: cat.id,
+        title: cat.title,
+        rows: rowsFor((p) => (groupBy === "project" ? String(p.card.projectId) === String(cat.id) : p.status === cat.id), cat.id),
+      }));
+    }
+    if (groupBy === "project") {
+      return Array.from(new Set(parsed.map((p) => p.card.projectName || "Unknown Project"))).map((name) => ({
+        id: name,
+        title: name,
+        rows: rowsFor((p) => (p.card.projectName || "Unknown Project") === name, name),
+      }));
+    }
+    return TASK_STATUSES
+      .map((s) => ({ id: s, title: s, rows: rowsFor((p) => p.status === s, s) }))
+      .filter((g) => g.rows.length > 0);
   }, [stages, groupBy, groupCategories]);
 
-  // Auto-scroll the timeline to TODAY (or the nearest date) when it loads, when the date range changes,
-  // or when zooming (to keep Today in view per user request).
-  useEffect(() => {
-    if (scrollRef.current && minDate && maxDate) {
-      const TODAY = today();
-      const pxPerDay = colWidth / 7;
-      let targetDate = TODAY;
-      if (targetDate < minDate) targetDate = minDate;
-      if (targetDate > maxDate) targetDate = maxDate;
-      
-      const targetPx = ((targetDate.getTime() - minDate.getTime()) / DAY_MS) * pxPerDay;
-      // Scroll so the target date is slightly offset from the left edge (e.g. roughly 1 column)
-      scrollRef.current.scrollLeft = Math.max(0, targetPx - colWidth);
-    }
-  }, [minDate, maxDate, colWidth]);
-
-  if (!groups.length) {
-    return (
-      <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-10 text-center">
-        <p className="text-sm font-semibold text-[#111827]">No scheduled stages yet.</p>
-        <p className="mt-1 text-sm text-[#6b7280]">Add start and due dates to stages to see them on the Gantt chart.</p>
-      </div>
-    );
-  }
-
-  // Position everything in real pixels-per-day so bars line up exactly under their
-  // date columns (the columns are colWidth px per 7-day week).
-  const pxPerDay = colWidth / 7;
-  const showDays = pxPerDay >= 30; // Render daily headers if wide enough
-
-  const totalDays = Math.max(1, Math.ceil((maxDate - minDate) / DAY_MS));
-  const timeCols = showDays
-    ? Array.from({ length: totalDays }, (_, index) => {
-        const day = new Date(minDate.getTime() + index * DAY_MS);
-        return { label: day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), width: pxPerDay };
-      })
-    : weeks.map(w => ({ ...w, width: colWidth }));
-
-  const timelineWidth = timeCols.reduce((sum, col) => sum + col.width, 0);
-  const gridBackgroundSize = showDays ? `${pxPerDay}px 100%` : `${colWidth}px 100%`;
-  const dateToPx = (date) => ((date - minDate) / DAY_MS) * pxPerDay;
-  const TODAY = today();
-  const showTodayLine = TODAY >= minDate && TODAY <= maxDate;
-
-  function toggleGroup(id) {
-    setCollapsed((current) => ({ ...current, [id]: !current[id] }));
-  }
-
-  const completionPct = Math.round((summary.completed / Math.max(summary.total, 1)) * 100);
-
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e5e7eb] bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#FFFFFF] bg-[#fbfaf9] px-5 py-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#fff1ec] text-[#8D3118]">
-              <CalendarRange size={17} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-[#111827]">Stage Gantt Timeline</h4>
-              <p className="text-xs text-[#6b7280]">{formatRange(minDate, maxDate)} · {summary.total} scheduled stages</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-            <CheckCircle2 size={13} /> {completionPct}% complete
-          </span>
-          {summary.blocked > 0 && (
-            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">{summary.blocked} blocked</span>
-          )}
-          {summary.unscheduled > 0 && (
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">{summary.unscheduled} need dates</span>
-          )}
-          <div className="flex items-center gap-1.5 rounded-lg bg-[#FFFFFF] p-1">
-            <button
-              type="button"
-              onClick={zoomOut}
-              disabled={colWidth <= MIN_COL_WIDTH}
-              title="Zoom out"
-              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
-            >
-              <ZoomOut size={14} />
-            </button>
-            <input
-              type="range"
-              min={MIN_COL_WIDTH}
-              max={MAX_COL_WIDTH}
-              step="any"
-              value={colWidth}
-              onChange={(e) => updateZoom(Number(e.target.value))}
-              title="Zoom timeline — or pinch / Ctrl+scroll over the chart"
-              className="w-24 accent-[#8D3118]"
-            />
-            <button
-              type="button"
-              onClick={zoomIn}
-              disabled={colWidth >= MAX_COL_WIDTH}
-              title="Zoom in"
-              className="grid h-7 w-7 place-items-center rounded-md text-[#6b7280] transition-colors hover:bg-white hover:text-[#111827] disabled:opacity-40"
-            >
-              <ZoomIn size={14} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="sticky left-0 z-30 w-64 shrink-0 border-r border-[#FFFFFF] bg-white shadow-[8px_0_18px_rgba(17,24,39,0.04)]">
-          <div className="sticky top-0 z-40 flex h-11 items-center border-b border-[#FFFFFF] bg-[#fafafa] px-4">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Stage / Task</span>
-          </div>
-          {groups.map((group) => (
-            <div key={group.id} className="border-b border-[#FFFFFF]">
-              <button type="button" onClick={() => toggleGroup(group.id)} className="flex h-10 w-full items-center gap-2 bg-[#fafafa] px-3 text-left">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${STATUS_DOT[group.id] || "bg-[#8D3118]"}`} />
-                <span className="truncate text-sm font-semibold text-[#111827]">{group.title}</span>
-                <span className="ml-auto shrink-0 text-[10px] font-bold text-[#9ca3af]">{group.tasks.length}</span>
-              </button>
-              {!collapsed[group.id] && group.tasks.map((task) => (
-                <button key={task.id || task._id} type="button" onClick={() => onOpenEdit(group.id, task)} className="flex h-12 w-full items-center px-6 text-left hover:bg-[#fafafa]">
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5 truncate text-xs font-semibold text-[#374151]">
-                      <span className="truncate">{task.title || task.taskName}</span>
-                      {task.isDanger && <AlertTriangle size={12} className="shrink-0 text-red-500" strokeWidth={2.5} />}
-                    </span>
-                    <span className={`flex items-center gap-1.5 truncate text-[10px] ${task.needsDates ? "text-amber-600" : task.isDanger ? "text-red-500 font-semibold" : "text-[#9ca3af]"}`}>
-                      <span>{task.needsDates ? "No dates · click to set" : formatRange(task.start, task.end)}</span>
-                      {(() => {
-                        const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
-                        return pText ? <span className="text-[#8D3118]">{pText}</span> : null;
-                      })()}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-
-        <div ref={scrollRef} className="flex-1 overflow-x-auto">
-          <div style={{ minWidth: `${timelineWidth}px` }}>
-            <div className="sticky top-0 z-20 flex h-11 border-b border-[#FFFFFF] bg-white">
-              {timeCols.map((col, index) => (
-                <div key={index} style={{ width: `${col.width}px` }} className="flex shrink-0 items-center justify-center border-r border-[#FFFFFF] text-[10px] font-bold uppercase text-[#9ca3af] even:bg-[#fcfcfd]">
-                  {col.label}
-                </div>
-              ))}
-            </div>
-            <div className="relative bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px)]" style={{ backgroundSize: gridBackgroundSize }}>
-              {showTodayLine && (
-                <div className="absolute top-0 bottom-0 z-10 w-px bg-red-400" style={{ left: `${dateToPx(TODAY)}px` }}>
-                  <div className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-red-400" />
-                  <span className="absolute left-2 top-2 rounded bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm">Today</span>
-                </div>
-              )}
-              {groups.map((group) => (
-                <div key={group.id}>
-                  <div className="h-10 border-b border-[#FFFFFF] bg-[#fafafa]/60" />
-                  {!collapsed[group.id] && group.tasks.map((task) => {
-                    const left = dateToPx(task.start);
-                    // +1 day so the bar covers the end date inclusively; clamp so a single-day stage stays visible.
-                    const width = Math.max(pxPerDay, dateToPx(task.end) - left + pxPerDay);
-                    const isDone = task.status === "Done";
-                    return (
-                      <div key={task.id || task._id} className="relative h-12 border-b border-[#FFFFFF] odd:bg-white/65 even:bg-[#fcfcfd]/65">
-                        <button
-                          type="button"
-                          onClick={() => onOpenEdit(group.id, task)}
-                          style={{ left: `${left}px`, width: `${width}px` }}
-                          title={task.needsDates ? "No dates set — click to add a start and due date" : `${task.title || task.taskName}: ${formatRange(task.start, task.end)}`}
-                          className={`absolute top-2 flex h-8 min-w-[12px] items-center overflow-hidden rounded-xl bg-gradient-to-r px-2.5 text-left shadow-sm transition-[transform,box-shadow,opacity] hover:-translate-y-0.5 hover:shadow-md ${STATUS_BAR[task.status] || STATUS_BAR["To Do"]} ${task.needsDates ? "opacity-50 saturate-50 border border-dashed border-white/80" : "ring-1 ring-white/50"}`}
-                        >
-                          <span className="truncate text-[11px] font-bold">{task.title || task.taskName}</span>
-                          {(() => {
-                            const pText = getProgressText(task.start, task.end, task.status, task.needsDates);
-                            return pText ? <span className="ml-2 truncate text-[9px] opacity-90 font-medium">{pText}</span> : null;
-                          })()}
-                          {task.isDanger && !isDone && <AlertTriangle size={12} className="ml-auto shrink-0 text-red-500 drop-shadow-sm" strokeWidth={2.5} />}
-                          {isDone && <CheckCircle2 size={12} className="ml-auto shrink-0" />}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <GanttChart
+      title="Stage Gantt Timeline"
+      icon={CalendarRange}
+      groups={groups}
+      statusColor={STAGE_STATUS_COLOR}
+      statusOrder={TASK_STATUSES}
+      rowLabel="stage"
+      doneStatus="Done"
+      onRowClick={(row) => onOpenEdit(row.groupId, row.raw)}
+      emptyTitle="No scheduled stages yet."
+      emptyDescription="Add start and due dates to stages to see them on the timeline."
+    />
   );
 }
 

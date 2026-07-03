@@ -23,6 +23,16 @@ import DocumentUploadPanel from "../../components/DocumentUploadPanel";
 import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/RichTextEditor";
 import FilterButton from "../../components/FilterButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
+import GanttChart from "../../components/GanttChart";
+
+// Shared bar colours for the Gantt charts — covers both task statuses and the
+// project lifecycle statuses, so tasks and the project-timeline mini both tint
+// consistently (unknown statuses fall back to the component's default brown).
+const GANTT_STATUS_COLOR = {
+  Backlog: "#9ca3af", "To Do": "#9ca3af", "In Progress": "#f59e0b", Review: "#7c3aed", Completed: "#10b981", Blocked: "#ef4444",
+  "Not Started": "#9ca3af", Pending: "#9ca3af", Confirmed: "#3b82f6", "Requirement Gathering": "#f59e0b", Design: "#f59e0b",
+  Development: "#f59e0b", Testing: "#f59e0b", Deployment: "#7c3aed", Cancelled: "#ef4444", "On Hold": "#9ca3af",
+};
 
 const TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 const PROJECT_STATUS = ["Pending", "Confirmed", "Requirement Gathering", "Design", "Development", "Testing", "Review", "Deployment", "Completed", "Cancelled", "On Hold"];
@@ -1494,7 +1504,14 @@ function ProjectTimeline({ projects }) {
 }
 
 function ProjectGanttMini({ projects }) {
-  return <TaskGantt tasks={projects.map((project) => ({ ...project, title: project.name, dueDate: project.dueDate || project.expectedEndDate }))} projects={projects} />;
+  return (
+    <TaskGantt
+      title="Project Timeline"
+      rowLabel="project"
+      tasks={projects.map((project) => ({ ...project, title: project.name, dueDate: project.dueDate || project.expectedEndDate }))}
+      projects={projects}
+    />
+  );
 }
 
 function ProjectOverviewGrid({ projects, companyId, onOpen }) {
@@ -1638,68 +1655,35 @@ function InvoicesTable({ invoices, onView, onDownload }) {
   );
 }
 
-function TaskGantt({ tasks, projects }) {
+function TaskGantt({ tasks, projects, title = "Project Tasks Gantt Chart", rowLabel = "task" }) {
   const projectNames = Object.fromEntries(projects.map((project) => [String(project.id || project._id), project.name]));
-  const rows = tasks.map((task) => {
-    const start = new Date(task.startDate || task.createdAt || Date.now());
-    const end = new Date(task.dueDate || task.deadline || task.expectedEndDate || Date.now());
-    const safeStart = Number.isNaN(start.getTime()) ? new Date() : start;
-    const safeEnd = Number.isNaN(end.getTime()) ? safeStart : end;
-    return { ...task, safeStart, safeEnd: safeEnd < safeStart ? safeStart : safeEnd };
+  const rows = tasks.map((task, i) => {
+    const rawStart = task.startDate || task.createdAt;
+    const rawEnd = task.dueDate || task.deadline || task.expectedEndDate;
+    const start = rawStart ? new Date(rawStart) : null;
+    const end = rawEnd ? new Date(rawEnd) : start;
+    const safeStart = start && !Number.isNaN(start.getTime()) ? start : null;
+    const safeEnd = end && !Number.isNaN(end.getTime()) ? (safeStart && end < safeStart ? safeStart : end) : safeStart;
+    return {
+      id: task.id || task._id || i,
+      title: task.title || task.taskName || task.name || "Untitled",
+      status: task.status || "Backlog",
+      start: safeStart,
+      end: safeEnd,
+      subtitle: projectNames[String(task.projectId || task.project)] || task.projectName || "",
+    };
   });
-  const min = Math.min(...rows.map((row) => row.safeStart.getTime()));
-  const max = Math.max(...rows.map((row) => row.safeEnd.getTime()), min + 86400000);
-  const range = Math.max(max - min, 86400000);
-
-  const months = [];
-  const cursor = new Date(min);
-  cursor.setDate(1);
-  const maxDate = new Date(max);
-  while (cursor <= maxDate) {
-    months.push({
-      label: cursor.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
-      left: ((cursor.getTime() - min) / range) * 100,
-    });
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
-
   return (
-    <Section title="Project Tasks Gantt Chart">
-      <div className="space-y-3">
-        <div className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div />
-          <div className="relative h-6 border-b border-[#e5e7eb]">
-            {months.map((month) => (
-              <span key={month.label + month.left} className="absolute top-0 -translate-x-1/2 text-[10px] font-bold uppercase text-[#9ca3af]" style={{ left: `${month.left}%` }}>
-                {month.label}
-              </span>
-            ))}
-          </div>
-        </div>
-        {rows.map((task) => {
-          const left = ((task.safeStart.getTime() - min) / range) * 100;
-          const width = Math.max(((task.safeEnd.getTime() - task.safeStart.getTime()) / range) * 100, 8);
-          const dateRange = `${task.safeStart.toLocaleDateString("en-IN", { day: "numeric", month: "short" })} – ${task.safeEnd.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`;
-          return (
-            <div key={task.id || task._id} className="grid gap-3 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-center">
-              <div>
-                <p className="text-sm font-semibold text-[#111827]">{task.title || task.taskName || "Untitled task"}</p>
-                <p className="text-xs text-[#6b7280]">{projectNames[String(task.projectId || task.project)] || task.projectName || "No project"} / {task.status || "Backlog"}</p>
-              </div>
-              <div className="relative h-8 rounded-lg bg-[#f3f4f6]">
-                <div
-                  className="absolute top-1.5 flex h-6 items-center justify-center rounded-lg bg-[#8D3118] px-1.5 text-[10px] font-bold text-white"
-                  style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
-                  title={dateRange}
-                >
-                  <span className="truncate">{dateRange}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </Section>
+    <GanttChart
+      title={title}
+      icon={Calendar}
+      rows={rows}
+      statusColor={GANTT_STATUS_COLOR}
+      rowLabel={rowLabel}
+      doneStatus="Completed"
+      emptyTitle="Nothing to chart yet."
+      emptyDescription="Items with start and due dates appear on the timeline here."
+    />
   );
 }
 
