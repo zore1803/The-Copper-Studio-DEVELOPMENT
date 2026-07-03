@@ -149,15 +149,16 @@ export default function GanttChart({
       });
   const timelineWidth = columns.length * colWidth;
   const leftPx = (date) => ((date - windowStart) / DAY_MS) * dayWidth;
-  const todayPx = leftPx(GANTT_TODAY);
+  // Marker for "now" sits in the middle of today's day cell, not at its edge.
+  const todayPx = leftPx(GANTT_TODAY) + dayWidth / 2;
   const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
 
-  // Jump the viewport back to today, centred — the seeded window always
+  // Jump the viewport so today's cell is centred — the seeded window always
   // includes today, so this works however far the user has scrolled.
   function scrollToToday() {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + leftPx(GANTT_TODAY) - el.clientWidth / 2);
+    el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + todayPx - el.clientWidth / 2);
     lastScrollLeft.current = el.scrollLeft;
   }
 
@@ -190,7 +191,7 @@ export default function GanttChart({
     if (!didInitialScroll.current && allRows.length) {
       // Land with today centred in the viewport (accounting for the sticky name
       // rail), so "now" is always the visual anchor across every Gantt.
-      el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + leftPx(GANTT_TODAY) - el.clientWidth / 2);
+      el.scrollLeft = Math.max(0, GANTT_LEFT_PANEL_PX + todayPx - el.clientWidth / 2);
       lastScrollLeft.current = el.scrollLeft;
       didInitialScroll.current = true;
     }
@@ -398,7 +399,10 @@ export default function GanttChart({
                   return <div key={row.id} className="h-12 border-b" style={{ borderColor: CS.outlineVariant }} />;
                 }
                 const left = leftPx(row.start);
-                const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS) + 1);
+                // Span start→due as boundaries (no +1), so a Jul 3–Jul 5 stage
+                // ends exactly on the Jul 5 gridline instead of overrunning by a
+                // day — and the badge matches the duration shown in the rail.
+                const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS));
                 const width = Math.max(days * dayWidth, 70);
                 return (
                   <div key={row.id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
