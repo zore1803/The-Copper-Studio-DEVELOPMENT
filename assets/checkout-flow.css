@@ -691,12 +691,12 @@ body[data-page="checkout"] select:disabled {
 
 .summary-divider {
   height: 1px;
-  margin: 22px 0;
+  margin: 14px 0;
   background: #eeeeee;
 }
 
 .coupon-box {
-  gap: 10px;
+  gap: 6px;
 }
 
 .coupon-box .input-action {
@@ -710,6 +710,7 @@ body[data-page="checkout"] select:disabled {
 }
 
 .coupon-box .input-action .btn {
+  min-height: 40px;
   border: 1px solid #dedede;
   background: #ffffff;
   color: #111111;

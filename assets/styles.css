@@ -632,7 +632,7 @@ select:focus {
 
 .coupon-box {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .coupon-box label span {
@@ -663,7 +663,7 @@ select:focus {
 
 .summary-divider {
   height: 1px;
-  margin: 16px 0;
+  margin: 12px 0;
   background: var(--line);
 }
 
