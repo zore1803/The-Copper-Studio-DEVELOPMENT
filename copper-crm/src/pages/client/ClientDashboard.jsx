@@ -125,7 +125,7 @@ export default function ClientDashboard() {
   }, [meetings, allOrders, projects]);
 
   const stats = [
-    { icon: Package, label: "Total Packages", value: allOrders.length || "—", color: "var(--cs-primary)" },
+    { icon: Package, label: "Total Packages", value: allOrders.length || "—", color: "#2563eb" },
     { icon: Activity, label: "Live Projects", value: projects.length || "—", color: "#4caf50" },
     { icon: Video, label: "Upcoming Meetings", value: allMeetings.filter(m => m.status === "confirmed").length || "—", color: "#ff9800" },
   ];
