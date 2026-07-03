@@ -119,6 +119,9 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen, onReactiva
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Building2 size={13} className="text-[#9ca3af]" /> <span className="truncate">{companyName}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><MessageCircle size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.whatsapp || contact.phone || "Not added"}</span></span>
       <span className="flex min-w-0 items-center gap-2 text-[#374151]"><Mail size={13} className="text-[#9ca3af]" /> <span className="truncate">{contact.email || "Not added"}</span></span>
+      <span className="flex items-center justify-center">
+        <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked && !isDeactivated ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked && !isDeactivated ? "Yes" : "No"}</span>
+      </span>
       <span className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
         {isDeactivated ? (
           <select
@@ -130,11 +133,8 @@ function ContactRow({ contact, companyName, onEdit, onDelete, onOpen, onReactiva
             <option value="active">Activate</option>
           </select>
         ) : (
-          <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${portalLinked ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>{portalLinked ? "Yes" : "No"}</span>
+          <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
         )}
-      </span>
-      <span className="flex items-center justify-center">
-        <span className="h-fit rounded-full bg-[#f3f4f6] px-2 py-1 text-center text-xs font-semibold text-[#374151]">{contact.status || "Active"}</span>
       </span>
       <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <ContactExportMenu contact={contact} companyName={companyName} />
