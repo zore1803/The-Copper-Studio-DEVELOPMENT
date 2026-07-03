@@ -43,7 +43,7 @@ function AuthShell({ children, title, subtitle }) {
         </div>
       </section>
 
-      <main className="flex min-h-screen items-center justify-center px-5 py-8">
+      <main className="flex min-h-screen items-center justify-center bg-white px-5 py-8">
         <div className="w-full max-w-[440px] rounded-xl border border-[#d8c2b9] bg-[#fff8f6] p-6 shadow-[0_24px_80px_rgba(54,47,44,0.12)] sm:p-8">
           <div className="mb-7">
             <div className="mb-4 h-11 w-11 rounded-xl bg-[#F5D5C6] text-[#8D3118] grid place-items-center">
