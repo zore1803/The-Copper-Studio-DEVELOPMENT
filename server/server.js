@@ -480,17 +480,29 @@ app.post("/api/razorpay/order", async (req, res, next) => {
 
     const couponResult = await validateCouponForPackage(couponCode, selectedPackage);
     const total = couponResult.total;
-    const razorpayOrder = await razorpay.orders.create({
-      amount: total * 100,
-      currency: "INR",
-      receipt: `rcpt_${Date.now()}`,
-      notes: {
-        packageId: selectedPackage.id,
-        packageName: selectedPackage.name,
-        couponCode: couponResult.coupon?.code || "",
-        couponDiscount: String(couponResult.discount)
-      }
-    });
+    let razorpayOrder;
+    try {
+      razorpayOrder = await razorpay.orders.create({
+        amount: total * 100,
+        currency: "INR",
+        receipt: `rcpt_${Date.now()}`,
+        notes: {
+          packageId: selectedPackage.id,
+          packageName: selectedPackage.name,
+          couponCode: couponResult.coupon?.code || "",
+          couponDiscount: String(couponResult.discount)
+        }
+      });
+    } catch (razorpayError) {
+      // Razorpay's SDK throws { statusCode, error: { description, code, reason } } —
+      // surface that description instead of a generic 500 so misconfigured/
+      // unactivated live keys are actually diagnosable from the browser.
+      console.error("Razorpay order creation failed:", razorpayError);
+      const description = razorpayError?.error?.description || razorpayError?.message || "Could not create the payment order.";
+      const err = new Error(description);
+      err.statusCode = razorpayError?.statusCode && razorpayError.statusCode >= 400 && razorpayError.statusCode < 500 ? razorpayError.statusCode : 502;
+      throw err;
+    }
 
     res.status(201).json({
       id: razorpayOrder.id,
