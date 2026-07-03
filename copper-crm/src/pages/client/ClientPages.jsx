@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
 import { clientApi } from "../../lib/clientApi";
@@ -170,34 +170,37 @@ function TimelineKpiChip({ label, value, icon: Icon, color }) {
 // colour palette. Used for both the project's Stage Timeline and its Task
 // Timeline, so both charts look and behave identically instead of the app
 // growing two differently-styled Gantt implementations.
+function startOfWeek(ms) {
+  const x = new Date(ms);
+  x.setHours(0, 0, 0, 0);
+  x.setDate(x.getDate() - x.getDay());
+  return x;
+}
+
 function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabel, emptyTitle, emptyDescription, doneStatus, blockedStatus }) {
   const [zoom, setZoom] = useState("Week");
+  const scrollRef = useRef(null);
+  const pendingPrependPx = useRef(0);
+  const lastScrollLeft = useRef(0);
+  const didInitialScroll = useRef(false);
 
-  const { groups, minDate, maxDate, weeks, summary } = useMemo(() => {
+  const { groups, orderedRows, dataMin, dataMax, summary } = useMemo(() => {
     if (!rows.length) {
-      return { groups: [], minDate: GANTT_TODAY, maxDate: GANTT_TODAY, weeks: [], summary: { total: 0, completed: 0, blocked: 0 } };
+      return { groups: [], orderedRows: [], dataMin: GANTT_TODAY, dataMax: GANTT_TODAY, summary: { total: 0, completed: 0, blocked: 0 } };
     }
-
-    const allDates = rows.flatMap((r) => [r.start, r.end]);
-    const min = new Date(Math.min(...allDates.map((d) => d.getTime())) - 3 * DAY_MS);
-    const max = new Date(Math.max(...allDates.map((d) => d.getTime())) + 3 * DAY_MS);
+    // Only dated rows drive the timeline's span; undated ones still render as
+    // rows (no bar) but must not break the min/max computation.
+    const datedTimes = rows.flatMap((r) => [r.start, r.end]).filter(Boolean).map((d) => d.getTime());
+    const min = datedTimes.length ? new Date(Math.min(...datedTimes)) : GANTT_TODAY;
+    const max = datedTimes.length ? new Date(Math.max(...datedTimes)) : GANTT_TODAY;
     const groupList = statusOrder
       .map((status) => ({ status, rows: rows.filter((r) => r.status === status) }))
       .filter((g) => g.rows.length > 0);
-
-    const totalDays = Math.max(1, Math.ceil((max - min) / DAY_MS));
-    const weekCount = Math.max(1, Math.ceil(totalDays / 7));
-    const weekCols = Array.from({ length: weekCount }, (_, index) => {
-      const weekStart = new Date(min.getTime() + index * 7 * DAY_MS);
-      const weekEnd = new Date(Math.min(weekStart.getTime() + 6 * DAY_MS, max.getTime()));
-      return { label: formatRange(weekStart, weekEnd) };
-    });
-
     return {
       groups: groupList,
-      minDate: min,
-      maxDate: max,
-      weeks: weekCols,
+      orderedRows: groupList.flatMap((g) => g.rows),
+      dataMin: min,
+      dataMax: max,
       summary: {
         total: rows.length,
         completed: doneStatus ? rows.filter((r) => r.status === doneStatus).length : 0,
@@ -205,6 +208,67 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
       },
     };
   }, [rows, statusOrder, doneStatus, blockedStatus]);
+
+  // The visible date window is seeded with a few weeks of padding around the
+  // data, then extended on demand as the user scrolls toward either edge — so
+  // the timeline scrolls forward and backward without a fixed limit, like a
+  // calendar. Kept in state (not derived) precisely so it can grow.
+  const PAD_WEEKS = 4;
+  const EXTEND_WEEKS = 8;
+  const [windowStart, setWindowStart] = useState(() => startOfWeek(dataMin.getTime() - PAD_WEEKS * 7 * DAY_MS));
+  const [windowEnd, setWindowEnd] = useState(() => startOfWeek(dataMax.getTime() + (PAD_WEEKS + 1) * 7 * DAY_MS));
+
+  // Re-seed (and re-center) whenever the underlying data span changes.
+  useEffect(() => {
+    setWindowStart(startOfWeek(dataMin.getTime() - PAD_WEEKS * 7 * DAY_MS));
+    setWindowEnd(startOfWeek(dataMax.getTime() + (PAD_WEEKS + 1) * 7 * DAY_MS));
+    didInitialScroll.current = false;
+  }, [dataMin, dataMax]);
+
+  const colWidth = GANTT_ZOOM[zoom];
+  const dayWidth = colWidth / 7;
+  const weekCount = Math.max(1, Math.round((windowEnd - windowStart) / (7 * DAY_MS)));
+  const weeks = Array.from({ length: weekCount }, (_, i) => {
+    const ws = new Date(windowStart.getTime() + i * 7 * DAY_MS);
+    return { label: formatRange(ws, new Date(ws.getTime() + 6 * DAY_MS)) };
+  });
+  const timelineWidth = weekCount * colWidth;
+  const leftPx = (date) => ((date - windowStart) / DAY_MS) * dayWidth;
+  const todayPx = leftPx(GANTT_TODAY);
+  const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
+
+  // Keep the viewport steady when weeks are prepended on the left (which shifts
+  // all content rightward), and do a one-time scroll to bring the data into view.
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (pendingPrependPx.current) {
+      el.scrollLeft += pendingPrependPx.current;
+      pendingPrependPx.current = 0;
+      lastScrollLeft.current = el.scrollLeft;
+    }
+    if (!didInitialScroll.current && orderedRows.length) {
+      el.scrollLeft = Math.max(0, leftPx(dataMin) - colWidth);
+      lastScrollLeft.current = el.scrollLeft;
+      didInitialScroll.current = true;
+    }
+  });
+
+  function handleScroll(event) {
+    const el = event.currentTarget;
+    // Ignore pure vertical scrolls (scrollLeft unchanged) so scrolling the row
+    // list at the left edge doesn't keep prepending weeks.
+    if (el.scrollLeft === lastScrollLeft.current) return;
+    const movingLeft = el.scrollLeft < lastScrollLeft.current;
+    lastScrollLeft.current = el.scrollLeft;
+    const edge = colWidth * 2;
+    if (movingLeft && el.scrollLeft < edge) {
+      pendingPrependPx.current += EXTEND_WEEKS * colWidth;
+      setWindowStart((prev) => new Date(prev.getTime() - EXTEND_WEEKS * 7 * DAY_MS));
+    } else if (!movingLeft && el.scrollWidth - el.scrollLeft - el.clientWidth < edge) {
+      setWindowEnd((prev) => new Date(prev.getTime() + EXTEND_WEEKS * 7 * DAY_MS));
+    }
+  }
 
   if (!groups.length) {
     return (
@@ -219,17 +283,6 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
     );
   }
 
-  const colWidth = GANTT_ZOOM[zoom];
-  const totalRangeMs = Math.max(1, maxDate - minDate);
-  const timelineWidth = weeks.length * colWidth;
-  // Flattened, status-ordered stage list — rendered without the per-status
-  // group header rows; each stage's own status colour (bar + left-side dot)
-  // is what distinguishes it now.
-  const orderedRows = groups.flatMap((group) => group.rows);
-  const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
-  const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
-  const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
-
   return (
     <Card className="overflow-hidden">
       {/* Header */}
@@ -240,7 +293,7 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
           </div>
           <div>
             <h3 className="text-sm font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h3>
-            <p className="text-xs" style={{ color: CS.secondary }}>{formatRange(minDate, maxDate)} · {summary.total} scheduled {rowLabel}{summary.total === 1 ? "" : "s"}</p>
+            <p className="text-xs" style={{ color: CS.secondary }}>{summary.total} scheduled {rowLabel}{summary.total === 1 ? "" : "s"} · scroll to explore</p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -252,19 +305,17 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
           {summary.blocked > 0 && (
             <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
           )}
-          <div className="flex items-center gap-1 rounded-lg p-1" style={{ background: CS.surfaceContainer }}>
+          <select
+            value={zoom}
+            onChange={(e) => setZoom(e.target.value)}
+            className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none focus:ring-2"
+            style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
+            aria-label="Timeline zoom"
+          >
             {Object.keys(GANTT_ZOOM).map((level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => setZoom(level)}
-                className="rounded-md px-2.5 py-1 text-xs font-bold transition-colors"
-                style={zoom === level ? { background: "#fff", color: CS.primary, boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : { color: CS.secondary }}
-              >
-                {level}
-              </button>
+              <option key={level} value={level}>{level}</option>
             ))}
-          </div>
+          </select>
         </div>
       </div>
 
@@ -278,7 +329,7 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
       </div>
 
       {/* Chart */}
-      <div className="flex max-h-[560px] overflow-auto">
+      <div ref={scrollRef} onScroll={handleScroll} className="flex max-h-[560px] overflow-auto">
         {/* Sticky left: row names */}
         <div className="sticky left-0 z-20 w-56 shrink-0 border-r" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
           <div className="flex h-11 items-center px-4 text-[10px] font-bold uppercase tracking-wider" style={{ color: CS.secondary, background: CS.surfaceLow }}>
@@ -291,7 +342,7 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
                 {row.title}
               </span>
               <span className="truncate pl-4 text-[10px]" style={{ color: CS.secondary }}>
-                {formatRange(row.start, row.end)}
+                {row.start && row.end ? formatRange(row.start, row.end) : "Dates not set"}
                 {row.subtitle ? ` · ${row.subtitle}` : ""}
               </span>
             </div>
@@ -309,21 +360,26 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
               ))}
             </div>
             <div className="relative">
-              {showToday && (
-                <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px" style={{ left: `${toPct(GANTT_TODAY)}%`, background: CS.error }}>
+              {todayPx >= 0 && todayPx <= timelineWidth && (
+                <div className="pointer-events-none absolute top-0 bottom-0 z-10 w-px" style={{ left: `${todayPx}px`, background: CS.error }}>
                   <span className="absolute left-1 top-1 rounded px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: CS.error }}>Today</span>
                 </div>
               )}
               {orderedRows.map((row) => {
-                const left = toPct(row.start);
-                const width = Math.max(toPct(row.end) - left, 3);
+                // Undated stage → keep the row (for alignment with the left rail)
+                // but draw no bar; it appears once dates are assigned.
+                if (!row.start || !row.end) {
+                  return <div key={row.id} className="h-12 border-b" style={{ borderColor: CS.outlineVariant }} />;
+                }
+                const left = leftPx(row.start);
                 const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS) + 1);
+                const width = Math.max(days * dayWidth, 70);
                 const color = statusColor[row.status];
                 return (
                   <div key={row.id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
                     <div
                       className="absolute top-2.5 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg px-2 text-[10px] font-bold text-white shadow-sm"
-                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 70, background: color }}
+                      style={{ left: `${left}px`, width: `${width}px`, background: color }}
                       title={`${row.title}\n${row.status}${row.subtitle ? ` · ${row.subtitle}` : ""}\n${formatRange(row.start, row.end)} (${days}d)`}
                     >
                       <span className="truncate">{row.title}</span>
@@ -345,20 +401,23 @@ const STAGE_STATUS_COLOR = { Upcoming: "#9ca3af", "In Progress": "#f59e0b", "In 
 const STAGE_STATUS_LABEL = { not_started: "Upcoming", in_progress: "In Progress", review: "In Review", completed: "Completed" };
 
 function ClientStageGantt({ stages }) {
+  // Every stage is shown, dated or not — an undated stage still appears as a
+  // row (with a "Dates not set" note and no bar) so the roadmap is complete,
+  // and its bar fills in automatically once start/end dates are assigned.
   const rows = useMemo(() => (stages || [])
     .map((stage, i) => {
-      const start = stage.startDate ? parseFullDate(stage.startDate) : null;
-      const end = stage.endDate ? parseFullDate(stage.endDate) : start;
-      if (!start || !end || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+      const rawStart = stage.startDate ? parseFullDate(stage.startDate) : null;
+      const rawEnd = stage.endDate ? parseFullDate(stage.endDate) : rawStart;
+      const start = rawStart && !Number.isNaN(rawStart.getTime()) ? rawStart : null;
+      const end = rawEnd && !Number.isNaN(rawEnd.getTime()) ? rawEnd : null;
       return {
         id: stage._id || i,
         title: stage.name || `Stage ${i + 1}`,
         status: STAGE_STATUS_LABEL[stage.status] || "Upcoming",
         start,
-        end: end < start ? start : end,
+        end: start && end && end < start ? start : end,
       };
-    })
-    .filter(Boolean), [stages]);
+    }), [stages]);
 
   return (
     <GanttChart
@@ -369,8 +428,8 @@ function ClientStageGantt({ stages }) {
       statusColor={STAGE_STATUS_COLOR}
       rowLabel="stage"
       doneStatus="Completed"
-      emptyTitle="No dated stages yet."
-      emptyDescription="This chart fills in once your roadmap stages have start and end dates."
+      emptyTitle="No stages yet."
+      emptyDescription="Your roadmap stages will appear here once The Copper Studio sets them up."
     />
   );
 }
