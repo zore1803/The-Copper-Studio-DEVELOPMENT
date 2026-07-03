@@ -184,8 +184,15 @@ function startOfWeek(ms) {
   return x;
 }
 
+const GANTT_SCALE_MIN = 0.4;
+const GANTT_SCALE_MAX = 4;
+
 function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabel, emptyTitle, emptyDescription, doneStatus, blockedStatus }) {
   const [zoom, setZoom] = useState("Week");
+  // Independent of the day/week/month unit: trackpad pinch (Ctrl+wheel)
+  // stretches the sheet wider or squeezes it narrower, spreading/contracting
+  // the columns and stage bars together (they're all sized off colWidth).
+  const [scale, setScale] = useState(1);
   const scrollRef = useRef(null);
   const pendingPrependPx = useRef(0);
   const lastScrollLeft = useRef(0);
@@ -232,7 +239,8 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
     didInitialScroll.current = false;
   }, [dataMin, dataMax]);
 
-  const { unit, colWidth } = GANTT_ZOOM[zoom];
+  const { unit, colWidth: baseColWidth } = GANTT_ZOOM[zoom];
+  const colWidth = baseColWidth * scale;
   const isDay = unit === "day";
   const dayWidth = isDay ? colWidth : colWidth / 7;
   const windowDays = Math.max(1, Math.round((windowEnd - windowStart) / DAY_MS));
@@ -266,6 +274,25 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
       didInitialScroll.current = true;
     }
   });
+
+  // Trackpad pinch-zoom (and Ctrl+wheel) stretches/squeezes the sheet — the
+  // browser reports pinch as a wheel event with ctrlKey set. Attached natively
+  // with passive:false so preventDefault can stop the page from zooming instead.
+  // Re-runs when the chart first mounts (orderedRows 0 → N attaches the ref).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return undefined;
+    function onWheel(e) {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      setScale((s) => {
+        const next = s * (1 - e.deltaY * 0.01);
+        return Math.min(GANTT_SCALE_MAX, Math.max(GANTT_SCALE_MIN, Math.round(next * 100) / 100));
+      });
+    }
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [orderedRows.length]);
 
   function handleScroll(event) {
     const el = event.currentTarget;
