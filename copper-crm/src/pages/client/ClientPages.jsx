@@ -314,7 +314,9 @@ export function ClientTimelinePage() {
                   ) : (
                     <div className="relative pl-6 space-y-6">
                       {selected.stages.length > 1 && (
-                        <div className="absolute left-[19px] top-2 bottom-2 w-0.5" style={{ background: CS.outlineVariant }} />
+                        // Centred through the stage icons: pl-6 (24px) + half of
+                        // the h-9/w-9 icon (18px) = 42px from the container edge.
+                        <div className="roadmap-line absolute left-[42px] top-2 bottom-2 w-0.5" style={{ background: CS.outlineVariant }} />
                       )}
                       {selected.stages.map((stage, i) => {
                         const isCompleted = stage.status === "completed";
@@ -325,8 +327,8 @@ export function ClientTimelinePage() {
                         const cardBg = isCompleted ? "#f0fdf4" : isReview ? "#f5f3ff" : isActive ? "#fffbeb" : "#f9fafb";
                         const cardBorder = isCompleted ? "#bbf7d0" : isReview ? "#ddd6fe" : isActive ? "#fde68a" : "#e5e7eb";
                         return (
-                          <div key={i} className="relative flex items-start gap-4">
-                            <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 shadow-sm"
+                          <div key={i} className="roadmap-stage relative flex items-start gap-4" style={{ animationDelay: `${i * 0.18}s` }}>
+                            <div className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 shadow-sm transition-colors duration-500"
                               style={{ background: iconBg, borderColor: iconBorder }}>
                               {isCompleted ? (
                                 <Check size={16} style={{ color: "#fff" }} />
@@ -338,7 +340,7 @@ export function ClientTimelinePage() {
                                 <span className="text-xs font-bold" style={{ color: "#9ca3af" }}>{i + 1}</span>
                               )}
                             </div>
-                            <div className="flex-1 rounded-xl border p-4" style={{ background: cardBg, borderColor: cardBorder }}>
+                            <div className="flex-1 rounded-xl border p-4 transition-colors duration-500" style={{ background: cardBg, borderColor: cardBorder }}>
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
                                 <h4 className="font-bold text-sm" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{stage.name}</h4>
                                 {stage.startDate && (
