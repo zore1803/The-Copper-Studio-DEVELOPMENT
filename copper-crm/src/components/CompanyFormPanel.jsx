@@ -106,9 +106,13 @@ export default function CompanyFormPanel({ company, contacts = [], onClose, onSa
   const dataFields = useDataFields();
   const companyOwners = dataFields.companyOwner || [];
   const companyId = company._id || company.id;
-  const companyContacts = companyId
-    ? contacts.filter((c) => String(c.companyId) === String(companyId))
-    : [];
+  const companyName = String(company.name || "").trim().toLowerCase();
+  // Older contacts were only ever linked by free-text company name, not the
+  // companyId foreign key, so match on either to find this company's contacts.
+  const companyContacts = contacts.filter((c) => {
+    if (companyId && String(c.companyId) === String(companyId)) return true;
+    return companyName && String(c.company || "").trim().toLowerCase() === companyName;
+  });
   const set = (key) => (value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
