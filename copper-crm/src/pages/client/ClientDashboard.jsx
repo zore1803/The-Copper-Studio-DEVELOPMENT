@@ -136,26 +136,29 @@ export default function ClientDashboard() {
                 {/* Stages */}
                 {activeProject.stages?.length > 0 && (
                   <div className="mt-5 space-y-3">
-                    {activeProject.stages.map((stage, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        {(() => {
-                          const StageIcon = stage.status === "completed" ? CheckCircle2 : stage.status === "in_progress" ? CircleDot : Circle;
-                          return <StageIcon size={18} style={{ color: stage.status === "completed" ? "#4caf50" : stage.status === "in_progress" ? "var(--cs-primary)" : "#9ca3af" }} />;
-                        })()}
-                        <span className="text-sm" style={{
-                          color: stage.status === "completed" ? "var(--cs-on-surface)" : stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
-                          fontWeight: stage.status === "in_progress" ? 600 : 400
-                        }}>{stage.name}</span>
-                        {stage.status === "completed" && (
-                          <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
-                            style={{ background: "#e8f5e9", color: "#388e3c" }}>Done</span>
-                        )}
-                        {stage.status === "in_progress" && (
-                          <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
-                            style={{ background: "var(--cs-primary-fixed)", color: "var(--cs-primary)" }}>Active</span>
-                        )}
-                      </div>
-                    ))}
+                    {activeProject.stages.map((stage, i) => {
+                      const StageIcon = stage.status === "completed" ? CheckCircle2 : stage.status === "review" || stage.status === "in_progress" ? CircleDot : Circle;
+                      const iconColor = stage.status === "completed" ? "#4caf50" : stage.status === "review" ? "#7c3aed" : stage.status === "in_progress" ? "var(--cs-primary)" : "#9ca3af";
+                      const badge = {
+                        completed: { label: "Done", background: "#e8f5e9", color: "#388e3c" },
+                        review: { label: "In Review", background: "#ede9fe", color: "#7c3aed" },
+                        in_progress: { label: "Active", background: "var(--cs-primary-fixed)", color: "var(--cs-primary)" },
+                        not_started: { label: "Not Started", background: "var(--cs-surface-container-low)", color: "#9ca3af" }
+                      }[stage.status];
+                      return (
+                        <div key={i} className="flex items-center gap-3">
+                          <StageIcon size={18} style={{ color: iconColor }} />
+                          <span className="text-sm" style={{
+                            color: stage.status === "completed" || stage.status === "in_progress" ? "var(--cs-on-surface)" : "var(--cs-secondary)",
+                            fontWeight: stage.status === "in_progress" ? 600 : 400
+                          }}>{stage.name}</span>
+                          {badge && (
+                            <span className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold"
+                              style={{ background: badge.background, color: badge.color }}>{badge.label}</span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </>

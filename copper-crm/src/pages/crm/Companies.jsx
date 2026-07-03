@@ -456,6 +456,7 @@ export default function Companies() {
   const [stateFilter, setStateFilter] = useState("All");
   const [pincodeFilter, setPincodeFilter] = useState("");
   const [ownerFilter, setOwnerFilter] = useState("All");
+  const [leadSourceFilter, setLeadSourceFilter] = useState("All");
   const [sortBy, setSortBy] = useState("name_asc");
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -485,6 +486,7 @@ export default function Companies() {
   const cities = useMemo(() => uniqueSorted(companies, "city"), [companies]);
   const states = useMemo(() => uniqueSorted(companies, "state"), [companies]);
   const owners = useMemo(() => uniqueSorted(companies, "owner"), [companies]);
+  const leadSources = useMemo(() => uniqueSorted(companies, "leadSource"), [companies]);
 
   const filtered = useMemo(() =>
     companies.filter((c) => {
@@ -495,8 +497,9 @@ export default function Companies() {
       const matchesState = stateFilter === "All" || c.state === stateFilter;
       const matchesPincode = !pincodeFilter.trim() || String(c.pincode || "").includes(pincodeFilter.trim());
       const matchesOwner = ownerFilter === "All" || c.owner === ownerFilter;
-      return matchesSearch && matchesStatus && matchesIndustry && matchesCity && matchesState && matchesPincode && matchesOwner;
-    }), [companies, industryFilter, search, statusFilter, cityFilter, stateFilter, pincodeFilter, ownerFilter]);
+      const matchesLeadSource = leadSourceFilter === "All" || c.leadSource === leadSourceFilter;
+      return matchesSearch && matchesStatus && matchesIndustry && matchesCity && matchesState && matchesPincode && matchesOwner && matchesLeadSource;
+    }), [companies, industryFilter, search, statusFilter, cityFilter, stateFilter, pincodeFilter, ownerFilter, leadSourceFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -648,6 +651,7 @@ export default function Companies() {
     setStateFilter("All");
     setPincodeFilter("");
     setOwnerFilter("All");
+    setLeadSourceFilter("All");
     setPage(1);
   }
 
@@ -702,6 +706,7 @@ export default function Companies() {
               { key: "city", label: "City", type: "select", value: cityFilter, onChange: (value) => { setCityFilter(value); setPage(1); }, options: cities },
               { key: "state", label: "State", type: "select", value: stateFilter, onChange: (value) => { setStateFilter(value); setPage(1); }, options: states },
               { key: "owner", label: "Company owner", type: "select", value: ownerFilter, onChange: (value) => { setOwnerFilter(value); setPage(1); }, options: owners },
+              { key: "leadSource", label: "Lead Source", type: "select", value: leadSourceFilter, onChange: (value) => { setLeadSourceFilter(value); setPage(1); }, options: leadSources },
               { key: "pincode", label: "Pincode", type: "text", value: pincodeFilter, onChange: (value) => { setPincodeFilter(value); setPage(1); }, placeholder: "e.g. 400001" }
             ]}
           />

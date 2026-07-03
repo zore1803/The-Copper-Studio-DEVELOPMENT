@@ -523,6 +523,8 @@ export default function Invoices() {
   const location = useLocation();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("");
+  const [couponFilter, setCouponFilter] = useState("All");
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -558,9 +560,12 @@ export default function Invoices() {
   const filtered = useMemo(() => invoices.filter((invoice) => {
     const invoiceStatus = invoice.status || "Draft";
     const matchesStatus = status === "All" || invoiceStatus === status;
+    const matchesCompany = !companyFilter.trim() || String(invoice.company || invoice.client || "").toLowerCase().includes(companyFilter.trim().toLowerCase());
+    const hasCoupon = Boolean(String(invoice.couponCode || "").trim());
+    const matchesCoupon = couponFilter === "All" || (couponFilter === "Yes" ? hasCoupon : !hasCoupon);
     const haystack = `${invoice.invoiceNumber || invoice.id || ""} ${invoice.company || invoice.client || ""} ${invoice.project || ""} ${invoiceStatus}`.toLowerCase();
-    return matchesStatus && haystack.includes(query.toLowerCase());
-  }), [invoices, query, status]);
+    return matchesStatus && matchesCompany && matchesCoupon && haystack.includes(query.toLowerCase());
+  }), [invoices, query, status, companyFilter, couponFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -586,6 +591,8 @@ export default function Invoices() {
 
   function resetFilters() {
     setStatus("All");
+    setCompanyFilter("");
+    setCouponFilter("All");
     setQuery("");
     setPage(1);
   }
@@ -742,7 +749,9 @@ export default function Invoices() {
             onReset={resetFilters}
             buttonClassName="h-8 w-8"
             fields={[
-              { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...INVOICE_STATUSES] }
+              { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...INVOICE_STATUSES] },
+              { key: "company", label: "Company", type: "text", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, placeholder: "Filter by company name…" },
+              { key: "coupon", label: "Coupon Applied", type: "select", value: couponFilter, onChange: (value) => { setCouponFilter(value); setPage(1); }, options: ["All", "Yes", "No"] }
             ]}
           />
           <button
