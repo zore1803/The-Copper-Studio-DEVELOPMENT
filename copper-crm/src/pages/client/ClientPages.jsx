@@ -222,6 +222,10 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
   const colWidth = GANTT_ZOOM[zoom];
   const totalRangeMs = Math.max(1, maxDate - minDate);
   const timelineWidth = weeks.length * colWidth;
+  // Flattened, status-ordered stage list — rendered without the per-status
+  // group header rows; each stage's own status colour (bar + left-side dot)
+  // is what distinguishes it now.
+  const orderedRows = groups.flatMap((group) => group.rows);
   const toPct = (date) => Math.min(100, Math.max(0, ((date - minDate) / totalRangeMs) * 100));
   const showToday = GANTT_TODAY >= minDate && GANTT_TODAY <= maxDate;
   const completionPct = doneStatus ? Math.round((summary.completed / Math.max(summary.total, 1)) * 100) : null;
@@ -280,22 +284,16 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
           <div className="flex h-11 items-center px-4 text-[10px] font-bold uppercase tracking-wider" style={{ color: CS.secondary, background: CS.surfaceLow }}>
             {rowLabel}
           </div>
-          {groups.map((group) => (
-            <div key={group.status} className="border-b" style={{ borderColor: CS.outlineVariant }}>
-              <div className="flex h-9 items-center gap-2 px-3" style={{ background: CS.surfaceLow }}>
-                <span className="h-2 w-2 rounded-full" style={{ background: statusColor[group.status] }} />
-                <span className="text-xs font-bold" style={{ color: CS.onSurface }}>{group.status}</span>
-                <span className="ml-auto text-[10px] font-bold" style={{ color: CS.secondary }}>{group.rows.length}</span>
-              </div>
-              {group.rows.map((row) => (
-                <div key={row.id} className="flex h-12 flex-col justify-center px-5">
-                  <span className="truncate text-xs font-semibold" style={{ color: CS.onSurface }}>{row.title}</span>
-                  <span className="truncate text-[10px]" style={{ color: CS.secondary }}>
-                    {formatRange(row.start, row.end)}
-                    {row.subtitle ? ` · ${row.subtitle}` : ""}
-                  </span>
-                </div>
-              ))}
+          {orderedRows.map((row) => (
+            <div key={row.id} className="flex h-12 flex-col justify-center px-4 border-b" style={{ borderColor: CS.outlineVariant }}>
+              <span className="flex items-center gap-2 truncate text-xs font-semibold" style={{ color: CS.onSurface }}>
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: statusColor[row.status] }} />
+                {row.title}
+              </span>
+              <span className="truncate pl-4 text-[10px]" style={{ color: CS.secondary }}>
+                {formatRange(row.start, row.end)}
+                {row.subtitle ? ` · ${row.subtitle}` : ""}
+              </span>
             </div>
           ))}
         </div>
@@ -316,29 +314,24 @@ function GanttChart({ title, icon: Icon, rows, statusOrder, statusColor, rowLabe
                   <span className="absolute left-1 top-1 rounded px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ background: CS.error }}>Today</span>
                 </div>
               )}
-              {groups.map((group) => (
-                <div key={group.status}>
-                  <div className="h-9 border-b" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLow }} />
-                  {group.rows.map((row) => {
-                    const left = toPct(row.start);
-                    const width = Math.max(toPct(row.end) - left, 3);
-                    const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS) + 1);
-                    const color = statusColor[group.status];
-                    return (
-                      <div key={row.id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
-                        <div
-                          className="absolute top-2.5 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg px-2 text-[10px] font-bold text-white shadow-sm"
-                          style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 70, background: color }}
-                          title={`${row.title}\n${group.status}${row.subtitle ? ` · ${row.subtitle}` : ""}\n${formatRange(row.start, row.end)} (${days}d)`}
-                        >
-                          <span className="truncate">{row.title}</span>
-                          <span className="ml-auto shrink-0 rounded bg-white/25 px-1">{days}d</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+              {orderedRows.map((row) => {
+                const left = toPct(row.start);
+                const width = Math.max(toPct(row.end) - left, 3);
+                const days = Math.max(1, Math.round((row.end - row.start) / DAY_MS) + 1);
+                const color = statusColor[row.status];
+                return (
+                  <div key={row.id} className="relative h-12 border-b" style={{ borderColor: CS.outlineVariant }}>
+                    <div
+                      className="absolute top-2.5 flex h-7 items-center gap-1.5 overflow-hidden rounded-lg px-2 text-[10px] font-bold text-white shadow-sm"
+                      style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%`, minWidth: 70, background: color }}
+                      title={`${row.title}\n${row.status}${row.subtitle ? ` · ${row.subtitle}` : ""}\n${formatRange(row.start, row.end)} (${days}d)`}
+                    >
+                      <span className="truncate">{row.title}</span>
+                      <span className="ml-auto shrink-0 rounded bg-white/25 px-1">{days}d</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
