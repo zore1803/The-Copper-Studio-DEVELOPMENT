@@ -178,8 +178,8 @@ export default function ClientDashboard() {
                     style={{
                       width: `${activeProject.progress || 0}%`,
                       minWidth: activeProject.progress ? "0.625rem" : 0,
-                      background: "linear-gradient(90deg, #8D3118, #b1512f)",
-                      boxShadow: "inset 0 1px 1px rgba(255,255,255,0.25), 0 1px 2px rgba(141,49,24,0.35)",
+                      background: "linear-gradient(90deg, #5c1f0f, #8D3118 45%, #e8734a)",
+                      boxShadow: "inset 0 1px 1px rgba(255,255,255,0.35), 0 1px 2px rgba(141,49,24,0.35)",
                     }}
                   >
                     {/* A knob at the fill's leading edge signals the bar is still
@@ -190,7 +190,7 @@ export default function ClientDashboard() {
                         style={{
                           right: "-3px",
                           transform: "translateY(-50%)",
-                          background: "#8D3118",
+                          background: "#e8734a",
                           borderColor: "#fff",
                           boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
                         }}
