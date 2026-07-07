@@ -727,7 +727,7 @@ export function ClientMeetingsPage() {
 
             <div><Badge {...statusBadge(selected.status)} /></div>
 
-            {selected.meetingLink && (
+            {selected.meetingLink && selected.status !== "cancelled" && (
               <div>
                 <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Meeting Link</p>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: CS.surfaceContainer }}>

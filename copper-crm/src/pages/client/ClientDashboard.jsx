@@ -264,7 +264,7 @@ export default function ClientDashboard() {
                       : "TBD"}
                   </p>
                 </div>
-                {upcomingMeeting.meetingLink && (
+                {upcomingMeeting.meetingLink && upcomingMeeting.status !== "cancelled" && (
                   <a href={upcomingMeeting.meetingLink} target="_blank" rel="noreferrer"
                     className="shrink-0 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all"
                     style={{ background: "var(--cs-primary)", color: "var(--cs-on-primary)" }}>
@@ -298,7 +298,7 @@ export default function ClientDashboard() {
                         : "TBD"}
                     </p>
                   </div>
-                  {nextMeeting.meetingLink && (
+                  {nextMeeting.meetingLink && nextMeeting.status !== "cancelled" && (
                     <a href={nextMeeting.meetingLink} target="_blank" rel="noreferrer"
                       className="shrink-0 px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-semibold border transition-all"
                       style={{ borderColor: "var(--cs-primary)", color: "var(--cs-primary)" }}>

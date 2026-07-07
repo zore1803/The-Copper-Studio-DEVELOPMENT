@@ -336,7 +336,7 @@ export default function Meetings() {
               <p className="text-xs text-[#6b7280]">{companyNameFor(selected)}</p>
             </div>
 
-            {selected.meetingLink && (
+            {selected.meetingLink && selected.status !== "cancelled" && (
               <div>
                 <p className="text-xs font-semibold mb-2 text-[#374151]">Meeting Link</p>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#fafafa]">
