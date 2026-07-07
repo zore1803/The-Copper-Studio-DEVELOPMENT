@@ -129,21 +129,35 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
   for (const event of events) {
     const nextStatus = event.status === "canceled" ? "cancelled" : "confirmed";
     const existing = await Meeting.findOne({ calendlyEventUri: event.uri });
-    if (existing) {
-      if (existing.status !== nextStatus && existing.status !== "completed") {
-        existing.status = nextStatus;
-        await existing.save();
-      }
-      continue;
-    }
 
     let invitee = null;
     try {
       const invitees = await getEventInvitees(event.uri);
       invitee = invitees[0] || null;
     } catch {
-      // Invitee lookup failing shouldn't block creating the meeting record.
+      // Invitee lookup failing shouldn't block creating/updating the meeting record.
     }
+
+    if (existing) {
+      let changed = false;
+      if (existing.status !== nextStatus && existing.status !== "completed") {
+        existing.status = nextStatus;
+        changed = true;
+      }
+      // Guests can be added to a Calendly booking after it was first synced
+      // (e.g. the invitee edits the event later), so re-check participants
+      // every time rather than only at creation.
+      const participants = await buildParticipants(invitee);
+      const existingEmails = (existing.participants || []).map((p) => p.email).sort().join(",");
+      const nextEmails = participants.map((p) => p.email).sort().join(",");
+      if (existingEmails !== nextEmails) {
+        existing.participants = participants;
+        changed = true;
+      }
+      if (changed) await existing.save();
+      continue;
+    }
+
     const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
     const participants = await buildParticipants(invitee);
 
