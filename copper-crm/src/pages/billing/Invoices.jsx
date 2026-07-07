@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, FileDown, FileText, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
+import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, FileDown, FileText, MoreVertical, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -98,6 +99,140 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
       )}
       {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
+  );
+}
+
+// Per-row View / Download / Edit menu, replacing the old single download icon.
+function InvoiceRowActions({ onView, onDownload, onEdit }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState(null);
+  const btnRef = useRef(null);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(event) {
+      if (btnRef.current?.contains(event.target)) return;
+      if (menuRef.current?.contains(event.target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  function toggle() {
+    if (!open) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, left: rect.right - 160 });
+    }
+    setOpen((v) => !v);
+  }
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={toggle}
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#374151] transition-colors"
+      >
+        <MoreVertical size={15} />
+      </button>
+      {open && pos && createPortal(
+        <div
+          ref={menuRef}
+          style={{ position: "fixed", top: pos.top, left: pos.left }}
+          className="z-50 w-40 rounded-xl border border-[#e5e7eb] bg-white shadow-lg py-1"
+        >
+          <button onClick={() => { setOpen(false); onView(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
+            <Eye size={14} /> View
+          </button>
+          <button onClick={() => { setOpen(false); onDownload(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
+            <Download size={14} /> Download
+          </button>
+          <button onClick={() => { setOpen(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]">
+            <Edit2 size={14} /> Edit
+          </button>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
+// Lightweight edit panel for an existing invoice's own fields — amount, GST,
+// due date, coupon, and the transaction reference. Doesn't touch the
+// company/project it's linked to (that's fixed once created); use "Generate
+// Invoice" for a brand-new one instead.
+function EditInvoiceModal({ invoice, onClose, onSave }) {
+  const issueDate = invoice.issueDate || invoice.date;
+  const issueD = issueDate ? new Date(issueDate) : null;
+  const validIssueD = issueD && !Number.isNaN(issueD.getTime()) ? issueD : null;
+
+  const [form, setForm] = useState({
+    total: String(invoice.total ?? invoice.amount ?? ""),
+    tax: String(invoice.tax ?? invoice.gst ?? ""),
+    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().slice(0, 10) : "",
+    couponCode: invoice.couponCode || "",
+    razorpayPaymentId: invoice.razorpayPaymentId || invoice.paymentId || "",
+    transactionDate: validIssueD ? validIssueD.toISOString().slice(0, 10) : "",
+    transactionTime: validIssueD ? validIssueD.toISOString().slice(11, 16) : ""
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  async function handleSave() {
+    if (!(Number(form.total) > 0)) return alert("Enter a valid invoice total.");
+    setSaving(true);
+    try {
+      let nextIssueDate = issueDate;
+      if (form.transactionDate) {
+        const combined = new Date(`${form.transactionDate}T${form.transactionTime || "00:00"}`);
+        if (!Number.isNaN(combined.getTime())) nextIssueDate = combined.toISOString();
+      }
+      await onSave({
+        total: Number(form.total),
+        amount: Number(form.total),
+        tax: Number(form.tax) || 0,
+        gst: Number(form.tax) || 0,
+        dueDate: form.dueDate || null,
+        couponCode: form.couponCode,
+        razorpayPaymentId: form.razorpayPaymentId,
+        issueDate: nextIssueDate,
+        date: nextIssueDate
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SidePanel
+      title="Edit Invoice"
+      subtitle={invoice.invoiceNumber || invoice.id || "Invoice"}
+      onClose={onClose}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? "Saving…" : "Save Changes"}</Button>
+        </div>
+      }
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Amount (INR, incl. GST)" type="number" value={form.total} onChange={set("total")} />
+        <Field label="GST / Tax (INR)" type="number" value={form.tax} onChange={set("tax")} />
+        <Field label="Due Date" type="date" value={form.dueDate} onChange={set("dueDate")} />
+        <Field label="Coupon Code" value={form.couponCode} onChange={set("couponCode")} hint="Optional" />
+
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>
+        </div>
+        <div className="sm:col-span-2">
+          <Field label="Transaction ID" value={form.razorpayPaymentId} onChange={set("razorpayPaymentId")} hint="Optional" />
+        </div>
+        <Field label="Transaction Date" type="date" value={form.transactionDate} onChange={set("transactionDate")} />
+        <Field label="Transaction Time" type="time" value={form.transactionTime} onChange={set("transactionTime")} />
+      </div>
+    </SidePanel>
   );
 }
 
@@ -543,6 +678,7 @@ export default function Invoices() {
   const [exportOpen, setExportOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
+  const [editingInvoice, setEditingInvoice] = useState(null);
   const { records: invoices, save: saveInvoice } = useCrmRecords("invoices");
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
@@ -657,16 +793,31 @@ export default function Invoices() {
     });
   }
 
-  function downloadInvoice(invoice) {
-    // Opens the server-rendered GST tax invoice (single source of truth shared
-    // with the customer + email PDF). Prefer the linked order, which carries the
-    // package line-item detail; fall back to the invoice id / number.
+  // Both View and Download hit the same server-rendered GST tax invoice
+  // (single source of truth shared with the customer + email PDF) — just
+  // .../html (opens inline in the tab) vs .../pdf (downloads as attachment).
+  // Prefer the linked order, which carries the package line-item detail;
+  // fall back to the invoice id / number.
+  function invoicePath(invoice, format) {
     const base = import.meta.env.VITE_API_BASE_URL || "";
     const orderId = invoice.sourceOrderId || invoice.orderId;
     const path = orderId
-      ? `/api/invoices/by-order/${orderId}/pdf`
-      : `/api/invoices/${invoice._id || invoice.id || invoice.invoiceNumber}/pdf`;
-    window.open(`${base}${path}`, "_blank", "noopener");
+      ? `/api/invoices/by-order/${orderId}/${format}`
+      : `/api/invoices/${invoice._id || invoice.id || invoice.invoiceNumber}/${format}`;
+    return `${base}${path}`;
+  }
+  function viewInvoice(invoice) {
+    window.open(invoicePath(invoice, "html"), "_blank", "noopener");
+  }
+  function downloadInvoice(invoice) {
+    window.open(invoicePath(invoice, "pdf"), "_blank", "noopener");
+  }
+
+  async function handleEditInvoice(invoice, changes) {
+    const updated = { ...invoice, ...changes, updatedAt: new Date().toISOString() };
+    await saveInvoice(updated);
+    showToast({ title: "Invoice updated", message: `${invoice.invoiceNumber || invoice.id || "Invoice"} saved.` });
+    setEditingInvoice(null);
   }
 
   // Exports whatever the current search/status filter resolves to — the
@@ -801,7 +952,7 @@ export default function Invoices() {
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Coupon</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Transaction ID</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">Status</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-white">PDF</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-white">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
@@ -817,7 +968,15 @@ export default function Invoices() {
                       <td className="px-4 py-3 text-sm font-mono text-[#374151]">{invoice.couponCode || "-"}</td>
                       <td className="px-4 py-3 text-sm font-mono text-[#374151]">{invoice.razorpayPaymentId || invoice.paymentId || "-"}</td>
                       <td className="px-4 py-3 text-center"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
-                      <td className="px-4 py-3 text-center"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center">
+                          <InvoiceRowActions
+                            onView={() => viewInvoice(invoice)}
+                            onDownload={() => downloadInvoice(invoice)}
+                            onEdit={() => setEditingInvoice(invoice)}
+                          />
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -870,6 +1029,13 @@ export default function Invoices() {
       </section>
 
       {creating && <InvoiceModal companies={companies} projects={projects} contacts={contacts} packages={packages} onClose={() => setCreating(false)} onSave={handleCreate} />}
+      {editingInvoice && (
+        <EditInvoiceModal
+          invoice={editingInvoice}
+          onClose={() => setEditingInvoice(null)}
+          onSave={(changes) => handleEditInvoice(editingInvoice, changes)}
+        />
+      )}
       </div>
     </div>
   );
