@@ -85,7 +85,7 @@ async function getBrowser() {
   }
 }
 
-export async function htmlToPdfBuffer(html) {
+export async function htmlToPdfBuffer(html, { showPageNumbers = true } = {}) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
@@ -95,7 +95,17 @@ export async function htmlToPdfBuffer(html) {
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "0", bottom: "0", left: "0", right: "0" }
+      // Real per-page margins (not "0" + the content's own CSS padding) —
+      // needed so the footer has room to sit in and so both pages get a
+      // consistent inset, including page 2's top (a CSS padding trick on the
+      // content box doesn't reapply at a page break, only Puppeteer's own
+      // margin option does).
+      margin: { top: "14mm", bottom: "18mm", left: "12mm", right: "12mm" },
+      displayHeaderFooter: showPageNumbers,
+      headerTemplate: "<span></span>",
+      footerTemplate: showPageNumbers
+        ? `<div style="width:100%;font-size:9px;color:#6b7280;text-align:center;font-family:Arial,sans-serif;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>`
+        : "<span></span>"
     });
     // Puppeteer v23+ returns a Uint8Array, not a Buffer. Express res.send() and
     // SendGrid attachments only handle Buffers correctly — a raw Uint8Array gets

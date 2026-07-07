@@ -289,14 +289,26 @@ export function renderInvoiceHtml(input) {
   .notes ol ul li { margin-bottom:1px; }
   .foot { margin-top:14px; text-align:center; color:var(--muted); font-size:10px; border-top:1px solid var(--line); padding-top:10px; }
 
+  /* Page 2 as its own flex column spanning the full printable page height, so
+     the "digitally generated" line sits pinned to the actual bottom of the
+     page instead of wherever the Terms & Conditions content happens to end. */
+  .page2 { display:flex; flex-direction:column; }
+  .page2 .foot { margin-top:auto; }
+
   @media print {
     html, body { background:#fff; }
-    .sheet { margin:0; padding:26px 30px; width:auto; min-height:auto; }
-    @page { size:A4; margin:12mm; }
+    .sheet { margin:0; padding:0; width:auto; min-height:auto; }
+    /* Puppeteer's own page.pdf() margin option (see services/pdf.js) controls
+       the actual per-page insets — @page margin here is not honored by
+       Chromium's print-to-PDF and would just double up with it if it were. */
+    @page { size:A4; margin:0; }
     /* Terms & Conditions always start on their own page (page 2), fitted to
        that single page rather than spilling across the first page's leftover
-       space or overflowing onto a third page. */
-    .notes { page-break-before:always; break-before:page; page-break-inside:avoid; margin-top:0; border-top:none; padding-top:0; }
+       space or overflowing onto a third page. min-height matches one A4 page
+       minus the top+bottom margins set in services/pdf.js (297mm - 14mm -
+       18mm), so the flex column above actually has a bottom edge to pin to. */
+    .page2 { page-break-before:always; break-before:page; min-height:265mm; }
+    .notes { page-break-inside:avoid; margin-top:0; border-top:none; padding-top:0; }
     .foot { page-break-inside:avoid; }
   }
 </style>
@@ -395,26 +407,28 @@ export function renderInvoiceHtml(input) {
       </div>
     </div>
 
-    <div class="notes">
-      <h4>Terms &amp; Conditions:</h4>
-      <ol>${cfg.terms
-        .map((t) =>
-          typeof t === "string"
-            ? `<li>${esc(t)}</li>`
-            : `<li><span class="term-title">${esc(t.title)}</span>${
-                (t.points || []).length
-                  ? `<ul>${t.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`
-                  : ""
-              }</li>`
-        )
-        .join("")}</ol>
-      <h4 style="margin-top:12px">Notes:</h4>
-      ${Array.isArray(cfg.notes)
-        ? `<ol>${cfg.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`
-        : `<div>${esc(cfg.notes)}</div>`}
-    </div>
+    <div class="page2">
+      <div class="notes">
+        <h4>Terms &amp; Conditions:</h4>
+        <ol>${cfg.terms
+          .map((t) =>
+            typeof t === "string"
+              ? `<li>${esc(t)}</li>`
+              : `<li><span class="term-title">${esc(t.title)}</span>${
+                  (t.points || []).length
+                    ? `<ul>${t.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>`
+                    : ""
+                }</li>`
+          )
+          .join("")}</ol>
+        <h4 style="margin-top:12px">Notes:</h4>
+        ${Array.isArray(cfg.notes)
+          ? `<ol>${cfg.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ol>`
+          : `<div>${esc(cfg.notes)}</div>`}
+      </div>
 
-    <div class="foot">This is a digitally generated invoice and does not require a physical signature. &nbsp;•&nbsp; ${esc(s.website)}</div>
+      <div class="foot">This is a digitally generated invoice and does not require a physical signature. &nbsp;•&nbsp; ${esc(s.website)}</div>
+    </div>
   </div>
 </body>
 </html>`;
