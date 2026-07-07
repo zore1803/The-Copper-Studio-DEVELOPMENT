@@ -6,6 +6,7 @@ import Document from "../models/Document.js";
 import Meeting from "../models/Meeting.js";
 import Contact from "../models/Contact.js";
 import Company from "../models/Company.js";
+import Coupon from "../models/Coupon.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { ensureClientAccount, sendPortalInvite } from "../services/portalInvite.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
@@ -236,6 +237,51 @@ router.delete("/meetings/:id", async (req, res, next) => {
   try {
     await Meeting.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Lookup (not the checkout-flow validate, which requires a matching real
+// package/category) for an admin manually entering a coupon code on a
+// manual invoice — no package price context exists there, so this just
+// reports what the coupon actually is and whether it's still usable,
+// auto-expiring it the same way the checkout validator does.
+router.get("/coupons/lookup/:code", async (req, res, next) => {
+  try {
+    const code = String(req.params.code || "").trim().toUpperCase();
+    if (!code) return res.status(400).json({ message: "Coupon code is required." });
+
+    const coupon = await Coupon.findOne({ code });
+    if (!coupon) return res.status(404).json({ message: "Coupon code not found." });
+
+    const now = new Date();
+    const expiryDate = coupon.validUntil
+      ? new Date(coupon.validUntil)
+      : (coupon.validity && !Number.isNaN(new Date(coupon.validity).getTime()) ? new Date(coupon.validity) : null);
+    if (expiryDate && expiryDate <= now && ["Active", "Applied", "Not used"].includes(coupon.status)) {
+      coupon.status = "Expired";
+      await coupon.save();
+    }
+
+    const isUsable = ["Active", "Not used"].includes(coupon.status);
+
+    res.json({
+      code: coupon.code,
+      amountType: coupon.amountType,
+      amount: coupon.amount,
+      category: coupon.category || "",
+      packageName: coupon.packageName || "",
+      status: coupon.status,
+      validUntil: coupon.validUntil,
+      validity: coupon.validity,
+      clientName: coupon.clientName || "",
+      companyName: coupon.companyName || "",
+      isUsable,
+      message: isUsable
+        ? "Valid and usable."
+        : `Coupon is ${coupon.status.toLowerCase()} and cannot be applied.`
+    });
   } catch (error) {
     next(error);
   }

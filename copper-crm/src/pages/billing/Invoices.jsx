@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import { ArrowUpDown, Check, ChevronLeft, ChevronRight, Download, Edit2, Eye, FileDown, FileText, MoreVertical, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
+import { AlertCircle, ArrowUpDown, Check, CheckCircle2, ChevronLeft, ChevronRight, Download, Edit2, Eye, FileDown, FileText, Loader2, MoreVertical, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
+import { useAuth } from "../../auth/useAuth";
+import { apiGet } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
@@ -99,6 +101,68 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
       )}
       {hint && <span className="mt-1 block text-[11px] text-[#9ca3af]">{hint}</span>}
     </label>
+  );
+}
+
+// Coupon code input with a "Check" button that looks the code up the same
+// way checkout validates one (existence, expiry, usage status) — but via the
+// admin lookup endpoint, which doesn't require a matching real package/
+// category (a manual invoice's amount is typed in directly, not tied to a
+// live Package record), so it just reports what the coupon actually is.
+function CouponCheckField({ value, onChange }) {
+  const { token } = useAuth();
+  const [checking, setChecking] = useState(false);
+  const [result, setResult] = useState(null); // { ok: true, data } | { ok: false, message }
+
+  async function check() {
+    const code = String(value || "").trim();
+    if (!code) return;
+    setChecking(true);
+    setResult(null);
+    try {
+      const data = await apiGet(`/api/admin/coupons/lookup/${encodeURIComponent(code)}`, token);
+      setResult({ ok: data.isUsable, data });
+    } catch (err) {
+      setResult({ ok: false, message: err.message || "Could not look up this coupon." });
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  return (
+    <div className="sm:col-span-2">
+      <span className="text-xs font-semibold text-[#374151]">Coupon Code</span>
+      <div className="mt-1.5 flex gap-2">
+        <input
+          value={value || ""}
+          onChange={(e) => { onChange(e.target.value.toUpperCase()); setResult(null); }}
+          placeholder="Optional"
+          className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
+        />
+        <Button type="button" variant="secondary" onClick={check} disabled={!value || checking}>
+          {checking ? <Loader2 size={14} className="animate-spin" /> : "Check"}
+        </Button>
+      </div>
+      {result && (
+        <div className={`mt-2 rounded-lg px-3 py-2 text-xs ${result.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+          {result.ok ? (
+            <div className="flex items-start gap-1.5">
+              <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
+              <span>
+                Valid — {result.data.amountType === "fixed" ? `₹${result.data.amount} off` : `${result.data.amount}% off`}
+                {result.data.category ? `, for ${result.data.category} packages` : ""}
+                {result.data.packageName ? `, ${result.data.packageName} package only` : ""}. Status: {result.data.status}.
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-start gap-1.5">
+              <AlertCircle size={14} className="mt-0.5 shrink-0" />
+              <span>{result.data?.message || result.message}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -221,7 +285,7 @@ function EditInvoiceModal({ invoice, onClose, onSave }) {
         <Field label="Amount (INR, incl. GST)" type="number" value={form.total} onChange={set("total")} />
         <Field label="GST / Tax (INR)" type="number" value={form.tax} onChange={set("tax")} />
         <Field label="Due Date" type="date" value={form.dueDate} onChange={set("dueDate")} />
-        <Field label="Coupon Code" value={form.couponCode} onChange={set("couponCode")} hint="Optional" />
+        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>
@@ -257,6 +321,7 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
     projectName: "",
     packageName: "",
     amount: "",
+    couponCode: "",
     transactionId: "",
     transactionDate: "",
     transactionTime: ""
@@ -489,6 +554,7 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
             (pkgChoice && pkgChoice !== "custom" ? "Auto-filled from package (editable)." : "Enter the pre-GST amount.")
           }
         />
+        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>

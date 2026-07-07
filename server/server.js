@@ -631,6 +631,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       projectName,
       packageName,
       amount,
+      couponCode,
       transactionId,
       transactionDate,
       transactionTime
@@ -702,6 +703,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
         provider: "manual",
         invoiceId: `INV-${Date.now().toString().slice(-6)}`,
         razorpayPaymentId: hasTransaction ? String(transactionId).trim() : "",
+        couponCode: String(couponCode || "").trim().toUpperCase(),
         paidAt
       }
     });
