@@ -4,7 +4,7 @@ import Meeting from "../models/Meeting.js";
 import User from "../models/User.js";
 import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { getActiveEventTypes, registerWebhookSubscription } from "../services/calendly.js";
+import { getActiveEventTypes, registerWebhookSubscription, buildParticipants } from "../services/calendly.js";
 
 const router = express.Router();
 
@@ -67,6 +67,8 @@ router.post("/webhook", async (req, res, next) => {
       const end = scheduledEvent.end_time ? new Date(scheduledEvent.end_time) : null;
       const duration = start && end ? Math.round((end - start) / 60000) : 45;
 
+      const participants = await buildParticipants(payload);
+
       await Meeting.create({
         title: scheduledEvent.name || "Calendly Meeting",
         type: scheduledEvent.event_type?.slug || "discovery_session",
@@ -77,7 +79,7 @@ router.post("/webhook", async (req, res, next) => {
         duration,
         meetingLink: scheduledEvent.location?.join_url || scheduledEvent.location?.location || "",
         calendlyEventUri: eventUri || "",
-        participants: [{ name: payload.name, email: payload.email }]
+        participants
       });
     }
 

@@ -20,6 +20,7 @@ import clientRoutes from "./routes/client.js";
 import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import calendlyRoutes from "./routes/calendly.js";
+import googleAuthRoutes from "./routes/googleAuth.js";
 import invoiceRoutes from "./routes/invoices.js";
 import { packages as SEED_PACKAGES } from "./data/packages.js";
 import Package from "./models/Package.js";
@@ -58,6 +59,7 @@ app.use("/api/client", clientRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/admin/settings", settingsRoutes);
 app.use("/api/calendly", calendlyRoutes);
+app.use("/api/google", googleAuthRoutes);
 app.use("/api/invoices", invoiceRoutes);
 
 // Build + email the tax invoice for a paid order. Failures are logged but never
