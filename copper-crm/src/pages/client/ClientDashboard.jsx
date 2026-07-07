@@ -99,11 +99,22 @@ export default function ClientDashboard() {
   const recentActivity = useMemo(() => {
     const items = [];
     for (const m of meetings) {
-      const when = m.updatedAt || m.createdAt;
+      // The meeting's actual scheduled date, not when our Calendly sync last
+      // touched the record (m.updatedAt) — otherwise several different real
+      // meetings all last-synced around the same time show the same
+      // "activity date" here while the Meetings list itself shows their real,
+      // different dates, making the two views look inconsistent.
+      const when = m.scheduledAt || m.preferredDate || m.updatedAt || m.createdAt;
       if (!when) continue;
+      const titleByStatus = {
+        requested: "Meeting requested",
+        confirmed: "Meeting confirmed",
+        completed: "Meeting completed",
+        cancelled: "Meeting cancelled",
+      };
       items.push({
         key: `meeting-${m._id || m.id}`,
-        title: m.status === "requested" ? "Meeting requested" : m.status === "confirmed" ? "Meeting confirmed" : m.status === "cancelled" ? "Meeting cancelled" : "Meeting update",
+        title: titleByStatus[m.status] || "Meeting update",
         detail: m.title || "Meeting",
         time: new Date(when),
       });
