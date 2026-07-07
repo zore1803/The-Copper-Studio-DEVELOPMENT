@@ -91,13 +91,14 @@ export default function Meetings() {
   const [view, setView] = useState("list");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
+  const [error, setError] = useState("");
   const companyNames = useCompanyNames();
 
   useEffect(() => {
     let alive = true;
     apiGet("/api/admin/meetings", token)
-      .then((data) => { if (alive) setMeetings(Array.isArray(data) ? data : []); })
-      .catch(() => {})
+      .then((data) => { if (alive) { setMeetings(Array.isArray(data) ? data : []); setError(""); } })
+      .catch((err) => { if (alive) setError(err.message || "Failed to load meetings."); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [token]);
@@ -173,6 +174,8 @@ export default function Meetings() {
           <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
             {loading ? (
               <div className="p-10 text-center text-sm text-[#6b7280]">Loading meetings…</div>
+            ) : error ? (
+              <div className="p-10 text-center text-sm text-red-600">Couldn't load meetings: {error}</div>
             ) : sorted.length ? (
               <>
                 <div className="overflow-x-auto">
