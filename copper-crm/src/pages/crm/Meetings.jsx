@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Calendar, ChevronLeft, ChevronRight, Clock, Copy, List, Search, Video
+  Calendar, Check, ChevronLeft, ChevronRight, Clock, Copy, List, Search, Video, X
 } from "lucide-react";
 import { Badge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
+import { clientApi } from "../../lib/clientApi";
+import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
 
@@ -92,7 +94,27 @@ export default function Meetings() {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
   const companyNames = useCompanyNames();
+  const { showToast } = useToast();
+
+  async function updateStatus(meeting, status) {
+    setUpdatingId(meeting._id);
+    try {
+      // Only patch `status` locally rather than merging the server's response —
+      // the PUT endpoint returns the Meeting doc with a raw clientId, not the
+      // populated {name, email} object the GET route provides, and merging it
+      // in would wipe out the client name already shown in this list/panel.
+      await clientApi.updateMeeting(meeting._id, { status }, token);
+      setMeetings((prev) => prev.map((m) => (m._id === meeting._id ? { ...m, status } : m)));
+      setSelected((prev) => (prev && prev._id === meeting._id ? { ...prev, status } : prev));
+      showToast({ title: "Meeting updated", message: `${meeting.title || "Meeting"} is now ${status}.` });
+    } catch (err) {
+      showToast({ type: "error", title: "Could not update meeting", message: err.message });
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   useEffect(() => {
     let alive = true;
@@ -255,7 +277,28 @@ export default function Meetings() {
               {selected.duration ? ` (${selected.duration} mins)` : ""}
             </div>
 
-            <div><Badge color={statusBadge(selected.status).color}>{statusBadge(selected.status).label}</Badge></div>
+            <div className="flex items-center gap-2">
+              <Badge color={statusBadge(selected.status).color}>{statusBadge(selected.status).label}</Badge>
+            </div>
+
+            {selected.status !== "completed" && selected.status !== "cancelled" && (
+              <div className="flex gap-2">
+                <button
+                  disabled={updatingId === selected._id}
+                  onClick={() => updateStatus(selected, "completed")}
+                  className="flex items-center gap-1.5 rounded-full bg-[#8D3118] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  <Check size={13} /> Mark Completed
+                </button>
+                <button
+                  disabled={updatingId === selected._id}
+                  onClick={() => updateStatus(selected, "cancelled")}
+                  className="flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                >
+                  <X size={13} /> Cancel Meeting
+                </button>
+              </div>
+            )}
 
             <div>
               <p className="text-xs font-semibold mb-2 text-[#374151]">Client</p>
