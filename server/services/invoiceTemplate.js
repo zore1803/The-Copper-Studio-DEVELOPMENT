@@ -277,7 +277,7 @@ export function renderInvoiceHtml(input) {
   .bank-box .row span:last-child { font-family:"Courier New",monospace; font-weight:600; }
   .sign { text-align:right; }
   .sign .for { font-weight:700; margin-bottom:6px; }
-  .sign-img { max-height:50px; max-width:160px; object-fit:contain; mix-blend-mode:multiply; display:inline-block; margin:2px 0; }
+  .sign-img { height:50px; width:170px; object-fit:contain; object-position:right center; mix-blend-mode:multiply; display:block; margin:2px 0 2px auto; }
   .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:170px; }
 
   .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.4; font-size:10.5px; }
