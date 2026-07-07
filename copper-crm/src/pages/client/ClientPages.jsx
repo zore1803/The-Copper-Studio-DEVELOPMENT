@@ -546,6 +546,30 @@ export function ClientMeetingsPage() {
 
   const statusBadge = (s) => MEETING_STATUS_BADGE[s] || { type: "neutral", label: s };
 
+  // navigator.clipboard can silently reject (non-HTTPS context, permission
+  // denied, unsupported browser) with no visible feedback, making a genuinely
+  // working button look broken. Fall back to the older execCommand approach
+  // and always surface a toast either way so the user knows what happened.
+  async function copyMeetingLink(link) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = link;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      showToast({ title: "Link copied", message: "Meeting link copied to clipboard." });
+    } catch {
+      showToast({ type: "error", title: "Couldn't copy", message: "Copy this link manually instead." });
+    }
+  }
+
   return (
     <PageShell
       title="Meetings"
@@ -707,9 +731,17 @@ export function ClientMeetingsPage() {
               <div>
                 <p className="text-xs font-semibold mb-2" style={{ color: CS.secondary }}>Meeting Link</p>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: CS.surfaceContainer }}>
-                  <code className="text-xs flex-1 truncate" style={{ color: CS.primary }}>{selected.meetingLink}</code>
+                  <a
+                    href={selected.meetingLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs flex-1 truncate underline-offset-2 hover:underline"
+                    style={{ color: CS.primary }}
+                  >
+                    {selected.meetingLink}
+                  </a>
                   <button
-                    onClick={() => navigator.clipboard.writeText(selected.meetingLink)}
+                    onClick={() => copyMeetingLink(selected.meetingLink)}
                     className="p-1 rounded transition-colors"
                     style={{ color: CS.primary }}
                     title="Copy link">
