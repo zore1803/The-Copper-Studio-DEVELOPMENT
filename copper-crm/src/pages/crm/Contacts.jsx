@@ -415,11 +415,11 @@ export default function Contacts() {
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return contacts.filter((contact) => {
-      const matchesQuery = !needle || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""} ${contact.email || ""} ${contact.phone || ""} ${contact.whatsapp || ""} ${contact.designation || ""} ${companyNameOf(contact)}`.toLowerCase().includes(needle);
+      const hasPortalAccess = Boolean(contact.userId) && contact.portalStatus !== "disabled";
+      const matchesQuery = !needle || `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""} ${contact.email || ""} ${contact.phone || ""} ${contact.whatsapp || ""} ${contact.designation || ""} ${companyNameOf(contact)} ${contact.status || "Active"} ${hasPortalAccess ? "Yes" : "No"}`.toLowerCase().includes(needle);
       const matchesStatus = statusFilter === "All" || (contact.status || "Active") === statusFilter;
       const matchesDesignation = designationFilter === "All" || contact.designation === designationFilter;
       const matchesCompany = companyFilter === "All" || companyNameOf(contact) === companyFilter;
-      const hasPortalAccess = Boolean(contact.userId) && contact.portalStatus !== "disabled";
       const matchesPortalAccess = portalAccessFilter === "All" || (portalAccessFilter === "Yes" ? hasPortalAccess : !hasPortalAccess);
       return matchesQuery && matchesStatus && matchesDesignation && matchesCompany && matchesPortalAccess;
     });
