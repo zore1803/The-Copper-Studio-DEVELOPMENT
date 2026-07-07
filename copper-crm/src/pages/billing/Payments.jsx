@@ -121,7 +121,6 @@ export default function Payments() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [methodFilter, setMethodFilter] = useState("All");
-  const [gatewayFilter, setGatewayFilter] = useState("All");
   const [companyFilter, setCompanyFilter] = useState("All");
   const [sortBy, setSortBy] = useState("created_desc");
   const [sortOpen, setSortOpen] = useState(false);
@@ -134,12 +133,11 @@ export default function Payments() {
   const sortRef = useRef(null);
   useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
 
+  // "Method" here means how the payment was collected — Manual (recorded by
+  // an admin) or Razorpay (paid online) — not the granular UPI/Card/etc.
+  // instrument, which was a separate "Gateway" filter that's been folded in.
   const methodNames = useMemo(
-    () => ["All", ...Array.from(new Set(payments.map((p) => p.paymentMethod || p.method).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
-    [payments]
-  );
-  const gatewayNames = useMemo(
-    () => ["All", ...Array.from(new Set(payments.map((p) => p.gateway).filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
+    () => ["All", ...Array.from(new Set(payments.map((p) => p.gateway || "Razorpay").filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)))],
     [payments]
   );
   const companyNames = useMemo(
@@ -150,12 +148,11 @@ export default function Payments() {
   const filtered = useMemo(() => payments.filter((row) => {
     const rowStatus = row.status || "Pending";
     const matchesStatus = status === "All" || rowStatus === status;
-    const matchesMethod = methodFilter === "All" || (row.paymentMethod || row.method) === methodFilter;
-    const matchesGateway = gatewayFilter === "All" || (row.gateway || "Razorpay") === gatewayFilter;
+    const matchesMethod = methodFilter === "All" || (row.gateway || "Razorpay") === methodFilter;
     const matchesCompany = companyFilter === "All" || row.company === companyFilter;
     const haystack = `${row.paymentId || row.id || ""} ${row.company || ""} ${rowStatus}`.toLowerCase();
-    return matchesStatus && matchesMethod && matchesGateway && matchesCompany && haystack.includes(query.toLowerCase());
-  }), [query, payments, status, methodFilter, gatewayFilter, companyFilter]);
+    return matchesStatus && matchesMethod && matchesCompany && haystack.includes(query.toLowerCase());
+  }), [query, payments, status, methodFilter, companyFilter]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -182,7 +179,6 @@ export default function Payments() {
   function resetFilters() {
     setStatus("All");
     setMethodFilter("All");
-    setGatewayFilter("All");
     setCompanyFilter("All");
     setQuery("");
     setPage(1);
@@ -246,7 +242,6 @@ export default function Payments() {
             fields={[
               { key: "status", label: "Status", type: "select", value: status, onChange: (value) => { setStatus(value); setPage(1); }, options: ["All", ...dataFields.paymentStatusPayments] },
               { key: "method", label: "Method", type: "select", value: methodFilter, onChange: (value) => { setMethodFilter(value); setPage(1); }, options: methodNames },
-              { key: "gateway", label: "Gateway", type: "select", value: gatewayFilter, onChange: (value) => { setGatewayFilter(value); setPage(1); }, options: gatewayNames },
               { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames }
             ]}
           />
