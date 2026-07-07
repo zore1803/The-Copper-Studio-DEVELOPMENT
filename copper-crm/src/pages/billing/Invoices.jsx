@@ -109,7 +109,7 @@ function Field({ label, value, onChange, type = "text", options, disabled = fals
 // admin lookup endpoint, which doesn't require a matching real package/
 // category (a manual invoice's amount is typed in directly, not tied to a
 // live Package record), so it just reports what the coupon actually is.
-function CouponCheckField({ value, onChange }) {
+function CouponCheckField({ value, onChange, onResult }) {
   const { token } = useAuth();
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState(null); // { ok: true, data } | { ok: false, message }
@@ -122,8 +122,10 @@ function CouponCheckField({ value, onChange }) {
     try {
       const data = await apiGet(`/api/admin/coupons/lookup/${encodeURIComponent(code)}`, token);
       setResult({ ok: data.isUsable, data });
+      onResult?.(data.isUsable ? data : null);
     } catch (err) {
       setResult({ ok: false, message: err.message || "Could not look up this coupon." });
+      onResult?.(null);
     } finally {
       setChecking(false);
     }
@@ -135,7 +137,7 @@ function CouponCheckField({ value, onChange }) {
       <div className="mt-1.5 flex gap-2">
         <input
           value={value || ""}
-          onChange={(e) => { onChange(e.target.value.toUpperCase()); setResult(null); }}
+          onChange={(e) => { onChange(e.target.value.toUpperCase()); setResult(null); onResult?.(null); }}
           placeholder="Optional"
           className="flex-1 rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm outline-none focus:border-[#8D3118] focus:ring-2 focus:ring-[#8D3118]/20"
         />
@@ -328,6 +330,13 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
   });
   const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+  // A real package's price is fixed by the admin in the database (not typed
+  // in here), so once one is selected the Amount field just displays that
+  // price minus whatever coupon discount applies — it isn't itself editable.
+  // "Custom package" has no such fixed price, so it stays freely editable.
+  const isRealPackage = Boolean(pkgChoice) && pkgChoice !== "custom";
+  const [basePrice, setBasePrice] = useState(0);
+  const [discountRupees, setDiscountRupees] = useState(0);
   const companyOptions = [
     { value: "", label: "Select company" },
     ...companies.map((company) => ({
@@ -366,14 +375,37 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
 
   function onPackageChange(value) {
     setPkgChoice(value);
+    setDiscountRupees(0);
     if (value === "custom") {
+      setBasePrice(0);
       setForm((prev) => ({ ...prev, packageName: "" }));
     } else if (value) {
       const pkg = packages.find((p) => String(p.id) === String(value));
-      setForm((prev) => ({ ...prev, packageName: pkg?.name || "", amount: pkg ? String(pkg.price) : prev.amount }));
+      const price = pkg ? Number(pkg.price) : 0;
+      setBasePrice(price);
+      setForm((prev) => ({ ...prev, packageName: pkg?.name || "", amount: pkg ? String(price) : prev.amount }));
     } else {
+      setBasePrice(0);
       setForm((prev) => ({ ...prev, packageName: "" }));
     }
+  }
+
+  // Applies (or clears) a validated coupon's discount against the selected
+  // package's fixed price — only for a real package; a custom package has no
+  // admin-set price to discount against, so its amount is left as typed.
+  function handleCouponResult(data) {
+    if (!isRealPackage) return;
+    if (!data) {
+      setDiscountRupees(0);
+      setForm((prev) => ({ ...prev, amount: String(basePrice) }));
+      return;
+    }
+    const numericAmount = Number(String(data.amount || "").replace(/[^\d.]/g, "")) || 0;
+    const discount = data.amountType === "fixed"
+      ? Math.min(basePrice, numericAmount)
+      : Math.min(basePrice, Math.round((basePrice * numericAmount) / 100));
+    setDiscountRupees(discount);
+    setForm((prev) => ({ ...prev, amount: String(Math.max(0, basePrice - discount)) }));
   }
 
   // Searchable list of existing clients (contacts) for the recommendation dropdown.
@@ -547,14 +579,18 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
           type="number"
           value={form.amount}
           onChange={set("amount")}
+          disabled={isRealPackage}
           hint={
+            (isRealPackage
+              ? `Fixed package price: ₹${basePrice.toLocaleString("en-IN")}${discountRupees > 0 ? ` − ₹${discountRupees.toLocaleString("en-IN")} coupon discount` : ""}. Not editable — set by the package's price in the database. `
+              : "") +
             (Number(form.amount) > 0
               ? `18% GST added → total ₹${Math.round(Number(form.amount) * 1.18).toLocaleString("en-IN")}. `
               : "") +
-            (pkgChoice && pkgChoice !== "custom" ? "Auto-filled from package (editable)." : "Enter the pre-GST amount.")
+            (!isRealPackage ? "Enter the pre-GST amount." : "")
           }
         />
-        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} />
+        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} onResult={handleCouponResult} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>
