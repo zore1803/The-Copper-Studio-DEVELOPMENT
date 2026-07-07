@@ -198,7 +198,7 @@ export default function Meetings() {
                           <td className="px-4 py-3 text-sm text-[#374151]">{companyNameFor(m)}</td>
                           <td className="px-4 py-3 text-sm text-[#374151]">{meetingTypeLabel(m.type)}</td>
                           <td className="px-4 py-3 text-sm text-[#374151]">{formatDateTime(m.scheduledAt)}</td>
-                          <td className="px-4 py-3 text-center"><Badge {...statusBadge(m.status)} /></td>
+                          <td className="px-4 py-3 text-center"><Badge color={statusBadge(m.status).color}>{statusBadge(m.status).label}</Badge></td>
                         </tr>
                       ))}
                     </tbody>
@@ -255,7 +255,7 @@ export default function Meetings() {
               {selected.duration ? ` (${selected.duration} mins)` : ""}
             </div>
 
-            <div><Badge {...statusBadge(selected.status)} /></div>
+            <div><Badge color={statusBadge(selected.status).color}>{statusBadge(selected.status).label}</Badge></div>
 
             <div>
               <p className="text-xs font-semibold mb-2 text-[#374151]">Client</p>
