@@ -143,7 +143,7 @@ export default function ProjectsList() {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     const arr = computedProjects.filter((project) => {
-      const matchesQuery = !query || `${project.name} ${project.client} ${project.template}`.toLowerCase().includes(query);
+      const matchesQuery = !query || `${project.name} ${project.client} ${project.template} ${project.computedCompanyName || ""} ${project.computedTemplateName || ""} ${project.effectiveStatus || ""} ${project.projectId || ""} ${project.manager || ""}`.toLowerCase().includes(query);
       const matchesStatus = statusFilter === "All" || project.effectiveStatus === statusFilter;
       const matchesCompany = companyFilter === "All" || project.computedCompanyName === companyFilter;
       const matchesTemplate = templateFilter === "All" || project.computedTemplateName === templateFilter;

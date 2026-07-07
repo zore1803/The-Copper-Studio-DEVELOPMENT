@@ -187,10 +187,10 @@ export function TasksPage() {
     contactType: meeting.contactType || meeting.companyName || "",
   })), [meetingRecords]);
   const filteredTasks = taskRows
-    .filter((t) => `${t.title} ${t.relatedTo} ${t.status}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((t) => `${t.title} ${t.relatedTo} ${t.status} ${t.assigned} ${t.priority} ${t.due}`.toLowerCase().includes(query.toLowerCase()))
     .filter((t) => statusFilter === "All" || t.status === statusFilter);
   const filteredMeetings = meetingRows
-    .filter((m) => `${m.title} ${m.contact}`.toLowerCase().includes(query.toLowerCase()))
+    .filter((m) => `${m.title} ${m.contact} ${m.contactType} ${m.status} ${m.type} ${m.scheduled}`.toLowerCase().includes(query.toLowerCase()))
     .filter((m) => statusFilter === "All" || m.status === statusFilter);
 
   const activeRows = tab === "Tasks" ? filteredTasks : filteredMeetings;

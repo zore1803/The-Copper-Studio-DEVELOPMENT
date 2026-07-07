@@ -634,7 +634,7 @@ export default function Coupons() {
     const matchesStatus = statusFilter === "All" || couponStatus === statusFilter;
     const matchesCategory = categoryFilter === "All" || coupon.category === categoryFilter;
     const matchesPackage = packageFilter === "All" || coupon.packageName === packageFilter;
-    const haystack = `${coupon.code || ""} ${coupon.assignedCompany || coupon.companyName || ""} ${coupon.assignedContact || coupon.clientName || ""} ${couponStatus}`.toLowerCase();
+    const haystack = `${coupon.code || ""} ${coupon.assignedCompany || coupon.companyName || ""} ${coupon.assignedContact || coupon.clientName || ""} ${couponStatus} ${coupon.category || ""} ${coupon.packageName || ""} ${coupon.amount || ""} ${coupon.amountType || ""} ${coupon.email || ""} ${coupon.phone || ""}`.toLowerCase();
     return matchesStatus && matchesCategory && matchesPackage && haystack.includes(query.toLowerCase());
   }), [coupons, query, statusFilter, categoryFilter, packageFilter]);
 

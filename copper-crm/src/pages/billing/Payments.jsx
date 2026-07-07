@@ -150,7 +150,7 @@ export default function Payments() {
     const matchesStatus = status === "All" || rowStatus === status;
     const matchesMethod = methodFilter === "All" || (row.gateway || "Razorpay") === methodFilter;
     const matchesCompany = companyFilter === "All" || row.company === companyFilter;
-    const haystack = `${row.paymentId || row.id || ""} ${row.company || ""} ${rowStatus}`.toLowerCase();
+    const haystack = `${row.paymentId || row.id || ""} ${row.company || ""} ${row.client || ""} ${rowStatus} ${row.gateway || row.paymentMethod || row.method || ""} ${row.invoiceNumber || ""} ${row.couponCode || ""} ${row.amount || ""}`.toLowerCase();
     return matchesStatus && matchesMethod && matchesCompany && haystack.includes(query.toLowerCase());
   }), [query, payments, status, methodFilter, companyFilter]);
 

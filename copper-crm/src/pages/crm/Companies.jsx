@@ -382,7 +382,7 @@ function AssignCompaniesModal({ folder, companies, onClose, onSave }) {
     });
 
   const list = companies.filter((c) =>
-    `${c.name} ${c.industry}`.toLowerCase().includes(query.toLowerCase())
+    `${c.name} ${c.industry} ${c.city || ""} ${c.state || ""} ${c.owner || ""} ${c.status || ""} ${c.email || ""} ${c.phone || ""}`.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -490,7 +490,7 @@ export default function Companies() {
 
   const filtered = useMemo(() =>
     companies.filter((c) => {
-      const matchesSearch = `${c.name} ${c.industry} ${c.contact} ${c.status} ${c.gstin} ${c.leadSource} ${c.city} ${c.state} ${c.pincode} ${c.owner}`.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch = `${c.name} ${c.industry} ${c.contact} ${c.status} ${c.gstin} ${c.leadSource} ${c.city} ${c.state} ${c.pincode} ${c.owner} ${c.email || ""} ${c.phone || ""} ${c.website || ""} ${c.notes || ""}`.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "All" || c.status === statusFilter || docStatusOf(c) === statusFilter;
       const matchesIndustry = industryFilter === "All" || c.industry === industryFilter;
       const matchesCity = cityFilter === "All" || c.city === cityFilter;

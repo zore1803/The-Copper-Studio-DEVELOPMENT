@@ -851,7 +851,7 @@ export default function Invoices() {
     const matchesCompany = !companyFilter.trim() || String(invoice.company || invoice.client || "").toLowerCase().includes(companyFilter.trim().toLowerCase());
     const hasCoupon = Boolean(String(invoice.couponCode || "").trim());
     const matchesCoupon = couponFilter === "All" || (couponFilter === "Yes" ? hasCoupon : !hasCoupon);
-    const haystack = `${invoice.invoiceNumber || invoice.id || ""} ${invoice.company || invoice.client || ""} ${invoice.project || ""} ${invoiceStatus}`.toLowerCase();
+    const haystack = `${invoice.invoiceNumber || invoice.id || ""} ${invoice.company || invoice.client || ""} ${invoice.project || ""} ${invoiceStatus} ${invoice.package || ""} ${invoice.customerEmail || ""} ${invoice.couponCode || ""} ${invoice.razorpayPaymentId || invoice.paymentId || ""} ${invoice.total || invoice.amount || ""}`.toLowerCase();
     return matchesStatus && matchesCompany && matchesCoupon && haystack.includes(query.toLowerCase());
   }), [invoices, query, status, companyFilter, couponFilter]);
 

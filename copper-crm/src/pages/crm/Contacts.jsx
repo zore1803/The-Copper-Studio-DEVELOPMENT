@@ -304,7 +304,7 @@ function AssignContactsModal({ folder, contacts, onClose, onSave }) {
       return next;
     });
 
-  const list = contacts.filter((c) => `${contactFullName(c)} ${c.designation || ""}`.toLowerCase().includes(query.toLowerCase()));
+  const list = contacts.filter((c) => `${contactFullName(c)} ${c.designation || ""} ${c.email || ""} ${c.phone || ""} ${c.company || ""}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
     <SidePanel
