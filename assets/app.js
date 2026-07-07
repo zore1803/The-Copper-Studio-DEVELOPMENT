@@ -335,18 +335,24 @@ function customerFullPhone() {
   return number ? `${code} ${number}` : "";
 }
 
-// Maharashtra state code — The Copper Studio's registered state.
-// GSTIN starts with the 2-digit state code of the buyer's state.
+// Maharashtra — The Copper Studio's registered state.
+// GSTIN starts with the 2-digit state code of the buyer's state, but most
+// buyers never enter one — the billing address "state" field they DO fill in
+// on the checkout form is the actual, always-available source of truth for
+// CGST+SGST (intra-state) vs IGST (inter-state); GSTIN is only a fallback.
 const SELLER_STATE_CODE = "27";
+const SELLER_STATE_NAME = "MAHARASHTRA";
 
-function gstType(gstin) {
+function gstType(gstin, billingState) {
+  const state = String(billingState || "").trim();
+  if (state) return state.toUpperCase() === SELLER_STATE_NAME ? "intra" : "inter";
   const code = String(gstin || "").trim().replace(/\s/g, "").slice(0, 2);
-  if (code.length < 2 || !/^\d{2}$/.test(code)) return "b2c"; // no valid GSTIN → B2C
+  if (code.length < 2 || !/^\d{2}$/.test(code)) return "b2c"; // nothing to go on
   return code === SELLER_STATE_CODE ? "intra" : "inter";
 }
 
-function gstBreakdownHtml(gst, gstin) {
-  const type = gstType(gstin);
+function gstBreakdownHtml(gst, gstin, billingState = order.customer?.state || "") {
+  const type = gstType(gstin, billingState);
   if (type === "intra") {
     const cgst = Math.floor(gst / 2);
     const sgst = gst - cgst;

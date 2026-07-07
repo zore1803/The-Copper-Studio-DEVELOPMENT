@@ -1179,9 +1179,13 @@ export function ClientBillingPage() {
                       const planAmount = Number(selectedOrder.package?.price || 0) || taxableBase;
                       const discount = couponCode ? Math.max(0, planAmount - taxableBase) : 0;
                       const gstAmount = totalPaid - taxableBase;
+                      // Billing address state decides CGST+SGST vs IGST, not
+                      // GSTIN — most domestic customers never enter a GSTIN.
+                      const billingState = String(selectedOrder.customer?.state || "").trim();
                       const clientGstin = selectedOrder.customer?.companyGstin || "";
-                      const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : "27";
-                      const isInterState = clientStateCode !== "27";
+                      const isInterState = billingState
+                        ? billingState.toUpperCase() !== "MAHARASHTRA"
+                        : Boolean(clientGstin) && clientGstin.slice(0, 2) !== "27";
                       const fmt = (n) => `₹${Math.round(n).toLocaleString("en-IN")}`;
                       return (
                         <div className="pt-3 border-t space-y-2" style={{ borderColor: CS.outlineVariant }}>

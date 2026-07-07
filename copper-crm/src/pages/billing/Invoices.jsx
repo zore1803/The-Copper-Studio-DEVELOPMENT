@@ -647,6 +647,7 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
 // decide CGST+SGST vs IGST for the export, since that config isn't reachable
 // from the frontend.
 const SELLER_STATE_CODE = "27";
+const SELLER_STATE_NAME = "MAHARASHTRA";
 
 const EXPORT_COLUMNS = [
   ["srNo", "Sr No"],
@@ -709,9 +710,15 @@ function buildExportRows(list, { companies, contacts, packages, coupons }) {
     const pkg = packageByName.get(String(invoice.package || "").trim().toLowerCase());
     const coupon = invoice.couponCode ? couponByCode.get(String(invoice.couponCode).trim().toUpperCase()) : null;
 
+    // Billing address state decides CGST+SGST vs IGST, not GSTIN — most
+    // domestic customers never enter a GSTIN, so GSTIN-only logic defaulted
+    // every such invoice to "same state" (CGST+SGST) regardless of where
+    // they're actually billed from.
+    const billingState = String(company.state || invoice.state || "").trim();
     const gstin = company.gstin || "";
-    const stateCode = gstin ? gstin.slice(0, 2) : "";
-    const isInterState = Boolean(stateCode) && stateCode !== SELLER_STATE_CODE;
+    const isInterState = billingState
+      ? billingState.toUpperCase() !== SELLER_STATE_NAME
+      : Boolean(gstin) && gstin.slice(0, 2) !== SELLER_STATE_CODE;
     const total = parseMoney(invoice.total || invoice.amount);
     const gst = parseMoney(invoice.tax || invoice.gst);
     const cgst = isInterState ? 0 : Math.round((gst / 2) * 100) / 100;

@@ -101,10 +101,19 @@ export function buildInvoiceModel({ order, invoice, project } = {}) {
   const taxableAmount = total ? Math.round((total / (1 + rate / 100)) * 100) / 100 : 0;
   const gstTotal = Math.round((total - taxableAmount) * 100) / 100;
 
-  // Inter-state when the client's GSTIN state code differs from the seller's.
-  const clientGstin = customer.customerGstin || inv?.customerGstin || "";
-  const clientStateCode = clientGstin ? clientGstin.slice(0, 2) : seller.stateCode;
-  const isInterState = clientStateCode !== seller.stateCode;
+  // CGST+SGST (intra-state) vs IGST (inter-state) is decided by the client's
+  // BILLING ADDRESS state, not their GSTIN — most domestic customers never
+  // enter a GSTIN at all, so GSTIN-only logic silently defaulted every such
+  // invoice to "same state as us" (CGST+SGST), which is wrong whenever the
+  // client is actually billed from outside Maharashtra. Billing state is
+  // compared by name (e.g. "Maharashtra") against the seller's; GSTIN's state
+  // code is only a fallback for the rare case a GSTIN exists but no billing
+  // state was recorded.
+  const billingState = String(customer.state || inv?.state || "").trim();
+  const clientGstin = customer.companyGstin || customer.customerGstin || inv?.customerGstin || "";
+  const isInterState = billingState
+    ? billingState.toLowerCase() !== seller.stateName.toLowerCase()
+    : (clientGstin ? clientGstin.slice(0, 2) !== seller.stateCode : false);
 
   const cgst = isInterState ? 0 : Math.round((gstTotal / 2) * 100) / 100;
   const sgst = isInterState ? 0 : Math.round((gstTotal - cgst) * 100) / 100;
