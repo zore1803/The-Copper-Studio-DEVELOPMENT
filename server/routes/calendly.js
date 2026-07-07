@@ -4,7 +4,7 @@ import Meeting from "../models/Meeting.js";
 import User from "../models/User.js";
 import Company from "../models/Company.js";
 import { requireAuth, requireRole } from "../middleware/auth.js";
-import { getActiveEventTypes, registerWebhookSubscription, buildParticipants } from "../services/calendly.js";
+import { getActiveEventTypes, registerWebhookSubscription, buildParticipants, getScheduledEvent } from "../services/calendly.js";
 
 const router = express.Router();
 
@@ -67,7 +67,14 @@ router.post("/webhook", async (req, res, next) => {
       const end = scheduledEvent.end_time ? new Date(scheduledEvent.end_time) : null;
       const duration = start && end ? Math.round((end - start) / 60000) : 45;
 
-      const participants = await buildParticipants(payload);
+      let eventGuests = [];
+      try {
+        const fullEvent = eventUri ? await getScheduledEvent(eventUri) : null;
+        eventGuests = fullEvent?.event_guests || [];
+      } catch {
+        // Guest lookup failing shouldn't block creating the meeting record.
+      }
+      const participants = await buildParticipants(payload, eventGuests);
 
       await Meeting.create({
         title: scheduledEvent.name || "Calendly Meeting",

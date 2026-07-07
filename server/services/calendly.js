@@ -59,6 +59,14 @@ export async function getScheduledEvents({ minStartTime, maxStartTime } = {}) {
   return data.collection;
 }
 
+// Guests a primary invitee adds at checkout (`event_guests`) live on the
+// event resource itself, not on the invitee — this is the only way to see
+// them from a webhook payload, which only carries the invitee.
+export async function getScheduledEvent(eventUri) {
+  const data = await calendlyFetch(`/scheduled_events/${eventUri.split("/").pop()}`);
+  return data.resource;
+}
+
 export async function getEventInvitees(eventUri) {
   const data = await calendlyFetch(`/scheduled_events/${eventUri.split("/").pop()}/invitees`);
   return data.collection;
@@ -97,14 +105,16 @@ async function resolveGuestName(email) {
   return googleName || "";
 }
 
-// Builds the full participants list for a Calendly invitee: the primary
-// invitee (who has a name) plus every additional guest they added (who only
-// have an email in Calendly's payload, so we resolve their name ourselves).
-export async function buildParticipants(invitee) {
+// Builds the full participants list for a Calendly booking: the primary
+// invitee (who has a name) plus every additional guest they added at
+// checkout. Guests live on the *event* resource as `event_guests` (just an
+// email each, no name) — not on the invitee — so we resolve their names
+// ourselves.
+export async function buildParticipants(invitee, eventGuests = []) {
   if (!invitee) return [];
   const entries = [
     { name: invitee.name, email: invitee.email },
-    ...(invitee.guests || []).map((g) => ({ name: "", email: g.email }))
+    ...(eventGuests || []).map((g) => ({ name: "", email: g.email }))
   ];
   const participants = [];
   for (const entry of entries) {
@@ -147,7 +157,7 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
       // Guests can be added to a Calendly booking after it was first synced
       // (e.g. the invitee edits the event later), so re-check participants
       // every time rather than only at creation.
-      const participants = await buildParticipants(invitee);
+      const participants = await buildParticipants(invitee, event.event_guests);
       const existingEmails = (existing.participants || []).map((p) => p.email).sort().join(",");
       const nextEmails = participants.map((p) => p.email).sort().join(",");
       if (existingEmails !== nextEmails) {
@@ -159,7 +169,7 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
     }
 
     const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
-    const participants = await buildParticipants(invitee);
+    const participants = await buildParticipants(invitee, event.event_guests);
 
     await Meeting.create({
       title: event.name || "Calendly Meeting",
