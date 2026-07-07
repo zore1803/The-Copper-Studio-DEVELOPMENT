@@ -952,7 +952,7 @@ export default function Invoices() {
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Coupon</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Transaction ID</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">Status</th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-white">Actions</th>
+                    <th className="px-4 py-3 text-center text-xs font-bold text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f3f4f6]">
