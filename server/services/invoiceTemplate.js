@@ -1,4 +1,4 @@
-import { seller, bank, invoiceSettings } from "../data/sellerConfig.js";
+import { seller, bank, signatory, invoiceSettings } from "../data/sellerConfig.js";
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -173,6 +173,7 @@ export function buildInvoiceModel({ order, invoice, project } = {}) {
 export function renderInvoiceHtml(input) {
   const m = input?.totals ? input : buildInvoiceModel(input);
   const { seller: s, bank: b, settings: cfg, client, transaction: tx, items, totals } = m;
+  const sig = signatory;
   const sym = cfg.currencySymbol;
   const isPaid = tx.status === "Paid";
 
@@ -213,7 +214,7 @@ export function renderInvoiceHtml(input) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Tax Invoice ${esc(m.invoiceNumber)}</title>
 <style>
-  :root { --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --copper:#6e5b48; --bg:#ffffff; }
+  :root { --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --copper:#8D3118; --bg:#ffffff; }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; background:#f3f4f6; color:var(--ink);
     font-family: "Inter", "Segoe UI", Arial, sans-serif; font-size:12px; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -275,19 +276,29 @@ export function renderInvoiceHtml(input) {
   .bank-box .row span:first-child { color:var(--muted); display:inline-block; min-width:74px; }
   .bank-box .row span:last-child { font-family:"Courier New",monospace; font-weight:600; }
   .sign { text-align:right; }
-  .sign .for { font-weight:700; margin-bottom:46px; }
+  .sign .for { font-weight:700; margin-bottom:6px; }
+  .sign-img { max-height:50px; max-width:160px; object-fit:contain; mix-blend-mode:multiply; display:inline-block; margin:2px 0; }
   .sign .line { border-top:1px solid var(--ink); display:inline-block; padding-top:4px; color:var(--muted); min-width:170px; }
 
-  .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.55; }
+  .notes { margin-top:22px; border-top:1px solid var(--line); padding-top:12px; color:var(--muted); line-height:1.4; font-size:10.5px; }
   .notes h4 { color:var(--ink); margin:0 0 4px; font-size:11px; }
   .notes ol { margin:4px 0 0; padding-left:18px; }
-  .notes ol > li { margin-bottom:5px; }
+  .notes ol > li { margin-bottom:3px; }
   .notes .term-title { color:var(--ink); font-weight:600; }
-  .notes ol ul { list-style:disc; margin:3px 0 2px; padding-left:16px; }
-  .notes ol ul li { margin-bottom:2px; }
-  .foot { margin-top:18px; text-align:center; color:var(--muted); font-size:10px; border-top:1px solid var(--line); padding-top:10px; }
+  .notes ol ul { list-style:disc; margin:2px 0 2px; padding-left:16px; }
+  .notes ol ul li { margin-bottom:1px; }
+  .foot { margin-top:14px; text-align:center; color:var(--muted); font-size:10px; border-top:1px solid var(--line); padding-top:10px; }
 
-  @media print { html, body { background:#fff; } .sheet { margin:0; padding:26px 30px; width:auto; min-height:auto; } @page { size:A4; margin:12mm; } }
+  @media print {
+    html, body { background:#fff; }
+    .sheet { margin:0; padding:26px 30px; width:auto; min-height:auto; }
+    @page { size:A4; margin:12mm; }
+    /* Terms & Conditions always start on their own page (page 2), fitted to
+       that single page rather than spilling across the first page's leftover
+       space or overflowing onto a third page. */
+    .notes { page-break-before:always; break-before:page; page-break-inside:avoid; margin-top:0; border-top:none; padding-top:0; }
+    .foot { page-break-inside:avoid; }
+  }
 </style>
 </head>
 <body>
@@ -377,7 +388,10 @@ export function renderInvoiceHtml(input) {
       </div>
       <div class="sign">
         <div class="for">For ${esc(s.legalName)}</div>
-        ${isPaid ? `<div class="line">Authorized Signatory</div>` : ""}
+        ${isPaid
+          ? `${sig.image ? `<img class="sign-img" src="${esc(sig.image)}" alt="Signature" />` : ""}
+             <div class="line">Authorized Signatory${sig.name ? ` — ${esc(sig.name)}` : ""}</div>`
+          : ""}
       </div>
     </div>
 

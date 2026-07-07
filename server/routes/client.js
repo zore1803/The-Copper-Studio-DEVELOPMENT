@@ -249,7 +249,20 @@ router.get("/orders", async (req, res, next) => {
     // purchases never showed up in the client's billing (it counted only orders).
     // Surface such invoices as order-shaped entries. To avoid double-counting the
     // online flow, only include invoices whose project has no order behind it.
-    const invoices = await Invoice.find({ $or: [{ clientId: user._id }, { customerEmail: user.email }] }).sort({ createdAt: -1 });
+    //
+    // clientId/customerEmail alone can miss an invoice whose clientId was never
+    // backfilled (billed before the portal account existed) or whose
+    // customerEmail doesn't match the client's current login email — so also
+    // catch anything tied to a project this client already has visibility into.
+    const visibleProjects = await Project.find(await projectsVisibilityFilter(req.auth.sub)).select("_id").lean();
+    const visibleProjectIds = visibleProjects.map((p) => p._id);
+    const invoices = await Invoice.find({
+      $or: [
+        { clientId: user._id },
+        { customerEmail: user.email },
+        ...(visibleProjectIds.length ? [{ projectId: { $in: visibleProjectIds } }] : [])
+      ]
+    }).sort({ createdAt: -1 });
     const standaloneProjectIds = invoices.map((inv) => inv.projectId).filter(Boolean);
     const projects = standaloneProjectIds.length
       ? await Project.find({ _id: { $in: standaloneProjectIds } }).select("_id name orderId").catch(() => [])
@@ -363,8 +376,21 @@ router.get("/documents", async (req, res, next) => {
     );
 
     // 3. Fetch from invoices (represented as PDF documents)
+    // An invoice can end up with a stale/missing clientId or a customerEmail
+    // that doesn't match the client's current login email (e.g. it was billed
+    // before their portal account existed, or the admin typed a different
+    // email on a manual invoice) — so also catch anything tied to a project
+    // this client already has access to, which is the visibility the client
+    // actually already has via `projects` above.
+    const visibleProjectIds = projects.map((p) => p._id || p.id).filter(Boolean);
+    const visibleOrderIds = projects.map((p) => p.orderId).filter(Boolean);
     const userInvoices = await Invoice.find({
-      $or: [{ clientId: user._id }, { customerEmail: user.email }]
+      $or: [
+        { clientId: user._id },
+        { customerEmail: user.email },
+        ...(visibleProjectIds.length ? [{ projectId: { $in: visibleProjectIds } }] : []),
+        ...(visibleOrderIds.length ? [{ sourceOrderId: { $in: visibleOrderIds } }] : [])
+      ]
     }).sort({ createdAt: -1 }).lean();
 
     // Only surface an invoice under Documents once we can pin it to exactly one
