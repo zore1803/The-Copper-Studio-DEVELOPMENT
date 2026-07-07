@@ -151,7 +151,7 @@ export default function ClientDashboard() {
   ];
 
   return (
-    <div className="p-5 xl:p-6 max-w-7xl mx-auto">
+    <div className="p-5 xl:p-6">
       {/* Welcome header */}
       <div className="mb-6">
         <h1 className="text-lg font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>Hello, {name} 👋</h1>

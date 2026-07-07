@@ -40,7 +40,7 @@ const CS = {
 };
 
 
-function PageShell({ title, subtitle, children, action, maxWidthClass = "max-w-7xl" }) {
+function PageShell({ title, subtitle, children, action, maxWidthClass = "" }) {
   return (
     <div className="flex flex-col min-h-full">
       <div
@@ -53,7 +53,7 @@ function PageShell({ title, subtitle, children, action, maxWidthClass = "max-w-7
         </div>
         {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
       </div>
-      <div className={`p-5 xl:p-6 ${maxWidthClass} mx-auto w-full`}>
+      <div className={`p-5 xl:p-6 w-full ${maxWidthClass}`}>
         {children}
       </div>
     </div>

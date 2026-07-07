@@ -731,7 +731,7 @@ export default function Companies() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto bg-[#FFFFFF] p-6">
+      <div className="flex-1 overflow-auto bg-[#FFFFFF] p-5 xl:p-6">
         {view === "table" ? (
           <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
