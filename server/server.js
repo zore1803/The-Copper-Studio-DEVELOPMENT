@@ -593,6 +593,7 @@ app.post("/api/razorpay/verify", async (req, res, next) => {
       couponResult.coupon.status = "Redeemed";
       couponResult.coupon.redeemedAt = new Date();
       couponResult.coupon.discountAmount = couponResult.discount;
+      couponResult.coupon.usageCount = (couponResult.coupon.usageCount || 0) + 1;
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);
@@ -717,6 +718,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       if (coupon && ["Active", "Not used"].includes(coupon.status)) {
         coupon.status = "Redeemed";
         coupon.redeemedAt = new Date();
+        coupon.usageCount = (coupon.usageCount || 0) + 1;
         await coupon.save();
       }
     }
@@ -781,6 +783,7 @@ app.post("/api/orders", async (req, res, next) => {
       couponResult.coupon.status = "Redeemed";
       couponResult.coupon.redeemedAt = new Date();
       couponResult.coupon.discountAmount = couponResult.discount;
+      couponResult.coupon.usageCount = (couponResult.coupon.usageCount || 0) + 1;
       await couponResult.coupon.save();
     }
     const invite = await createPortalInvite(order);

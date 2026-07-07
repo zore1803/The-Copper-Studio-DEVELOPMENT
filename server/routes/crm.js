@@ -369,6 +369,7 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
       if (coupon && ["Active", "Not used"].includes(coupon.status)) {
         coupon.status = "Redeemed";
         coupon.redeemedAt = new Date();
+        coupon.usageCount = (coupon.usageCount || 0) + 1;
         await coupon.save().catch(() => {});
       }
     }
