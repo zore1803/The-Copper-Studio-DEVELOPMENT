@@ -372,6 +372,27 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
         await coupon.save().catch(() => {});
       }
     }
+    // The Payment record is a separate collection created alongside the
+    // Invoice at the same moment (both keyed by sourceOrderId, see
+    // syncFinanceForOrder) — editing the Invoice here never touched it, so
+    // the Payments page kept showing the pre-edit amount/coupon forever.
+    if (type === "invoices" && record.sourceOrderId) {
+      const paymentChanges = {};
+      if (Object.prototype.hasOwnProperty.call(payload, "total") || Object.prototype.hasOwnProperty.call(payload, "amount")) {
+        paymentChanges.amount = record.total ?? record.amount;
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "couponCode")) paymentChanges.couponCode = record.couponCode;
+      if (Object.prototype.hasOwnProperty.call(payload, "razorpayPaymentId") && record.razorpayPaymentId) {
+        paymentChanges.razorpayPaymentId = record.razorpayPaymentId;
+        paymentChanges.paymentId = record.razorpayPaymentId; // this is the field the Payments table actually displays
+      }
+      if (Object.prototype.hasOwnProperty.call(payload, "issueDate") || Object.prototype.hasOwnProperty.call(payload, "date")) {
+        paymentChanges.paidAt = record.issueDate || record.date;
+      }
+      if (Object.keys(paymentChanges).length) {
+        await Payment.findOneAndUpdate({ sourceOrderId: record.sourceOrderId }, { $set: paymentChanges }).catch(() => {});
+      }
+    }
     res.json(asPublicRecord(record));
   } catch (error) {
     next(error);
