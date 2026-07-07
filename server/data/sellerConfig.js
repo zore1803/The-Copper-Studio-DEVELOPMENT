@@ -44,14 +44,16 @@ function assetUrl(filename) {
 
 function loadSignatureDataUri() {
   if (process.env.SELLER_SIGNATURE_URL) return process.env.SELLER_SIGNATURE_URL;
-  // Prefer a URL reference over base64 embedding — base64 images bloat emails
-  // past Gmail's 102KB clip limit. If SITE_URL is set, use it.
-  const url = assetUrl("signature.png");
-  if (url) return url;
+  // Embed locally as base64 — a signature scan is only a few KB (well under
+  // Gmail's 102KB clip limit) and this avoids depending on SITE_URL actually
+  // pointing at this backend's static assets, which it doesn't (that domain
+  // is a separate frontend deploy) — a dead URL there silently stalled PDF
+  // generation waiting on the image to load, corrupting the downloaded file.
   return (
     assetDataUri("signature.png", "image/png") ||
     assetDataUri("signature.jpg", "image/jpeg") ||
-    assetDataUri("signature.jpeg", "image/jpeg")
+    assetDataUri("signature.jpeg", "image/jpeg") ||
+    assetUrl("signature.png")
   );
 }
 
