@@ -4,8 +4,8 @@ import {
   Bell, BarChart2, Building2, ChevronDown,
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
   FolderKanban, FolderOpen, LayoutDashboard,
-  LogOut, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, UserRound, Video, Wallet, Package,
+  LogOut, Menu, Plus, ReceiptText, Search, Settings,
+  ShoppingCart, UserRound, Video, Wallet, Package, X,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { primeDataFields } from "../lib/dataFields";
@@ -247,6 +247,7 @@ export default function AdminLayout() {
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
   const collapsed = !pinned && !hovering;
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -309,6 +310,11 @@ export default function AdminLayout() {
   const name = auth.user?.name || "Admin";
   const initials = initialsOf(name);
   const breadcrumbs = getBreadcrumbs(location.pathname, companies, projects, contacts);
+
+  function go(to) {
+    navigate(to);
+    setMobileOpen(false);
+  }
 
   useEffect(() => {
     function buildIndex() {
@@ -373,42 +379,54 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#FFFFFF]">
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+
       {/* Sidebar */}
       <aside
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        className="fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200"
-        style={{ width: sidebarW }}
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#FAFAFA] border-r border-[#ECECEC] transition-all duration-200 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+        style={{ width: mobileOpen ? 264 : sidebarW }}
       >
         {/* Logo */}
-        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed ? "px-1 py-3" : "px-4 py-5"}`}>
+        <div className={`flex items-center justify-center border-b border-[#ECECEC] ${collapsed && !mobileOpen ? "px-1 py-3" : "px-4 py-5"}`}>
           <img
             src="/copper-studio-wordmark.png"
             alt="Copper Studio"
-            className={`object-contain ${collapsed ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
+            className={`object-contain ${collapsed && !mobileOpen ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
           />
+          {mobileOpen && (
+            <button className="ml-auto lg:hidden text-[#9ca3af] hover:text-[#111827]" onClick={() => setMobileOpen(false)}>
+              <X size={16} />
+            </button>
+          )}
         </div>
 
-        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
+        <nav className={`flex-1 overflow-y-auto py-3 ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
           {NAV_SECTIONS.map((section) => (
-            <div key={section.label} className={collapsed ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
+            <div key={section.label} className={collapsed && !mobileOpen ? "flex flex-col items-center gap-2.5" : "space-y-0.5"}>
               {section.items.map((item) =>
                 item.children ? (
                   <NavGroup
                     key={item.label}
                     item={item}
-                    collapsed={collapsed}
+                    collapsed={collapsed && !mobileOpen}
                     active={isGroupActive(item, location.pathname)}
-                    onNavigate={navigate}
+                    onNavigate={go}
                     location={location.pathname}
                   />
                 ) : (
                   <NavLeaf
                     key={item.to}
                     item={item}
-                    collapsed={collapsed}
+                    collapsed={collapsed && !mobileOpen}
                     active={isLeafActive(item, location.pathname)}
-                    onNavigate={navigate}
+                    onNavigate={go}
                   />
                 )
               )}
@@ -416,24 +434,27 @@ export default function AdminLayout() {
           ))}
         </nav>
 
-        <div className={`border-t border-[#ECECEC] ${collapsed ? "flex flex-col items-center py-3" : "p-3"}`}>
+        <div className={`border-t border-[#ECECEC] ${collapsed && !mobileOpen ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
             onClick={() => setPinned((v) => !v)}
             title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
-            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
+            className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed && !mobileOpen ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
-            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
-            {!collapsed && "Collapse"}
+            {collapsed && !mobileOpen ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
+            {(!collapsed || mobileOpen) && "Collapse"}
           </button>
         </div>
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: baseW }}>
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden lg:ml-[var(--admin-rail-w)]" style={{ "--admin-rail-w": `${baseW}px` }}>
         {/* Top Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-4 sm:px-6 gap-4">
+          <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827] shrink-0" onClick={() => setMobileOpen(true)}>
+            <Menu size={18} />
+          </button>
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-1.5 text-sm min-w-0 flex-shrink-0">
+          <nav className="hidden sm:flex items-center gap-1.5 text-sm min-w-0 flex-shrink-0">
             {breadcrumbs.map((crumb, i) => (
               <div key={crumb.to} className="flex items-center gap-1.5">
                 {i > 0 && <ChevronRight size={13} className="text-[#9ca3af] shrink-0" />}
@@ -452,9 +473,9 @@ export default function AdminLayout() {
           </nav>
 
           {/* Right: Search + actions */}
-          <div className="flex items-center gap-4 flex-1 justify-end">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end min-w-0">
             {/* Search */}
-            <div className="relative w-72">
+            <div className="relative hidden md:block w-72">
               <div className="flex h-8 items-center gap-2 rounded-full border border-[#E1E4EA] px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
                 <Search size={14} className="text-[#525866] shrink-0" />
                 <input

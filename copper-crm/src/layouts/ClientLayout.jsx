@@ -351,9 +351,9 @@ export default function ClientLayout() {
       </aside>
 
       {/* Main */}
-      <div className="flex flex-1 flex-col min-w-0 overflow-hidden" style={{ marginLeft: baseW }}>
+      <div className="flex flex-1 flex-col min-w-0 overflow-hidden lg:ml-[var(--client-rail-w)]" style={{ "--client-rail-w": `${baseW}px` }}>
         {/* Header */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-6 gap-4">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#E1E4EA] bg-white px-4 sm:px-6 gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button className="lg:hidden p-1.5 rounded-lg text-[#6b7280] hover:text-[#111827]" onClick={() => setMobileOpen(true)}>
               <Menu size={18} />
