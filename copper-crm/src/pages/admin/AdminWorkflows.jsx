@@ -653,7 +653,7 @@ function SettingsSidebarGroup({ label, icon: GroupIcon, sections, activeSection,
           type="button"
           onClick={() => onSelect(section.key)}
           className={`flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-colors ${
-            activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fff8f6]"
+            activeSection === section.key ? "bg-[#fff1ec]" : "hover:bg-[#fafafa]"
           }`}
         >
           <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-2xl ${
@@ -1093,7 +1093,7 @@ export function SettingsTriggerTemplatePage() {
         <button
           type="button"
           onClick={() => navigate("/admin/communication/email-templates")}
-          className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
+          className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fafafa]"
         >
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#8D3118]"><Mail size={18} /></div>
           <div>
@@ -1104,7 +1104,7 @@ export function SettingsTriggerTemplatePage() {
         <button
           type="button"
           onClick={() => navigate("/admin/communication/whatsapp-templates")}
-          className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fff8f6]"
+          className="flex items-start gap-3 rounded-2xl border border-[#ead8d1] bg-white p-5 text-left transition-colors hover:bg-[#fafafa]"
         >
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-[#f3dfd7] text-[#8D3118]"><MessageCircle size={18} /></div>
           <div>

@@ -309,7 +309,7 @@ export default function ProjectsList() {
               const start = project.startDate ? new Date(project.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               const deadline = (project.dueDate || project.expectedEndDate) ? new Date(project.dueDate || project.expectedEndDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
               return (
-                <tr key={project.id || project._id} className="hover:bg-[#fff1ec] transition-colors">
+                <tr key={project.id || project._id} className="hover:bg-[#fafafa] transition-colors">
                   <td className="px-5 py-4">
                     <Link
                       to={`/admin/projects/${project.id || project._id}`}

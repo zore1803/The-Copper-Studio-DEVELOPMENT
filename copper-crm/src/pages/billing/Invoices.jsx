@@ -258,7 +258,7 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
                   <button
                     type="button"
                     onMouseDown={(e) => { e.preventDefault(); selectClient(contact); }}
-                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#fff1ec]"
+                    className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#fafafa]"
                   >
                     <span className="text-sm font-semibold text-[#111827]">{contact.name || "Unnamed client"}</span>
                     <span className="text-[11px] text-[#6b7280]">{[contact.email, contact.company].filter(Boolean).join(" · ") || "No details"}</span>
