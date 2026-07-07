@@ -263,6 +263,31 @@ router.get("/orders", async (req, res, next) => {
         ...(visibleProjectIds.length ? [{ projectId: { $in: visibleProjectIds } }] : [])
       ]
     }).sort({ createdAt: -1 });
+    // An order-backed invoice's `total`/`couponCode` are a snapshot from
+    // whenever the Order was first created — editing the Invoice afterward
+    // (e.g. admin applies a coupon via Edit Invoice) only ever updates the
+    // Invoice document, never the Order it's shown from below, so without
+    // this overlay that edit would never reach the client at all. The
+    // Invoice is the actual source of truth for what's billed, so prefer its
+    // current total/coupon/invoice-number over the Order's original snapshot.
+    const invoiceByOrderId = new Map(
+      invoices.filter((inv) => inv.sourceOrderId).map((inv) => [String(inv.sourceOrderId), inv])
+    );
+    const ordersWithCurrentInvoiceData = orders.map((order) => {
+      const inv = invoiceByOrderId.get(String(order._id));
+      if (!inv) return order;
+      const obj = order.toObject ? order.toObject() : order;
+      return {
+        ...obj,
+        package: { ...obj.package, total: inv.total ?? inv.amount ?? obj.package?.total },
+        payment: {
+          ...obj.payment,
+          couponCode: inv.couponCode ?? obj.payment?.couponCode,
+          invoiceId: inv.invoiceNumber || obj.payment?.invoiceId
+        }
+      };
+    });
+
     const standaloneProjectIds = invoices.map((inv) => inv.projectId).filter(Boolean);
     const projects = standaloneProjectIds.length
       ? await Project.find({ _id: { $in: standaloneProjectIds } }).select("_id name orderId").catch(() => [])
@@ -295,7 +320,7 @@ router.get("/orders", async (req, res, next) => {
         };
       });
 
-    res.json([...orders, ...invoiceOrders]);
+    res.json([...ordersWithCurrentInvoiceData, ...invoiceOrders]);
   } catch (error) {
     next(error);
   }
