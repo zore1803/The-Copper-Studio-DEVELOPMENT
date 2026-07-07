@@ -149,7 +149,20 @@ export default function Meetings() {
     const matchesStatus = statusFilter === "All" || m.status === statusFilter;
     const matchesType = typeFilter === "All" || m.type === typeFilter;
     const matchesCompany = companyFilter === "All" || companyNameFor(m) === companyFilter;
-    const haystack = `${m.title || ""} ${clientNameFor(m)} ${companyNameFor(m)}`.toLowerCase();
+    const participantText = (m.participants || []).map((p) => `${p.name || ""} ${p.email || ""}`).join(" ");
+    const haystack = [
+      m.title,
+      clientNameFor(m),
+      companyNameFor(m),
+      meetingTypeLabel(m.type),
+      m.status,
+      m.meetingLink,
+      m.agenda,
+      m.notes,
+      m.clientId?.email,
+      participantText,
+      formatDateTime(m.scheduledAt)
+    ].filter(Boolean).join(" ").toLowerCase();
     return matchesStatus && matchesType && matchesCompany && haystack.includes(query.toLowerCase());
   }), [meetings, statusFilter, typeFilter, companyFilter, query, companyNames]);
 
