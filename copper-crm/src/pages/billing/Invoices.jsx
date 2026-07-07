@@ -121,7 +121,10 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
     companyWebsite: "",
     projectName: "",
     packageName: "",
-    amount: ""
+    amount: "",
+    transactionId: "",
+    transactionDate: "",
+    transactionTime: ""
   });
   const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -351,6 +354,16 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
             (pkgChoice && pkgChoice !== "custom" ? "Auto-filled from package (editable)." : "Enter the pre-GST amount.")
           }
         />
+
+        <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
+          <p className="text-sm font-bold text-[#111827]">Razorpay Transaction</p>
+          <p className="text-[11px] text-[#9ca3af]">If this invoice is for a payment actually collected via Razorpay, link it here — the invoice's payment ID and paid-on date/time come from these instead of "now".</p>
+        </div>
+        <div className="sm:col-span-2">
+          <Field label="Transaction ID" value={form.transactionId} onChange={set("transactionId")} hint="Razorpay payment ID (e.g. pay_XXXXXXXXXXXX). Optional." />
+        </div>
+        <Field label="Transaction Date" type="date" value={form.transactionDate} onChange={set("transactionDate")} />
+        <Field label="Transaction Time" type="time" value={form.transactionTime} onChange={set("transactionTime")} />
       </div>
     </SidePanel>
   );
@@ -786,6 +799,7 @@ export default function Invoices() {
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Issue Date</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Due Date</th>
                     <th className="px-4 py-3 text-left text-xs font-bold text-white">Coupon</th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white">Transaction ID</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">Status</th>
                     <th className="px-4 py-3 text-center text-xs font-bold text-white">PDF</th>
                   </tr>
@@ -801,6 +815,7 @@ export default function Invoices() {
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.issueDate || invoice.date)}</td>
                       <td className="px-4 py-3 text-sm text-[#374151]">{formatDate(invoice.dueDate)}</td>
                       <td className="px-4 py-3 text-sm font-mono text-[#374151]">{invoice.couponCode || "-"}</td>
+                      <td className="px-4 py-3 text-sm font-mono text-[#374151]">{invoice.razorpayPaymentId || invoice.paymentId || "-"}</td>
                       <td className="px-4 py-3 text-center"><InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} /></td>
                       <td className="px-4 py-3 text-center"><button onClick={() => downloadInvoice(invoice)} className="text-[#8D3118] hover:underline"><Download size={15} /></button></td>
                     </tr>

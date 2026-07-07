@@ -630,7 +630,10 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       companyWebsite,
       projectName,
       packageName,
-      amount
+      amount,
+      transactionId,
+      transactionDate,
+      transactionTime
     } = req.body;
 
     // The amount the admin types is the pre-tax base (same convention as the
@@ -657,6 +660,18 @@ app.post("/api/invoices/manual", async (req, res, next) => {
     const lockedProjectName = company
       ? buildDefaultProjectName(resolvedCompanyName, await nextProjectNumberForCompany(company._id), new Date())
       : "";
+
+    // A manual invoice can still be for a payment actually collected via
+    // Razorpay (e.g. paid outside the normal checkout flow) — when a
+    // transaction ID is supplied, treat this as a Razorpay payment and use
+    // the given date/time as paidAt instead of "now", so the invoice PDF and
+    // finance records reflect when the money actually came in.
+    const hasTransaction = Boolean(String(transactionId || "").trim());
+    let paidAt = new Date();
+    if (hasTransaction && transactionDate) {
+      const combined = new Date(`${transactionDate}T${transactionTime || "00:00"}`);
+      if (!Number.isNaN(combined.getTime())) paidAt = combined;
+    }
 
     const order = await Order.create({
       package: {
@@ -685,9 +700,10 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       },
       payment: {
         status: "paid",
-        provider: "manual",
+        provider: hasTransaction ? "Razorpay" : "manual",
         invoiceId: `INV-${Date.now().toString().slice(-6)}`,
-        paidAt: new Date()
+        razorpayPaymentId: hasTransaction ? String(transactionId).trim() : "",
+        paidAt
       }
     });
 
