@@ -300,10 +300,10 @@ export default function AdminLayout() {
   }, [tasks, invoices]);
 
   const QUICK_ADD = [
-    { icon: Building2, label: "New Company", to: "/admin/companies" },
-    { icon: UserRound, label: "New Contact", to: "/admin/contacts" },
-    { icon: FolderKanban, label: "New Project", to: "/admin/projects" },
-    { icon: ReceiptText, label: "New Invoice", to: "/admin/invoices" },
+    { icon: Building2, label: "New Company", to: "/admin/companies", bg: "bg-blue-50", color: "text-blue-600" },
+    { icon: UserRound, label: "New Contact", to: "/admin/contacts", bg: "bg-violet-50", color: "text-violet-600" },
+    { icon: FolderKanban, label: "New Project", to: "/admin/projects", bg: "bg-amber-50", color: "text-amber-600" },
+    { icon: ReceiptText, label: "New Invoice", to: "/admin/invoices", bg: "bg-emerald-50", color: "text-emerald-600" },
   ];
 
   const name = auth.user?.name || "Admin";
@@ -560,7 +560,9 @@ export default function AdminLayout() {
                       onClick={() => quickAdd(item)}
                       className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
-                      <item.icon size={14} className="text-[#9ca3af]" />
+                      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${item.bg}`}>
+                        <item.icon size={13} className={item.color} />
+                      </span>
                       {item.label}
                     </button>
                   ))}

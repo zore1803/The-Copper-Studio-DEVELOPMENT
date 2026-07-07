@@ -668,13 +668,13 @@ export default function CompanyDetail() {
   );
   const filteredContacts = useMemo(() => linked.contacts.filter((contact) => {
     const fullName = `${contact.salutation || ""} ${contact.firstName || ""} ${contact.lastName || ""} ${contact.name || ""}`;
-    const matchesQuery = `${fullName} ${contact.email} ${contact.phone} ${contact.designation}`.toLowerCase().includes(contactQuery.toLowerCase());
+    const matchesQuery = `${fullName} ${contact.email} ${contact.phone} ${contact.designation} ${contact.whatsapp || ""} ${contact.linkedin || ""} ${contact.status || ""}`.toLowerCase().includes(contactQuery.toLowerCase());
     const matchesStatus = contactStatusFilter === "All" || (contact.status || "Active") === contactStatusFilter;
     const matchesDesignation = contactDesignationFilter === "All" || contact.designation === contactDesignationFilter;
     return matchesQuery && matchesStatus && matchesDesignation;
   }), [contactQuery, contactStatusFilter, contactDesignationFilter, linked.contacts]);
   const filteredInvoices = useMemo(() => linked.invoices.filter((invoice) => {
-    const matchesQuery = `${invoice.invoiceId || invoice.id || invoice._id || ""} ${invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || ""}`
+    const matchesQuery = `${invoice.invoiceId || invoice.id || invoice._id || ""} ${invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || ""} ${invoice.amount || invoice.total || ""} ${invoice.status || ""} ${invoice.paymentStatus || ""} ${invoice.package || ""}`
       .toLowerCase().includes(invoiceQuery.toLowerCase());
     const matchesStatus = invoiceStatusFilter === "All" || (invoice.status || "Pending") === invoiceStatusFilter;
     const matchesPaymentStatus = invoicePaymentStatusFilter === "All" || (invoice.paymentStatus || invoice.status || "Pending") === invoicePaymentStatusFilter;

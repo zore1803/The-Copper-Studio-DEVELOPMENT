@@ -456,7 +456,7 @@ function VariablesModal({ onClose }) {
 function TemplateList({ type, records, categories, onCreate, onEdit, onCopy, onDelete }) {
   const [query, setQuery] = useState("");
   const filtered = records.filter((record) =>
-    `${record.name || ""} ${record.category || ""} ${record.subject || ""}`.toLowerCase().includes(query.toLowerCase())
+    `${record.name || ""} ${record.category || ""} ${record.subject || ""} ${record.status || ""} ${record.body || ""}`.toLowerCase().includes(query.toLowerCase())
   );
 
   return (

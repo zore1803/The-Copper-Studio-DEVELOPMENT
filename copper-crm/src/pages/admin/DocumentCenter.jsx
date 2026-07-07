@@ -337,7 +337,7 @@ export default function DocumentCenter() {
   const filterDoc = (doc) => {
     if (categoryFilter !== "All" && doc.category !== categoryFilter) return false;
     if (!normalizedQuery) return true;
-    const haystack = `${doc.fileName || ""} ${doc.folderPath || ""} ${doc.tags?.join(" ") || ""}`.toLowerCase();
+    const haystack = `${doc.fileName || ""} ${doc.folderPath || ""} ${doc.tags?.join(" ") || ""} ${doc.category || ""} ${doc.fileType || ""} ${doc.visibility || ""} ${doc.projectName || ""}`.toLowerCase();
     return haystack.includes(normalizedQuery);
   };
 

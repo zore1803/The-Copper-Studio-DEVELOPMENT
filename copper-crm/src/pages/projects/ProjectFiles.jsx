@@ -287,7 +287,7 @@ export default function ProjectFiles() {
   const filteredDocuments = useMemo(() => {
     let list = activeFolder ? documents.filter((doc) => doc.category === activeFolder) : documents;
     const query = searchQuery.trim().toLowerCase();
-    if (query) list = list.filter((doc) => `${doc.name || ""} ${doc.category || ""} ${doc.uploadedBy || ""}`.toLowerCase().includes(query));
+    if (query) list = list.filter((doc) => `${doc.name || ""} ${doc.category || ""} ${doc.uploadedBy || ""} ${doc.type || getFileType(doc.name) || ""} ${formatDate(doc.date) || ""}`.toLowerCase().includes(query));
     if (typeFilter) list = list.filter((doc) => (doc.type || getFileType(doc.name)) === typeFilter);
     return list;
   }, [documents, activeFolder, searchQuery, typeFilter]);

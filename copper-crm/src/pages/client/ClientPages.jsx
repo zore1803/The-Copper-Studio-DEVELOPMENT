@@ -898,7 +898,7 @@ export function ClientDocumentsPage() {
 
   const filtered = docs.filter(d => {
     const matchesProject = belongsToProject(d, selectedId);
-    const matchesSearch = (d.name || "").toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = `${d.name || ""} ${d.status || ""} ${d.category || ""} ${d.projectName || ""}`.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "all" || d.status === filter;
     return matchesProject && matchesSearch && matchesFilter;
   });
