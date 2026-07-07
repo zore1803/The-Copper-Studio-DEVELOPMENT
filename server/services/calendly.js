@@ -1,6 +1,8 @@
 import Meeting from "../models/Meeting.js";
 import User from "../models/User.js";
 import Company from "../models/Company.js";
+import Contact from "../models/Contact.js";
+import { resolveNameFromEmail } from "./googlePeople.js";
 
 const API_BASE = "https://api.calendly.com";
 
@@ -71,6 +73,48 @@ async function matchClient(email) {
   return { clientId: user._id, companyId: company?._id || null };
 }
 
+function initialsFor(name, email) {
+  const source = (name || email || "").trim();
+  if (!source) return "";
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
+// Calendly invitees only carry a name for the person who did the booking —
+// anyone they added as a guest during checkout only has an email. Resolve a
+// name the same way Gmail's "To" field does: our own directory first (portal
+// users, then CRM contacts), then the authorized Google mailbox's Contacts /
+// mail history (services/googlePeople.js) for everyone else.
+async function resolveGuestName(email) {
+  const normalized = String(email || "").toLowerCase();
+  if (!normalized) return "";
+  const user = await User.findOne({ email: normalized }).select("name");
+  if (user?.name) return user.name;
+  const contact = await Contact.findOne({ email: normalized }).select("name");
+  if (contact?.name) return contact.name;
+  const googleName = await resolveNameFromEmail(normalized);
+  return googleName || "";
+}
+
+// Builds the full participants list for a Calendly invitee: the primary
+// invitee (who has a name) plus every additional guest they added (who only
+// have an email in Calendly's payload, so we resolve their name ourselves).
+export async function buildParticipants(invitee) {
+  if (!invitee) return [];
+  const entries = [
+    { name: invitee.name, email: invitee.email },
+    ...(invitee.guests || []).map((g) => ({ name: "", email: g.email }))
+  ];
+  const participants = [];
+  for (const entry of entries) {
+    if (!entry.email) continue;
+    const name = entry.name || (await resolveGuestName(entry.email)) || entry.email;
+    participants.push({ name, email: entry.email, initials: initialsFor(name, entry.email) });
+  }
+  return participants;
+}
+
 // Pulls recently scheduled/canceled Calendly events directly via the API and
 // upserts them into the Meeting collection, matched by calendlyEventUri. This
 // is the fallback path for when the Calendly webhook isn't registered or
@@ -101,6 +145,7 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
       // Invitee lookup failing shouldn't block creating the meeting record.
     }
     const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
+    const participants = await buildParticipants(invitee);
 
     await Meeting.create({
       title: event.name || "Calendly Meeting",
@@ -113,7 +158,7 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
         : 30,
       meetingLink: event.location?.join_url || event.location?.location || "",
       calendlyEventUri: event.uri,
-      participants: invitee ? [{ name: invitee.name, email: invitee.email }] : [],
+      participants,
     });
   }
 }
