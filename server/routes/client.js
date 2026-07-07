@@ -283,7 +283,9 @@ router.get("/orders", async (req, res, next) => {
         payment: {
           ...obj.payment,
           couponCode: inv.couponCode ?? obj.payment?.couponCode,
-          invoiceId: inv.invoiceNumber || obj.payment?.invoiceId
+          invoiceId: inv.invoiceNumber || obj.payment?.invoiceId,
+          razorpayPaymentId: inv.razorpayPaymentId || obj.payment?.razorpayPaymentId,
+          paidAt: inv.issueDate || inv.date || inv.paidAt || obj.payment?.paidAt
         }
       };
     });
