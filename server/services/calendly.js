@@ -150,7 +150,12 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
 
     if (existing) {
       let changed = false;
-      if (existing.status !== nextStatus && existing.status !== "completed") {
+      // "completed" and "cancelled" are terminal states an admin sets by hand
+      // (e.g. the Mark Completed / Cancel Meeting actions) — the Calendly
+      // resync must never overwrite those back to whatever the live Calendly
+      // event's status still says, or a manually-cancelled meeting flips back
+      // to "confirmed" the instant anyone reloads their meetings list.
+      if (existing.status !== nextStatus && existing.status !== "completed" && existing.status !== "cancelled") {
         existing.status = nextStatus;
         changed = true;
       }
