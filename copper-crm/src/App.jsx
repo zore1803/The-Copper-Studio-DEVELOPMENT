@@ -14,6 +14,7 @@ const Companies = lazy(() => import("./pages/crm/Companies"));
 const CompanyDetail = lazy(() => import("./pages/crm/CompanyDetail"));
 const Contacts = lazy(() => import("./pages/crm/Contacts"));
 const ContactDetail = lazy(() => import("./pages/crm/ContactDetail"));
+const Meetings = lazy(() => import("./pages/crm/Meetings"));
 const ProjectsList = lazy(() => import("./pages/projects/ProjectsList"));
 const ProjectDetail = lazy(() => import("./pages/projects/ProjectDetail"));
 const ProjectTimeline = lazy(() => import("./pages/projects/ProjectTimeline"));
@@ -70,6 +71,7 @@ export default function App() {
               <Route path="companies/:companyId/projects/:projectId/files" element={<ProjectFiles />} />
               <Route path="contacts" element={<Contacts />} />
               <Route path="contacts/:contactId" element={<ContactDetail />} />
+              <Route path="meetings" element={<Meetings />} />
               <Route path="projects" element={<ProjectsList />} />
               {/* Same project pages, reachable under /projects so the sidebar stays
                   on "Projects" when opened from the Projects list (company is

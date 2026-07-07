@@ -5,7 +5,7 @@ import {
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
   FolderKanban, FolderOpen, LayoutDashboard,
   LogOut, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, UserRound, Wallet, Package,
+  ShoppingCart, UserRound, Video, Wallet, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { primeDataFields } from "../lib/dataFields";
@@ -21,6 +21,7 @@ const NAV_SECTIONS = [
       { icon: BarChart2, to: "/admin/analytics", label: "Analytics" },
       { icon: Building2, to: "/admin/companies", label: "Companies" },
       { icon: UserRound, to: "/admin/contacts", label: "Contacts" },
+      { icon: Video, to: "/admin/meetings", label: "Meetings" },
     ],
   },
   {
@@ -60,6 +61,7 @@ const pageNames = {
   "/admin/payments": "Payments",
   "/admin/companies": "Companies",
   "/admin/contacts": "Contacts",
+  "/admin/meetings": "Meetings",
   "/admin/projects": "Projects",
   "/admin/kanban": "Kanban Board",
   "/admin/tasks": "Tasks",
@@ -101,6 +103,7 @@ const searchablePages = [
   { label: "Analytics", to: "/admin/analytics", keywords: "revenue orders graph payment analytics" },
   { label: "Companies", to: "/admin/companies", keywords: "accounts gstin company industry client business" },
   { label: "Contacts", to: "/admin/contacts", keywords: "people email phone designation client contact" },
+  { label: "Meetings", to: "/admin/meetings", keywords: "meetings calendar calendly schedule call video" },
   { label: "Projects", to: "/admin/projects", keywords: "project delivery timeline active orders" },
   { label: "Kanban Board", to: "/admin/kanban", keywords: "tasks board drag status todo progress done" },
   { label: "Timeline", to: "/admin/timeline", keywords: "project timeline gantt schedule milestones" },
