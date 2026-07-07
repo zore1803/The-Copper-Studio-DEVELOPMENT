@@ -33,6 +33,16 @@ const schema = new mongoose.Schema(
   { timestamps: true, strict: false }
 );
 
+// Enforced only when calendlyEventUri is actually set (a manually-created
+// meeting has "" and there can be many of those) — stops the sync from ever
+// creating a second Meeting doc for the same Calendly event, which is what
+// let concurrent /api/client/meetings loads race and duplicate a meeting
+// into several near-identical "activity" entries on the client dashboard.
+schema.index(
+  { calendlyEventUri: 1 },
+  { unique: true, partialFilterExpression: { calendlyEventUri: { $type: "string", $ne: "" } } }
+);
+
 export default defineModel({
   name: "Meeting",
   table: "meetings",

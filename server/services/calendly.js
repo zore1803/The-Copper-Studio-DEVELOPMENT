@@ -193,19 +193,27 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
     const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
     const participants = await buildParticipants(invitee, event.event_guests);
 
-    await Meeting.create({
-      title: event.name || "Calendly Meeting",
-      status: nextStatus,
-      clientId,
-      companyId,
-      scheduledAt: event.start_time ? new Date(event.start_time) : undefined,
-      duration: event.start_time && event.end_time
-        ? Math.round((new Date(event.end_time) - new Date(event.start_time)) / 60000)
-        : 30,
-      meetingLink: event.location?.join_url || event.location?.location || "",
-      calendlyEventUri: event.uri,
-      participants,
-    });
+    try {
+      await Meeting.create({
+        title: event.name || "Calendly Meeting",
+        status: nextStatus,
+        clientId,
+        companyId,
+        scheduledAt: event.start_time ? new Date(event.start_time) : undefined,
+        duration: event.start_time && event.end_time
+          ? Math.round((new Date(event.end_time) - new Date(event.start_time)) / 60000)
+          : 30,
+        meetingLink: event.location?.join_url || event.location?.location || "",
+        calendlyEventUri: event.uri,
+        participants,
+      });
+    } catch (error) {
+      // Another concurrent sync pass (e.g. two overlapping /api/client/meetings
+      // loads) already created this same event — the unique index on
+      // calendlyEventUri rejects the second insert, which is exactly the
+      // "already exists" case we want to just skip rather than error on.
+      if (error.code !== 11000) throw error;
+    }
   }
 }
 
