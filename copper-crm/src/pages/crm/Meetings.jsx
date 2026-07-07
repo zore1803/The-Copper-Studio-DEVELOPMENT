@@ -6,7 +6,7 @@ import { Badge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
-import { clientApi } from "../../lib/clientApi";
+import { adminApi } from "../../lib/clientApi";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
@@ -105,7 +105,7 @@ export default function Meetings() {
       // the PUT endpoint returns the Meeting doc with a raw clientId, not the
       // populated {name, email} object the GET route provides, and merging it
       // in would wipe out the client name already shown in this list/panel.
-      await clientApi.updateMeeting(meeting._id, { status }, token);
+      await adminApi.updateMeeting(meeting._id, { status }, token);
       setMeetings((prev) => prev.map((m) => (m._id === meeting._id ? { ...m, status } : m)));
       setSelected((prev) => (prev && prev._id === meeting._id ? { ...prev, status } : prev));
       showToast({ title: "Meeting updated", message: `${meeting.title || "Meeting"} is now ${status}.` });
