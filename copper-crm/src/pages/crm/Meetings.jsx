@@ -90,6 +90,8 @@ export default function Meetings() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [companyFilter, setCompanyFilter] = useState("All");
   const [view, setView] = useState("list");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
@@ -132,11 +134,24 @@ export default function Meetings() {
     return companyNames.get(String(meeting.companyId)) || "Not linked";
   }
 
+  const typeOptions = useMemo(() => [
+    "All",
+    ...Array.from(new Set(meetings.map((m) => m.type).filter(Boolean)))
+      .sort((a, b) => meetingTypeLabel(a).localeCompare(meetingTypeLabel(b)))
+      .map((value) => ({ value, label: meetingTypeLabel(value) }))
+  ], [meetings]);
+  const companyOptions = useMemo(
+    () => ["All", ...Array.from(new Set(meetings.map((m) => companyNameFor(m)).filter((name) => name && name !== "Not linked"))).sort((a, b) => a.localeCompare(b))],
+    [meetings, companyNames]
+  );
+
   const filtered = useMemo(() => meetings.filter((m) => {
     const matchesStatus = statusFilter === "All" || m.status === statusFilter;
+    const matchesType = typeFilter === "All" || m.type === typeFilter;
+    const matchesCompany = companyFilter === "All" || companyNameFor(m) === companyFilter;
     const haystack = `${m.title || ""} ${clientNameFor(m)} ${companyNameFor(m)}`.toLowerCase();
-    return matchesStatus && haystack.includes(query.toLowerCase());
-  }), [meetings, statusFilter, query, companyNames]);
+    return matchesStatus && matchesType && matchesCompany && haystack.includes(query.toLowerCase());
+  }), [meetings, statusFilter, typeFilter, companyFilter, query, companyNames]);
 
   const sorted = useMemo(
     () => [...filtered].sort((a, b) => new Date(b.scheduledAt || b.createdAt || 0) - new Date(a.scheduledAt || a.createdAt || 0)),
@@ -166,9 +181,11 @@ export default function Meetings() {
           </div>
           <FilterButton
             buttonClassName="h-8 w-8"
-            onReset={() => setStatusFilter("All")}
+            onReset={() => { setStatusFilter("All"); setTypeFilter("All"); setCompanyFilter("All"); }}
             fields={[
-              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: (v) => { setStatusFilter(v); setPage(1); }, options: ["All", "requested", "confirmed", "completed", "cancelled"] }
+              { key: "status", label: "Status", type: "select", value: statusFilter, onChange: (v) => { setStatusFilter(v); setPage(1); }, options: ["All", "requested", "confirmed", "completed", "cancelled"] },
+              { key: "type", label: "Type", type: "select", value: typeFilter, onChange: (v) => { setTypeFilter(v); setPage(1); }, options: typeOptions },
+              { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (v) => { setCompanyFilter(v); setPage(1); }, options: companyOptions }
             ]}
           />
           {/* List / Calendar view toggle */}
