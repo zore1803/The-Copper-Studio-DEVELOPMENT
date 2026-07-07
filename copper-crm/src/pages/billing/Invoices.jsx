@@ -356,8 +356,8 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
         />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
-          <p className="text-sm font-bold text-[#111827]">Razorpay Transaction</p>
-          <p className="text-[11px] text-[#9ca3af]">If this invoice is for a payment actually collected via Razorpay, link it here — the invoice's payment ID and paid-on date/time come from these instead of "now".</p>
+          <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>
+          <p className="text-[11px] text-[#9ca3af]">Optional — still recorded as a manual payment, but the transaction ID and paid-on date/time shown on the invoice come from these instead of "now".</p>
         </div>
         <div className="sm:col-span-2">
           <Field label="Transaction ID" value={form.transactionId} onChange={set("transactionId")} hint="Razorpay payment ID (e.g. pay_XXXXXXXXXXXX). Optional." />

@@ -661,11 +661,10 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       ? buildDefaultProjectName(resolvedCompanyName, await nextProjectNumberForCompany(company._id), new Date())
       : "";
 
-    // A manual invoice can still be for a payment actually collected via
-    // Razorpay (e.g. paid outside the normal checkout flow) — when a
-    // transaction ID is supplied, treat this as a Razorpay payment and use
-    // the given date/time as paidAt instead of "now", so the invoice PDF and
-    // finance records reflect when the money actually came in.
+    // Optional transaction reference for a manual invoice — stays a "manual"
+    // payment either way, but if given, the transaction ID and its date/time
+    // are recorded (razorpayPaymentId/paidAt) instead of defaulting to "now",
+    // so the invoice PDF and finance records show the real reference/date.
     const hasTransaction = Boolean(String(transactionId || "").trim());
     let paidAt = new Date();
     if (hasTransaction && transactionDate) {
@@ -700,7 +699,7 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       },
       payment: {
         status: "paid",
-        provider: hasTransaction ? "Razorpay" : "manual",
+        provider: "manual",
         invoiceId: `INV-${Date.now().toString().slice(-6)}`,
         razorpayPaymentId: hasTransaction ? String(transactionId).trim() : "",
         paidAt
