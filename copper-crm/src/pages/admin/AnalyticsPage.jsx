@@ -112,6 +112,19 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
   
   const fallbackDate = useMemo(() => new Date(), []);
 
+  // Not capped to a fixed window — cover whatever years actually have
+  // records (plus next year, so you can still plan ahead) instead of
+  // silently hiding older years once there's more history than the window.
+  const yearOptions = useMemo(() => {
+    const years = new Set([currentYear, currentYear + 1]);
+    for (const record of records) {
+      const stamp = record.paidAt || record.date || record.generatedAt || record.createdAt;
+      const d = stamp ? new Date(stamp) : null;
+      if (d && !Number.isNaN(d.getTime())) years.add(d.getFullYear());
+    }
+    return Array.from(years).sort((a, b) => a - b);
+  }, [records, currentYear]);
+
   const yearRecords = useMemo(() => {
     return records.filter(record => {
       const stamp = record.paidAt || record.date || record.generatedAt || record.createdAt;
@@ -167,7 +180,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
           onChange={(e) => setLocalYear(Number(e.target.value))}
           className="h-8 appearance-none rounded-full border border-[#E1E4EA] bg-[#F5F7FA] px-2 text-xs font-bold leading-8 text-[#525866] outline-none cursor-pointer hover:bg-[#f3f4f6]"
         >
-          {[currentYear - 3, currentYear - 2, currentYear - 1, currentYear, currentYear + 1].map((y) => (
+          {yearOptions.map((y) => (
             <option key={y} value={y}>{y}</option>
           ))}
         </select>
@@ -482,6 +495,19 @@ export function AnalyticsPage() {
   const { records: projects } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const { records: contacts } = useCrmRecords("contacts");
+
+  // Year picker shouldn't be capped to a fixed window — derive it from
+  // whatever years actually have data (oldest order/payment/invoice through
+  // next year, so you can still plan ahead), instead of a hardcoded range
+  // that silently hides older years once the business has more history.
+  const dataYears = useMemo(() => {
+    const years = new Set([currentD.getFullYear(), currentD.getFullYear() + 1]);
+    for (const record of [...orders, ...payments, ...invoices]) {
+      const d = new Date(record.createdAt || record.paidAt || record.date || record.issueDate || record.paymentDate);
+      if (!Number.isNaN(d.getTime())) years.add(d.getFullYear());
+    }
+    return Array.from(years).sort((a, b) => a - b);
+  }, [orders, payments, invoices, currentD]);
 
   const [selectedKpiDrillDown, setSelectedKpiDrillDown] = useState(null);
 
@@ -956,7 +982,7 @@ export function AnalyticsPage() {
 
             {filterType !== "All Time" && filterType !== "Custom Range" && (
               <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} className="h-8 appearance-none bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none border-l border-[#E1E4EA] hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
-                {[currentD.getFullYear() - 3, currentD.getFullYear() - 2, currentD.getFullYear() - 1, currentD.getFullYear(), currentD.getFullYear() + 1].map((y) => <option key={y} value={y}>{y}</option>)}
+                {dataYears.map((y) => <option key={y} value={y}>{y}</option>)}
               </select>
             )}
 
