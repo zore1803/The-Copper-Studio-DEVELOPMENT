@@ -229,10 +229,21 @@ function InvoiceRowActions({ onView, onDownload, onEdit }) {
 // due date, coupon, and the transaction reference. Doesn't touch the
 // company/project it's linked to (that's fixed once created); use "Generate
 // Invoice" for a brand-new one instead.
-function EditInvoiceModal({ invoice, onClose, onSave }) {
+function EditInvoiceModal({ invoice, packages = [], onClose, onSave }) {
   const issueDate = invoice.issueDate || invoice.date;
   const issueD = issueDate ? new Date(issueDate) : null;
   const validIssueD = issueD && !Number.isNaN(issueD.getTime()) ? issueD : null;
+
+  // If this invoice's package name matches a live Package record, its price
+  // is fixed by the admin in the database — lock the total to that (plus GST)
+  // instead of letting it be typed here, same as the Generate Invoice form.
+  const matchedPackage = useMemo(
+    () => packages.find((p) => p.name === invoice.package),
+    [packages, invoice.package]
+  );
+  const isRealPackage = Boolean(matchedPackage);
+  const [basePrice] = useState(() => (matchedPackage ? Number(matchedPackage.price) : 0));
+  const [discountRupees, setDiscountRupees] = useState(0);
 
   const [form, setForm] = useState({
     total: String(invoice.total ?? invoice.amount ?? ""),
@@ -245,6 +256,22 @@ function EditInvoiceModal({ invoice, onClose, onSave }) {
   });
   const [saving, setSaving] = useState(false);
   const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  function handleCouponResult(data) {
+    const base = isRealPackage ? basePrice : Math.round((Number(form.total) || 0) / 1.18);
+    if (!data) {
+      setDiscountRupees(0);
+      if (isRealPackage) setForm((prev) => ({ ...prev, total: String(Math.round(basePrice * 1.18)) }));
+      return;
+    }
+    const numericAmount = Number(String(data.amount || "").replace(/[^\d.]/g, "")) || 0;
+    const discount = data.amountType === "fixed"
+      ? Math.min(base, numericAmount)
+      : Math.min(base, Math.round((base * numericAmount) / 100));
+    setDiscountRupees(discount);
+    const discountedBase = Math.max(0, base - discount);
+    setForm((prev) => ({ ...prev, total: String(Math.round(discountedBase * 1.18)) }));
+  }
 
   async function handleSave() {
     if (!(Number(form.total) > 0)) return alert("Enter a valid invoice total.");
@@ -284,10 +311,19 @@ function EditInvoiceModal({ invoice, onClose, onSave }) {
       }
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Amount (INR, incl. GST)" type="number" value={form.total} onChange={set("total")} />
+        <Field
+          label="Amount (INR, incl. GST)"
+          type="number"
+          value={form.total}
+          onChange={set("total")}
+          disabled={isRealPackage}
+          hint={isRealPackage
+            ? `Fixed package price: ₹${Math.round(basePrice * 1.18).toLocaleString("en-IN")}${discountRupees > 0 ? ` − ₹${Math.round(discountRupees * 1.18).toLocaleString("en-IN")} coupon discount` : ""}. Not editable — set by the package's price in the database.`
+            : ""}
+        />
         <Field label="GST / Tax (INR)" type="number" value={form.tax} onChange={set("tax")} />
         <Field label="Due Date" type="date" value={form.dueDate} onChange={set("dueDate")} />
-        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} />
+        <CouponCheckField value={form.couponCode} onChange={set("couponCode")} onResult={handleCouponResult} />
 
         <div className="sm:col-span-2 mt-2 border-t border-[#f3f4f6] pt-4">
           <p className="text-sm font-bold text-[#111827]">Transaction Reference</p>
@@ -390,22 +426,23 @@ function InvoiceModal({ companies, projects, contacts = [], packages = [], onClo
     }
   }
 
-  // Applies (or clears) a validated coupon's discount against the selected
-  // package's fixed price — only for a real package; a custom package has no
-  // admin-set price to discount against, so its amount is left as typed.
+  // Applies (or clears) a validated coupon's discount. For a real package the
+  // base is its fixed DB price; for a custom package there's no fixed price,
+  // so the base is whatever's currently typed into Amount at the moment the
+  // coupon is checked.
   function handleCouponResult(data) {
-    if (!isRealPackage) return;
+    const base = isRealPackage ? basePrice : (Number(form.amount) || 0);
     if (!data) {
       setDiscountRupees(0);
-      setForm((prev) => ({ ...prev, amount: String(basePrice) }));
+      if (isRealPackage) setForm((prev) => ({ ...prev, amount: String(basePrice) }));
       return;
     }
     const numericAmount = Number(String(data.amount || "").replace(/[^\d.]/g, "")) || 0;
     const discount = data.amountType === "fixed"
-      ? Math.min(basePrice, numericAmount)
-      : Math.min(basePrice, Math.round((basePrice * numericAmount) / 100));
+      ? Math.min(base, numericAmount)
+      : Math.min(base, Math.round((base * numericAmount) / 100));
     setDiscountRupees(discount);
-    setForm((prev) => ({ ...prev, amount: String(Math.max(0, basePrice - discount)) }));
+    setForm((prev) => ({ ...prev, amount: String(Math.max(0, base - discount)) }));
   }
 
   // Searchable list of existing clients (contacts) for the recommendation dropdown.
@@ -1134,6 +1171,7 @@ export default function Invoices() {
       {editingInvoice && (
         <EditInvoiceModal
           invoice={editingInvoice}
+          packages={packages}
           onClose={() => setEditingInvoice(null)}
           onSave={(changes) => handleEditInvoice(editingInvoice, changes)}
         />

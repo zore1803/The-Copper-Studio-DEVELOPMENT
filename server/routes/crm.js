@@ -360,6 +360,18 @@ router.put("/:type/:id", validateType, async (req, res, next) => {
     if (type === "contacts" && record.userId && Object.prototype.hasOwnProperty.call(payload, "name") && record.name) {
       await User.findByIdAndUpdate(record.userId, { name: record.name }).catch(() => {});
     }
+    // A coupon code newly attached to an invoice here (e.g. via Edit Invoice)
+    // needs the same "used" bookkeeping checkout/manual-invoice creation
+    // already does, or it stays Active/Not used and looks reusable forever.
+    if (type === "invoices" && Object.prototype.hasOwnProperty.call(payload, "couponCode") && payload.couponCode) {
+      const code = String(payload.couponCode).trim().toUpperCase();
+      const coupon = await Coupon.findOne({ code }).catch(() => null);
+      if (coupon && ["Active", "Not used"].includes(coupon.status)) {
+        coupon.status = "Redeemed";
+        coupon.redeemedAt = new Date();
+        await coupon.save().catch(() => {});
+      }
+    }
     res.json(asPublicRecord(record));
   } catch (error) {
     next(error);

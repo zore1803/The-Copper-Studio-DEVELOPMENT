@@ -708,6 +708,19 @@ app.post("/api/invoices/manual", async (req, res, next) => {
       }
     });
 
+    // Mark the coupon as used the same way the checkout flow does — otherwise
+    // its status in the Coupons page never advances past Active/Not used, and
+    // the same code stays reusable (or looks "stuck" to whoever applied it).
+    const normalizedCouponCode = String(couponCode || "").trim().toUpperCase();
+    if (normalizedCouponCode) {
+      const coupon = await Coupon.findOne({ code: normalizedCouponCode }).catch(() => null);
+      if (coupon && ["Active", "Not used"].includes(coupon.status)) {
+        coupon.status = "Redeemed";
+        coupon.redeemedAt = new Date();
+        await coupon.save();
+      }
+    }
+
     if (!company) company = await ensureCompanyForOrder(order);
     await ensureContactForOrder(order, company);
 
