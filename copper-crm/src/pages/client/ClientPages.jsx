@@ -1211,13 +1211,20 @@ export function ClientBillingPage() {
                       <div className="pt-4 border-t" style={{ borderColor: CS.outlineVariant }}>
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
+                            // Standalone invoices (no online checkout behind them, e.g.
+                            // admin-created projects) have no Order record — the
+                            // by-order endpoint would 404 on their synthesized _id, so
+                            // hit the direct invoice-id endpoint instead.
+                            const path = selectedOrder.isStandaloneInvoice
+                              ? `/api/invoices/${selectedOrder._id}/pdf`
+                              : `/api/invoices/by-order/${selectedOrder._id}/pdf`;
                             window.open(
-                              `${import.meta.env.VITE_API_BASE_URL || ""}/api/invoices/by-order/${selectedOrder._id}/pdf`,
+                              `${import.meta.env.VITE_API_BASE_URL || ""}${path}`,
                               "_blank",
                               "noopener"
-                            )
-                          }
+                            );
+                          }}
                           className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                           style={{ background: CS.primary, fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                           <Download size={18} />

@@ -277,6 +277,11 @@ router.get("/orders", async (req, res, next) => {
         const proj = inv.projectId ? projectById.get(String(inv.projectId)) : null;
         return {
           _id: inv._id,
+          // No backing Order record exists for this invoice, so the PDF/detail
+          // endpoints must be hit by invoice id (/api/invoices/:invoiceId/pdf),
+          // not by-order (/api/invoices/by-order/:orderId/pdf) — the frontend
+          // uses this flag to pick the right one.
+          isStandaloneInvoice: true,
           projectName: proj?.name || inv.project || "",
           package: { name: inv.package || inv.project || "Invoice", total: inv.total ?? inv.amount ?? 0 },
           customer: { customerEmail: user.email, projectName: proj?.name || inv.project || "" },
