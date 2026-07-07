@@ -129,6 +129,9 @@ function getBreadcrumbs(pathname, companies = [], projects = [], contacts = []) 
     const seg = rest[i];
     path += "/" + seg;
     const fullPath = "/admin" + path;
+    // "/admin/analytics" renders the same page as the bare "/admin" root crumb
+    // above — pushing it too would show "Analytics > Analytics".
+    if (fullPath === "/admin/analytics") continue;
     // ".../projects/:id" routes require the id — the bare ".../projects" segment isn't navigable on its own, so skip its link.
     if (seg === "projects" && rest[i + 1] && !pageNames[fullPath]) continue;
     let name = pageNames[fullPath];
