@@ -26,9 +26,9 @@ function meetingTypeLabel(type) {
 
 const STATUS_BADGE = {
   requested: { color: "orange", label: "Requested" },
-  confirmed: { color: "green", label: "Confirmed" },
-  completed: { color: "teal", label: "Completed" },
-  cancelled: { color: "gray", label: "Cancelled" },
+  confirmed: { color: "orange", label: "Confirmed" },
+  completed: { color: "green", label: "Completed" },
+  cancelled: { color: "red", label: "Cancelled" },
 };
 
 function statusBadge(status) {
