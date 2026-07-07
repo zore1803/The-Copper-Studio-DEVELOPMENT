@@ -435,9 +435,9 @@ function meetingCategory(m) {
 
 const MEETING_STATUS_BADGE = {
   requested: { type: "warning", label: "Requested" },
-  confirmed: { type: "success", label: "Confirmed" },
+  confirmed: { type: "warning", label: "Confirmed" },
   completed: { type: "success", label: "Completed" },
-  cancelled: { type: "neutral", label: "Cancelled" },
+  cancelled: { type: "error", label: "Cancelled" },
 };
 
 const MEETINGS_PAGE_SIZE = 10;

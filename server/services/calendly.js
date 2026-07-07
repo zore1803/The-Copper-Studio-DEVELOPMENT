@@ -140,14 +140,6 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
     const nextStatus = event.status === "canceled" ? "cancelled" : "confirmed";
     const existing = await Meeting.findOne({ calendlyEventUri: event.uri });
 
-    let invitee = null;
-    try {
-      const invitees = await getEventInvitees(event.uri);
-      invitee = invitees[0] || null;
-    } catch {
-      // Invitee lookup failing shouldn't block creating/updating the meeting record.
-    }
-
     if (existing) {
       let changed = false;
       // "completed" and "cancelled" are terminal states an admin sets by hand
@@ -159,18 +151,43 @@ export async function syncScheduledEventsToMeetings({ sinceDays = 90 } = {}) {
         existing.status = nextStatus;
         changed = true;
       }
-      // Guests can be added to a Calendly booking after it was first synced
-      // (e.g. the invitee edits the event later), so re-check participants
-      // every time rather than only at creation.
-      const participants = await buildParticipants(invitee, event.event_guests);
-      const existingEmails = (existing.participants || []).map((p) => p.email).sort().join(",");
-      const nextEmails = participants.map((p) => p.email).sort().join(",");
-      if (existingEmails !== nextEmails) {
-        existing.participants = participants;
+
+      // Guests can be added to a Calendly booking after it was first synced,
+      // so re-check for new ones — but event.event_guests already comes free
+      // with the events-list call above, so this comparison costs nothing.
+      // Only pay for the expensive part (a Calendly invitee API call, plus a
+      // Google lookup per unresolved name) when a guest email genuinely
+      // wasn't seen before; otherwise every sync pass — which runs on every
+      // meetings-list page load — was re-fetching invitees and re-resolving
+      // names for every meeting that had already settled, making the list
+      // take several seconds to load for no reason.
+      const existingEmails = new Set((existing.participants || []).map((p) => String(p.email || "").toLowerCase()));
+      const hasNewGuest = (event.event_guests || []).some((g) => !existingEmails.has(String(g.email || "").toLowerCase()));
+
+      if (hasNewGuest) {
+        let invitee = existing.participants?.[0] ? { name: existing.participants[0].name, email: existing.participants[0].email } : null;
+        if (!invitee) {
+          try {
+            const invitees = await getEventInvitees(event.uri);
+            invitee = invitees[0] || null;
+          } catch {
+            // Invitee lookup failing shouldn't block updating the meeting record.
+          }
+        }
+        existing.participants = await buildParticipants(invitee, event.event_guests);
         changed = true;
       }
+
       if (changed) await existing.save();
       continue;
+    }
+
+    let invitee = null;
+    try {
+      const invitees = await getEventInvitees(event.uri);
+      invitee = invitees[0] || null;
+    } catch {
+      // Invitee lookup failing shouldn't block creating the meeting record.
     }
 
     const { clientId, companyId } = invitee ? await matchClient(invitee.email) : { clientId: null, companyId: null };
