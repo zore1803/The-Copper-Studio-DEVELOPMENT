@@ -16,6 +16,7 @@ import EmailTemplate from "../models/EmailTemplate.js";
 import User from "../models/User.js";
 import { syncPaidOrderFinance, syncStandaloneProjectInvoices } from "../services/finance.js";
 import { buildProjectCode, buildDefaultProjectName } from "../services/projectNaming.js";
+import { nextInvoiceNumber } from "../services/invoiceNumber.js";
 import { sendContactCreatedEmail } from "../services/email.js";
 import { syncScheduledEventsToMeetings } from "../services/calendly.js";
 import { rateLimit } from "../middleware/rateLimit.js";
@@ -219,6 +220,71 @@ async function adoptOrphanRecordsForContact(contact) {
   await adoptOrphansIntoCompany(company, [user._id]);
 }
 
+// A contact isn't just a directory entry — the client (once they get a portal
+// login) needs a project to see and an invoice to be billed against. Rather
+// than leave that to a separate admin step that's easy to forget, provision a
+// blank starter Project + zero-amount Draft Invoice right when the contact is
+// created, as long as they don't already have one (e.g. adoptOrphanRecordsForContact
+// above already gave them a real project from a paid checkout). Both are
+// deliberately blank/zero — total, package, and status ("Draft") are left for
+// the admin to fill in with the real numbers; this only guarantees the record
+// (and therefore client-portal visibility) exists from day one.
+async function autoProvisionProjectAndInvoice(contact) {
+  if (!contact?.companyId && !contact?.company) return;
+
+  let company = null;
+  if (contact.companyId) {
+    company = await Company.findById(contact.companyId).catch(() => null);
+    if (!company) company = await Company.findOne({ id: contact.companyId }).catch(() => null);
+  }
+  if (!company && contact.company) {
+    company = await Company.findOne({ name: contact.company }).catch(() => null);
+  }
+  if (!company) return;
+
+  const alreadyHasProject = await Project.exists({
+    $or: [
+      ...(contact.userId ? [{ clientId: contact.userId }] : []),
+      { _id: { $in: contact.projectIds || [] } }
+    ]
+  }).catch(() => null);
+  if (alreadyHasProject) return;
+
+  const companyName = company.name || contact.company || "";
+  const projectNumber = (await Project.countDocuments({ companyId: company._id }).catch(() => 0)) + 1;
+  const now = new Date();
+
+  const project = await Project.create({
+    name: buildDefaultProjectName(companyName, projectNumber, now),
+    projectId: buildProjectCode(companyName, projectNumber, now),
+    companyId: company._id,
+    companyName,
+    client: companyName,
+    clientId: contact.userId || null,
+    status: "not_started"
+  }).catch(() => null);
+  if (!project) return;
+
+  await Contact.findByIdAndUpdate(contact._id, { $addToSet: { projectIds: project._id } }).catch(() => {});
+
+  await Invoice.create({
+    invoiceNumber: await nextInvoiceNumber(now),
+    projectId: project._id,
+    companyId: company._id,
+    clientId: contact.userId || null,
+    company: companyName,
+    client: contact.name || "",
+    customerEmail: contact.email || "",
+    project: project.name,
+    package: "",
+    total: 0,
+    amount: 0,
+    status: "Draft",
+    paymentStatus: "Draft",
+    clientVisible: true
+  }).catch(() => {});
+}
+
 router.get("/:type", validateType, async (req, res, next) => {
   try {
     const Model = models[req.params.type];
@@ -264,6 +330,8 @@ router.post("/:type", createLimiter, validateType, async (req, res, next) => {
     }
     if (type === "contacts" && (record.companyId || record.company)) {
       await adoptOrphanRecordsForContact(record);
+      const refreshed = await Contact.findById(record._id).catch(() => record);
+      await autoProvisionProjectAndInvoice(refreshed);
     }
     res.status(201).json(asPublicRecord(record));
   } catch (error) {
