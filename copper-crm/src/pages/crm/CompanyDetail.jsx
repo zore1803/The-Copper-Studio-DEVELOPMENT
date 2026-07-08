@@ -592,6 +592,7 @@ export default function CompanyDetail() {
   const [editingContact, setEditingContact] = useState(null);
   const [selectedContact, setSelectedContact] = useState(null);
   const [contactQuery, setContactQuery] = useState("");
+  const [mobileContactSearchOpen, setMobileContactSearchOpen] = useState(false);
   const [contactStatusFilter, setContactStatusFilter] = useState("All");
   const [contactDesignationFilter, setContactDesignationFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -1015,6 +1016,29 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>
             </div>
           )}
+          {activeTab === "Contacts" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button
+                onClick={() => setMobileContactSearchOpen((v) => !v)}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileContactSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Search size={15} />
+              </button>
+              <Button size="sm" onClick={() => setEditingContact({})}><Plus size={14} /> Contact</Button>
+            </div>
+          )}
+        </div>
+      )}
+      {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Search size={14} className="shrink-0 text-[#525866]" />
+          <input
+            autoFocus
+            value={contactQuery}
+            onChange={(e) => setContactQuery(e.target.value)}
+            placeholder="Search contacts…"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+          />
         </div>
       )}
       {!focusMode && (
@@ -1176,7 +1200,7 @@ export default function CompanyDetail() {
           <Section
             title="Contacts"
             action={
-              <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
                 <ModuleSearch value={contactQuery} onChange={setContactQuery} placeholder="Search contacts…" />
                 <FilterButton
                   panelWidth={420}
