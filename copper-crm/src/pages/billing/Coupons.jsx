@@ -725,6 +725,40 @@ export default function Coupons() {
             >
               <Search size={15} />
             </button>
+            {/* Filter (mobile, compact — desktop copy lives in the toolbar below) */}
+            <div className="sm:hidden">
+              <FilterButton
+                panelWidth={420}
+                buttonClassName="h-8 w-8"
+                onReset={() => { setStatusFilter("All"); setCategoryFilter("All"); setPackageFilter("All"); }}
+                fields={[
+                  {
+                    key: "status",
+                    label: "Status",
+                    type: "select",
+                    value: statusFilter,
+                    onChange: setStatusFilter,
+                    options: ["All", "Draft", "Active", "Redeemed", "Expired", "Cancelled", "Revoked"],
+                  },
+                  {
+                    key: "category",
+                    label: "Category",
+                    type: "select",
+                    value: categoryFilter,
+                    onChange: setCategoryFilter,
+                    options: ["All", ...PACKAGE_CATEGORIES],
+                  },
+                  {
+                    key: "package",
+                    label: "Package",
+                    type: "select",
+                    value: packageFilter,
+                    onChange: setPackageFilter,
+                    options: packageOptions,
+                  },
+                ]}
+              />
+            </div>
             {/* Compact "+ New" button (mobile, compact — desktop copy lives below) */}
             <button
               onClick={() => setCreating(true)}
@@ -805,8 +839,8 @@ export default function Coupons() {
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-[#ffffff]">
           {/* Toolbar */}
           <div className="flex flex-col gap-3 border-b border-[#f3f4f6] px-4 py-3 lg:flex-row lg:items-center lg:justify-end">
-            <div className="flex items-center gap-2">
-              {/* Filter */}
+            <div className="hidden items-center gap-2 sm:flex">
+              {/* Filter (desktop) */}
               <FilterButton
                 panelWidth={420}
                 buttonClassName="h-8 w-8"
@@ -839,8 +873,8 @@ export default function Coupons() {
                 ]}
               />
 
-              {/* View switcher */}
-              <div className="flex items-center rounded-lg border border-[#e5e7eb] overflow-hidden">
+              {/* View switcher (desktop only) */}
+              <div className="hidden items-center rounded-lg border border-[#e5e7eb] overflow-hidden sm:flex">
                 <button onClick={() => setViewMode("card")} className={`flex h-8 w-8 items-center justify-center transition-colors ${viewMode === "card" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><Grid2x2 size={15} /></button>
                 <button onClick={() => setViewMode("list")} className={`flex h-8 w-8 items-center justify-center transition-colors ${viewMode === "list" ? "bg-[#8D3118] text-white" : "bg-white text-[#6b7280] hover:bg-[#f3f4f6]"}`}><List size={15} /></button>
               </div>
