@@ -1413,7 +1413,7 @@ export default function CompanyDetail() {
 
 function Section({ title, action, flush = false, hideHeaderOnMobile = false, hideTitleOnMobile = false, children }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+    <section className="overflow-hidden bg-white sm:rounded-xl sm:border sm:border-[#e5e7eb]">
       <div className={`${hideHeaderOnMobile ? "hidden sm:flex" : "flex"} flex-wrap items-center justify-between gap-2 bg-white border-b border-[#f3e5e0] px-5 py-4 sm:bg-[#fff1ec]`}>
         <h3 className={`text-sm font-bold text-[#111827] ${hideTitleOnMobile ? "hidden sm:block" : ""}`}>{title}</h3>
         {action}
