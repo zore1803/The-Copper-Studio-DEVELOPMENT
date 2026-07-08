@@ -95,6 +95,15 @@ export default function TimelinePage() {
             >
               <Search size={15} />
             </button>
+            <select
+              value={selectedPackage}
+              onChange={(e) => setSelectedPackage(e.target.value)}
+              className="h-8 rounded-lg border border-[#E1E4EA] bg-white px-3 text-sm font-medium text-[#111827] outline-none focus:ring-2 focus:ring-[#8D3118] sm:hidden"
+            >
+              {packages.map(pkg => (
+                <option key={pkg} value={pkg}>{pkg === "All" ? "All Packages" : pkg}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -112,7 +121,7 @@ export default function TimelinePage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
+        <div className="hidden flex-wrap items-center gap-2 min-w-0 sm:flex">
           <div className="hidden h-8 items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:flex transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
