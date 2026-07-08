@@ -1015,8 +1015,8 @@ export function AnalyticsPage() {
         </div>
       }
     >
-      <div className="grid gap-5 2xl:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-5">
+      <div className="grid gap-5 2xl:grid-cols-[1fr_320px] min-w-0">
+        <div className="flex flex-col gap-5 min-w-0">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {topMetrics.map((item) => (
               <div
@@ -1038,8 +1038,8 @@ export function AnalyticsPage() {
             ))}
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-            <Card>
+          <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr] min-w-0">
+            <Card className="min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#EAECF0] px-5 py-4 gap-3">
                 <div>
                   <h3 className="text-sm font-bold text-[#1F2937]">{metricFilter} over time</h3>
@@ -1099,7 +1099,7 @@ export function AnalyticsPage() {
               </div>
             </Card>
 
-            <Card>
+            <Card className="min-w-0">
               <div className="border-b border-[#EAECF0] px-5 py-4">
                 <h3 className="text-sm font-bold text-[#1F2937]">Project status</h3>
               </div>
