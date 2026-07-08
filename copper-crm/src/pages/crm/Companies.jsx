@@ -479,10 +479,13 @@ export default function Companies() {
 
   useEffect(() => {
     if (location.state?.openCreate) {
+      setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" });
       navigate(location.pathname, { replace: true, state: {} });
     }
+    // Re-run whenever a fresh navigation lands here (e.g. the navbar quick-add
+    // firing while this page is already mounted) — location.key changes per nav.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.key]);
 
   const industries = useMemo(() => uniqueSorted(companies, "industry"), [companies]);
   const cities = useMemo(() => uniqueSorted(companies, "city"), [companies]);

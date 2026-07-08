@@ -377,10 +377,13 @@ export default function Contacts() {
 
   useEffect(() => {
     if (location.state?.openCreate) {
+      setEditing({ salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" });
       navigate(location.pathname, { replace: true, state: {} });
     }
+    // Re-run whenever a fresh navigation lands here (e.g. the navbar quick-add
+    // firing while this page is already mounted) — location.key changes per nav.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location.key]);
 
   const [view, setView] = useState("table");
   const [statusFilter, setStatusFilter] = useState("All");
