@@ -10,6 +10,7 @@ import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
 import { generateDefaultProjectName, generateProjectCode } from "../../lib/projectDefaults";
 
@@ -1081,7 +1082,30 @@ export default function Invoices() {
         <Metric label="Overdue" value={totals.overdue} icon={Send} />
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      {/* Mobile: one card per invoice */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {sorted.length ? paginated.map((invoice) => (
+          <MobileListCard
+            key={invoice._id || invoice.id || invoice.invoiceNumber}
+            title={invoice.invoiceNumber || invoice.id || invoice._id}
+            subtitle={invoice.project || "Not linked"}
+            badge={<InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} />}
+            fields={[
+              { label: "Company", value: invoice.company || invoice.client || "Not linked" },
+              { label: "Amount", value: money(parseMoney(invoice.total || invoice.amount)) },
+            ]}
+            actions={[
+              { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => viewInvoice(invoice) },
+              { label: "Download", icon: <Download size={13} />, tone: CARD_TONES.neutral, onClick: () => downloadInvoice(invoice) },
+              { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditingInvoice(invoice) },
+            ]}
+          />
+        )) : (
+          <p className="py-10 text-center text-sm text-[#6b7280]">No invoices found.</p>
+        )}
+      </div>
+
+      <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (
           <>
             <div className="overflow-x-auto">
