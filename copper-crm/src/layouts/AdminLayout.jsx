@@ -5,7 +5,7 @@ import {
   ChevronsLeft, ChevronsRight, ChevronRight, CreditCard, FileSignature,
   FolderKanban, FolderOpen, LayoutDashboard,
   LogOut, Menu, Plus, ReceiptText, Search, Settings,
-  ShoppingCart, UserRound, Video, Wallet, Package, X,
+  ShoppingCart, UserRound, Video, Wallet, Package,
 } from "lucide-react";
 import { useAuth } from "../auth/useAuth";
 import { primeDataFields } from "../lib/dataFields";
@@ -400,11 +400,6 @@ export default function AdminLayout() {
             alt="Copper Studio"
             className={`object-contain ${collapsed && !mobileOpen ? "h-8 w-auto" : "h-9 w-auto max-w-full"}`}
           />
-          {mobileOpen && (
-            <button className="ml-auto lg:hidden text-[#9ca3af] hover:text-[#111827]" onClick={() => setMobileOpen(false)}>
-              <X size={16} />
-            </button>
-          )}
         </div>
 
         <nav className={`flex-1 overflow-y-auto py-3 ${collapsed && !mobileOpen ? "flex flex-col items-center gap-2.5" : "space-y-0.5 px-3"}`}>
