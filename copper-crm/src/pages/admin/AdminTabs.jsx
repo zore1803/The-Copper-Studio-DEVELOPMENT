@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart3, CalendarDays, ChevronLeft, Clock3, Copy, FileDown, FileText,
-  Minus, PackageCheck, PieChart, Plus, ReceiptText, Send,
+  Minus, PackageCheck, PieChart, Plus, ReceiptText,
   Tag, TrendingUp, Users, WalletCards, Table2
 } from "lucide-react";
 import {
@@ -241,16 +241,6 @@ export function ProposalGeneratorPage() {
     showToast({ title, message: "Copied to clipboard." });
   }
 
-  function sendProposal() {
-    const nextErrors = validateProposal(proposal);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length) {
-      showToast({ title: "Check the form", message: "Please fix the highlighted fields." });
-      return;
-    }
-    copyText(proposalText, "Proposal copied");
-  }
-
   function adjustZoom(step) {
     setZoom((prev) => Math.min(150, Math.max(50, prev + step)));
   }
@@ -342,7 +332,6 @@ export function ProposalGeneratorPage() {
     <PageShell
       title="Proposal Generator"
       subtitle="Create a ready-to-send, branded proposal draft."
-      action={<Button onClick={sendProposal}><Send size={14} /> Send Proposal</Button>}
     >
       <div className="grid gap-5 xl:grid-cols-2 min-w-0">
         <Card className="min-w-0">
