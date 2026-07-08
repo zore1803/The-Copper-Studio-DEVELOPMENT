@@ -403,12 +403,18 @@ export default function Contacts() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
 
-  function openContact(contact) {
+  function openContact(contact, initialTab) {
     // Carries the current location so App.jsx can render ContactDetail as an
     // overlay on top of this list instead of a full page navigation —
     // matches the same floating-window treatment used for Company View.
-    navigate(`/admin/contacts/${contact._id || contact.id}`, { state: { backgroundLocation: location } });
+    // initialTab lets the mobile "..." menu jump straight to a tab, opened
+    // as a focused single-section window instead of the full contact view.
+    navigate(`/admin/contacts/${contact._id || contact.id}`, {
+      state: { backgroundLocation: location, initialTab, focusMode: Boolean(initialTab) },
+    });
   }
+
+  const CONTACT_DETAIL_TABS = ["Projects", "Meetings", "Documents", "Notes", "Activity"];
 
   const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
 
@@ -691,6 +697,7 @@ export default function Contacts() {
                           { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(contact) },
                           { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteContact(contact) },
                         ]}
+                        menuItems={CONTACT_DETAIL_TABS.map((tab) => ({ label: tab, onClick: () => openContact(contact, tab) }))}
                       />
                     );
                   })

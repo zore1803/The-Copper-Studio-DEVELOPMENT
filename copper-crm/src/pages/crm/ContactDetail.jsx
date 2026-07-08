@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock3, FileText, FolderKanban,
@@ -264,6 +264,7 @@ function formatDate(value) {
 export default function ContactDetail() {
   const { contactId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { records: contacts, loading, save, remove } = useCrmRecords("contacts");
   const { records: companies } = useCrmRecords("companies");
   const { records: projects } = useCrmRecords("projects");
@@ -273,7 +274,16 @@ export default function ContactDetail() {
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
-  const [activeTab, setActiveTab] = useState("Overview");
+  const [activeTab, setActiveTab] = useState(() => location.state?.initialTab || "Overview");
+  // Re-apply if the mobile "..." menu re-opens this same contact on a
+  // different tab while the overlay component instance is reused.
+  useEffect(() => {
+    if (location.state?.initialTab) setActiveTab(location.state.initialTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
+  // Mobile "..." quick-jump opens a focused single-section window (just the
+  // chosen tab's content) instead of the full contact header/KPIs/tab bar.
+  const focusMode = Boolean(location.state?.focusMode);
   const [editing, setEditing] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [noteDateFilter, setNoteDateFilter] = useState("");
@@ -421,6 +431,18 @@ export default function ContactDetail() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
+      {focusMode && (
+        <div className="flex items-center gap-2 border-b border-[#e5e7eb] bg-white px-4 py-3">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb]">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[#111827]">{activeTab}</p>
+            <p className="truncate text-xs text-[#6b7280]">{contactFullName(contact)}</p>
+          </div>
+        </div>
+      )}
+      {!focusMode && (
       <div className="border-b border-[#e5e7eb] bg-white">
         <div className="px-6 py-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -498,7 +520,7 @@ export default function ContactDetail() {
           <KpiChip label="Notes" value={linkedNotes.length} icon={StickyNote} color="#0d9488" />
         </div>
 
-        <div className="flex items-center gap-1 overflow-x-auto px-6">
+        <div className="hidden items-center gap-1 overflow-x-auto px-6 sm:flex">
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -519,8 +541,9 @@ export default function ContactDetail() {
           ))}
         </div>
       </div>
+      )}
 
-      <div className="flex-1 p-6">
+      <div className={`flex-1 p-6 ${!focusMode ? "hidden sm:block" : ""}`}>
         {activeTab === "Overview" && (
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
