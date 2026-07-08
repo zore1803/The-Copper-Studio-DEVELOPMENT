@@ -443,6 +443,11 @@ export default function Contacts() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const rows = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(sorted.length / MOBILE_PAGE_SIZE));
+  const mobilePage = Math.min(page, mobileTotalPages);
+  const mobileRows = sorted.slice((mobilePage - 1) * MOBILE_PAGE_SIZE, mobilePage * MOBILE_PAGE_SIZE);
+
   const allFolders = useMemo(() => {
     const fromContacts = contacts.map((c) => c.folder).filter(Boolean);
     return Array.from(new Set([...folders, ...fromContacts]));
@@ -606,8 +611,8 @@ export default function Contacts() {
             <div className="flex flex-col gap-3 sm:hidden">
               {loading ? (
                 <p className="py-10 text-center text-sm text-[#6b7280]">Loading contacts...</p>
-              ) : rows.length ? (
-                rows.map((contact) => {
+              ) : mobileRows.length ? (
+                mobileRows.map((contact) => {
                   const portalLinked = Boolean(contact.userId);
                   const isDeactivated = portalLinked && contact.portalStatus === "disabled";
                   const hasPortalAccess = portalLinked && !isDeactivated;
@@ -637,10 +642,10 @@ export default function Contacts() {
               ) : <EmptyState onCreate={() => setEditing({ status: "Active" })} />}
             </div>
             <MobileListPagination
-              page={page}
-              totalPages={totalPages}
+              page={mobilePage}
+              totalPages={mobileTotalPages}
               onPrev={() => setPage((p) => Math.max(1, p - 1))}
-              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+              onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
             />
 
             <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">

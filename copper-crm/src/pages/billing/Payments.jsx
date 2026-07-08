@@ -175,6 +175,11 @@ export default function Payments() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(sorted.length / MOBILE_PAGE_SIZE));
+  const mobilePage = Math.min(page, mobileTotalPages);
+  const mobilePaginated = sorted.slice((mobilePage - 1) * MOBILE_PAGE_SIZE, mobilePage * MOBILE_PAGE_SIZE);
+
   useEffect(() => {
     if (page > totalPages) setPage(1);
   }, [page, totalPages]);
@@ -272,7 +277,7 @@ export default function Payments() {
 
       {/* Mobile: one card per payment */}
       <div className="flex flex-col gap-3 sm:hidden">
-        {sorted.length ? paginated.map((row) => (
+        {sorted.length ? mobilePaginated.map((row) => (
           <MobileListCard
             key={row._id || row.id || row.paymentId}
             title={row.paymentId || row.id || row._id}
@@ -288,10 +293,10 @@ export default function Payments() {
         )}
       </div>
       <MobileListPagination
-        page={page}
-        totalPages={totalPages}
+        page={mobilePage}
+        totalPages={mobileTotalPages}
         onPrev={() => setPage((p) => Math.max(1, p - 1))}
-        onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+        onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
       />
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">

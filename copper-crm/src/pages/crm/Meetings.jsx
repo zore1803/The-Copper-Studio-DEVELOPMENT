@@ -178,6 +178,11 @@ export default function Meetings() {
   const safePage = Math.min(page, totalPages);
   const paginated = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(sorted.length / MOBILE_PAGE_SIZE));
+  const mobileSafePage = Math.min(page, mobileTotalPages);
+  const mobilePaginated = sorted.slice((mobileSafePage - 1) * MOBILE_PAGE_SIZE, mobileSafePage * MOBILE_PAGE_SIZE);
+
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
@@ -240,7 +245,7 @@ export default function Meetings() {
               <>
                 {/* Mobile: one card per meeting */}
                 <div className="flex flex-col gap-3 p-4 sm:hidden">
-                  {paginated.map((m) => (
+                  {mobilePaginated.map((m) => (
                     <MobileListCard
                       key={m._id}
                       title={m.title}
@@ -255,10 +260,10 @@ export default function Meetings() {
                   ))}
                 </div>
                 <MobileListPagination
-                  page={safePage}
-                  totalPages={totalPages}
+                  page={mobileSafePage}
+                  totalPages={mobileTotalPages}
                   onPrev={() => setPage((p) => Math.max(1, p - 1))}
-                  onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
                 />
 
                 <div className="hidden sm:block overflow-x-auto">

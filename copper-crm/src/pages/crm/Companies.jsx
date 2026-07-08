@@ -520,6 +520,11 @@ export default function Companies() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(sorted.length / MOBILE_PAGE_SIZE));
+  const mobilePage = Math.min(page, mobileTotalPages);
+  const mobilePaginated = sorted.slice((mobilePage - 1) * MOBILE_PAGE_SIZE, mobilePage * MOBILE_PAGE_SIZE);
+
   // Folders shown = the managed list plus any folder a company is already
   // assigned to, so membership is never orphaned if the list is edited.
   const allFolders = useMemo(() => {
@@ -785,9 +790,9 @@ export default function Companies() {
           <div className="flex flex-col gap-3 sm:hidden">
             {loading ? (
               <p className="py-12 text-center text-sm text-[#6b7280]">Loading companies…</p>
-            ) : paginated.length === 0 ? (
+            ) : mobilePaginated.length === 0 ? (
               <p className="py-12 text-center text-sm text-[#6b7280]">No companies found.</p>
-            ) : paginated.map((company) => (
+            ) : mobilePaginated.map((company) => (
               <MobileListCard
                 key={company._id || company.id}
                 title={company.name}
@@ -807,10 +812,10 @@ export default function Companies() {
             ))}
           </div>
           <MobileListPagination
-            page={page}
-            totalPages={totalPages}
+            page={mobilePage}
+            totalPages={mobileTotalPages}
             onPrev={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+            onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
           />
 
           {/* Desktop: table */}
