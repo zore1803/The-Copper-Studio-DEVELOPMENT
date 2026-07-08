@@ -974,10 +974,8 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-[#f3dfd7] text-[#8D3118]"><Icon size={17} /></div>
           <div className="min-w-0">
             <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
-            {description && <p className="mt-0.5 truncate text-xs text-[#525866]">{description}</p>}
           </div>
         </div>
         {actions}
