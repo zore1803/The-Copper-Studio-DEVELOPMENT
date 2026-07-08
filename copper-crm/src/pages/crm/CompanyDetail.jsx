@@ -1222,6 +1222,7 @@ export default function CompanyDetail() {
         {activeTab === "Contacts" && (
           <Section
             title="Contacts"
+            hideHeaderOnMobile
             action={
               <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
                 <ModuleSearch value={contactQuery} onChange={setContactQuery} placeholder="Search contacts…" />
@@ -1244,6 +1245,7 @@ export default function CompanyDetail() {
         {activeTab === "Invoices" && (
           <Section
             title="Invoices"
+            hideHeaderOnMobile
             action={
               <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
                 <ModuleSearch value={invoiceQuery} onChange={setInvoiceQuery} placeholder="Search invoices…" />
@@ -1356,10 +1358,10 @@ export default function CompanyDetail() {
   );
 }
 
-function Section({ title, action, flush = false, children }) {
+function Section({ title, action, flush = false, hideHeaderOnMobile = false, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-white border-b border-[#f3e5e0] px-5 py-4 sm:bg-[#fff1ec]">
+      <div className={`${hideHeaderOnMobile ? "hidden sm:flex" : "flex"} flex-wrap items-center justify-between gap-2 bg-white border-b border-[#f3e5e0] px-5 py-4 sm:bg-[#fff1ec]`}>
         <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
@@ -1543,6 +1545,7 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
   return (
     <Section
       title="Projects"
+      hideHeaderOnMobile
       action={
         <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
           <FilterButton
