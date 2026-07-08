@@ -6,11 +6,14 @@ import {
   ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock3, FileText, FolderKanban,
   Globe, GripVertical, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, Search, StickyNote, Trash2, Users
 } from "lucide-react";
-import { Avatar, Button } from "../../components/ui";
+import { Avatar, Button, StatusBadge } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
+import ProjectFormPanel from "../../components/ProjectFormPanel";
+import MobileListCard from "../../components/MobileListCard";
+import { buildProjectPayload } from "../../lib/projectDefaults";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import RichTextEditor, { isRichTextEmpty, stripHtml } from "../../components/RichTextEditor";
 import { isSameLocalDay } from "../../lib/dates";
@@ -261,16 +264,20 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function formatINR(value) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value || 0);
+}
+
 export default function ContactDetail() {
   const { contactId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { records: contacts, loading, save, remove } = useCrmRecords("contacts");
   const { records: companies } = useCrmRecords("companies");
-  const { records: projects } = useCrmRecords("projects");
+  const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents } = useCrmRecords("documents");
-  const { records: tasks } = useCrmRecords("tasks");
+  const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
@@ -285,6 +292,7 @@ export default function ContactDetail() {
   // chosen tab's content) instead of the full contact header/KPIs/tab bar.
   const focusMode = Boolean(location.state?.focusMode);
   const [editing, setEditing] = useState(false);
+  const [creatingProject, setCreatingProject] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [noteDateFilter, setNoteDateFilter] = useState("");
   const [noteSearch, setNoteSearch] = useState("");
@@ -429,6 +437,19 @@ export default function ContactDetail() {
     if (companyId) navigate(`/admin/companies/${companyId}/projects/${project.id || project._id}`);
   }
 
+  async function handleCreateProject(targetCompany, form) {
+    if (!form.name.trim()) {
+      showToast({ type: "error", title: "Project name required", message: "Add a name before creating the project." });
+      return;
+    }
+    const { payload, starterTasks } = buildProjectPayload(form, targetCompany);
+    const created = await saveProject(payload);
+    const realProjectId = created._id || created.id;
+    await Promise.all(starterTasks.map((task) => saveTask({ ...task, projectId: realProjectId })));
+    setCreatingProject(false);
+    showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
+  }
+
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
       {focusMode && (
@@ -440,6 +461,11 @@ export default function ContactDetail() {
             <p className="truncate text-sm font-bold text-[#111827]">{activeTab}</p>
             <p className="truncate text-xs text-[#6b7280]">{contactFullName(contact)}</p>
           </div>
+          {activeTab === "Projects" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>
+            </div>
+          )}
         </div>
       )}
       {!focusMode && (
@@ -599,7 +625,28 @@ export default function ContactDetail() {
 
         {activeTab === "Projects" && (
           linkedProjects.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-3 sm:hidden">
+              {linkedProjects.map((p) => (
+                <MobileListCard
+                  key={p._id || p.id}
+                  title={p.name || "Untitled project"}
+                  subtitle={p.packageName || p.package || "Not linked"}
+                  badge={<StatusBadge status={p.status || p.currentPhase || "Not Started"} />}
+                  onClick={() => openProject(p)}
+                  fields={[
+                    { label: "Progress", value: `${Number(p.progress) || 0}%` },
+                    { label: "Due", value: p.dueDate || p.expectedEndDate || "Not set" },
+                    { label: "Project Manager", value: p.projectManager || p.manager || "Unassigned" },
+                    { label: "Budget", value: formatINR(Number(p.budget || p.value || 0)) },
+                  ]}
+                />
+              ))}
+            </div>
+          ) : null
+        )}
+        {activeTab === "Projects" && (
+          linkedProjects.length ? (
+            <div className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-3">
               {linkedProjects.map((p) => (
                 <button
                   key={p._id || p.id}
@@ -848,6 +895,16 @@ export default function ContactDetail() {
       </div>
 
       {editing && <ContactFormPanel contact={contact} companies={companies} onClose={() => setEditing(false)} onSave={handleSave} />}
+      {creatingProject && (
+        <ProjectFormPanel
+          company={linkedCompany}
+          companies={companies}
+          contacts={contacts}
+          projects={projects}
+          onClose={() => setCreatingProject(false)}
+          onSave={handleCreateProject}
+        />
+      )}
       {editingNote && <NotePanel contact={contact} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
       {managingAccess && (
         <ProjectAccessPanel
