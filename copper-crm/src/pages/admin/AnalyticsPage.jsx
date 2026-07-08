@@ -975,8 +975,8 @@ export function AnalyticsPage() {
       action={
         <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
 
-          <div className="flex h-7 sm:h-8 items-center gap-1 sm:gap-2 overflow-hidden">
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-7 sm:h-8 appearance-none rounded-full bg-transparent px-1.5 sm:px-2 text-xs font-bold leading-7 sm:leading-8 text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+          <div className="flex h-7 sm:h-8 items-center gap-1 sm:gap-2 overflow-hidden rounded-full border border-[#E1E4EA]">
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-7 sm:h-8 appearance-none rounded-full bg-transparent px-2.5 sm:px-3 text-xs font-bold leading-7 sm:leading-8 text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
               {["Monthly", "Bi-Monthly", "Quarterly", "Annually", "Custom Range", "All Time"].map((item) => <option key={item}>{item}</option>)}
             </select>
 
