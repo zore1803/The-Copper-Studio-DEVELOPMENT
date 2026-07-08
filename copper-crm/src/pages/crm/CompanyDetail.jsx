@@ -1299,7 +1299,7 @@ export default function CompanyDetail() {
 function Section({ title, action, flush = false, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
         <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
@@ -1429,17 +1429,28 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
 
 function WorkspaceToggle({ options, value, onChange }) {
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
-      {options.map((option) => (
-        <button
-          key={option}
-          onClick={() => onChange(option)}
-          className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
-        >
-          {option}
-        </button>
-      ))}
-    </div>
+    <>
+      {/* Mobile: the button row overflows the narrow overlay width, so this
+          collapses to a plain dropdown instead. Desktop keeps the buttons. */}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none sm:hidden"
+      >
+        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
+      <div className="hidden items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1 sm:inline-flex">
+        {options.map((option) => (
+          <button
+            key={option}
+            onClick={() => onChange(option)}
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${value === option ? "bg-[#8D3118] text-white" : "text-[#6b7280] hover:bg-[#f9fafb]"}`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    </>
   );
 }
 
