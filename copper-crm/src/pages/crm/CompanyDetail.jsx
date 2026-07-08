@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   AlertTriangle, ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Clock3, CreditCard, Download,
@@ -571,9 +571,16 @@ function buildActivity(linked, company) {
 export default function CompanyDetail() {
   const { companyId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const { token } = useAuth();
-  const [activeTab, setActiveTab] = useState("Projects");
+  const [activeTab, setActiveTab] = useState(() => location.state?.initialTab || "Projects");
+  // Re-apply if the mobile "..." menu re-opens this same company on a
+  // different tab while the overlay component instance is reused.
+  useEffect(() => {
+    if (location.state?.initialTab) setActiveTab(location.state.initialTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key]);
   const [creatingProject, setCreatingProject] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);

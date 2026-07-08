@@ -649,12 +649,16 @@ export default function Companies() {
     showToast({ title: "Document status updated", message: `${company.name || "Company"}'s signed document marked as ${status}.` });
   }
 
-  function openCompany(company) {
+  function openCompany(company, initialTab) {
     // Carries the current location so App.jsx can render CompanyDetail as an
     // overlay on top of this list instead of a full page navigation — the
     // list stays mounted (and dimmed) underneath, closing just goes back.
-    navigate(`/admin/companies/${company.id || company._id}`, { state: { backgroundLocation: location } });
+    // initialTab lets the mobile "..." menu jump straight to a tab instead
+    // of opening on Projects and needing the (narrow, scrollable) switcher.
+    navigate(`/admin/companies/${company.id || company._id}`, { state: { backgroundLocation: location, initialTab } });
   }
+
+  const COMPANY_DETAIL_TABS = ["Projects", "Contacts", "Invoices", "Documents", "Tasks", "Notes", "Meetings", "Activity"];
 
   function resetFilters() {
     setSearch("");
@@ -822,6 +826,7 @@ export default function Companies() {
                     { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(company) },
                     { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteCompany(company) },
                   ]}
+                  menuItems={COMPANY_DETAIL_TABS.map((tab) => ({ label: tab, onClick: () => openCompany(company, tab) }))}
                 />
               ))}
             </div>
