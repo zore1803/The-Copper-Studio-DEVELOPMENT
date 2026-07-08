@@ -2914,7 +2914,7 @@ function GoogleCalendarEmbed() {
     );
   }
   const src = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=${encodeURIComponent(GOOGLE_CALENDAR_TZ)}`;
-  return <iframe src={src} title="Google Calendar" className="h-[650px] w-full rounded-xl border border-[#e5e7eb]" frameBorder="0" scrolling="no" />;
+  return <iframe src={src} title="Google Calendar" className="h-[420px] w-full rounded-xl border border-[#e5e7eb] sm:h-[650px]" frameBorder="0" scrolling="no" />;
 }
 
 // Popup overlay for the Calendly booking widget — kept separate from the
