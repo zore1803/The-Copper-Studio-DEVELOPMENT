@@ -1022,18 +1022,19 @@ export function AnalyticsPage() {
               <div
                 key={item.label}
                 onClick={() => setSelectedKpiDrillDown(item.label)}
-                className="cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-4 transition-colors hover:bg-[#fafafa]"
+                className="cursor-pointer rounded-xl border border-[#E1E4EA] bg-white p-2.5 sm:p-4 transition-colors hover:bg-[#fafafa] overflow-hidden"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
-                    <item.icon size={17} />
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${item.bg} ${item.color}`}>
+                    <item.icon size={15} className="sm:hidden" />
+                    <item.icon size={17} className="hidden sm:block" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
-                    <p className="mt-0.5 text-lg font-bold text-[#111827]">{item.value}</p>
+                    <p className="truncate text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{item.label}</p>
+                    <p className="mt-0.5 truncate text-sm sm:text-lg font-bold text-[#111827]">{item.value}</p>
                   </div>
                 </div>
-                {item.subtext && <p className="mt-2 text-[11px] text-[#6B7280]">{item.subtext}</p>}
+                {item.subtext && <p className="mt-2 truncate text-[11px] text-[#6B7280]">{item.subtext}</p>}
               </div>
             ))}
           </div>
