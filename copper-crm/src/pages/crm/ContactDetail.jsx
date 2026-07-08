@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
-  ArrowUpDown, Building2, Calendar, CheckCircle2, ChevronLeft, ChevronRight, Clock3, FileText, FolderKanban,
+  ArrowUpDown, Building2, Calendar, ChevronLeft, ChevronRight, Clock3, FileText, FolderKanban,
   Globe, GripVertical, Link as LinkIcon, Mail, MessageCircle, Pencil, Phone, Plus, Save, Search, StickyNote, Trash2, Users
 } from "lucide-react";
 import { Avatar, Button, StatusBadge } from "../../components/ui";
@@ -278,7 +278,7 @@ export default function ContactDetail() {
   const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: meetings } = useCrmRecords("meetings");
   const { records: documents, save: saveDocument } = useCrmRecords("documents");
-  const { records: tasks, save: saveTask } = useCrmRecords("tasks");
+  const { save: saveTask } = useCrmRecords("tasks");
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
   const contact = contacts.find((c) => String(c._id || c.id) === String(contactId));
@@ -373,9 +373,7 @@ export default function ContactDetail() {
   const linkedProjects = projects.filter((p) => matchesClient(p) || p.client === companyName);
   const linkedMeetings = meetings.filter(matchesClient);
   const linkedDocuments = documents.filter(matchesClient);
-  const linkedTasks = tasks.filter(matchesClient);
   const linkedNotes = notes.filter(matchesClient).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
-  const openTasks = linkedTasks.filter((t) => !["completed", "done"].includes(String(t.status || "").toLowerCase())).length;
 
   const activity = [
     ...linkedProjects.map((p) => ({ type: "Project", title: `${p.name || "Project"} · ${p.status || p.currentPhase || "updated"}`, date: p.updatedAt || p.createdAt || p.startDate, icon: FolderKanban })),
@@ -605,22 +603,21 @@ export default function ContactDetail() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#FFFFFF] bg-[#fafafa] p-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#FFFFFF] bg-[#fafafa] p-4 lg:grid-cols-5">
             <InfoLine label="Company" value={companyName} />
             <InfoLine label="Designation" value={contact.designation} />
             <InfoLine label="Email" value={contact.email} />
-            <div className="hidden sm:block">
+            <div className="hidden lg:block">
               <InfoLine label="Status" value={contact.status || "Active"} />
             </div>
             <InfoLine label="Contact Since" value={formatDate(contact.createdAt)} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 px-6 pb-5 lg:grid-cols-4">
           <KpiChip label="Projects" value={linkedProjects.length} icon={FolderKanban} color="#3b82f6" />
           <KpiChip label="Meetings" value={linkedMeetings.length} icon={Calendar} color="#f59e0b" />
           <KpiChip label="Documents" value={linkedDocuments.length} icon={FileText} color="#8b5cf6" />
-          <KpiChip label="Open Tasks" value={openTasks} icon={CheckCircle2} color="#16a34a" />
           <KpiChip label="Notes" value={linkedNotes.length} icon={StickyNote} color="#0d9488" />
         </div>
 
