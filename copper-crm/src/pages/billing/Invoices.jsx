@@ -1299,20 +1299,48 @@ function InvoiceStatus({ invoice, onChange }) {
   return <StatusSelect value={value} onChange={onChange} />;
 }
 
+// A native <select> opens the OS's own full-screen picker sheet on mobile —
+// no amount of CSS on the closed state fixes that, since the open state is
+// browser-controlled. This is a plain button + absolutely-positioned menu
+// instead, so the dropdown actually opens right there like the rest of the app.
 function StatusSelect({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(event) {
+      if (ref.current && !ref.current.contains(event.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [open]);
+
   return (
-    <span className="relative inline-flex items-center">
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className={`appearance-none rounded-full border-0 py-1 pl-2 pr-6 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
+    <span className="relative inline-flex items-center" ref={ref}>
+      <button
+        type="button"
+        onClick={(event) => { event.stopPropagation(); setOpen((v) => !v); }}
+        className={`flex items-center gap-1 rounded-full border-0 py-1 pl-2 pr-1.5 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
         aria-label="Invoice status"
       >
-        {UNPAID_STATUS_ACTIONS.map((status) => (
-          <option key={status} value={status}>{status}</option>
-        ))}
-      </select>
-      <ChevronDown size={12} className="pointer-events-none absolute right-1.5 opacity-70" />
+        {value}
+        <ChevronDown size={12} className="opacity-70" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-32 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white py-1 shadow-lg">
+          {UNPAID_STATUS_ACTIONS.map((status) => (
+            <button
+              key={status}
+              type="button"
+              onClick={(event) => { event.stopPropagation(); onChange(status); setOpen(false); }}
+              className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs font-semibold hover:bg-[#f9fafb] ${status === value ? "text-[#8D3118]" : "text-[#374151]"}`}
+            >
+              {status}
+              {status === value && <Check size={13} />}
+            </button>
+          ))}
+        </div>
+      )}
     </span>
   );
 }
