@@ -21,10 +21,10 @@ function Card({ children, className = "" }) {
 function PageShell({ title, subtitle, action, children }) {
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
+      <div className="flex items-start justify-between gap-2 border-b border-[#E1E4EA] bg-white px-4 py-2 sm:px-6 sm:py-3 lg:h-14 lg:items-center lg:gap-4 lg:py-0">
+        <div className="min-w-0">
           <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
-          <p className="text-xs text-[#525866] mt-0.5">{subtitle}</p>
+          <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">{subtitle}</p>
         </div>
         {action}
       </div>
@@ -973,10 +973,10 @@ export function AnalyticsPage() {
       title="Analytics"
       subtitle="Revenue, projects, payments, product performance, and delivery health."
       action={
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
 
-          <div className="flex h-8 items-center gap-2 overflow-hidden rounded-full border border-[#E1E4EA] bg-[#ffffff] px-1">
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-8 appearance-none rounded-full bg-transparent px-2 text-xs font-bold leading-8 text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
+          <div className="flex h-7 sm:h-8 items-center gap-1 sm:gap-2 overflow-hidden">
+            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="h-7 sm:h-8 appearance-none rounded-full bg-transparent px-1.5 sm:px-2 text-xs font-bold leading-7 sm:leading-8 text-[#525866] outline-none hover:bg-[#f9fafb] focus:bg-[#F5F7FA]">
               {["Monthly", "Bi-Monthly", "Quarterly", "Annually", "Custom Range", "All Time"].map((item) => <option key={item}>{item}</option>)}
             </select>
 
