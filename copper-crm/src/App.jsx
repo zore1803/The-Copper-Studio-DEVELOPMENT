@@ -86,6 +86,18 @@ function ContactDetailOverlay() {
   return <DetailOverlay><ContactDetail /></DetailOverlay>;
 }
 
+function ProjectDetailOverlay() {
+  return <DetailOverlay><ProjectDetail /></DetailOverlay>;
+}
+
+function ProjectTimelineOverlay() {
+  return <DetailOverlay><ProjectTimeline /></DetailOverlay>;
+}
+
+function ProjectFilesOverlay() {
+  return <DetailOverlay><ProjectFiles /></DetailOverlay>;
+}
+
 function AppRoutes() {
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
@@ -167,6 +179,9 @@ function AppRoutes() {
           <Route element={<ProtectedRoute role="superadmin" />}>
             <Route path="/admin/companies/:companyId" element={<CompanyDetailOverlay />} />
             <Route path="/admin/contacts/:contactId" element={<ContactDetailOverlay />} />
+            <Route path="/admin/projects/:projectId" element={<ProjectDetailOverlay />} />
+            <Route path="/admin/projects/:projectId/tasks" element={<ProjectTimelineOverlay />} />
+            <Route path="/admin/projects/:projectId/files" element={<ProjectFilesOverlay />} />
           </Route>
         </Routes>
       )}

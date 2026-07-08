@@ -143,7 +143,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
         {children}
       </div>
 
-      <div className="overflow-x-auto px-6 pb-5">
+      <div className="hidden overflow-x-auto px-6 pb-5 sm:block">
         <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
           {tabs.map((tab) => (
             <Link

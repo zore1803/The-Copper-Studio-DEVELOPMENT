@@ -173,6 +173,19 @@ export default function ProjectsList() {
   const mobilePage = Math.min(page, mobileTotalPages);
   const mobilePaginated = filtered.slice((mobilePage - 1) * MOBILE_PAGE_SIZE, mobilePage * MOBILE_PAGE_SIZE);
 
+  // Carries the current location so App.jsx can render the project route as
+  // an overlay on top of this list instead of a full page navigation —
+  // matches the same floating-window treatment used for Company/Contact View.
+  function openProject(project, suffix = "") {
+    navigate(`/admin/projects/${project.id || project._id}${suffix}`, { state: { backgroundLocation: location } });
+  }
+
+  const PROJECT_DETAIL_TABS = [
+    { label: "Overview", suffix: "" },
+    { label: "Timeline", suffix: "/tasks" },
+    { label: "Files", suffix: "/files" },
+  ];
+
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
     const delayed = computedProjects.filter((p) => p.effectiveStatus === "delayed").length;
@@ -348,17 +361,18 @@ export default function ProjectsList() {
               title={project.name}
               subtitle={project.template || project.packageName || "Custom"}
               badge={<span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusTone}`}>{statusLabel}</span>}
-              onClick={() => navigate(`/admin/projects/${project.id || project._id}`)}
+              onClick={() => openProject(project)}
               fields={[
                 { label: "Company", value: project.computedCompanyName },
                 { label: "Progress", value: `${project.computedProgress}%` },
                 { label: "Value", value: formatINR(project.finalAmount || project.budget || 0) },
               ]}
               actions={[
-                { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => navigate(`/admin/projects/${project.id || project._id}`) },
-                { label: "Timeline", icon: <Clock3 size={13} />, tone: CARD_TONES.edit, onClick: () => navigate(`/admin/projects/${project.id || project._id}/tasks`) },
+                { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openProject(project) },
+                { label: "Timeline", icon: <Clock3 size={13} />, tone: CARD_TONES.edit, onClick: () => openProject(project, "/tasks") },
                 { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => setDeletingProject(project) },
               ]}
+              menuItems={PROJECT_DETAIL_TABS.map((tab) => ({ label: tab.label, onClick: () => openProject(project, tab.suffix) }))}
             />
           );
         }) : (
