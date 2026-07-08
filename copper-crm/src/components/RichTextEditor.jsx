@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bold, Italic, Underline, List, ListOrdered } from "lucide-react";
 
 const COLORS = ["#111827", "#dc2626", "#16a34a", "#2563eb", "#8D3118"];
@@ -37,6 +37,10 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
   // mount-time sync effect below saw "no change" and never painted the
   // existing note body into the contentEditable div at all.
   const lastValue = useRef(undefined);
+  // Which toolbar buttons should highlight copper-red — reflects whatever
+  // formatting is actually active at the caret/selection, not just "was
+  // clicked once".
+  const [activeFormats, setActiveFormats] = useState({});
 
   // Only push external value changes (mount, or switching notes) into the
   // DOM — never on every keystroke, or the caret jumps to the start.
@@ -47,10 +51,30 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
     }
   }, [value]);
 
+  function updateActiveFormats() {
+    if (document.activeElement !== ref.current) return;
+    setActiveFormats({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
+      insertUnorderedList: document.queryCommandState("insertUnorderedList"),
+      insertOrderedList: document.queryCommandState("insertOrderedList"),
+    });
+  }
+
+  // execCommand's state only reflects reality once the browser has processed
+  // the click/keystroke, so refresh on selection change too — clicking
+  // around inside existing bold/italic text should reflect that immediately.
+  useEffect(() => {
+    document.addEventListener("selectionchange", updateActiveFormats);
+    return () => document.removeEventListener("selectionchange", updateActiveFormats);
+  }, []);
+
   function exec(command, arg) {
     document.execCommand(command, false, arg);
     ref.current?.focus();
     handleInput();
+    updateActiveFormats();
   }
 
   function handleInput() {
@@ -64,11 +88,11 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
       {label && <span className="text-xs font-semibold text-[#374151]">{label}</span>}
       <div className="mt-1.5 overflow-hidden rounded-lg border border-[#e5e7eb] focus-within:border-[#8D3118] focus-within:ring-2 focus-within:ring-[#8D3118]/20">
         <div className="flex items-center gap-0.5 border-b border-[#f3f4f6] bg-[#fafafa] px-1.5 py-1">
-          <ToolbarButton title="Bold" onClick={() => exec("bold")}><Bold size={13} /></ToolbarButton>
-          <ToolbarButton title="Italic" onClick={() => exec("italic")}><Italic size={13} /></ToolbarButton>
-          <ToolbarButton title="Underline" onClick={() => exec("underline")}><Underline size={13} /></ToolbarButton>
-          <ToolbarButton title="Bullet list" onClick={() => exec("insertUnorderedList")}><List size={13} /></ToolbarButton>
-          <ToolbarButton title="Numbered list" onClick={() => exec("insertOrderedList")}><ListOrdered size={13} /></ToolbarButton>
+          <ToolbarButton title="Bold" active={activeFormats.bold} onClick={() => exec("bold")}><Bold size={13} /></ToolbarButton>
+          <ToolbarButton title="Italic" active={activeFormats.italic} onClick={() => exec("italic")}><Italic size={13} /></ToolbarButton>
+          <ToolbarButton title="Underline" active={activeFormats.underline} onClick={() => exec("underline")}><Underline size={13} /></ToolbarButton>
+          <ToolbarButton title="Bullet list" active={activeFormats.insertUnorderedList} onClick={() => exec("insertUnorderedList")}><List size={13} /></ToolbarButton>
+          <ToolbarButton title="Numbered list" active={activeFormats.insertOrderedList} onClick={() => exec("insertOrderedList")}><ListOrdered size={13} /></ToolbarButton>
           <span className="mx-1 h-4 w-px bg-[#e5e7eb]" />
           {COLORS.map((color) => (
             <button
@@ -87,6 +111,9 @@ export default function RichTextEditor({ label, value, onChange, placeholder = "
           contentEditable
           suppressContentEditableWarning
           onInput={handleInput}
+          onKeyUp={updateActiveFormats}
+          onMouseUp={updateActiveFormats}
+          onFocus={updateActiveFormats}
           data-placeholder={placeholder}
           className="rich-text-body min-h-[140px] px-3 py-2 text-sm text-[#111827] outline-none [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
         />

@@ -1101,7 +1101,7 @@ export default function CompanyDetail() {
               </button>
               <button
                 onClick={() => { setMobileNoteDateOpen((v) => !v); setMobileNoteSearchOpen(false); }}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileNoteDateOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${noteDateFilter ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
               >
                 <Calendar size={15} />
               </button>
