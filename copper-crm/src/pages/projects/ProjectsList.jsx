@@ -9,7 +9,7 @@ import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
-import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
+import MobileListCard, { CARD_TONES, MobileListPagination } from "../../components/MobileListCard";
 
 const SORT_OPTIONS = [
   { value: "created_desc", label: "Newest first" },
@@ -72,6 +72,7 @@ export default function ProjectsList() {
   const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(() => Boolean(location.state?.openCreate));
   // When returning from "New company", reopen the form with that company preselected.
   const [preselectCompanyId] = useState(() => location.state?.newCompanyId || "");
@@ -166,6 +167,11 @@ export default function ProjectsList() {
       default: return arr.sort((a, b) => byCreated(b, a));
     }
   }, [computedProjects, search, statusFilter, companyFilter, templateFilter, sortBy]);
+
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(filtered.length / MOBILE_PAGE_SIZE));
+  const mobilePage = Math.min(page, mobileTotalPages);
+  const mobilePaginated = filtered.slice((mobilePage - 1) * MOBILE_PAGE_SIZE, mobilePage * MOBILE_PAGE_SIZE);
 
   const kpis = useMemo(() => {
     const completed = computedProjects.filter((p) => p.effectiveStatus === "completed").length;
@@ -329,7 +335,7 @@ export default function ProjectsList() {
       <div className="flex flex-col gap-3 sm:hidden">
         {loading ? (
           <p className="py-10 text-center text-sm text-[#6b7280]">Loading projects...</p>
-        ) : filtered.length > 0 ? filtered.map((project) => {
+        ) : mobilePaginated.length > 0 ? mobilePaginated.map((project) => {
           const statusLabel = PROJECT_STATUS_OPTIONS.find((o) => o.value === project.effectiveStatus)?.label || project.effectiveStatus;
           const statusTone = project.effectiveStatus === "completed"
             ? "bg-emerald-50 text-emerald-700"
@@ -365,6 +371,12 @@ export default function ProjectsList() {
           </div>
         )}
       </div>
+      <MobileListPagination
+        page={mobilePage}
+        totalPages={mobileTotalPages}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
+      />
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
         <div className="overflow-x-auto">
