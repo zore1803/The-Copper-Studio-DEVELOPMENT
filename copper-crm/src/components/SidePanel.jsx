@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 // page header stay visible/reachable behind a dimmed backdrop. The panel
 // itself floats with margin on all sides (not edge-to-edge) and is rounded
 // on every corner, like a floating window rather than a docked sheet.
-export default function SidePanel({ title, subtitle, children, footer, onClose, width = "max-w-xl" }) {
+export default function SidePanel({ title, subtitle, headerAction, children, footer, onClose, width = "max-w-xl" }) {
   // Without this, scrolling the page behind the panel on mobile can hide the
   // browser's address bar, growing the viewport and making this fixed,
   // bottom-anchored panel visibly grow/shift with it. Locking body scroll
@@ -26,9 +26,12 @@ export default function SidePanel({ title, subtitle, children, footer, onClose, 
             <h2 className="text-base font-bold text-gray-950">{title}</h2>
             {subtitle && <p className="mt-1 text-xs leading-5 text-gray-500">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-            <X size={16} />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {headerAction}
+            <button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+              <X size={16} />
+            </button>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-5">{children}</div>
         {footer && <div className="border-t border-gray-100 p-4">{footer}</div>}

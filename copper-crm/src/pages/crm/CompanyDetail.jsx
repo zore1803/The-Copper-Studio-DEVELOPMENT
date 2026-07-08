@@ -1066,24 +1066,6 @@ export default function CompanyDetail() {
           )}
           {activeTab === "Documents" && (
             <div className="ml-auto flex shrink-0 items-center gap-2">
-              <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setDocumentsView("Grid")}
-                  className={`rounded-full p-1.5 ${documentsView === "Grid" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
-                  title="Grid view"
-                >
-                  <LayoutGrid size={15} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDocumentsView("List")}
-                  className={`rounded-full p-1.5 ${documentsView === "List" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
-                  title="List view"
-                >
-                  <ListIcon size={15} />
-                </button>
-              </div>
               <button
                 onClick={() => setCreatingDocGroup((v) => !v)}
                 className="flex h-8 items-center gap-1.5 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]"
@@ -2110,10 +2092,12 @@ function DocumentList({ documents, onDelete }) {
 
 function FolderViewerPanel({ category, documents, onClose, onDelete, onUpload }) {
   return (
-    <SidePanel title={category} subtitle={`${documents.length} file${documents.length === 1 ? "" : "s"} in this folder.`} onClose={onClose}>
-      {onUpload && (
-        <Button className="mb-4" onClick={onUpload}><Plus size={14} /> Upload to this folder</Button>
-      )}
+    <SidePanel
+      title={category}
+      subtitle={`${documents.length} file${documents.length === 1 ? "" : "s"} in this folder.`}
+      onClose={onClose}
+      headerAction={onUpload && <Button size="sm" onClick={onUpload}><Plus size={14} /> Upload</Button>}
+    >
       {documents.length ? (
         <div className="space-y-2">
           {documents.map((doc) => {
