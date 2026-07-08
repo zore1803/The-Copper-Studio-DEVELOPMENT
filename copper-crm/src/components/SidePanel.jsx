@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -7,6 +8,16 @@ import { X } from "lucide-react";
 // itself floats with margin on all sides (not edge-to-edge) and is rounded
 // on every corner, like a floating window rather than a docked sheet.
 export default function SidePanel({ title, subtitle, children, footer, onClose, width = "max-w-xl" }) {
+  // Without this, scrolling the page behind the panel on mobile can hide the
+  // browser's address bar, growing the viewport and making this fixed,
+  // bottom-anchored panel visibly grow/shift with it. Locking body scroll
+  // keeps the underlying page (and viewport) still while the panel is open.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, []);
+
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 top-28 z-50 flex justify-center bg-gray-950/30 p-4">
       <div className={`flex h-full w-full ${width} animate-[sheet-up_200ms_ease-out] flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl`}>
