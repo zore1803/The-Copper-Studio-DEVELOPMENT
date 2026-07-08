@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpDown, BarChart2, Check, ChevronLeft, ChevronRight, Clock, Copy, Grid2x2, List, Plus, Save, Search, Tag, Trash2, TrendingUp } from "lucide-react";
 import { Button } from "../../components/ui";
 import SidePanel from "../../components/SidePanel";
@@ -563,6 +564,7 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
 }
 
 export default function Coupons() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -692,9 +694,14 @@ export default function Coupons() {
     <div className="flex flex-col min-h-full bg-[#f5f6fa]">
       {/* Strip header */}
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div>
           <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
           <p className="text-xs text-[#525866] mt-0.5">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}

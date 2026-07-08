@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowUpDown, Check, ChevronLeft, ChevronRight, CreditCard, PackageCheck, Plus, ReceiptText, Save, Search, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
@@ -118,6 +119,7 @@ function PaymentModal({ companies, onClose, onSave }) {
 }
 
 export default function Payments() {
+  const navigate = useNavigate();
   const dataFields = useDataFields();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
@@ -198,9 +200,14 @@ export default function Payments() {
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Payments</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-base font-medium text-[#0E121B]">Payments</h1>
+            <p className="text-xs text-[#525866] mt-0.5">Actual money received, Razorpay mapping, refund state, and payment audit.</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}

@@ -528,9 +528,14 @@ export default function Contacts() {
   return (
     <div className="flex h-full flex-col bg-white">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
+            <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">

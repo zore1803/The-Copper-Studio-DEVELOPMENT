@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpDown, Check, CheckCircle2, Clock3, Eye, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, Check, CheckCircle2, ChevronLeft, Clock3, Eye, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { apiGet } from "../../lib/api";
@@ -219,9 +219,14 @@ export default function ProjectsList() {
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
-          <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-base font-medium text-[#0E121B]">All Projects</h1>
+            <p className="text-xs text-[#525866] mt-0.5">{filtered.length} of {projects.length} projects across every company</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] bg-white px-3 sm:w-64 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">

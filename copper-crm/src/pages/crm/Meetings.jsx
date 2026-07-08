@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Calendar, Check, ChevronLeft, ChevronRight, Clock, Copy, List, Search, Video, X
 } from "lucide-react";
@@ -86,6 +87,7 @@ function useCompanyNames() {
 }
 
 export default function Meetings() {
+  const navigate = useNavigate();
   const { token } = useAuth();
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -179,9 +181,14 @@ export default function Meetings() {
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Meetings</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Every meeting scheduled across all clients and companies.</p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-base font-medium text-[#0E121B]">Meetings</h1>
+            <p className="text-xs text-[#525866] mt-0.5">Every meeting scheduled across all clients and companies.</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
