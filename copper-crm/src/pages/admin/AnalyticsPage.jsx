@@ -963,7 +963,7 @@ export function AnalyticsPage() {
     { label: "Active Clients", value: data.filteredCompaniesLength, icon: Users, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", tooltip: "Total number of unique companies." },
     { label: "Total Projects", value: data.filteredProjectsLength, icon: PackageCheck, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100", tooltip: "Total number of created projects." },
     { label: "Avg Completion Time", value: `${data.avgCompletionTime} Days`, icon: Clock3, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", tooltip: "Average days from start to completion for delivered projects." },
-    { label: "Total Contacts", value: data.filteredContactsLength, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", tooltip: "Count of all contact persons.", subtext: `${data.contactsPerClient} Contacts per Client` },
+    { label: "Total Contacts", value: data.filteredContactsLength, icon: Users, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", tooltip: `Count of all contact persons. Average: ${data.contactsPerClient} contacts per client.` },
     { label: "On-Time Delivery %", value: `${data.onTimeDeliveryPercent}%`, icon: CalendarDays, color: "text-teal-600", bg: "bg-teal-50", border: "border-teal-100", tooltip: "(Projects Delivered On Time ÷ Total Completed Projects) × 100" }
   ];
 
@@ -1034,7 +1034,6 @@ export function AnalyticsPage() {
                     <p className="mt-0.5 truncate text-sm sm:text-lg font-bold text-[#111827]">{item.value}</p>
                   </div>
                 </div>
-                {item.subtext && <p className="mt-2 truncate text-[11px] text-[#6B7280]">{item.subtext}</p>}
               </div>
             ))}
           </div>
