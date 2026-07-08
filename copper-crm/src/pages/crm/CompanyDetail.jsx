@@ -1319,7 +1319,7 @@ export default function CompanyDetail() {
             companyId={companyId}
             view={projectView}
             onView={setProjectView}
-            onOpen={navigate}
+            onOpen={(url) => navigate(url, { state: { backgroundLocation: location } })}
             onCreate={() => setCreatingProject(true)}
             onDelete={setDeletingProject}
             statusFilter={projectStatusFilter}
