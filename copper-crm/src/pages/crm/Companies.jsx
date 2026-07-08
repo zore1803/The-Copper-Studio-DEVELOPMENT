@@ -681,6 +681,13 @@ export default function Companies() {
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* Mobile-only search icon toggle */}
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+            >
+              <Search size={15} />
+            </button>
             {/* Hotlist toggle (mobile, compact — desktop copy lives below) */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
@@ -689,12 +696,12 @@ export default function Companies() {
               <Grid2x2 size={14} />
               Hotlist
             </button>
-            {/* Mobile-only search icon toggle */}
+            {/* Compact "+ New" button (mobile, compact — desktop copy lives below) */}
             <button
-              onClick={() => setMobileSearchOpen((v) => !v)}
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+              onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
+              className="flex h-8 items-center gap-1 rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm sm:hidden"
             >
-              <Search size={15} />
+              <Plus size={14} /> New
             </button>
           </div>
         </div>
@@ -774,7 +781,7 @@ export default function Companies() {
           </button>
           <button
             onClick={() => setEditing({ name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" })}
-            className="flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+            className="hidden sm:flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
           >
             <Plus size={16} />
             Add Company
