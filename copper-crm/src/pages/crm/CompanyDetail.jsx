@@ -197,14 +197,15 @@ function EmptyState({ icon: Icon, title, text, action }) {
 
 function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
-      <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
-          <Icon size={16} />
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-2.5 sm:p-4 overflow-hidden">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
+          <Icon size={15} className="sm:hidden" />
+          <Icon size={17} className="hidden sm:block" />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 text-base font-bold leading-tight text-[#111827]" title={String(value)}>{value}</p>
+          <p className="truncate text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+          <p className="mt-0.5 truncate text-sm sm:text-lg font-bold text-[#111827]" title={String(value)}>{value}</p>
         </div>
       </div>
     </div>
@@ -1034,38 +1035,6 @@ export default function CompanyDetail() {
                   </span>
                 )}
               </button>
-              <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
-              <div className="relative" ref={addMenuRef}>
-                <Button onClick={() => setAddMenuOpen((open) => !open)}><Plus size={14} /> Add New</Button>
-                {addMenuOpen && (
-                  <div className="absolute right-0 z-20 mt-2 w-48 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-lg">
-                    <button
-                      onClick={() => { setCreatingProject(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
-                    >
-                      <FolderKanban size={14} /> Add Project
-                    </button>
-                    <button
-                      onClick={() => { setEditingContact({}); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
-                    >
-                      <Users size={14} /> Add Contact
-                    </button>
-                    <button
-                      onClick={() => { setCreatingTask(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
-                    >
-                      <StickyNote size={14} /> Add Task
-                    </button>
-                    <button
-                      onClick={() => { setUploadingDocument(true); setAddMenuOpen(false); }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-[#374151] hover:bg-[#f9fafb]"
-                    >
-                      <FolderOpen size={14} /> Add Document
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -1098,7 +1067,6 @@ export default function CompanyDetail() {
 
         <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
           <KpiChip label="Total Revenue" value={formatINR(collected)} icon={CreditCard} color="#16a34a" />
-          <KpiChip label="Outstanding Due" value={formatINR(outstanding)} icon={AlertTriangle} color="#ef4444" />
           <KpiChip label="Active Projects" value={activeProjects} icon={FolderKanban} color="#3b82f6" />
           <KpiChip label="Completed Projects" value={projectsCompleted} icon={CheckCircle2} color="#0d9488" />
           <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} color="#8D3118" />
