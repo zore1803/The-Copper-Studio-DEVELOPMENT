@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  BarChart3, CalendarDays, Clock3, Copy, FileDown, FileText,
+  BarChart3, CalendarDays, ChevronLeft, Clock3, Copy, FileDown, FileText,
   Minus, PackageCheck, PieChart, Plus, ReceiptText, Send,
   Tag, TrendingUp, Users, WalletCards, Table2
 } from "lucide-react";
@@ -19,12 +20,18 @@ function Card({ children, className = "" }) {
 }
 
 function PageShell({ title, subtitle, action, children }) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col min-h-full bg-[#FFFFFF]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
-          <p className="text-xs text-[#525866] mt-0.5">{subtitle}</p>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] bg-white px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-base font-medium text-[#0E121B]">{title}</h1>
+            <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">{subtitle}</p>
+          </div>
         </div>
         {action}
       </div>

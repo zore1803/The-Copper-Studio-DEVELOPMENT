@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   MoreHorizontal, Calendar, MessageSquare, CheckSquare,
-  GripVertical, ListFilter, Sparkles, Search, ChevronDown
+  GripVertical, ListFilter, Sparkles, Search, ChevronDown, ChevronLeft
 } from "lucide-react";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -274,17 +274,22 @@ export default function KanbanBoard() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Kanban Board</h1>
-          <p className="text-xs text-[#525866] mt-0.5">{totals.done}/{totals.total} completed · {totals.high} high priority tasks</p>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] bg-white px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-base font-medium text-[#0E121B]">Kanban Board</h1>
+            <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">{totals.done}/{totals.total} completed · {totals.high} high priority tasks</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {/* Toggle buttons */}
           <div className="flex items-center gap-1 rounded-xl bg-gray-100 p-1">
             <button
               onClick={() => setMode("projects")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all sm:px-3 ${
                 mode === "projects" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
               }`}
             >
@@ -292,7 +297,7 @@ export default function KanbanBoard() {
             </button>
             <button
               onClick={() => setMode("stages")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all sm:px-3 ${
                 mode === "stages" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"
               }`}
             >
@@ -300,7 +305,7 @@ export default function KanbanBoard() {
             </button>
           </div>
 
-          <button className="inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 hover:bg-gray-50">
+          <button className="hidden sm:inline-flex h-10 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold text-gray-600 hover:bg-gray-50">
             <ListFilter size={14} />
             Filter
           </button>
