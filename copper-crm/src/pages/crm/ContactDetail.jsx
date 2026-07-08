@@ -295,6 +295,8 @@ export default function ContactDetail() {
   const [editing, setEditing] = useState(false);
   const [creatingProject, setCreatingProject] = useState(false);
   const [uploadingDocument, setUploadingDocument] = useState(false);
+  const [mobileNoteSearchOpen, setMobileNoteSearchOpen] = useState(false);
+  const [mobileNoteDateOpen, setMobileNoteDateOpen] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [noteDateFilter, setNoteDateFilter] = useState("");
   const [noteSearch, setNoteSearch] = useState("");
@@ -486,6 +488,50 @@ export default function ContactDetail() {
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <Button size="sm" onClick={() => setUploadingDocument(true)}><Plus size={14} /> Upload</Button>
             </div>
+          )}
+          {activeTab === "Notes" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button
+                onClick={() => { setMobileNoteSearchOpen((v) => !v); setMobileNoteDateOpen(false); }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileNoteSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Search size={15} />
+              </button>
+              <button
+                onClick={() => { setMobileNoteDateOpen((v) => !v); setMobileNoteSearchOpen(false); }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${noteDateFilter ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Calendar size={15} />
+              </button>
+              <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Note</Button>
+            </div>
+          )}
+        </div>
+      )}
+      {focusMode && activeTab === "Notes" && mobileNoteSearchOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Search size={14} className="shrink-0 text-[#525866]" />
+          <input
+            autoFocus
+            value={noteSearch}
+            onChange={(e) => { setNoteSearch(e.target.value); setNotePage(1); }}
+            placeholder="Search notes…"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+          />
+        </div>
+      )}
+      {focusMode && activeTab === "Notes" && mobileNoteDateOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Calendar size={14} className="shrink-0 text-[#525866]" />
+          <input
+            type="date"
+            autoFocus
+            value={noteDateFilter}
+            onChange={(e) => { setNoteDateFilter(e.target.value); setNotePage(1); }}
+            className="bg-transparent text-sm outline-none"
+          />
+          {noteDateFilter && (
+            <button onClick={() => { setNoteDateFilter(""); setNotePage(1); }} className="ml-auto text-xs font-semibold text-[#8D3118]">Clear</button>
           )}
         </div>
       )}
@@ -719,12 +765,12 @@ export default function ContactDetail() {
 
         {activeTab === "Notes" && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="hidden items-center justify-between sm:flex">
               <p className="text-sm font-bold text-gray-700">Notes</p>
               <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Add Note</Button>
             </div>
             {linkedNotes.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="hidden flex-wrap items-center gap-2 sm:flex">
                 <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
                   <Search size={13} className="text-[#525866] shrink-0" />
                   <input
