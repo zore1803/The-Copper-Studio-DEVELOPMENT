@@ -1075,6 +1075,18 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setUploadingDocument(true)}><Plus size={14} /> Upload</Button>
             </div>
           )}
+          {activeTab === "Tasks" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <select
+                value={taskView}
+                onChange={(e) => setTaskView(e.target.value)}
+                className="h-8 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none"
+              >
+                {TASK_VIEWS.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <Button size="sm" onClick={() => setCreatingTask(true)}><Plus size={14} /> Task</Button>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -2248,6 +2260,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
   return (
     <Section
       title="Tasks"
+      hideHeaderOnMobile
       action={
         <div className="flex flex-wrap items-center gap-2">
           <FilterButton
@@ -2282,7 +2295,29 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
 function TasksTable({ tasks, projects, onDelete }) {
   const projectNames = Object.fromEntries(projects.map((project) => [String(project.id || project._id), project.name]));
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* Mobile: one card per task instead of a cramped, horizontally
+          scrolling table. */}
+      <div className="flex flex-col gap-3 p-4 sm:hidden">
+        {tasks.map((task) => (
+          <MobileListCard
+            key={task.id || task._id}
+            title={task.title || task.taskName || "Untitled task"}
+            subtitle={projectNames[String(task.projectId || task.project)] || task.projectName || "No project"}
+            badge={<StatusBadge status={task.status || "Backlog"} />}
+            fields={[
+              { label: "Assigned To", value: task.assignedTo || task.assigned || "Unassigned" },
+              { label: "Priority", value: task.priority || "Medium" },
+              { label: "Due Date", value: task.dueDate || task.deadline || "No due date" },
+            ]}
+            actions={[
+              { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => onDelete(task) },
+            ]}
+          />
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto sm:block">
       <table className="min-w-full text-sm">
         <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
@@ -2313,7 +2348,8 @@ function TasksTable({ tasks, projects, onDelete }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
