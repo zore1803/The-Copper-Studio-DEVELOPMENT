@@ -566,6 +566,7 @@ function CouponRow({ coupon, copied, onCopy, onDelete }) {
 export default function Coupons() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [packageFilter, setPackageFilter] = useState("All");
@@ -693,19 +694,52 @@ export default function Coupons() {
   return (
     <div className="flex flex-col min-h-full bg-[#f5f6fa]">
       {/* Strip header */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
-            <ChevronLeft size={18} />
-          </button>
-          <div>
-          <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] bg-white px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+              <ChevronLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-base font-medium text-[#0E121B]">Coupons</h1>
+              <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">Marketing discounts with assignment, validity, usage limits, related orders, and revenue impact.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Mobile-only search icon toggle */}
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+            >
+              <Search size={15} />
+            </button>
+            {/* Compact "+ New" button (mobile, compact — desktop copy lives below) */}
+            <button
+              onClick={() => setCreating(true)}
+              className="flex h-8 items-center gap-1 rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm sm:hidden"
+            >
+              <Plus size={14} /> New
+            </button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
-          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
+
+        {/* Mobile search bar — drops down only when the icon above is tapped */}
+        {mobileSearchOpen && (
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#8D3118] bg-[#fff8f6] px-3 sm:hidden">
+            <Search size={14} className="text-[#8D3118] shrink-0" />
+            <input
+              autoFocus
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+              placeholder="Search by code, company, or contact…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          {/* Search (desktop) */}
+          <div className="hidden h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:flex sm:w-72 min-w-0 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -714,8 +748,8 @@ export default function Coupons() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          {/* Sort */}
-          <div className="relative" ref={sortRef}>
+          {/* Sort (desktop only) */}
+          <div className="relative hidden sm:block" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
               className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
@@ -740,7 +774,7 @@ export default function Coupons() {
           </div>
           <button
             onClick={() => setCreating(true)}
-            className="flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
+            className="hidden sm:flex h-8 items-center gap-1.5 rounded-full bg-[#8D3118] px-4 text-sm font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm"
           >
             <Plus size={16} /> Create Coupon
           </button>
