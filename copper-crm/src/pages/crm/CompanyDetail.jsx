@@ -2163,7 +2163,7 @@ function TaskKanbanBoard({ tasks, onMoveTask, onDelete }) {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-4 p-2 sm:p-5 lg:grid-cols-3 xl:grid-cols-6">
         {TASK_BOARD_STATUSES.map((status) => {
           const columnTasks = tasks.filter((task) => (task.status || "Backlog") === status);
           return (
@@ -2261,7 +2261,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
     <Section
       title="Tasks"
       hideHeaderOnMobile
-      flush={view === "List"}
+      flush={view === "List" || view === "Board"}
       action={
         <div className="flex flex-wrap items-center gap-2">
           <FilterButton
