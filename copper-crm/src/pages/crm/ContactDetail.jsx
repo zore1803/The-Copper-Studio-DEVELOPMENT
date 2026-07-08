@@ -228,11 +228,11 @@ function InfoLine({ label, value }) {
   );
 }
 
-function KpiChip({ label, value, icon: Icon }) {
+function KpiChip({ label, value, icon: Icon, color = "#8D3118" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white px-4 py-3.5">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f3f4f6] text-[#6b7280]">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: `${color}1A`, color }}>
           <Icon size={16} />
         </div>
         <div className="min-w-0">
@@ -423,10 +423,6 @@ export default function ContactDetail() {
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
       <div className="border-b border-[#e5e7eb] bg-white">
         <div className="px-6 py-8">
-          <button onClick={() => navigate(-1)} className="mb-5 flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-gray-800">
-            <ChevronLeft size={15} /> Back to Contacts
-          </button>
-
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex items-start gap-5">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-[#e5e7eb] bg-[#fff8f6]">
@@ -495,11 +491,11 @@ export default function ContactDetail() {
         </div>
 
         <div className="grid grid-cols-2 gap-3 px-6 pb-5 sm:grid-cols-3 lg:grid-cols-5">
-          <KpiChip label="Projects" value={linkedProjects.length} icon={FolderKanban} />
-          <KpiChip label="Meetings" value={linkedMeetings.length} icon={Calendar} />
-          <KpiChip label="Documents" value={linkedDocuments.length} icon={FileText} />
-          <KpiChip label="Open Tasks" value={openTasks} icon={CheckCircle2} />
-          <KpiChip label="Notes" value={linkedNotes.length} icon={StickyNote} />
+          <KpiChip label="Projects" value={linkedProjects.length} icon={FolderKanban} color="#3b82f6" />
+          <KpiChip label="Meetings" value={linkedMeetings.length} icon={Calendar} color="#f59e0b" />
+          <KpiChip label="Documents" value={linkedDocuments.length} icon={FileText} color="#8b5cf6" />
+          <KpiChip label="Open Tasks" value={openTasks} icon={CheckCircle2} color="#16a34a" />
+          <KpiChip label="Notes" value={linkedNotes.length} icon={StickyNote} color="#0d9488" />
         </div>
 
         <div className="flex items-center gap-1 overflow-x-auto px-6">
