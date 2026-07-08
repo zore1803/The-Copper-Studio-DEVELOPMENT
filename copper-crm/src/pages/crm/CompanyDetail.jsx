@@ -990,7 +990,36 @@ export default function CompanyDetail() {
                 )}
               </div>
               <div className="min-w-0">
-                <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="truncate text-2xl font-bold text-[#111827]">{company.name}</h2>
+                  <button
+                    onClick={openLinkClient}
+                    title="Link Client Portal"
+                    className={`flex h-8 shrink-0 items-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec] ${
+                      linkedClientContacts.length ? "gap-1.5 pl-3 pr-1.5" : "w-8 justify-center"
+                    }`}
+                  >
+                    <LinkIcon size={15} className="shrink-0" />
+                    {linkedClientContacts.length > 0 && (
+                      <span className="flex items-center -space-x-2">
+                        {linkedClientContacts.slice(0, 4).map((contact) => (
+                          <span
+                            key={contact._id || contact.id}
+                            title={`${contact.name || contact.email || "Client"} — client portal linked`}
+                            className="rounded-full ring-2 ring-white"
+                          >
+                            <Avatar name={contact.name || contact.email} size="sm" />
+                          </span>
+                        ))}
+                        {linkedClientContacts.length > 4 && (
+                          <span className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
+                            +{linkedClientContacts.length - 4}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </button>
+                </div>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[#6b7280]">
                   {company.industry && <span>{company.industry}</span>}
                   <WebsiteTextLink href={company.website} />
@@ -998,7 +1027,7 @@ export default function CompanyDetail() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 sm:flex">
               {(company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
                 <div className="flex items-center gap-1.5 pr-2">
                   <SocialIconLink href={company.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
@@ -1008,33 +1037,7 @@ export default function CompanyDetail() {
                   <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
                 </div>
               )}
-              <button
-                onClick={openLinkClient}
-                title="Link Client Portal"
-                className={`flex h-8 items-center rounded-full border border-[#d8c2b9] bg-white text-[#211a17] transition-colors hover:bg-[#fff1ec] ${
-                  linkedClientContacts.length ? "gap-1.5 pl-3 pr-1.5" : "w-8 justify-center"
-                }`}
-              >
-                <LinkIcon size={15} className="shrink-0" />
-                {linkedClientContacts.length > 0 && (
-                  <span className="flex items-center -space-x-2">
-                    {linkedClientContacts.slice(0, 4).map((contact) => (
-                      <span
-                        key={contact._id || contact.id}
-                        title={`${contact.name || contact.email || "Client"} — client portal linked`}
-                        className="rounded-full ring-2 ring-white"
-                      >
-                        <Avatar name={contact.name || contact.email} size="sm" />
-                      </span>
-                    ))}
-                    {linkedClientContacts.length > 4 && (
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-[#525866] text-[10px] font-bold text-white ring-2 ring-white">
-                        +{linkedClientContacts.length - 4}
-                      </span>
-                    )}
-                  </span>
-                )}
-              </button>
+              <Button variant="secondary" onClick={() => setEditingCompany(true)}><Edit2 size={14} /> Edit Company</Button>
             </div>
           </div>
 
