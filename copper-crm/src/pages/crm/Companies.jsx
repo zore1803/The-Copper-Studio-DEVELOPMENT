@@ -658,14 +658,14 @@ export default function Companies() {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Sub-header */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div>
+      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-4 py-3 sm:px-6 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="min-w-0">
           <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
           <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contracts</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
           {/* Search */}
-          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
+          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 min-w-0 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"

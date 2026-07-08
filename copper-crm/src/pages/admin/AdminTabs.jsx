@@ -337,8 +337,8 @@ export function ProposalGeneratorPage() {
       subtitle="Create a ready-to-send, branded proposal draft."
       action={<Button onClick={sendProposal}><Send size={14} /> Send Proposal</Button>}
     >
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card>
+      <div className="grid gap-5 xl:grid-cols-2 min-w-0">
+        <Card className="min-w-0">
           <div className="border-b border-[#EAECF0] px-5 py-4">
             <h3 className="text-sm font-bold text-[#1F2937]">Proposal details</h3>
             <p className="text-xs text-[#9CA3AF]">Fields marked * are required.</p>
@@ -359,7 +359,7 @@ export function ProposalGeneratorPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <div className="flex items-center justify-between border-b border-[#EAECF0] px-5 py-4">
             <div>
               <h3 className="text-sm font-bold text-[#1F2937]">Live preview</h3>
