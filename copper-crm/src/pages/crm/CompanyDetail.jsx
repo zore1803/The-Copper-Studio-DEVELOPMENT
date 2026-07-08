@@ -616,6 +616,7 @@ export default function CompanyDetail() {
   const [noteDateFilter, setNoteDateFilter] = useState("");
   const [mobileNoteSearchOpen, setMobileNoteSearchOpen] = useState(false);
   const [mobileNoteDateOpen, setMobileNoteDateOpen] = useState(false);
+  const [bookingMeeting, setBookingMeeting] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -1108,6 +1109,11 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Note</Button>
             </div>
           )}
+          {activeTab === "Meetings" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <Button size="sm" onClick={() => setBookingMeeting(true)}><Calendar size={14} /> Book</Button>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -1403,7 +1409,12 @@ export default function CompanyDetail() {
           />
         )}
         {activeTab === "Meetings" && (
-          <MeetingsTab calendlyUrl={company.calendlyUrl} />
+          <MeetingsTab
+            calendlyUrl={company.calendlyUrl}
+            booking={bookingMeeting}
+            onOpenBooking={() => setBookingMeeting(true)}
+            onCloseBooking={() => setBookingMeeting(false)}
+          />
         )}
         {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
       </div>
@@ -2927,19 +2938,22 @@ function CalendlyBookingModal({ url, onClose }) {
 
 const DEFAULT_CALENDLY_URL = "https://calendly.com/thecopperstudio/30min";
 
-function MeetingsTab({ calendlyUrl }) {
-  const [booking, setBooking] = useState(false);
+function MeetingsTab({ calendlyUrl, booking, onOpenBooking, onCloseBooking }) {
   const schedulingUrl = calendlyUrl || DEFAULT_CALENDLY_URL;
 
   return (
     <div className="space-y-5">
       <Section
         title="Scheduled Meetings"
-        action={<Button size="sm" onClick={() => setBooking(true)}><Calendar size={14} /> Book a Meeting</Button>}
+        hideHeaderOnMobile
+        flush
+        action={<Button size="sm" onClick={onOpenBooking}><Calendar size={14} /> Book a Meeting</Button>}
       >
-        <GoogleCalendarEmbed />
+        <div className="p-2 sm:p-5">
+          <GoogleCalendarEmbed />
+        </div>
       </Section>
-      {booking && <CalendlyBookingModal url={schedulingUrl} onClose={() => setBooking(false)} />}
+      {booking && <CalendlyBookingModal url={schedulingUrl} onClose={onCloseBooking} />}
     </div>
   );
 }
