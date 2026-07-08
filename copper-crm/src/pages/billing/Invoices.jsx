@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
-import { AlertCircle, ArrowUpDown, Check, CheckCircle2, ChevronLeft, ChevronRight, Download, Edit2, Eye, FileDown, FileText, Loader2, MoreVertical, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
+import { AlertCircle, ArrowUpDown, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Download, Edit2, Eye, FileDown, FileText, Loader2, MoreVertical, Plus, ReceiptText, Save, Search, Send, WalletCards } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
@@ -1301,15 +1301,18 @@ function InvoiceStatus({ invoice, onChange }) {
 
 function StatusSelect({ value, onChange }) {
   return (
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={`rounded-full border-0 px-2 py-1 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
-      aria-label="Invoice status"
-    >
-      {UNPAID_STATUS_ACTIONS.map((status) => (
-        <option key={status} value={status}>{status}</option>
-      ))}
-    </select>
+    <span className="relative inline-flex items-center">
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={`appearance-none rounded-full border-0 py-1 pl-2 pr-6 text-xs font-semibold outline-none ring-1 ring-transparent transition focus:ring-[#8D3118]/30 ${statusTone(value)}`}
+        aria-label="Invoice status"
+      >
+        {UNPAID_STATUS_ACTIONS.map((status) => (
+          <option key={status} value={status}>{status}</option>
+        ))}
+      </select>
+      <ChevronDown size={12} className="pointer-events-none absolute right-1.5 opacity-70" />
+    </span>
   );
 }
