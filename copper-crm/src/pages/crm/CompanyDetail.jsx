@@ -597,6 +597,7 @@ export default function CompanyDetail() {
   const [contactDesignationFilter, setContactDesignationFilter] = useState("All");
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [invoiceQuery, setInvoiceQuery] = useState("");
+  const [mobileInvoiceSearchOpen, setMobileInvoiceSearchOpen] = useState(false);
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState("All");
   const [invoicePaymentStatusFilter, setInvoicePaymentStatusFilter] = useState("All");
   const [linkingClient, setLinkingClient] = useState(false);
@@ -1027,6 +1028,16 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setEditingContact({})}><Plus size={14} /> Contact</Button>
             </div>
           )}
+          {activeTab === "Invoices" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button
+                onClick={() => setMobileInvoiceSearchOpen((v) => !v)}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileInvoiceSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Search size={15} />
+              </button>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -1037,6 +1048,18 @@ export default function CompanyDetail() {
             value={contactQuery}
             onChange={(e) => setContactQuery(e.target.value)}
             placeholder="Search contacts…"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+          />
+        </div>
+      )}
+      {focusMode && activeTab === "Invoices" && mobileInvoiceSearchOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Search size={14} className="shrink-0 text-[#525866]" />
+          <input
+            autoFocus
+            value={invoiceQuery}
+            onChange={(e) => setInvoiceQuery(e.target.value)}
+            placeholder="Search invoices…"
             className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
           />
         </div>
@@ -1222,7 +1245,7 @@ export default function CompanyDetail() {
           <Section
             title="Invoices"
             action={
-              <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
                 <ModuleSearch value={invoiceQuery} onChange={setInvoiceQuery} placeholder="Search invoices…" />
                 <FilterButton
                   panelWidth={420}
@@ -1697,7 +1720,32 @@ function ContactsTable({ contacts, onEdit, onDelete, onView, onPrimary }) {
 
 function InvoicesTable({ invoices, onView, onDownload }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* Mobile: one card per invoice instead of a cramped, horizontally
+          scrolling table. */}
+      <div className="flex flex-col gap-3 p-4 sm:hidden">
+        {invoices.map((invoice) => (
+          <MobileListCard
+            key={invoice.id || invoice._id}
+            title={invoice.invoiceId || invoice.id || invoice._id}
+            subtitle={formatINR(parseMoney(invoice.total || invoice.amount))}
+            badge={<StatusBadge status={invoice.status || "Pending"} />}
+            onClick={() => onView(invoice)}
+            fields={[
+              { label: "Date", value: invoice.date || invoice.createdAt || "No date" },
+              { label: "Due Date", value: invoice.dueDate || "No due date" },
+              { label: "Payment", value: invoice.paymentStatus || invoice.status || "Pending" },
+              { label: "Transaction ID", value: invoice.transactionId || invoice.paymentId || invoice.razorpayPaymentId || "Not linked" },
+            ]}
+            actions={[
+              { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => onView(invoice) },
+              { label: "Download", icon: <Download size={13} />, tone: CARD_TONES.neutral, onClick: () => onDownload(invoice) },
+            ]}
+          />
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto sm:block">
       <table className="min-w-full text-sm">
         <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
@@ -1731,7 +1779,8 @@ function InvoicesTable({ invoices, onView, onDownload }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
