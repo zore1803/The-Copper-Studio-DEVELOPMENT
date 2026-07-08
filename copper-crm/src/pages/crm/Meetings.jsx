@@ -73,7 +73,7 @@ function GoogleCalendarEmbed() {
     );
   }
   const src = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(GOOGLE_CALENDAR_ID)}&ctz=${encodeURIComponent(GOOGLE_CALENDAR_TZ)}`;
-  return <iframe src={src} title="Google Calendar" className="h-[720px] w-full rounded-xl border border-[#e5e7eb]" frameBorder="0" scrolling="no" />;
+  return <iframe src={src} title="Google Calendar" className="h-[420px] w-full rounded-xl border border-[#e5e7eb] sm:h-[720px]" frameBorder="0" scrolling="no" />;
 }
 
 // A meeting's "client" and "company" columns aren't stored as plain strings —
