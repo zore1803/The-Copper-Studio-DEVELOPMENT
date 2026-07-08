@@ -69,11 +69,20 @@ function isDraftLikeStatus(value) {
   return !status || status === "draft" || status === "pending" || status === "generated";
 }
 
-function Metric({ label, value, icon: Icon }) {
+const METRIC_TONES = {
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  blue: "bg-blue-50 text-blue-600",
+  rose: "bg-rose-50 text-rose-600",
+  purple: "bg-purple-50 text-purple-600",
+  cyan: "bg-cyan-50 text-cyan-600",
+};
+
+function Metric({ label, value, icon: Icon, tone = "emerald" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-2.5 sm:p-4 overflow-hidden">
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+        <div className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${METRIC_TONES[tone] || METRIC_TONES.emerald}`}>
           <Icon size={15} className="sm:hidden" />
           <Icon size={17} className="hidden sm:block" />
         </div>
@@ -1126,10 +1135,10 @@ export default function Invoices() {
 
       <div className="p-5 xl:p-6">
       <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Metric label="Paid Revenue" value={money(totals.paidRevenue)} icon={WalletCards} />
-        <Metric label="Paid GST / Tax" value={money(totals.paidTax)} icon={ReceiptText} />
-        <Metric label="Paid" value={totals.paid} icon={FileText} />
-        <Metric label="Overdue" value={totals.overdue} icon={Send} />
+        <Metric label="Paid Revenue" value={money(totals.paidRevenue)} icon={WalletCards} tone="emerald" />
+        <Metric label="Paid GST / Tax" value={money(totals.paidTax)} icon={ReceiptText} tone="blue" />
+        <Metric label="Paid" value={totals.paid} icon={FileText} tone="purple" />
+        <Metric label="Overdue" value={totals.overdue} icon={Send} tone="rose" />
       </div>
 
       {/* Mobile: one card per invoice, wrapped in an outer section like Meetings */}

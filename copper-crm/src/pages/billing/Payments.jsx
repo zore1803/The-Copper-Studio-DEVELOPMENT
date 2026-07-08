@@ -47,11 +47,20 @@ function formatDate(value) {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function Metric({ label, value, icon: Icon }) {
+const METRIC_TONES = {
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  blue: "bg-blue-50 text-blue-600",
+  rose: "bg-rose-50 text-rose-600",
+  purple: "bg-purple-50 text-purple-600",
+  cyan: "bg-cyan-50 text-cyan-600",
+};
+
+function Metric({ label, value, icon: Icon, tone = "emerald" }) {
   return (
     <div className="rounded-xl border border-[#e5e7eb] bg-white p-2.5 sm:p-4 overflow-hidden">
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+        <div className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${METRIC_TONES[tone] || METRIC_TONES.emerald}`}>
           <Icon size={15} className="sm:hidden" />
           <Icon size={17} className="hidden sm:block" />
         </div>
@@ -306,10 +315,10 @@ export default function Payments() {
 
       <div className="p-5 xl:p-6">
       <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
-        <Metric label="Total Revenue" value={money(revenue)} icon={WalletCards} />
-        <Metric label="Pending Payments" value={money(pending)} icon={CreditCard} />
-        <Metric label="Successful Payments" value={successfulPayments.length} icon={PackageCheck} />
-        <Metric label="Invoices" value={invoices.length} icon={ReceiptText} />
+        <Metric label="Total Revenue" value={money(revenue)} icon={WalletCards} tone="emerald" />
+        <Metric label="Pending Payments" value={money(pending)} icon={CreditCard} tone="amber" />
+        <Metric label="Successful Payments" value={successfulPayments.length} icon={PackageCheck} tone="blue" />
+        <Metric label="Invoices" value={invoices.length} icon={ReceiptText} tone="purple" />
       </div>
 
       {/* Mobile: one card per payment, wrapped in an outer section like Meetings */}
