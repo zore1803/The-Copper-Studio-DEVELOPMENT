@@ -436,8 +436,8 @@ export default function AdminLayout() {
 
         <div className={`border-t border-[#ECECEC] ${collapsed && !mobileOpen ? "flex flex-col items-center py-3" : "p-3"}`}>
           <button
-            onClick={() => setPinned((v) => !v)}
-            title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
+            onClick={() => (mobileOpen ? setMobileOpen(false) : setPinned((v) => !v))}
+            title={mobileOpen ? "Close sidebar" : pinned ? "Unpin sidebar" : "Pin sidebar open"}
             className={`flex items-center gap-2 rounded-lg border border-[#E5E5E5] bg-white text-sm font-semibold text-[#525252] hover:bg-[#f9fafb] transition-colors ${collapsed && !mobileOpen ? "h-9 w-9 justify-center" : "w-full px-3 py-2"}`}
           >
             {collapsed && !mobileOpen ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
