@@ -357,6 +357,7 @@ export default function Contacts() {
   const { showToast } = useToast();
   const { token } = useAuth();
   const [search, setSearch] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState(() => (location.state?.openCreate
     ? { salutation: "", firstName: "", lastName: "", email: "", phone: "", whatsapp: "", designation: "", linkedin: "", companyId: "", status: "Active" }
@@ -532,23 +533,57 @@ export default function Contacts() {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
-            <ChevronLeft size={18} />
-          </button>
-          <div>
-            <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
-            <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contacts</p>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+              <ChevronLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-base font-medium text-[#0E121B]">Contacts</h1>
+              <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">Manage your organisation contacts</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Hotlist toggle (mobile, compact — desktop copy lives below) */}
+            <button
+              onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
+              className={`flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors sm:hidden ${view === "hotlist" ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#1F2937]"}`}
+            >
+              <Grid2x2 size={14} />
+              Hotlist
+            </button>
+            {/* Mobile-only search icon toggle */}
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+            >
+              <Search size={15} />
+            </button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
+
+        {/* Mobile search bar — drops down only when the icon above is tapped */}
+        {mobileSearchOpen && (
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#8D3118] bg-[#fff8f6] px-3 sm:hidden">
+            <Search size={14} className="text-[#8D3118] shrink-0" />
+            <input
+              autoFocus
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+              placeholder="Search by name, email, or company..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <div className="hidden h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:flex sm:w-72 min-w-0 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name, email, or company..." className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]" />
           </div>
-            {/* Sort */}
-            <div className="relative" ref={sortRef}>
+            {/* Sort (desktop only) */}
+            <div className="relative hidden sm:block" ref={sortRef}>
               <button
                 onClick={() => setSortOpen((value) => !value)}
                 className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
@@ -572,22 +607,24 @@ export default function Contacts() {
               )}
             </div>
 
-            {/* Filters */}
-            <FilterButton
-              panelWidth={520}
-              onReset={resetFilters}
-              fields={[
-                { key: "status", label: "Status", type: "select", value: statusFilter, onChange: (value) => { setStatusFilter(value); setPage(1); }, options: statuses },
-                { key: "designation", label: "Designation", type: "select", value: designationFilter, onChange: (value) => { setDesignationFilter(value); setPage(1); }, options: designations },
-                { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames },
-                { key: "portalAccess", label: "Portal Access", type: "select", value: portalAccessFilter, onChange: (value) => { setPortalAccessFilter(value); setPage(1); }, options: ["All", "Yes", "No"] }
-              ]}
-            />
+            {/* Filters (desktop only) */}
+            <div className="hidden sm:block">
+              <FilterButton
+                panelWidth={520}
+                onReset={resetFilters}
+                fields={[
+                  { key: "status", label: "Status", type: "select", value: statusFilter, onChange: (value) => { setStatusFilter(value); setPage(1); }, options: statuses },
+                  { key: "designation", label: "Designation", type: "select", value: designationFilter, onChange: (value) => { setDesignationFilter(value); setPage(1); }, options: designations },
+                  { key: "company", label: "Company", type: "select", value: companyFilter, onChange: (value) => { setCompanyFilter(value); setPage(1); }, options: companyNames },
+                  { key: "portalAccess", label: "Portal Access", type: "select", value: portalAccessFilter, onChange: (value) => { setPortalAccessFilter(value); setPage(1); }, options: ["All", "Yes", "No"] }
+                ]}
+              />
+            </div>
 
-            {/* View toggle */}
+            {/* View toggle (desktop) */}
             <button
               onClick={() => setView((v) => (v === "table" ? "hotlist" : "table"))}
-              className={`flex h-8 items-center gap-1.5 rounded-full p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
+              className={`hidden sm:flex h-8 items-center gap-1.5 rounded-full p-0.5 transition-colors ${view === "hotlist" ? "bg-[#0085FF]/20" : "bg-[#FFFFFF]"}`}
             >
               <span className="flex h-7 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-medium shadow-[0_0_6px_rgba(0,0,0,0.1)]">
                 <Grid2x2 size={16} className={view === "hotlist" ? "text-[#8D3118]" : "text-[#1F2937]"} />
