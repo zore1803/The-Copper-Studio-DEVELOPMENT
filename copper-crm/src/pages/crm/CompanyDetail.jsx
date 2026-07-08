@@ -1299,7 +1299,7 @@ export default function CompanyDetail() {
 function Section({ title, action, flush = false, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-white border-b border-[#f3e5e0] px-5 py-4 sm:bg-[#fff1ec]">
         <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
         {action}
       </div>
@@ -1459,7 +1459,7 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
     <Section
       title="Projects"
       action={
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="hidden flex-wrap items-center justify-end gap-2 sm:flex">
           <FilterButton
             panelWidth={560}
             onReset={() => { onStatusFilter("All"); onPackageFilter("All"); onManagerFilter("All"); onTimelineFilter("All"); }}
@@ -1476,6 +1476,18 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
       }
       flush={Boolean(projects.length) && view === "Table"}
     >
+      {/* Mobile: view dropdown + create button live in the white body instead
+          of the pink header strip, and the filter icon is dropped entirely. */}
+      <div className="flex items-center gap-2 p-4 pb-0 sm:hidden">
+        <select
+          value={view}
+          onChange={(e) => onView(e.target.value)}
+          className="h-8 flex-1 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none"
+        >
+          {PROJECT_VIEWS.map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
+        <Button size="sm" onClick={onCreate}><Plus size={14} /> Project</Button>
+      </div>
       {!allProjects.length ? <EmptyState icon={FolderKanban} title="No projects yet." action={<Button onClick={onCreate}><Plus size={14} /> New Project</Button>} /> : null}
       {allProjects.length && !projects.length ? <EmptyState icon={Filter} title="No projects match these filters." /> : null}
       {projects.length && view === "Table" ? <ProjectsTable projects={projects} companyId={companyId} onOpen={onOpen} onDelete={onDelete} /> : null}
