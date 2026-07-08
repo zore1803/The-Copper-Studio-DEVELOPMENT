@@ -5,6 +5,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard from "../../components/MobileListCard";
 import { useDataFields } from "../../lib/dataFields";
 
 const PAGE_SIZE = 25;
@@ -262,7 +263,25 @@ export default function Payments() {
         <Metric label="Invoices" value={invoices.length} icon={ReceiptText} />
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+      {/* Mobile: one card per payment */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {sorted.length ? paginated.map((row) => (
+          <MobileListCard
+            key={row._id || row.id || row.paymentId}
+            title={row.paymentId || row.id || row._id}
+            subtitle={formatDate(row.paidAt || row.createdAt || row.date)}
+            badge={<Status value={row.status || "Pending"} />}
+            fields={[
+              { label: "Company", value: row.company || "Not linked" },
+              { label: "Amount", value: money(parseMoney(row.amount)) },
+            ]}
+          />
+        )) : (
+          <p className="py-10 text-center text-sm text-[#6b7280]">No payments found.</p>
+        )}
+      </div>
+
+      <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (
           <>
             <div className="overflow-x-auto">
