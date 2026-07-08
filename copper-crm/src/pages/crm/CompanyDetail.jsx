@@ -2261,7 +2261,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
     <Section
       title="Tasks"
       hideHeaderOnMobile
-      flush={view === "List" || view === "Board"}
+      flush={view === "List" || view === "Board" || view === "Gantt"}
       action={
         <div className="flex flex-wrap items-center gap-2">
           <FilterButton
@@ -2284,7 +2284,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
           {view === "List" && <TasksTable tasks={filteredTasks} projects={projects} onDelete={onDelete} />}
           {view === "Board" && <TaskKanbanBoard tasks={filteredTasks} onMoveTask={onMoveTask} onDelete={onDelete} />}
           {view === "Calendar" && <CalendarTaskView tasks={filteredTasks} onCreate={onCreate} />}
-          {view === "Gantt" && <TaskGantt tasks={filteredTasks} projects={projects} />}
+          {view === "Gantt" && <div className="p-2 sm:p-5"><TaskGantt tasks={filteredTasks} projects={projects} /></div>}
         </>
       ) : (
         <EmptyState icon={Filter} title="No tasks match these filters." />
@@ -2486,14 +2486,14 @@ function CalendarTaskView({ tasks, onCreate }) {
       )}
 
       {calendarView === "Week" && (
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
           {weekDays.map(({ date, tasks: dayTasksList }) => {
             const isToday = sameDay(date, todayDate);
             return (
               <button
                 key={date.toISOString()}
                 onClick={() => setSelectedDay(date)}
-                className={`min-h-[120px] rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#8D3118]/40 ${isToday ? "border-[#8D3118]/40" : "border-[#e5e7eb]"}`}
+                className={`rounded-xl border bg-white p-2 text-left transition-colors hover:border-[#8D3118]/40 sm:min-h-[120px] ${isToday ? "border-[#8D3118]/40" : "border-[#e5e7eb]"}`}
               >
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#9ca3af]">{WEEKDAY_LABELS[date.getDay()]}</p>
                 <span className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#8D3118] text-white" : "text-[#374151]"}`}>{date.getDate()}</span>

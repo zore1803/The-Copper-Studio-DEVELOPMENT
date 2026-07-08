@@ -300,26 +300,28 @@ export default function GanttChart({
           {summary.blocked > 0 && (
             <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: "#fde8e8", color: CS.error }}>{summary.blocked} blocked</span>
           )}
-          <button
-            type="button"
-            onClick={scrollToToday}
-            className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none transition-colors hover:bg-black/[0.03]"
-            style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
-            title="Jump to today"
-          >
-            Today
-          </button>
-          <select
-            value={zoom}
-            onChange={(e) => setZoom(e.target.value)}
-            className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none focus:ring-2"
-            style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
-            aria-label="Timeline zoom"
-          >
-            {Object.keys(GANTT_ZOOM).map((level) => (
-              <option key={level} value={level}>{level}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={scrollToToday}
+              className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none transition-colors hover:bg-black/[0.03]"
+              style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
+              title="Jump to today"
+            >
+              Today
+            </button>
+            <select
+              value={zoom}
+              onChange={(e) => setZoom(e.target.value)}
+              className="rounded-lg border px-3 py-1.5 text-xs font-bold outline-none focus:ring-2"
+              style={{ borderColor: CS.outlineVariant, color: CS.onSurface, background: "#fff" }}
+              aria-label="Timeline zoom"
+            >
+              {Object.keys(GANTT_ZOOM).map((level) => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
