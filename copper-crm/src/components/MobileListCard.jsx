@@ -57,7 +57,6 @@ export default function MobileListCard({ title, subtitle, badge, fields = [], ac
 // Previous/Next button pair, then a centered "Showing X / Y" pill below.
 // Desktop keeps its own numbered-page-buttons pagination unchanged.
 export function MobileListPagination({ page, totalPages, onPrev, onNext }) {
-  if (totalPages <= 1) return null;
   return (
     <div className="mt-3 rounded-xl border border-[#E1E4EA] bg-white p-4 sm:hidden">
       <div className="grid grid-cols-2 gap-3">
