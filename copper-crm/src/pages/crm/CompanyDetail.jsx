@@ -1043,7 +1043,9 @@ export default function CompanyDetail() {
             <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
               <InfoLine label="GSTIN" value={company.gstin} />
               <InfoLine label="Client Since" value={formatDate(company.createdAt || company.clientSince)} />
-              <InfoLine label="Primary Contact" value={primaryContact?.name || company.primaryContact} />
+              <div className="hidden sm:block">
+                <InfoLine label="Primary Contact" value={primaryContact?.name || company.primaryContact} />
+              </div>
               <InfoLine label="Lead Source" value={company.leadSource} />
               <InfoLine label="Owner" value={company.owner || company.companyOwner} />
               <button
