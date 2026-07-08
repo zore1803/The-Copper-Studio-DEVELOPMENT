@@ -7,6 +7,7 @@ import { storeGet, storeSet } from "../../lib/store";
 import { today, DAY_MS, parseFullDate, formatRange } from "../../lib/dates";
 import { useClientProject, belongsToProject, orderBelongsToProject } from "../../context/ClientProjectContext";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard, { CARD_TONES, MobileListPagination } from "../../components/MobileListCard";
 import GanttChart from "../../components/GanttChart";
 import ProgressBar from "../../components/ProgressBar";
 import { useToast } from "../../components/useToast";
@@ -18,7 +19,7 @@ import {
   StickyNote, History, Copy, Video, Search, Download, Eye,
   FolderOpen, Receipt, ReceiptText, Wallet, MonitorSmartphone, Headset, Mail,
   Save, Lock, AlertTriangle, Activity, FileText, FileImage, LogOut,
-  FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route,
+  FileSpreadsheet, FileArchive, File, Zap, ListChecks, Route, ChevronLeft,
 } from "lucide-react";
 
 /* ─── Shared primitives ─── */
@@ -41,17 +42,23 @@ const CS = {
 
 
 function PageShell({ title, subtitle, children, action, maxWidthClass = "" }) {
+  const navigate = useNavigate();
   return (
     <div className="flex flex-col min-h-full">
       <div
-        className="flex flex-col gap-4 border-b bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0"
+        className="flex flex-col gap-2 border-b bg-white px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0"
         style={{ borderColor: CS.outlineVariant }}
       >
-        <div className="min-w-0">
-          <h1 className="text-base font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h1>
-          {subtitle && <p className="mt-0.5 text-xs truncate" style={{ color: CS.secondary }}>{subtitle}</p>}
+        <div className="flex items-center gap-2 min-w-0">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-base font-medium" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{title}</h1>
+            {subtitle && <p className="hidden mt-0.5 text-xs truncate sm:block" style={{ color: CS.secondary }}>{subtitle}</p>}
+          </div>
         </div>
-        {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
+        {action && <div className="flex flex-wrap items-center gap-2 min-w-0">{action}</div>}
       </div>
       <div className={`p-5 xl:p-6 w-full ${maxWidthClass}`}>
         {children}
@@ -478,6 +485,11 @@ export function ClientMeetingsPage() {
   const safePage = Math.min(page, totalPages);
   const paginated = filteredMeetings.slice((safePage - 1) * MEETINGS_PAGE_SIZE, safePage * MEETINGS_PAGE_SIZE);
 
+  const MOBILE_PAGE_SIZE = 5;
+  const mobileTotalPages = Math.max(1, Math.ceil(filteredMeetings.length / MOBILE_PAGE_SIZE));
+  const mobileSafePage = Math.min(page, mobileTotalPages);
+  const mobilePaginated = filteredMeetings.slice((mobileSafePage - 1) * MOBILE_PAGE_SIZE, mobileSafePage * MOBILE_PAGE_SIZE);
+
   const selected = selectedRaw;
   const [bookingEvent, setBookingEvent] = useState(null);
   const [bookingFrameHeight, setBookingFrameHeight] = useState(520);
@@ -591,11 +603,45 @@ export function ClientMeetingsPage() {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Left: all meetings list, admin list pattern */}
           <div className="w-full flex-1 min-w-0">
-            <div className="overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
-              {filteredMeetings.length === 0 ? (
+            {filteredMeetings.length === 0 ? (
+              <div className="overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
                 <EmptyState icon={Video} title="No meetings" description={statusFilter === "all" ? "You don't have any meetings yet." : "No meetings match this filter."} />
-              ) : (
-                <>
+              </div>
+            ) : (
+              <>
+                {/* Mobile: one card per meeting, wrapped in an outer section like admin Meetings */}
+                <section className="overflow-hidden rounded-xl border sm:hidden" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
+                  <div className="flex flex-col gap-3 p-4">
+                    {mobilePaginated.map((m) => (
+                      <MobileListCard
+                        key={m._id}
+                        title={m.title}
+                        subtitle={meetingTypelabel(m.type)}
+                        badge={<Badge {...statusBadge(m.status)} />}
+                        onClick={() => setSelected(m)}
+                        fields={[
+                          { label: "Type", value: meetingTypelabel(m.type) },
+                          {
+                            label: "Date / Time",
+                            value: m.scheduledAt
+                              ? new Date(m.scheduledAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                              : m.preferredDate
+                                ? `Preferred: ${new Date(m.preferredDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                                : "TBD",
+                          },
+                        ]}
+                      />
+                    ))}
+                  </div>
+                  <MobileListPagination
+                    page={mobileSafePage}
+                    totalPages={mobileTotalPages}
+                    onPrev={() => setPage((p) => Math.max(1, p - 1))}
+                    onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
+                  />
+                </section>
+
+                <div className="hidden sm:block overflow-hidden rounded-xl border" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
@@ -666,9 +712,9 @@ export function ClientMeetingsPage() {
                       </button>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right: book a meeting — Calendly widget shown directly */}
@@ -1049,21 +1095,22 @@ export function ClientBillingPage() {
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
             {[
               { Icon: Wallet, label: "Total Paid", value: `₹${totalPaid.toLocaleString("en-IN")}`, color: CS.primary },
               { Icon: ReceiptText, label: "Total Invoices", value: orders.length, color: "#4caf50" },
               { Icon: Clock, label: "Pending", value: orders.filter(o => o.payment?.status !== "paid").length, color: "#ff9800" },
             ].map(s => (
-              <div key={s.label} className="rounded-xl border p-5 flex items-center gap-4"
+              <div key={s.label} className="rounded-xl border p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 overflow-hidden"
                 style={{ background: CS.surfaceLowest, borderColor: CS.outlineVariant }}>
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ background: s.color + "15" }}>
-                  <s.Icon size={22} style={{ color: s.color }} />
+                  <s.Icon size={15} className="sm:hidden" style={{ color: s.color }} />
+                  <s.Icon size={17} className="hidden sm:block" style={{ color: s.color }} />
                 </div>
-                <div>
-                  <p className="text-xl font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{s.value}</p>
-                  <p className="text-xs" style={{ color: CS.secondary }}>{s.label}</p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm sm:text-lg font-bold" style={{ color: CS.onSurface, fontFamily: "'DM Sans', system-ui, sans-serif" }}>{s.value}</p>
+                  <p className="truncate text-[10px] sm:text-xs" style={{ color: CS.secondary }}>{s.label}</p>
                 </div>
               </div>
             ))}
@@ -1078,7 +1125,40 @@ export function ClientBillingPage() {
                 {orders.length === 0 ? (
                   <EmptyState icon={ReceiptText} title="No invoices" description="Your invoices will appear here after purchasing a package." />
                 ) : (
-                  <div className="overflow-x-auto">
+                  <>
+                    {/* Mobile: one card per invoice */}
+                    <div className="flex flex-col gap-3 p-4 sm:hidden">
+                      {orders.map((o) => (
+                        <MobileListCard
+                          key={o._id}
+                          title={`#${o.payment?.invoiceId || "—"}`}
+                          subtitle={o.package?.name}
+                          badge={
+                            <Badge
+                              label={o.payment?.status === "paid" ? "Paid" : o.payment?.status === "failed" ? "Failed" : "Pending"}
+                              type={o.payment?.status === "paid" ? "success" : o.payment?.status === "failed" ? "error" : "warning"}
+                            />
+                          }
+                          onClick={() => setSelectedOrder(o)}
+                          fields={[
+                            { label: "Amount", value: `₹${(o.package?.total || 0).toLocaleString("en-IN")}` },
+                            {
+                              label: "Date",
+                              value: o.payment?.paidAt
+                                ? new Date(o.payment.paidAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                                : o.createdAt
+                                  ? new Date(o.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+                                  : "—",
+                            },
+                          ]}
+                          actions={[
+                            { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => setSelectedOrder(o) },
+                          ]}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr style={{ background: "#8D3118", color: "#ffffff", fontSize: 12, letterSpacing: "0.05em" }}>
@@ -1126,7 +1206,8 @@ export function ClientBillingPage() {
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                    </div>
+                  </>
                 )}
               </Card>
             </div>
