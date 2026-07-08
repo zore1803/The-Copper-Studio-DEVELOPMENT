@@ -12,6 +12,7 @@ import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import ContactFormPanel from "../../components/ContactFormPanel";
 import ProjectFormPanel from "../../components/ProjectFormPanel";
+import DocumentUploadPanel from "../../components/DocumentUploadPanel";
 import MobileListCard from "../../components/MobileListCard";
 import { buildProjectPayload } from "../../lib/projectDefaults";
 import ContactExportMenu from "../../components/ContactExportMenu";
@@ -276,7 +277,7 @@ export default function ContactDetail() {
   const { records: companies } = useCrmRecords("companies");
   const { records: projects, save: saveProject } = useCrmRecords("projects");
   const { records: meetings } = useCrmRecords("meetings");
-  const { records: documents } = useCrmRecords("documents");
+  const { records: documents, save: saveDocument } = useCrmRecords("documents");
   const { records: tasks, save: saveTask } = useCrmRecords("tasks");
   const { records: notes, save: saveNote, remove: removeNote } = useCrmRecords("notes");
   const { showToast } = useToast();
@@ -293,6 +294,7 @@ export default function ContactDetail() {
   const focusMode = Boolean(location.state?.focusMode);
   const [editing, setEditing] = useState(false);
   const [creatingProject, setCreatingProject] = useState(false);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [noteDateFilter, setNoteDateFilter] = useState("");
   const [noteSearch, setNoteSearch] = useState("");
@@ -450,6 +452,20 @@ export default function ContactDetail() {
     showToast({ title: "Project workspace created", message: `${created.name} now has timeline, tasks, documents, and activity.` });
   }
 
+  async function handleUploadDocument(form) {
+    if (!form.name.trim()) {
+      showToast({ type: "error", title: "File name required", message: "Add a name before uploading." });
+      return;
+    }
+    await saveDocument({
+      ...form,
+      companyId: linkedCompany?._id || linkedCompany?.id,
+      company: companyName,
+    });
+    setUploadingDocument(false);
+    showToast({ title: "Document uploaded", message: `${form.name} was added.` });
+  }
+
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
       {focusMode && (
@@ -464,6 +480,11 @@ export default function ContactDetail() {
           {activeTab === "Projects" && (
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>
+            </div>
+          )}
+          {activeTab === "Documents" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <Button size="sm" onClick={() => setUploadingDocument(true)}><Plus size={14} /> Upload</Button>
             </div>
           )}
         </div>
@@ -903,6 +924,14 @@ export default function ContactDetail() {
           projects={projects}
           onClose={() => setCreatingProject(false)}
           onSave={handleCreateProject}
+        />
+      )}
+      {uploadingDocument && (
+        <DocumentUploadPanel
+          company={linkedCompany}
+          projects={linkedProjects}
+          onClose={() => setUploadingDocument(false)}
+          onSave={handleUploadDocument}
         />
       )}
       {editingNote && <NotePanel contact={contact} note={editingNote._id || editingNote.id ? editingNote : null} onClose={() => setEditingNote(null)} onSave={handleSaveNote} />}
