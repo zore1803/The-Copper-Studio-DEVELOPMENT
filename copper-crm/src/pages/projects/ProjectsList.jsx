@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpDown, Check, CheckCircle2, Clock3, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, Check, CheckCircle2, Clock3, Eye, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { apiGet } from "../../lib/api";
@@ -9,6 +9,7 @@ import ProjectFormPanel from "../../components/ProjectFormPanel";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 
 const SORT_OPTIONS = [
   { value: "created_desc", label: "Newest first" },
@@ -279,7 +280,47 @@ export default function ProjectsList() {
         </div>
       )}
 
-      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+      {/* Mobile: one card per project */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {loading ? (
+          <p className="py-10 text-center text-sm text-[#6b7280]">Loading projects...</p>
+        ) : filtered.length > 0 ? filtered.map((project) => {
+          const statusLabel = PROJECT_STATUS_OPTIONS.find((o) => o.value === project.effectiveStatus)?.label || project.effectiveStatus;
+          const statusTone = project.effectiveStatus === "completed"
+            ? "bg-emerald-50 text-emerald-700"
+            : project.effectiveStatus === "delayed"
+              ? "bg-red-50 text-red-700"
+              : "bg-[#f3f4f6] text-[#374151]";
+          return (
+            <MobileListCard
+              key={project.id || project._id}
+              title={project.name}
+              subtitle={project.template || project.packageName || "Custom"}
+              badge={<span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusTone}`}>{statusLabel}</span>}
+              onClick={() => navigate(`/admin/projects/${project.id || project._id}`)}
+              fields={[
+                { label: "Company", value: project.computedCompanyName },
+                { label: "Progress · Value", value: `${project.computedProgress}% · ${formatINR(project.finalAmount || project.budget || 0)}` },
+              ]}
+              actions={[
+                { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => navigate(`/admin/projects/${project.id || project._id}`) },
+                { label: "Timeline", icon: <Clock3 size={13} />, tone: CARD_TONES.edit, onClick: () => navigate(`/admin/projects/${project.id || project._id}/tasks`) },
+                { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => setDeletingProject(project) },
+              ]}
+            />
+          );
+        }) : (
+          <div className="rounded-xl border border-dashed border-[#e5e7eb] bg-white p-8 text-center">
+            <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+              <FolderKanban size={20} />
+            </div>
+            <p className="text-sm font-semibold text-[#111827]">{search || statusFilter !== "All" ? "No projects match your filters." : "No projects yet."}</p>
+            <p className="mt-1 text-sm text-[#6b7280]">Create a project and link it to a company to get started.</p>
+          </div>
+        )}
+      </div>
+
+      <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
         <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-[#6b7280]">
           <thead className="bg-[#8D3118] text-xs uppercase text-white">
