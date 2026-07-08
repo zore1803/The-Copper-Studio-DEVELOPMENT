@@ -656,7 +656,7 @@ export default function Companies() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full min-w-0 bg-white">
       {/* Sub-header */}
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-4 py-3 sm:px-6 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
         <div className="min-w-0">
@@ -731,7 +731,7 @@ export default function Companies() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto bg-[#FFFFFF] p-5 xl:p-6">
+      <div className="flex-1 min-w-0 overflow-auto bg-[#FFFFFF] p-5 xl:p-6">
         {view === "table" ? (
           <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">

@@ -447,7 +447,7 @@ export default function ClientLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-white">
           <Outlet />
         </main>
       </div>

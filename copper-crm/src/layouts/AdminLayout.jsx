@@ -628,7 +628,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto bg-white">
+        <main className="flex-1 min-w-0 overflow-y-auto bg-white">
           <Suspense fallback={<LoadingScreen />}>
             <Outlet />
           </Suspense>
