@@ -14,9 +14,9 @@ import { storeGet, storeSet } from "../lib/store";
 import { checkMeetingNotifications } from "../lib/projectNotifications";
 
 const QUICK_ACTIONS = [
-  { icon: Video, label: "Request a meeting", to: "/client/meetings", color: "#ff9800" },
-  { icon: FileText, label: "View documents", to: "/client/documents", color: "#2563eb" },
-  { icon: Receipt, label: "View invoices", to: "/client/invoices", color: "#4caf50" },
+  { icon: Video, label: "Request a meeting", to: "/client/meetings", bg: "bg-amber-50", color: "text-amber-600" },
+  { icon: FileText, label: "View documents", to: "/client/documents", bg: "bg-blue-50", color: "text-blue-600" },
+  { icon: Receipt, label: "View invoices", to: "/client/invoices", bg: "bg-emerald-50", color: "text-emerald-600" },
 ];
 
 const SEARCHABLE_PAGES = [
@@ -220,8 +220,10 @@ export default function ClientLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const quickAddRef = useRef(null);
   const notifRef = useRef(null);
+  const avatarRef = useRef(null);
   const { notifHistory, unreadCount, markAllRead, clearHistory } = useToast();
 
   // The session's name/email/preferences are only ever fetched at login —
@@ -255,6 +257,7 @@ export default function ClientLayout() {
     function onOutside(e) {
       if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
       if (quickAddRef.current && !quickAddRef.current.contains(e.target)) setQuickAddOpen(false);
+      if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
     }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
@@ -427,8 +430,8 @@ export default function ClientLayout() {
                       onClick={() => { setQuickAddOpen(false); go(item.to); }}
                       className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: item.color + "1f" }}>
-                        <item.icon size={14} style={{ color: item.color }} />
+                      <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${item.bg}`}>
+                        <item.icon size={14} className={item.color} />
                       </span>
                       {item.label}
                     </button>
@@ -438,10 +441,37 @@ export default function ClientLayout() {
             </div>
 
             {/* Avatar */}
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white text-xs font-medium">
-                {initials}
-              </span>
+            <div ref={avatarRef} className="relative">
+              <button
+                onClick={() => setAvatarOpen((v) => !v)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E5E5] bg-white p-1 hover:ring-2 hover:ring-[#8D3118]/20 transition-all"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8D3118] text-white text-xs font-medium">
+                  {initials}
+                </span>
+              </button>
+              {avatarOpen && (
+                <div className="absolute right-0 top-full mt-2 w-44 overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg z-50 py-1">
+                  <div className="px-3 py-2 border-b border-[#FFFFFF]">
+                    <p className="text-xs font-semibold text-[#111827] truncate">{name}</p>
+                    <p className="text-[11px] text-[#6b7280] truncate">{auth.user?.email}</p>
+                  </div>
+                  <button
+                    onClick={() => { setAvatarOpen(false); go("/client/profile"); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[#374151] hover:bg-[#f9fafb]"
+                  >
+                    <Settings size={14} className="text-[#9ca3af]" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => { setAvatarOpen(false); handleLogout(); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut size={14} />
+                    Log out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
