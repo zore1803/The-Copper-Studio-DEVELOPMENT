@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowDownRight, ArrowUpRight, BarChart2, BriefcaseBusiness,
   IndianRupee, TrendingUp,
@@ -271,6 +271,7 @@ function EarningsCard({ records }) {
 
 function CrmTab({ companies, contacts }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const recentCompanies = companies.slice(0, 8);
   return (
     <div className="space-y-5">
@@ -304,7 +305,7 @@ function CrmTab({ companies, contacts }) {
               {recentCompanies.map((company) => (
                 <tr
                   key={company.id || company._id}
-                  onClick={() => navigate(`/admin/companies/${company.id || company._id}`)}
+                  onClick={() => navigate(`/admin/companies/${company.id || company._id}`, { state: { backgroundLocation: location } })}
                   className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
                 >
                   <td className="px-5 py-3 font-semibold text-[#111827]">{company.name}</td>
@@ -399,6 +400,7 @@ const TABS = ["Overview", "CRM", "Invoices"];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [tab, setTab] = useState("Overview");
   const now = useMemo(() => new Date(), []);
   const { records: projects } = useCrmRecords("projects");
@@ -539,7 +541,7 @@ export default function Dashboard() {
                       return (
                         <tr
                           key={project.id}
-                          onClick={() => navigate(`/admin/companies/${project.companyId}/projects/${project.id}`)}
+                          onClick={() => navigate(`/admin/projects/${project.id}`, { state: { backgroundLocation: location } })}
                           className="border-b border-[#f9fafb] hover:bg-[#fafafa] cursor-pointer transition-colors"
                         >
                           <td className="px-5 py-4">

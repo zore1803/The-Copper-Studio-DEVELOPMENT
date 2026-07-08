@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SidePanel from "../../components/SidePanel";
 import {
   CalendarDays, Clock3, Copy, FileDown,
@@ -216,7 +216,7 @@ function EarningsCard({ records, filterType, filterYear, filterMonth, filterBiMo
   );
 }
 
-function ChartDrillDownPanel({ data, onClose, navigate }) {
+function ChartDrillDownPanel({ data, onClose, navigate, location }) {
   if (!data) return null;
   const { date, orders = [], payments = [], projects = [], users = [] } = data;
   const moneyValue = (val) => {
@@ -239,7 +239,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1F2937] mb-3 border-b border-[#EAECF0] pb-2">Orders ({orders.length})</h3>
             <div className="flex flex-col gap-2">
               {orders.map((o, i) => (
-                <div key={o._id || o.id || i} onClick={() => navigate(`/admin/companies/${o.companyId || o.customer?.companyId || o.client || ''}`)} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={o._id || o.id || i} onClick={() => navigate(`/admin/companies/${o.companyId || o.customer?.companyId || o.client || ''}`, { state: { backgroundLocation: location } })} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold text-[#1F2937]">{safeString(o.customer?.customerName || o.client || o.companyName || "Unknown Client")}</p>
@@ -284,7 +284,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1F2937] mb-3 border-b border-[#EAECF0] pb-2">Users Created ({users.length})</h3>
             <div className="flex flex-col gap-2">
               {users.map((u, i) => (
-                <div key={u._id || u.id || i} onClick={() => navigate(`/admin/companies/${u._id || u.id}`)} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={u._id || u.id || i} onClick={() => navigate(`/admin/companies/${u._id || u.id}`, { state: { backgroundLocation: location } })} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-bold text-[#1F2937]">{safeString(u.name || u.company || "Unknown")}</p>
@@ -303,7 +303,7 @@ function ChartDrillDownPanel({ data, onClose, navigate }) {
             <h3 className="text-sm font-bold text-[#1F2937] mb-3 border-b border-[#EAECF0] pb-2">Projects Created ({projects.length})</h3>
             <div className="flex flex-col gap-2">
               {projects.map((p, i) => (
-                <div key={p._id || p.id || i} onClick={() => navigate(`/admin/companies/${p.companyId || p.client}/projects/${p._id || p.id}`)} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
+                <div key={p._id || p.id || i} onClick={() => navigate(`/admin/projects/${p._id || p.id}`, { state: { backgroundLocation: location } })} className="cursor-pointer p-3 border border-[#E1E4EA] rounded-lg hover:border-[#cda88f] hover:shadow-sm bg-[#ffffff] transition-all">
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm font-bold text-[#1F2937]">{safeString(p.name || p.projectName || "Unknown Project")}</p>
@@ -468,6 +468,7 @@ function KpiDrillDownPanel({ kpi, data, onClose }) {
 }
 export function AnalyticsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const [selectedChartDate, setSelectedChartDate] = useState(null);
   const [filterType, setFilterType] = useState("All Time");
@@ -1180,13 +1181,14 @@ export function AnalyticsPage() {
             </div>
           </Card>
 
-          <PriorityProjectsTable 
-            projects={data.priorityProjectsList} 
-            page={projectPage} 
-            setPage={setProjectPage} 
-            search={projectSearch} 
-            setSearch={setProjectSearch} 
-            navigate={navigate} 
+          <PriorityProjectsTable
+            projects={data.priorityProjectsList}
+            page={projectPage}
+            setPage={setProjectPage}
+            search={projectSearch}
+            setSearch={setProjectSearch}
+            navigate={navigate}
+            location={location}
           />
           <RecentPaymentsTable 
             payments={data.recentPaymentsList} 
@@ -1281,7 +1283,7 @@ export function AnalyticsPage() {
       )}
     </PageShell>
     {selectedChartDate && data.drillDownData && (
-      <ChartDrillDownPanel data={data.drillDownData} onClose={() => setSelectedChartDate(null)} navigate={navigate} />
+      <ChartDrillDownPanel data={data.drillDownData} onClose={() => setSelectedChartDate(null)} navigate={navigate} location={location} />
     )}
     {selectedKpiDrillDown && (
       <KpiDrillDownPanel kpi={selectedKpiDrillDown} data={data} onClose={() => setSelectedKpiDrillDown(null)} navigate={navigate} />
@@ -1290,7 +1292,7 @@ export function AnalyticsPage() {
   );
 }
 
-function PriorityProjectsTable({ projects, page, setPage, search, setSearch, navigate }) {
+function PriorityProjectsTable({ projects, page, setPage, search, setSearch, navigate, location }) {
   const itemsPerPage = 5;
   
   const filtered = projects.filter(p => 
@@ -1361,7 +1363,7 @@ function PriorityProjectsTable({ projects, page, setPage, search, setSearch, nav
               <tr 
                 key={p._id || p.id} 
                 className="hover:bg-[#f9fafb] cursor-pointer transition-colors"
-                onClick={() => navigate(`/admin/companies/${p.companyId || 'company'}/projects/${p._id || p.id}`)}
+                onClick={() => navigate(`/admin/projects/${p._id || p.id}`, { state: { backgroundLocation: location } })}
               >
                 <td className="px-5 py-4">
                   <p className="font-bold text-[#1F2937]">{String(p.projectName || p.name || 'Unknown Project')}</p>

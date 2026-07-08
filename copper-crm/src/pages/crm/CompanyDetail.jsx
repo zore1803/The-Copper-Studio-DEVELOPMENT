@@ -1602,7 +1602,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
             title={project.name || "Untitled project"}
             subtitle={project.packageName || project.package || "Not linked"}
             badge={<StatusBadge status={project.status || project.currentPhase || "Not Started"} />}
-            onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)}
+            onClick={() => onOpen(`/admin/projects/${project.id || project._id}`)}
             fields={[
               { label: "Progress", value: `${Number(project.progress) || 0}%` },
               { label: "Due", value: project.dueDate || project.expectedEndDate || "Not set" },
@@ -1632,7 +1632,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
         </thead>
         <tbody className="bg-white">
           {projects.map((project) => (
-            <tr key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="cursor-pointer border-b border-[#f9fafb] hover:bg-[#fafafa]">
+            <tr key={project.id || project._id} onClick={() => onOpen(`/admin/projects/${project.id || project._id}`)} className="cursor-pointer border-b border-[#f9fafb] hover:bg-[#fafafa]">
               <td className="py-3 pl-5 pr-4 font-semibold text-[#111827]">{project.name || "Untitled project"}</td>
               <td className="py-3 pr-4 text-[#374151]">{project.packageName || project.package || "Not linked"}</td>
               <td className="py-3 pr-4"><StatusBadge status={project.status || project.currentPhase || "Not Started"} /></td>
@@ -1723,7 +1723,7 @@ function ProjectBoard({ projects, companyId, onOpen }) {
           <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#6b7280]">{stage}</p>
           <div className="space-y-2">
             {projects.filter((project) => (project.status || project.currentPhase || "Unassigned") === stage).map((project) => (
-              <button key={project.id || project._id} onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)} className="w-full rounded-lg border border-[#e5e7eb] bg-white p-3 text-left">
+              <button key={project.id || project._id} onClick={() => onOpen(`/admin/projects/${project.id || project._id}`)} className="w-full rounded-lg border border-[#e5e7eb] bg-white p-3 text-left">
                 <p className="font-semibold text-[#111827]">{project.name}</p>
                 <p className="text-xs text-[#6b7280]">{project.progress || 0}% / {project.packageName || "No package"}</p>
               </button>
@@ -1770,7 +1770,7 @@ function ProjectOverviewGrid({ projects, companyId, onOpen }) {
         return (
           <button
             key={project.id || project._id}
-            onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)}
+            onClick={() => onOpen(`/admin/projects/${project.id || project._id}`)}
             className="rounded-xl border border-[#e5e7eb] bg-white p-5 text-left hover:border-[#8D3118]/40 hover:shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">

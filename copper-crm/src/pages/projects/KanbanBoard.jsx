@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import {
   MoreHorizontal, Calendar, MessageSquare, CheckSquare,
@@ -48,6 +48,7 @@ function move(source, destination, droppableSource, droppableDestination) {
 
 export default function KanbanBoard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [columns, setColumns] = useState(() => Object.fromEntries(TASK_STATUSES.map((key) => [key, []])));
   const [activeTaskId, setActiveTaskId] = useState("");
   const { showToast } = useToast();
@@ -435,8 +436,8 @@ export default function KanbanBoard() {
                                           type="button"
                                           onClick={(event) => {
                                             event.stopPropagation();
-                                            if (task.companyId && task.projectId) {
-                                              navigate(`/admin/companies/${task.companyId}/projects/${task.projectId}`);
+                                            if (task.projectId) {
+                                              navigate(`/admin/projects/${task.projectId}`, { state: { backgroundLocation: location } });
                                             }
                                           }}
                                           className="grid h-5 w-5 shrink-0 place-items-center rounded-md text-gray-300 opacity-0 hover:bg-gray-50 hover:text-gray-500 group-hover/card:opacity-100"

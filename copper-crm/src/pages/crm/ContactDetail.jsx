@@ -435,8 +435,7 @@ export default function ContactDetail() {
   }
 
   function openProject(project) {
-    const companyId = project.companyId || contact.companyId;
-    if (companyId) navigate(`/admin/companies/${companyId}/projects/${project.id || project._id}`);
+    navigate(`/admin/projects/${project.id || project._id}`, { state: { backgroundLocation: location } });
   }
 
   async function handleCreateProject(targetCompany, form) {
@@ -681,7 +680,7 @@ export default function ContactDetail() {
                   {associated.map((item) => (
                     <button
                       key={item._id || item.id}
-                      onClick={() => navigate(`/admin/contacts/${item._id || item.id}`)}
+                      onClick={() => navigate(`/admin/contacts/${item._id || item.id}`, { state: { backgroundLocation: location } })}
                       className="flex w-full items-center gap-2.5 text-left hover:bg-gray-50 rounded-full -mx-1 px-1 py-0.5"
                     >
                       <Avatar name={contactFullName(item)} size="sm" />

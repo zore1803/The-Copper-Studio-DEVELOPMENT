@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FolderKanban, Search, ChevronLeft } from "lucide-react";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { GanttView } from "./ProjectTimeline";
 
 export default function TimelinePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { records: projects, loading } = useCrmRecords("projects");
   const { records: companies } = useCrmRecords("companies");
   const [search, setSearch] = useState("");
@@ -68,13 +69,8 @@ export default function TimelinePage() {
   }, [filteredProjects]);
 
   const handleOpenEdit = (groupId, task) => {
-    if (task.companyId && task.projectId) {
-      navigate(`/admin/companies/${task.companyId}/projects/${task.projectId}`);
-    } else if (task.projectId) {
-       const p = projects.find(proj => String(proj.id || proj._id) === String(task.projectId));
-       if (p && p.companyId) {
-         navigate(`/admin/companies/${p.companyId}/projects/${task.projectId}`);
-       }
+    if (task.projectId) {
+      navigate(`/admin/projects/${task.projectId}`, { state: { backgroundLocation: location } });
     }
   };
 
