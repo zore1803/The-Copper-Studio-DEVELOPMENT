@@ -10,6 +10,7 @@ import { adminApi } from "../../lib/clientApi";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard from "../../components/MobileListCard";
 
 const PAGE_SIZE = 25;
 
@@ -230,7 +231,24 @@ export default function Meetings() {
               <div className="p-10 text-center text-sm text-red-600">Couldn't load meetings: {error}</div>
             ) : sorted.length ? (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile: one card per meeting */}
+                <div className="flex flex-col gap-3 p-4 sm:hidden">
+                  {paginated.map((m) => (
+                    <MobileListCard
+                      key={m._id}
+                      title={m.title}
+                      subtitle={`${clientNameFor(m)} · ${companyNameFor(m)}`}
+                      badge={<Badge color={statusBadge(m.status).color}>{statusBadge(m.status).label}</Badge>}
+                      onClick={() => setSelected(m)}
+                      fields={[
+                        { label: "Type", value: meetingTypeLabel(m.type) },
+                        { label: "Date / Time", value: formatDateTime(m.scheduledAt) },
+                      ]}
+                    />
+                  ))}
+                </div>
+
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="min-w-full">
                     <thead className="bg-[#8D3118] border-b border-[#6E2412]">
                       <tr>
