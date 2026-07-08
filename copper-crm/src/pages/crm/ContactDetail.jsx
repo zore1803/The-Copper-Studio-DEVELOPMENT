@@ -160,7 +160,7 @@ function InstagramGlyph(props) {
           <stop offset="100%" stopColor="#8B3AB5" />
         </linearGradient>
       </defs>
-      <rect width="56" height="56" rx="14" fill="url(#igGradientContact)" />
+      <circle cx="28" cy="28" r="28" fill="url(#igGradientContact)" />
       <rect x="14" y="14" width="28" height="28" rx="8" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="28" cy="28" r="7.2" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="37.2" cy="18.8" r="1.9" fill="#fff" />
