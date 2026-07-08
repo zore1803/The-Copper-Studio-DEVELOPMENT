@@ -190,8 +190,12 @@ function NavLeaf({ item, collapsed, active, onNavigate, indent = false }) {
 
 function NavGroup({ item, collapsed, active, onNavigate, location }) {
   // Expanded sidebar: the group dropdown opens on hover and closes when the
-  // cursor leaves the section (no click needed).
+  // cursor leaves the section (no click needed). On touch devices a tap fires
+  // a synthetic mouseenter right before the click, which raced with the click
+  // toggle below and cancelled itself out — hence needing two taps to open.
+  // Only wire up the hover handlers on devices that actually support hover.
   const [open, setOpen] = useState(false);
+  const supportsHover = typeof window !== "undefined" && window.matchMedia?.("(hover: hover)").matches;
 
   if (collapsed) {
     return (
@@ -209,7 +213,7 @@ function NavGroup({ item, collapsed, active, onNavigate, location }) {
   }
 
   return (
-    <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div onMouseEnter={supportsHover ? () => setOpen(true) : undefined} onMouseLeave={supportsHover ? () => setOpen(false) : undefined}>
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors ${active ? "text-[#8D3118]" : "text-[#374151] hover:bg-white/70"}`}
