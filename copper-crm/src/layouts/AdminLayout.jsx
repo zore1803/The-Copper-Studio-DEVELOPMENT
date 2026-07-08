@@ -382,7 +382,7 @@ export default function AdminLayout() {
   const baseW = pinned ? 264 : 66;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#FFFFFF]">
+    <div className="flex h-[100dvh] overflow-hidden bg-[#FFFFFF] sm:h-screen">
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 bg-black/40 z-30 lg:hidden" onClick={() => setMobileOpen(false)} />
