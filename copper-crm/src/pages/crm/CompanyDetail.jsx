@@ -2513,7 +2513,7 @@ function CalendarTaskView({ tasks, onCreate }) {
         <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-bold text-[#111827]">{dayTasks.length} task{dayTasks.length === 1 ? "" : "s"} due</p>
-            <Button size="sm" onClick={() => onCreate(toDateInputValue(cursor))}><Plus size={14} /> New Task</Button>
+            <Button size="sm" className="hidden sm:inline-flex" onClick={() => onCreate(toDateInputValue(cursor))}><Plus size={14} /> New Task</Button>
           </div>
           <div className="mt-3 space-y-2">
             {dayTasks.length ? dayTasks.map((task) => (
