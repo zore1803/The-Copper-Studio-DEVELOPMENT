@@ -444,6 +444,7 @@ export default function Companies() {
   const navigate = useNavigate();
   const location = useLocation();
   const [search, setSearch] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [editing, setEditing] = useState(() => (location.state?.openCreate
     ? { name: "", gstin: "", industry: "", contact: "", projects: 0, status: "Prospect", address: "", city: "", state: "", pincode: "", website: "", leadSource: "", owner: "", notes: "" }
     : null));
@@ -659,14 +660,38 @@ export default function Companies() {
   return (
     <div className="flex flex-col h-full min-w-0 bg-white">
       {/* Sub-header */}
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] px-4 py-3 sm:px-6 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
-        <div className="min-w-0">
-          <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
-          <p className="text-xs text-[#525866] mt-0.5">Manage your organisation contracts</p>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="min-w-0">
+            <h1 className="text-base font-medium text-[#0E121B]">Companies</h1>
+            <p className="hidden text-xs text-[#525866] mt-0.5 sm:block">Manage your organisation contracts</p>
+          </div>
+          {/* Mobile-only search icon toggle */}
+          <button
+            onClick={() => setMobileSearchOpen((v) => !v)}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+          >
+            <Search size={15} />
+          </button>
         </div>
+
+        {/* Mobile search bar — drops down only when the icon above is tapped */}
+        {mobileSearchOpen && (
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#8D3118] bg-[#fff8f6] px-3 sm:hidden">
+            <Search size={14} className="text-[#8D3118] shrink-0" />
+            <input
+              autoFocus
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+              placeholder="Search by name, industry, or status…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-2 min-w-0">
-          {/* Search */}
-          <div className="flex h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:w-72 min-w-0 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
+          {/* Search (desktop) */}
+          <div className="hidden h-8 w-full items-center gap-2 rounded-full border border-[#E1E4EA] px-3 sm:flex sm:w-72 min-w-0 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
             <Search size={14} className="text-[#525866] shrink-0" />
             <input
               className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
@@ -675,8 +700,8 @@ export default function Companies() {
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             />
           </div>
-          {/* Sort */}
-          <div className="relative" ref={sortRef}>
+          {/* Sort (desktop only) */}
+          <div className="relative hidden sm:block" ref={sortRef}>
             <button
               onClick={() => setSortOpen((value) => !value)}
               className={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors ${sortOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] bg-white text-[#1F2937] hover:bg-[#f9fafb]"}`}
