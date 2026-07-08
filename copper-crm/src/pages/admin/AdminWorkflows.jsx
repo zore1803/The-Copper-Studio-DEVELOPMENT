@@ -1048,7 +1048,7 @@ export function SettingsProfilePage() {
       {loading ? (
         <div className="py-16 text-center text-sm text-[#9ca3af]">Loading…</div>
       ) : (
-        <div className="flex gap-8">
+        <div className="flex flex-1 gap-8 overflow-y-auto">
           {/* Form column */}
           <div className="flex-1 min-w-0">
             {/* Personal info */}
