@@ -18,6 +18,7 @@ import { contactFullName } from "../../lib/contacts";
 
 function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave }) {
   const [draftIds, setDraftIds] = useState(new Set((contact.projectIds || []).map(String)));
+  const [saving, setSaving] = useState(false);
   const isLinked = Boolean(contact.userId);
 
   function toggle(id) {
@@ -29,6 +30,15 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
     });
   }
 
+  async function handleSaveClick() {
+    setSaving(true);
+    try {
+      await onSave(Array.from(draftIds));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <SidePanel
       title="Project Access"
@@ -37,8 +47,10 @@ function ProjectAccessPanel({ contact, contactName, projects, onClose, onSave })
       footer={
         isLinked ? (
           <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={onClose}>Cancel</Button>
-            <Button onClick={() => onSave(Array.from(draftIds))}><Save size={14} /> Save</Button>
+            <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button onClick={handleSaveClick} disabled={saving}>
+              <Save size={14} /> {saving ? "Saving…" : "Save"}
+            </Button>
           </div>
         ) : null
       }
