@@ -345,7 +345,8 @@ export default function ProjectsList() {
               onClick={() => navigate(`/admin/projects/${project.id || project._id}`)}
               fields={[
                 { label: "Company", value: project.computedCompanyName },
-                { label: "Progress · Value", value: `${project.computedProgress}% · ${formatINR(project.finalAmount || project.budget || 0)}` },
+                { label: "Progress", value: `${project.computedProgress}%` },
+                { label: "Value", value: formatINR(project.finalAmount || project.budget || 0) },
               ]}
               actions={[
                 { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => navigate(`/admin/projects/${project.id || project._id}`) },
