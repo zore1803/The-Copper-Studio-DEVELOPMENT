@@ -2299,7 +2299,7 @@ function TasksTable({ tasks, projects, onDelete }) {
     <>
       {/* Mobile: one card per task instead of a cramped, horizontally
           scrolling table. */}
-      <div className="flex flex-col gap-3 p-4 sm:hidden">
+      <div className="flex flex-col gap-3 p-2 sm:hidden">
         {tasks.map((task) => (
           <MobileListCard
             key={task.id || task._id}
