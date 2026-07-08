@@ -2261,6 +2261,7 @@ function TasksWorkspace({ tasks, projects, view, onView, onCreate, onMoveTask, o
     <Section
       title="Tasks"
       hideHeaderOnMobile
+      flush={view === "List"}
       action={
         <div className="flex flex-wrap items-center gap-2">
           <FilterButton
