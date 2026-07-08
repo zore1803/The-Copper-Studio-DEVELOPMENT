@@ -603,7 +603,7 @@ export default function ContactDetail() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-4 rounded-xl border border-[#FFFFFF] bg-[#fafafa] p-4 lg:grid-cols-5">
+          <div className="mt-5 grid grid-cols-2 gap-x-8 gap-y-4 rounded-xl border border-[#FFFFFF] bg-[#fafafa] p-4 lg:grid-cols-5 lg:gap-x-4">
             <InfoLine label="Company" value={companyName} />
             <InfoLine label="Designation" value={contact.designation} />
             <InfoLine label="Email" value={contact.email} />
