@@ -650,7 +650,10 @@ export default function Companies() {
   }
 
   function openCompany(company) {
-    navigate(`/admin/companies/${company.id || company._id}`);
+    // Carries the current location so App.jsx can render CompanyDetail as an
+    // overlay on top of this list instead of a full page navigation — the
+    // list stays mounted (and dimmed) underneath, closing just goes back.
+    navigate(`/admin/companies/${company.id || company._id}`, { state: { backgroundLocation: location } });
   }
 
   function resetFilters() {
