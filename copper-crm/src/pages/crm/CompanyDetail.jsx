@@ -2440,11 +2440,11 @@ function CalendarTaskView({ tasks, onCreate }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate(-1)} className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
-          <p className="text-sm font-bold text-[#111827]">{headerLabel}</p>
-          <button onClick={() => navigate(1)} className="rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-2 sm:justify-start">
+          <button onClick={() => navigate(-1)} className="shrink-0 rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">← Prev</button>
+          <p className="flex-1 text-center text-sm font-bold text-[#111827] sm:flex-none">{headerLabel}</p>
+          <button onClick={() => navigate(1)} className="shrink-0 rounded-full border border-[#e5e7eb] px-3 py-1.5 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]">Next →</button>
         </div>
         <WorkspaceToggle options={CALENDAR_VIEWS} value={calendarView} onChange={setCalendarView} />
       </div>
