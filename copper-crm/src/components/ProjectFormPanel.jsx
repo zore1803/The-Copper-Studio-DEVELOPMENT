@@ -312,7 +312,15 @@ export default function ProjectFormPanel({ company, companies = [], contacts = [
         </FormSection>
 
         <FormSection title="Commercials">
-          <Input type="number" label="Package value" value={form.budget} onChange={set("budget")} error={errors.budget} />
+          <Input
+            type="number"
+            label="Package value"
+            value={form.budget}
+            onChange={set("budget")}
+            error={errors.budget}
+            disabled={Boolean(form.packageName) && form.packageName !== "Custom"}
+            hint={Boolean(form.packageName) && form.packageName !== "Custom" ? "Fixed by the selected package — pick \"Custom\" to enter a different value." : undefined}
+          />
           <label className="block">
             <span className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#374151]">Discount applied</span>

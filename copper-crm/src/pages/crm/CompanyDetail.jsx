@@ -25,6 +25,7 @@ import FilterButton from "../../components/FilterButton";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import GanttChart from "../../components/GanttChart";
 import ProgressBar from "../../components/ProgressBar";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 
 // Shared bar colours for the Gantt charts — covers both task statuses and the
 // project lifecycle statuses, so tasks and the project-timeline mini both tint
@@ -1402,7 +1403,31 @@ function InfoLine({ label, value }) {
 
 function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* Mobile: one card per project instead of a cramped, horizontally
+          scrolling table. */}
+      <div className="flex flex-col gap-3 p-4 sm:hidden">
+        {projects.map((project) => (
+          <MobileListCard
+            key={project.id || project._id}
+            title={project.name || "Untitled project"}
+            subtitle={project.packageName || project.package || "Not linked"}
+            badge={<StatusBadge status={project.status || project.currentPhase || "Not Started"} />}
+            onClick={() => onOpen(`/admin/companies/${companyId}/projects/${project.id || project._id}`)}
+            fields={[
+              { label: "Progress", value: `${Number(project.progress) || 0}%` },
+              { label: "Due", value: project.dueDate || project.expectedEndDate || "Not set" },
+              { label: "Project Manager", value: project.projectManager || project.manager || "Unassigned" },
+              { label: "Budget", value: formatINR(Number(project.budget || project.value || 0)) },
+            ]}
+            actions={[
+              { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => onDelete(project) },
+            ]}
+          />
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto sm:block">
       <table className="min-w-full text-sm">
         <thead className="bg-[#8D3118] border-b border-[#6E2412]">
           <tr>
@@ -1435,7 +1460,8 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
