@@ -124,7 +124,7 @@ export default function ProjectHeader({ company, project, activeTab, actionLabel
               onClick={() => setDetailsOpen((open) => !open)}
               aria-expanded={detailsOpen}
               title={detailsOpen ? "Hide project details" : "Show project details"}
-              className="flex h-8 w-8 items-center justify-center self-center justify-self-end rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-start-3 lg:col-start-auto"
+              className="col-span-2 flex h-8 w-8 items-center justify-center self-center justify-self-center rounded-full border border-[#e5d3cc] bg-white text-[#8D3118] transition-colors hover:bg-[#fff1ec] sm:col-span-1 sm:col-start-3 sm:justify-self-end lg:col-start-auto"
             >
               <ChevronDown size={18} className={`transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
             </button>
