@@ -581,6 +581,9 @@ export default function CompanyDetail() {
     if (location.state?.initialTab) setActiveTab(location.state.initialTab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key]);
+  // Mobile "..." quick-jump opens a focused single-section window (just the
+  // chosen tab's content) instead of the full company header/KPIs/tab bar.
+  const focusMode = Boolean(location.state?.focusMode);
   const [creatingProject, setCreatingProject] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);
@@ -990,6 +993,18 @@ export default function CompanyDetail() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
+      {focusMode && (
+        <div className="flex items-center gap-2 border-b border-[#e5e7eb] bg-white px-4 py-3">
+          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb]">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[#111827]">{activeTab}</p>
+            <p className="truncate text-xs text-[#6b7280]">{company.name}</p>
+          </div>
+        </div>
+      )}
+      {!focusMode && (
       <div className="border-b border-[#e5e7eb] bg-white">
         <div className="px-6 py-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -1119,6 +1134,7 @@ export default function CompanyDetail() {
           </div>
         </div>
       </div>
+      )}
 
       <div className="flex-1 p-6">
         {activeTab === "Projects" && (
