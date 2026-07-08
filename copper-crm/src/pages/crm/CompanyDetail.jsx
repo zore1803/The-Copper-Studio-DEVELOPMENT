@@ -55,6 +55,30 @@ function LinkedInGlyph(props) {
   );
 }
 
+// Blue 3D-style folder glyph for the mobile Documents grid — a flatter,
+// friendlier look than the plain outline FolderOpen icon used on desktop.
+function FolderGlyph3D(props) {
+  const gradientId = useId();
+  const backId = useId();
+  return (
+    <svg viewBox="0 0 48 40" {...props}>
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#60A5FA" />
+          <stop offset="100%" stopColor="#2563EB" />
+        </linearGradient>
+        <linearGradient id={backId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#93C5FD" />
+          <stop offset="100%" stopColor="#3B82F6" />
+        </linearGradient>
+      </defs>
+      <path d="M2 8a3 3 0 0 1 3-3h11l4 4h20a3 3 0 0 1 3 3v3H2z" fill={`url(#${backId})`} />
+      <path d="M2 13h44v20a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3z" fill={`url(#${gradientId})`} />
+      <path d="M2 13h44v3.5H2z" fill="#ffffff" opacity="0.25" />
+    </svg>
+  );
+}
+
 function InstagramGlyph(props) {
   // Unique per instance — a hardcoded id broke gradient resolution once this
   // glyph started rendering twice at once (desktop actions row + mobile
@@ -1358,11 +1382,11 @@ export default function CompanyDetail() {
   );
 }
 
-function Section({ title, action, flush = false, hideHeaderOnMobile = false, children }) {
+function Section({ title, action, flush = false, hideHeaderOnMobile = false, hideTitleOnMobile = false, children }) {
   return (
     <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
       <div className={`${hideHeaderOnMobile ? "hidden sm:flex" : "flex"} flex-wrap items-center justify-between gap-2 bg-white border-b border-[#f3e5e0] px-5 py-4 sm:bg-[#fff1ec]`}>
-        <h3 className="text-sm font-bold text-[#111827]">{title}</h3>
+        <h3 className={`text-sm font-bold text-[#111827] ${hideTitleOnMobile ? "hidden sm:block" : ""}`}>{title}</h3>
         {action}
       </div>
       <div className={flush ? "bg-white" : "bg-white p-5"}>{children}</div>
@@ -1860,6 +1884,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
   return (
     <Section
       title="Documents"
+      hideTitleOnMobile
       action={
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
@@ -1881,7 +1906,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             </button>
           </div>
           <Button variant="secondary" onClick={() => setCreatingGroup((open) => !open)}><FolderPlus size={14} /> New Group</Button>
-          <Button onClick={onUpload}><Plus size={14} /> Upload Document</Button>
+          <Button onClick={onUpload}><Plus size={14} /> <span className="hidden sm:inline">Upload Document</span><span className="sm:hidden">Upload</span></Button>
         </div>
       }
     >
@@ -1953,7 +1978,10 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118] sm:hidden">
+                    <FolderGlyph3D className="h-9 w-9" />
+                  </div>
+                  <div className="hidden h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118] sm:grid"><FolderOpen size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>
