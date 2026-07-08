@@ -13,15 +13,16 @@ import {
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
-    <div className="rounded-xl border p-5 flex items-center gap-4"
+    <div className="rounded-xl border p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 overflow-hidden"
       style={{ background: "var(--cs-surface-container-lowest)", borderColor: "var(--cs-outline-variant)" }}>
-      <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ background: color + "15" }}>
-        <Icon size={22} style={{ color }} />
+        <Icon size={15} className="sm:hidden" style={{ color }} />
+        <Icon size={17} className="hidden sm:block" style={{ color }} />
       </div>
-      <div>
-        <p className="text-2xl font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{value}</p>
-        <p className="text-xs mt-0.5" style={{ color: "var(--cs-secondary)" }}>{label}</p>
+      <div className="min-w-0">
+        <p className="truncate text-sm sm:text-lg font-bold" style={{ color: "var(--cs-on-surface)", fontFamily: "'DM Sans', system-ui, sans-serif" }}>{value}</p>
+        <p className="truncate text-[10px] sm:text-xs" style={{ color: "var(--cs-secondary)" }}>{label}</p>
       </div>
     </div>
   );
@@ -159,7 +160,7 @@ export default function ClientDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
         {stats.map((s) => <StatCard key={s.label} {...s} />)}
       </div>
 
