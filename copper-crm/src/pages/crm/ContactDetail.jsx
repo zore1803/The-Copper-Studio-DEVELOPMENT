@@ -551,6 +551,15 @@ export default function ContactDetail() {
                   {(contact.whatsapp || contact.phone) && (
                     <span className="inline-flex items-center gap-1"><Phone size={12} /> {contact.whatsapp || contact.phone}</span>
                   )}
+                  {hasSocial && (
+                    <div className="flex items-center gap-1.5 sm:hidden">
+                      <WebsiteIconLink href={contact.website} icon={Globe} label="Website" />
+                      <SocialIconLink href={contact.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
+                      <SocialIconLink href={contact.instagram} icon={InstagramGlyph} label="Instagram" />
+                      <SocialIconLink href={contact.facebook} icon={FacebookGlyph} label="Facebook" />
+                      <SocialIconLink href={contact.twitter} icon={XGlyph} label="X" />
+                    </div>
+                  )}
                 </div>
                 {roles.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
@@ -563,7 +572,7 @@ export default function ContactDetail() {
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2.5">
               {hasSocial && (
-                <div className="flex items-center gap-1.5 pr-2">
+                <div className="hidden items-center gap-1.5 pr-2 sm:flex">
                   <WebsiteIconLink href={contact.website} icon={Globe} label="Website" />
                   <SocialIconLink href={contact.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
                   <SocialIconLink href={contact.instagram} icon={InstagramGlyph} label="Instagram" />
@@ -586,11 +595,11 @@ export default function ContactDetail() {
               </button>
               <button
                 onClick={() => setEditing(true)}
-                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec]"
+                className="hidden h-8 items-center gap-1.5 rounded-full border border-[#d8c2b9] bg-white px-4 text-sm font-semibold text-[#211a17] transition-colors hover:bg-[#fff1ec] sm:inline-flex"
               >
                 <Pencil size={14} /> Edit Contact
               </button>
-              <button onClick={handleDelete} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100">
+              <button onClick={handleDelete} className="hidden h-8 items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100 sm:inline-flex">
                 <Trash2 size={14} /> Delete
               </button>
             </div>
@@ -600,7 +609,9 @@ export default function ContactDetail() {
             <InfoLine label="Company" value={companyName} />
             <InfoLine label="Designation" value={contact.designation} />
             <InfoLine label="Email" value={contact.email} />
-            <InfoLine label="Status" value={contact.status || "Active"} />
+            <div className="hidden sm:block">
+              <InfoLine label="Status" value={contact.status || "Active"} />
+            </div>
             <InfoLine label="Contact Since" value={formatDate(contact.createdAt)} />
           </div>
         </div>
