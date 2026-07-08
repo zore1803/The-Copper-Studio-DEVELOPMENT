@@ -960,10 +960,16 @@ export function SettingsPage() {
 
 // Shared chrome for a single settings sub-page: a header strip with a back
 // button, plus a card body.
-function SettingsSubPage({ title, description, icon: Icon, actions, children }) {
+// `scrollInBody` controls who owns scrolling: pages with their own internal
+// scroll area (lists with pinned headers, etc.) keep the default fixed-height
+// h-full/overflow-hidden shell. Simple flowing forms (like Profile) pass
+// `scrollInBody={false}` so the page grows naturally and the surrounding
+// <main> is the only scroll container — nesting two scrollables here caused
+// the page behind a settings form to appear to scroll along with it.
+function SettingsSubPage({ title, description, icon: Icon, actions, children, scrollInBody = true }) {
   const navigate = useNavigate();
   return (
-    <div className="flex h-full flex-col bg-[#FFFFFF]">
+    <div className={`flex flex-col bg-[#FFFFFF] ${scrollInBody ? "h-full" : "min-h-full"}`}>
       <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
         <div className="flex min-w-0 items-center gap-3">
           <button
@@ -981,8 +987,8 @@ function SettingsSubPage({ title, description, icon: Icon, actions, children }) 
         {actions}
       </div>
 
-      <section className="flex flex-1 flex-col overflow-hidden p-5 xl:p-6">
-        <Card className="flex flex-1 flex-col overflow-hidden p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)]">{children}</Card>
+      <section className={`flex flex-1 flex-col p-5 xl:p-6 ${scrollInBody ? "overflow-hidden" : ""}`}>
+        <Card className={`flex flex-1 flex-col p-6 shadow-[0_18px_40px_rgba(79,39,16,0.06)] ${scrollInBody ? "overflow-hidden" : ""}`}>{children}</Card>
       </section>
     </div>
   );
@@ -1044,11 +1050,11 @@ export function SettingsProfilePage() {
   }
 
   return (
-    <SettingsSubPage title="Profile" description="Your details and account password." icon={UserPlus}>
+    <SettingsSubPage title="Profile" description="Your details and account password." icon={UserPlus} scrollInBody={false}>
       {loading ? (
         <div className="py-16 text-center text-sm text-[#9ca3af]">Loading…</div>
       ) : (
-        <div className="flex flex-1 gap-8 overflow-y-auto">
+        <div className="flex flex-1 gap-8">
           {/* Form column */}
           <div className="flex-1 min-w-0">
             {/* Personal info */}
