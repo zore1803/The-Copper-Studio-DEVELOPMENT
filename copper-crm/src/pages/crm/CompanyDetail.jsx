@@ -1002,6 +1002,18 @@ export default function CompanyDetail() {
             <p className="truncate text-sm font-bold text-[#111827]">{activeTab}</p>
             <p className="truncate text-xs text-[#6b7280]">{company.name}</p>
           </div>
+          {activeTab === "Projects" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <select
+                value={projectView}
+                onChange={(e) => setProjectView(e.target.value)}
+                className="h-8 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none"
+              >
+                {PROJECT_VIEWS.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+              <Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>
+            </div>
+          )}
         </div>
       )}
       {!focusMode && (
@@ -1476,18 +1488,6 @@ function ProjectsWorkspace({ projects, allProjects, companyId, view, onView, onO
       }
       flush={Boolean(projects.length) && view === "Table"}
     >
-      {/* Mobile: view dropdown + create button live in the white body instead
-          of the pink header strip, and the filter icon is dropped entirely. */}
-      <div className="flex items-center gap-2 p-4 pb-0 sm:hidden">
-        <select
-          value={view}
-          onChange={(e) => onView(e.target.value)}
-          className="h-8 flex-1 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none"
-        >
-          {PROJECT_VIEWS.map((option) => <option key={option} value={option}>{option}</option>)}
-        </select>
-        <Button size="sm" onClick={onCreate}><Plus size={14} /> Project</Button>
-      </div>
       {!allProjects.length ? <EmptyState icon={FolderKanban} title="No projects yet." action={<Button onClick={onCreate}><Plus size={14} /> New Project</Button>} /> : null}
       {allProjects.length && !projects.length ? <EmptyState icon={Filter} title="No projects match these filters." /> : null}
       {projects.length && view === "Table" ? <ProjectsTable projects={projects} companyId={companyId} onOpen={onOpen} onDelete={onDelete} /> : null}
