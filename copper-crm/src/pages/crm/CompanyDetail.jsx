@@ -612,6 +612,10 @@ export default function CompanyDetail() {
   const [creatingProject, setCreatingProject] = useState(false);
   const [documentsView, setDocumentsView] = useState("Grid");
   const [creatingDocGroup, setCreatingDocGroup] = useState(false);
+  const [noteSearch, setNoteSearch] = useState("");
+  const [noteDateFilter, setNoteDateFilter] = useState("");
+  const [mobileNoteSearchOpen, setMobileNoteSearchOpen] = useState(false);
+  const [mobileNoteDateOpen, setMobileNoteDateOpen] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -1087,6 +1091,23 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setCreatingTask(true)}><Plus size={14} /> Task</Button>
             </div>
           )}
+          {activeTab === "Notes" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <button
+                onClick={() => { setMobileNoteSearchOpen((v) => !v); setMobileNoteDateOpen(false); }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileNoteSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Search size={15} />
+              </button>
+              <button
+                onClick={() => { setMobileNoteDateOpen((v) => !v); setMobileNoteSearchOpen(false); }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${mobileNoteDateOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#e5e7eb] text-[#525866]"}`}
+              >
+                <Calendar size={15} />
+              </button>
+              <Button size="sm" onClick={() => setEditingNote({})}><Plus size={14} /> Note</Button>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -1111,6 +1132,33 @@ export default function CompanyDetail() {
             placeholder="Search invoices…"
             className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
           />
+        </div>
+      )}
+      {focusMode && activeTab === "Notes" && mobileNoteSearchOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Search size={14} className="shrink-0 text-[#525866]" />
+          <input
+            autoFocus
+            value={noteSearch}
+            onChange={(e) => setNoteSearch(e.target.value)}
+            placeholder="Search notes…"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+          />
+        </div>
+      )}
+      {focusMode && activeTab === "Notes" && mobileNoteDateOpen && (
+        <div className="flex h-11 items-center gap-2 border-b border-[#e5e7eb] bg-white px-4">
+          <Calendar size={14} className="shrink-0 text-[#525866]" />
+          <input
+            type="date"
+            autoFocus
+            value={noteDateFilter}
+            onChange={(e) => setNoteDateFilter(e.target.value)}
+            className="bg-transparent text-sm outline-none"
+          />
+          {noteDateFilter && (
+            <button onClick={() => setNoteDateFilter("")} className="ml-auto text-xs font-semibold text-[#8D3118]">Clear</button>
+          )}
         </div>
       )}
       {!focusMode && (
@@ -1342,7 +1390,17 @@ export default function CompanyDetail() {
           />
         )}
         {activeTab === "Notes" && (
-          <NotesTab notes={linked.notes} onCreate={() => setEditingNote({})} onEdit={setEditingNote} onDelete={handleDeleteNote} onReorder={handleReorderNotes} />
+          <NotesTab
+            notes={linked.notes}
+            search={noteSearch}
+            onSearch={setNoteSearch}
+            dateFilter={noteDateFilter}
+            onDateFilter={setNoteDateFilter}
+            onCreate={() => setEditingNote({})}
+            onEdit={setEditingNote}
+            onDelete={handleDeleteNote}
+            onReorder={handleReorderNotes}
+          />
         )}
         {activeTab === "Meetings" && (
           <MeetingsTab calendlyUrl={company.calendlyUrl} />
@@ -2567,9 +2625,9 @@ const NOTES_PAGE_SIZE = 6;
 // single row/column of droppable items — handed a wrapping 2-column grid, it
 // miscalculates positions and the whole layout jumps on drag. Plain HTML5
 // drag-and-drop has no such assumption, so it's used here instead.
-function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
-  const [search, setSearch] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
+function NotesTab({ notes, search, onSearch, dateFilter, onDateFilter, onCreate, onEdit, onDelete, onReorder }) {
+  const setSearch = onSearch;
+  const setDateFilter = onDateFilter;
   const [sortDir, setSortDir] = useState(null); // null = manual order, "asc" | "desc" = by created date
   const [page, setPage] = useState(1);
   const [dragIndex, setDragIndex] = useState(null);
@@ -2611,6 +2669,7 @@ function NotesTab({ notes, onCreate, onEdit, onDelete, onReorder }) {
   return (
     <Section
       title="Notes"
+      hideHeaderOnMobile
       action={
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex h-8 items-center gap-1.5 rounded-full border border-[#E1E4EA] bg-white px-3 transition-colors focus-within:border-[#8D3118] focus-within:bg-[#fff8f6]">
