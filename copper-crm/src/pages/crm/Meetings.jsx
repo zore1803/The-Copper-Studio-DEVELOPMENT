@@ -288,7 +288,7 @@ export default function Meetings() {
             ) : sorted.length ? (
               <>
                 {/* Mobile: one card per meeting */}
-                <div className="flex flex-col gap-3 p-4 sm:hidden">
+                <div className="flex flex-col gap-3 p-2 sm:hidden">
                   {mobilePaginated.map((m) => (
                     <MobileListCard
                       key={m._id}

@@ -611,7 +611,7 @@ export function ClientMeetingsPage() {
               <>
                 {/* Mobile: one card per meeting, wrapped in an outer section like admin Meetings */}
                 <section className="overflow-hidden rounded-xl border sm:hidden" style={{ borderColor: CS.outlineVariant, background: CS.surfaceLowest }}>
-                  <div className="flex flex-col gap-3 p-4">
+                  <div className="flex flex-col gap-3 p-2">
                     {mobilePaginated.map((m) => (
                       <MobileListCard
                         key={m._id}
@@ -1127,7 +1127,7 @@ export function ClientBillingPage() {
                 ) : (
                   <>
                     {/* Mobile: one card per invoice */}
-                    <div className="flex flex-col gap-3 p-4 sm:hidden">
+                    <div className="flex flex-col gap-3 p-2 sm:hidden">
                       {orders.map((o) => (
                         <MobileListCard
                           key={o._id}

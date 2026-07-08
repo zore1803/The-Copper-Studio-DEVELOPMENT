@@ -323,7 +323,7 @@ export default function Payments() {
 
       {/* Mobile: one card per payment, wrapped in an outer section like Meetings */}
       <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white sm:hidden">
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-3 p-2">
           {sorted.length ? mobilePaginated.map((row) => (
             <MobileListCard
               key={row._id || row.id || row.paymentId}

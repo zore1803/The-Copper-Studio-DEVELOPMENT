@@ -807,7 +807,7 @@ export default function Companies() {
           <>
           {/* Mobile: one card per company, wrapped in an outer section like Meetings */}
           <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white sm:hidden">
-            <div className="flex flex-col gap-3 p-4">
+            <div className="flex flex-col gap-3 p-2">
               {loading ? (
                 <p className="py-12 text-center text-sm text-[#6b7280]">Loading companies…</p>
               ) : mobilePaginated.length === 0 ? (
