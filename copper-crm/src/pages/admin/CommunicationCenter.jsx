@@ -233,6 +233,15 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
   // bodyMode: "text" or "json" — auto-detect from stored body
   const [bodyMode, setBodyMode] = useState(() => isJsonBody(template.body || "") ? "json" : "text");
 
+  // Without this, scrolling the page behind the panel on mobile can hide the
+  // browser's address bar, growing the viewport and making this fixed,
+  // bottom-anchored panel visibly grow/shift with it.
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, []);
+
   // Variables present in this template's subject + body
   const templateVars = [...new Set([
     ...extractVars(form.subject || ""),
@@ -282,8 +291,8 @@ function TemplateModal({ type, categories, template, onClose, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-950/40">
-      <div className="ml-auto flex h-full w-full max-w-[75vw] animate-[panel-in_180ms_ease-out] flex-col border-l border-gray-200 bg-white shadow-2xl">
+    <div className="fixed inset-x-0 bottom-0 top-28 z-50 flex justify-end bg-gray-950/40 p-4">
+      <div className="flex h-full w-full max-w-[75vw] animate-[sheet-up_200ms_ease-out] flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 border-b border-gray-100 px-6 py-4">
           <div>
