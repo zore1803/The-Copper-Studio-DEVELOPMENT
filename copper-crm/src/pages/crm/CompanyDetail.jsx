@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
@@ -55,10 +55,15 @@ function LinkedInGlyph(props) {
 }
 
 function InstagramGlyph(props) {
+  // Unique per instance — a hardcoded id broke gradient resolution once this
+  // glyph started rendering twice at once (desktop actions row + mobile
+  // inline row), since duplicate SVG ids are invalid and unreliable across
+  // browsers when one copy sits inside a display:none (sm:hidden) subtree.
+  const gradientId = useId();
   return (
     <svg viewBox="0 0 56 56" {...props}>
       <defs>
-        <linearGradient id="igGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+        <linearGradient id={gradientId} x1="0%" y1="100%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#FED576" />
           <stop offset="25%" stopColor="#F47133" />
           <stop offset="50%" stopColor="#BC3081" />
@@ -66,7 +71,7 @@ function InstagramGlyph(props) {
           <stop offset="100%" stopColor="#8B3AB5" />
         </linearGradient>
       </defs>
-      <circle cx="28" cy="28" r="28" fill="url(#igGradient)" />
+      <circle cx="28" cy="28" r="28" fill={`url(#${gradientId})`} />
       <rect x="14" y="14" width="28" height="28" rx="8" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="28" cy="28" r="7.2" fill="none" stroke="#fff" strokeWidth="2.6" />
       <circle cx="37.2" cy="18.8" r="1.9" fill="#fff" />
