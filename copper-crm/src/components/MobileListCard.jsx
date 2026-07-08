@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 // Shared mobile card for every admin list page — desktop keeps its table,
 // this is the sm:hidden replacement so a row's details read as a simple
 // stacked card instead of a cramped horizontal-scrolling table on a phone.
@@ -47,6 +49,39 @@ export default function MobileListCard({ title, subtitle, badge, fields = [], ac
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Mobile-only pagination footer matching the reference design — a
+// Previous/Next button pair, then a centered "Showing X / Y" pill below.
+// Desktop keeps its own numbered-page-buttons pagination unchanged.
+export function MobileListPagination({ page, totalPages, onPrev, onNext }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="mt-3 rounded-xl border border-[#E1E4EA] bg-white p-4 sm:hidden">
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={onPrev}
+          disabled={page <= 1}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-[#f3f4f6] text-sm font-semibold text-[#374151] transition-colors hover:bg-[#e5e7eb] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <ChevronLeft size={15} /> Previous
+        </button>
+        <button
+          onClick={onNext}
+          disabled={page >= totalPages}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-lg bg-[#111827] text-sm font-semibold text-white transition-colors hover:bg-[#1f2937] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Next <ChevronRight size={15} />
+        </button>
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-2 text-xs font-medium text-[#6b7280]">
+        SHOWING
+        <span className="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-[#8D3118] px-2 text-xs font-bold text-white">
+          {page} / {totalPages}
+        </span>
+      </div>
     </div>
   );
 }

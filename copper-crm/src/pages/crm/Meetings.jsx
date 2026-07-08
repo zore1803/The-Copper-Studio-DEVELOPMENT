@@ -11,7 +11,7 @@ import { adminApi } from "../../lib/clientApi";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
-import MobileListCard from "../../components/MobileListCard";
+import MobileListCard, { MobileListPagination } from "../../components/MobileListCard";
 
 const PAGE_SIZE = 25;
 
@@ -254,6 +254,12 @@ export default function Meetings() {
                     />
                   ))}
                 </div>
+                <MobileListPagination
+                  page={safePage}
+                  totalPages={totalPages}
+                  onPrev={() => setPage((p) => Math.max(1, p - 1))}
+                  onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+                />
 
                 <div className="hidden sm:block overflow-x-auto">
                   <table className="min-w-full">
@@ -282,7 +288,7 @@ export default function Meetings() {
                   </table>
                 </div>
 
-                <div className="flex h-14 items-center justify-between px-6 border-t border-[#E1E4EA]">
+                <div className="hidden sm:flex h-14 items-center justify-between px-6 border-t border-[#E1E4EA]">
                   <p className="text-sm text-[#6b7280]">
                     Showing <span className="font-semibold text-[#111827]">{paginated.length}</span> of{" "}
                     <span className="font-semibold text-[#111827]">{sorted.length}</span> Meetings

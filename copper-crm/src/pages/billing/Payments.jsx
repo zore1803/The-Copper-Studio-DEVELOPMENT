@@ -6,7 +6,7 @@ import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { useToast } from "../../components/useToast";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
-import MobileListCard from "../../components/MobileListCard";
+import MobileListCard, { MobileListPagination } from "../../components/MobileListCard";
 import { useDataFields } from "../../lib/dataFields";
 
 const PAGE_SIZE = 25;
@@ -287,6 +287,12 @@ export default function Payments() {
           <p className="py-10 text-center text-sm text-[#6b7280]">No payments found.</p>
         )}
       </div>
+      <MobileListPagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+      />
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (

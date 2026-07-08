@@ -10,7 +10,7 @@ import { useAuth } from "../../auth/useAuth";
 import { apiGet } from "../../lib/api";
 import SidePanel from "../../components/SidePanel";
 import FilterButton from "../../components/FilterButton";
-import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
+import MobileListCard, { CARD_TONES, MobileListPagination } from "../../components/MobileListCard";
 import { generateInvoiceNumber } from "../../lib/invoiceDefaults";
 import { generateDefaultProjectName, generateProjectCode } from "../../lib/projectDefaults";
 
@@ -1109,6 +1109,12 @@ export default function Invoices() {
           <p className="py-10 text-center text-sm text-[#6b7280]">No invoices found.</p>
         )}
       </div>
+      <MobileListPagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+      />
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (

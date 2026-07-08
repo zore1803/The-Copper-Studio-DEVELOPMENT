@@ -14,7 +14,7 @@ import { useAuth } from "../../auth/useAuth";
 import SidePanel from "../../components/SidePanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 import FilterButton from "../../components/FilterButton";
-import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
+import MobileListCard, { CARD_TONES, MobileListPagination } from "../../components/MobileListCard";
 
 const PAGE_SIZE = 25;
 const FOLDER_PAGE_SIZE = 8;
@@ -806,6 +806,12 @@ export default function Companies() {
               />
             ))}
           </div>
+          <MobileListPagination
+            page={page}
+            totalPages={totalPages}
+            onPrev={() => setPage((p) => Math.max(1, p - 1))}
+            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+          />
 
           {/* Desktop: table */}
           <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">

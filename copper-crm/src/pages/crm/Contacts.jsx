@@ -13,7 +13,7 @@ import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
-import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
+import MobileListCard, { CARD_TONES, MobileListPagination } from "../../components/MobileListCard";
 import { contactFullName } from "../../lib/contacts";
 import { useAuth } from "../../auth/useAuth";
 import { apiPut } from "../../lib/api";
@@ -636,6 +636,12 @@ export default function Contacts() {
                 })
               ) : <EmptyState onCreate={() => setEditing({ status: "Active" })} />}
             </div>
+            <MobileListPagination
+              page={page}
+              totalPages={totalPages}
+              onPrev={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+            />
 
             <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
               <div className="grid grid-cols-[minmax(200px,1.2fr)_minmax(160px,1fr)_150px_minmax(160px,1fr)_120px_110px_auto] gap-4 border-b border-[#6E2412] bg-[#8D3118] px-4 py-3 text-xs font-bold uppercase tracking-wide text-white">
