@@ -14,6 +14,7 @@ import { useAuth } from "../../auth/useAuth";
 import SidePanel from "../../components/SidePanel";
 import CompanyFormPanel from "../../components/CompanyFormPanel";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 
 const PAGE_SIZE = 25;
 const FOLDER_PAGE_SIZE = 8;
@@ -733,7 +734,35 @@ export default function Companies() {
       {/* Body */}
       <div className="flex-1 min-w-0 overflow-auto bg-[#FFFFFF] p-5 xl:p-6">
         {view === "table" ? (
-          <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
+          <>
+          {/* Mobile: one card per company */}
+          <div className="flex flex-col gap-3 sm:hidden">
+            {loading ? (
+              <p className="py-12 text-center text-sm text-[#6b7280]">Loading companies…</p>
+            ) : paginated.length === 0 ? (
+              <p className="py-12 text-center text-sm text-[#6b7280]">No companies found.</p>
+            ) : paginated.map((company) => (
+              <MobileListCard
+                key={company._id || company.id}
+                title={company.name}
+                subtitle={company.industry || "No industry"}
+                badge={<CompanyStatusBadge status={company.status} />}
+                onClick={() => openCompany(company)}
+                fields={[
+                  { label: "Location", value: company.city ? `${company.city}${company.state ? `, ${company.state}` : ""}` : "—" },
+                  { label: "GSTIN", value: company.gstin || "—" },
+                ]}
+                actions={[
+                  { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openCompany(company) },
+                  { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(company) },
+                  { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteCompany(company) },
+                ]}
+              />
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">
             <div className="overflow-auto">
               <table className="min-w-full">
                 <thead className="bg-[#8D3118] border-b border-[#6E2412]">
@@ -838,6 +867,7 @@ export default function Companies() {
               </div>
             </div>
           </div>
+          </>
         ) : (
           <div className="flex flex-col gap-4">
             {/* Company Hotlists panel */}
