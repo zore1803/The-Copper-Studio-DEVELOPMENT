@@ -43,14 +43,15 @@ function KpiChip({ label, value, icon: Icon, tone = "default" }) {
     danger: "bg-red-50 text-red-700",
   };
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white px-5 py-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
-          <Icon size={16} />
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-2.5 sm:p-4 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={`flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg ${toneStyles[tone]}`}>
+          <Icon size={15} className="sm:hidden" />
+          <Icon size={17} className="hidden sm:block" />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-xs font-medium text-[#6b7280]">{label}</p>
-          <p className="mt-0.5 truncate text-base font-bold text-[#111827]">{value}</p>
+          <p className="truncate text-[10px] sm:text-xs font-medium text-[#6b7280]">{label}</p>
+          <p className="mt-0.5 truncate text-sm sm:text-lg font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
