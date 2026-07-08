@@ -1311,7 +1311,7 @@ export default function CompanyDetail() {
       </div>
       )}
 
-      <div className="flex-1 p-6">
+      <div className={`flex-1 p-6 ${!focusMode ? "hidden sm:block" : ""}`}>
         {activeTab === "Projects" && (
           <ProjectsWorkspace
             projects={visibleProjects}
