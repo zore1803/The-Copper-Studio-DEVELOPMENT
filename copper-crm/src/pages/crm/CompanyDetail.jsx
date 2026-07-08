@@ -995,6 +995,15 @@ export default function CompanyDetail() {
                   {company.industry && <span>{company.industry}</span>}
                   <WebsiteTextLink href={company.website} />
                   {company.phone && <span className="inline-flex items-center gap-1"><Phone size={12} /> {company.phone}</span>}
+                  {(company.linkedin || company.instagram || company.facebook || company.twitter || company.personalWebsite) && (
+                    <div className="flex items-center gap-1.5 sm:hidden">
+                      <SocialIconLink href={company.linkedin} icon={LinkedInGlyph} label="LinkedIn" />
+                      <SocialIconLink href={company.instagram} icon={InstagramGlyph} label="Instagram" />
+                      <SocialIconLink href={company.facebook} icon={FacebookGlyph} label="Facebook" />
+                      <SocialIconLink href={company.twitter} icon={XGlyph} label="X" />
+                      <WebsiteIconLink href={company.personalWebsite} icon={Globe} label="Personal site" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
