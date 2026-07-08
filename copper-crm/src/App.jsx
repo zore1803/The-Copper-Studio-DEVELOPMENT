@@ -61,19 +61,18 @@ function CompanyDetailOverlay() {
   }, []);
   return (
     <div className="fixed inset-x-0 bottom-0 top-28 z-50 flex justify-center bg-gray-950/30 p-4" onClick={() => navigate(-1)}>
-      <div
-        className="relative flex h-full w-full max-w-6xl animate-[sheet-up_200ms_ease-out] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="relative flex h-full w-full max-w-6xl" onClick={(event) => event.stopPropagation()}>
+        <div className="flex h-full w-full animate-[sheet-up_200ms_ease-out] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+          <div className="flex-1 overflow-y-auto">
+            <CompanyDetail />
+          </div>
+        </div>
         <button
           onClick={() => navigate(-1)}
-          className="absolute right-4 top-4 z-20 grid h-8 w-8 place-items-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md hover:bg-gray-50 hover:text-gray-800"
+          className="absolute -right-3 -top-3 z-20 grid h-8 w-8 place-items-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md hover:bg-gray-50 hover:text-gray-800"
         >
           <X size={16} />
         </button>
-        <div className="flex-1 overflow-y-auto">
-          <CompanyDetail />
-        </div>
       </div>
     </div>
   );
