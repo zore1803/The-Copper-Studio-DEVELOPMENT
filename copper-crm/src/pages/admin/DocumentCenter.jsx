@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Building2, ChevronLeft, FileArchive, FileText, Folder, FolderOpen, Grid3X3,
@@ -7,7 +7,28 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import DocumentUploadPanel from "../../components/DocumentUploadPanel";
-import customFolderSvg from "../../assets/Folder.svg";
+
+function FolderGlyph3D(props) {
+  const gradientId = useId();
+  const backId = useId();
+  return (
+    <svg viewBox="0 0 48 40" {...props}>
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#60A5FA" />
+          <stop offset="100%" stopColor="#2563EB" />
+        </linearGradient>
+        <linearGradient id={backId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#93C5FD" />
+          <stop offset="100%" stopColor="#3B82F6" />
+        </linearGradient>
+      </defs>
+      <path d="M2 8a3 3 0 0 1 3-3h11l4 4h20a3 3 0 0 1 3 3v3H2z" fill={`url(#${backId})`} />
+      <path d="M2 13h44v20a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3z" fill={`url(#${gradientId})`} />
+      <path d="M2 13h44v3.5H2z" fill="#ffffff" opacity="0.25" />
+    </svg>
+  );
+}
 // Open a stored file in a new tab. Browsers block top-level navigation to big
 // base64 data: URLs, so convert those to a Blob object URL first (that's why
 // clicking "View" on an uploaded file did nothing). API endpoints and http(s)
@@ -77,8 +98,8 @@ function FolderCard({ icon: Icon, title, meta, onClick, active }) {
       onClick={onClick}
       className={`group flex flex-col items-center justify-start rounded-xl p-3 text-center transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-105 hover:-translate-y-1 will-change-transform ${active ? "bg-black/10 ring-1 ring-black/5" : "bg-transparent"}`}
     >
-      {typeof Icon === "string" ? (
-        <img src={Icon} alt="Folder" className="mb-3 h-[96px] w-auto object-contain drop-shadow-sm" />
+      {Icon === FolderGlyph3D ? (
+        <FolderGlyph3D className="mb-3 h-[96px] w-auto drop-shadow-sm" />
       ) : (
         <div className={`mb-3 flex h-[96px] w-[96px] items-center justify-center text-[#525866] drop-shadow-sm`}>
           <Icon size={40} />
@@ -368,7 +389,7 @@ export default function DocumentCenter() {
       const companyProjects = projects.filter((p) => String(p.companyId) === String(cid));
       return {
         id: cid,
-        icon: customFolderSvg,
+        icon: FolderGlyph3D,
         title: company.companyName || company.name || "Unnamed company",
         meta: `${companyProjects.length} projects · ${allDocsForCompany(cid).length} files`,
         type: "company"
@@ -381,7 +402,7 @@ export default function DocumentCenter() {
     const companyProjects = projects.filter((p) => String(p.companyId) === String(selectedCompanyId));
     displayFolders = companyProjects.map((project) => ({
       id: project._id || project.id,
-      icon: customFolderSvg,
+      icon: FolderGlyph3D,
       title: project.name || project.projectName || "Unnamed project",
       meta: `${projectDocs.filter((d) => String(d.projectId) === String(project._id || project.id)).length} items`,
       type: "project"
