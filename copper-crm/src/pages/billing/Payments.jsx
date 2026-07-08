@@ -304,7 +304,7 @@ export default function Payments() {
       </div>
 
       <div className="p-5 xl:p-6">
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Metric label="Total Revenue" value={money(revenue)} icon={WalletCards} />
         <Metric label="Pending Payments" value={money(pending)} icon={CreditCard} />
         <Metric label="Successful Payments" value={successfulPayments.length} icon={PackageCheck} />

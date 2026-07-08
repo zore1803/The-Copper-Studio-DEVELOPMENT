@@ -1124,7 +1124,7 @@ export default function Invoices() {
       </div>
 
       <div className="p-5 xl:p-6">
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-4">
         <Metric label="Paid Revenue" value={money(totals.paidRevenue)} icon={WalletCards} />
         <Metric label="Paid GST / Tax" value={money(totals.paidTax)} icon={ReceiptText} />
         <Metric label="Paid" value={totals.paid} icon={FileText} />

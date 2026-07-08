@@ -783,7 +783,7 @@ export default function Coupons() {
 
       <div className="p-6">
         {/* Metrics */}
-        <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mb-5 grid grid-cols-2 gap-4 xl:grid-cols-5">
           <Metric label="Active Coupons" value={metrics.active} icon={Tag} />
           <Metric label="Redeemed" value={metrics.redeemed} icon={TrendingUp} />
           <Metric label="Expired" value={metrics.expired} icon={Tag} />
