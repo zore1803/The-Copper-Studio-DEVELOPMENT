@@ -610,6 +610,8 @@ export default function CompanyDetail() {
   // chosen tab's content) instead of the full company header/KPIs/tab bar.
   const focusMode = Boolean(location.state?.focusMode);
   const [creatingProject, setCreatingProject] = useState(false);
+  const [documentsView, setDocumentsView] = useState("Grid");
+  const [creatingDocGroup, setCreatingDocGroup] = useState(false);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -1062,6 +1064,35 @@ export default function CompanyDetail() {
               </button>
             </div>
           )}
+          {activeTab === "Documents" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setDocumentsView("Grid")}
+                  className={`rounded-full p-1.5 ${documentsView === "Grid" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+                  title="Grid view"
+                >
+                  <LayoutGrid size={15} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDocumentsView("List")}
+                  className={`rounded-full p-1.5 ${documentsView === "List" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
+                  title="List view"
+                >
+                  <ListIcon size={15} />
+                </button>
+              </div>
+              <button
+                onClick={() => setCreatingDocGroup((v) => !v)}
+                className="flex h-8 items-center gap-1.5 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] hover:bg-[#f9fafb]"
+              >
+                <FolderPlus size={14} /> New Group
+              </button>
+              <Button size="sm" onClick={() => setUploadingDocument(true)}><Plus size={14} /> Upload</Button>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -1293,6 +1324,10 @@ export default function CompanyDetail() {
             documents={linked.documents}
             projects={linked.projects}
             groups={company.documentGroups || []}
+            view={documentsView}
+            onView={setDocumentsView}
+            creatingGroup={creatingDocGroup}
+            onToggleCreatingGroup={setCreatingDocGroup}
             onUpload={() => setUploadingDocument(true)}
             onOpenFolder={(category) => setViewingFolder({ label: category, folders: [category] })}
             onOpenGroup={(group) => setViewingFolder({ label: group.name, folders: group.folders })}
@@ -1843,9 +1878,7 @@ function TaskGantt({ tasks, projects, title = "Project Tasks Gantt Chart", rowLa
   );
 }
 
-function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onOpenGroup, onCreateGroup, onDeleteGroup, onDelete }) {
-  const [view, setView] = useState("Grid");
-  const [creatingGroup, setCreatingGroup] = useState(false);
+function DocumentsTab({ documents, projects, groups, view, onView, creatingGroup, onToggleCreatingGroup, onUpload, onOpenFolder, onOpenGroup, onCreateGroup, onDeleteGroup, onDelete }) {
   const [groupName, setGroupName] = useState("");
   const [groupFolders, setGroupFolders] = useState([]);
   const projectDocs = projects.flatMap((project) =>
@@ -1878,19 +1911,19 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
     onCreateGroup(groupName, groupFolders);
     setGroupName("");
     setGroupFolders([]);
-    setCreatingGroup(false);
+    onToggleCreatingGroup(false);
   }
 
   return (
     <Section
       title="Documents"
-      hideTitleOnMobile
+      hideHeaderOnMobile
       action={
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-full border border-[#e5e7eb] bg-white p-0.5">
             <button
               type="button"
-              onClick={() => setView("Grid")}
+              onClick={() => onView("Grid")}
               className={`rounded-full p-1.5 ${view === "Grid" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="Grid view"
             >
@@ -1898,15 +1931,15 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
             </button>
             <button
               type="button"
-              onClick={() => setView("List")}
+              onClick={() => onView("List")}
               className={`rounded-full p-1.5 ${view === "List" ? "bg-[#fff1ec] text-[#8D3118]" : "text-[#9ca3af] hover:text-[#374151]"}`}
               title="List view"
             >
               <ListIcon size={15} />
             </button>
           </div>
-          <Button variant="secondary" onClick={() => setCreatingGroup((open) => !open)}><FolderPlus size={14} /> New Group</Button>
-          <Button onClick={onUpload}><Plus size={14} /> <span className="hidden sm:inline">Upload Document</span><span className="sm:hidden">Upload</span></Button>
+          <Button variant="secondary" onClick={() => onToggleCreatingGroup((open) => !open)}><FolderPlus size={14} /> New Group</Button>
+          <Button onClick={onUpload}><Plus size={14} /> Upload Document</Button>
         </div>
       }
     >
@@ -1936,7 +1969,42 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
       )}
 
       {view === "Grid" ? (
-        <div className="grid gap-4 md:grid-cols-3">
+        <>
+          {/* Mobile: plain big 3D folder icons, 2-per-row, no card chrome. */}
+          <div className="grid grid-cols-2 gap-4 sm:hidden">
+            {groups.map((group) => {
+              const docs = docsForFolders(group.folders);
+              return (
+                <button
+                  key={group.name}
+                  type="button"
+                  onClick={() => onOpenGroup(group)}
+                  className="flex flex-col items-center gap-2 text-center"
+                >
+                  <FolderGlyph3D className="h-16 w-16" />
+                  <span className="text-sm font-bold text-[#111827]">{group.name}</span>
+                  <span className="text-xs text-[#6b7280]">{docs.length} files</span>
+                </button>
+              );
+            })}
+            {categories.map((category) => {
+              const docs = docsForFolders([category]);
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => onOpenFolder(category)}
+                  className="flex flex-col items-center gap-2 text-center"
+                >
+                  <FolderGlyph3D className="h-16 w-16" />
+                  <span className="text-sm font-bold text-[#111827]">{category}</span>
+                  <span className="text-xs text-[#6b7280]">{docs.length} files</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="hidden gap-4 sm:grid md:grid-cols-3">
           {groups.map((group) => {
             const docs = docsForFolders(group.folders);
             return (
@@ -1978,10 +2046,7 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
                 className="relative cursor-pointer rounded-xl border border-[#e5e7eb] bg-white p-4 text-left transition-colors hover:border-[#8D3118]/40"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118] sm:hidden">
-                    <FolderGlyph3D className="h-9 w-9" />
-                  </div>
-                  <div className="hidden h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118] sm:grid"><FolderOpen size={17} /></div>
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-white text-[#8D3118]"><FolderOpen size={17} /></div>
                   <div>
                     <p className="font-bold text-[#111827]">{category}</p>
                     <p className="text-xs text-[#6b7280]">{docs.length} files</p>
@@ -1998,7 +2063,8 @@ function DocumentsTab({ documents, projects, groups, onUpload, onOpenFolder, onO
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       ) : (
         <DocumentList documents={allDocs} onDelete={onDelete} />
       )}
