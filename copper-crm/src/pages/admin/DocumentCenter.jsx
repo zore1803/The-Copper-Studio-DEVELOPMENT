@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
-  Building2, FileArchive, FileText, Folder, FolderOpen, Grid3X3,
+  Building2, ChevronLeft, FileArchive, FileText, Folder, FolderOpen, Grid3X3,
   Link2, List, Loader2, Lock, Search, Share2, Upload, Users, Menu, X
 } from "lucide-react";
 import { Button } from "../../components/ui";
@@ -238,11 +238,13 @@ function ProjectDetails({ project, company }) {
 }
 
 export default function DocumentCenter() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCompanyId = searchParams.get("company");
   const selectedProjectId = searchParams.get("project");
 
   const [query, setQuery] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [view, setView] = useState("grid");
   const [selected, setSelected] = useState(null);
@@ -470,28 +472,66 @@ export default function DocumentCenter() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#FFFFFF]">
-      <div className="flex flex-col gap-4 border-b border-[#E1E4EA] bg-white px-6 py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0">
-        <div className="min-w-0">
-          <nav className="flex items-center gap-1.5 text-xs text-[#9ca3af]">
-            <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#8D3118]">Companies</button>
-            {selectedCompanyId && (
-              <>
-                <span>/</span>
-                <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#8D3118] truncate max-w-[180px]">
-                  {currentCompany?.name || currentCompany?.companyName || "Company"}
-                </button>
-              </>
-            )}
-            {selectedProjectId && (
-              <>
-                <span>/</span>
-                <span className="font-medium text-[#374151] truncate max-w-[200px]">{currentProject?.name || "Project"}</span>
-              </>
-            )}
-          </nav>
-          <h1 className="mt-0.5 text-base font-medium text-[#0E121B] truncate">{viewTitle}</h1>
+      <div className="flex flex-col gap-2 border-b border-[#E1E4EA] bg-white px-4 py-2 sm:gap-4 sm:px-6 sm:py-3 lg:h-14 lg:flex-row lg:items-center lg:justify-between lg:gap-4 lg:py-0 min-w-0">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb] sm:hidden">
+              <ChevronLeft size={18} />
+            </button>
+            <div className="min-w-0">
+              <nav className="hidden items-center gap-1.5 text-xs text-[#9ca3af] sm:flex">
+                <button type="button" onClick={() => setSearchParams({})} className="font-medium hover:text-[#8D3118]">Companies</button>
+                {selectedCompanyId && (
+                  <>
+                    <span>/</span>
+                    <button type="button" onClick={() => setSearchParams({ company: selectedCompanyId })} className="font-medium hover:text-[#8D3118] truncate max-w-[180px]">
+                      {currentCompany?.name || currentCompany?.companyName || "Company"}
+                    </button>
+                  </>
+                )}
+                {selectedProjectId && (
+                  <>
+                    <span>/</span>
+                    <span className="font-medium text-[#374151] truncate max-w-[200px]">{currentProject?.name || "Project"}</span>
+                  </>
+                )}
+              </nav>
+              <h1 className="text-base font-medium text-[#0E121B] truncate sm:mt-0.5">{viewTitle}</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Mobile-only search icon toggle */}
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors sm:hidden ${mobileSearchOpen ? "border-[#8D3118] bg-[#fff8f6] text-[#8D3118]" : "border-[#E1E4EA] text-[#525866]"}`}
+            >
+              <Search size={15} />
+            </button>
+            {/* Compact "+ Upload" button (mobile, compact — desktop copy lives below) */}
+            <button
+              onClick={() => setUploading(true)}
+              className="flex h-8 items-center gap-1 rounded-full bg-[#8D3118] px-3 text-xs font-medium text-white hover:bg-[#8D3118] transition-colors shadow-sm sm:hidden"
+            >
+              <Upload size={14} /> Upload
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+
+        {/* Mobile search bar — drops down only when the icon above is tapped */}
+        {mobileSearchOpen && (
+          <div className="flex h-9 w-full items-center gap-2 rounded-full border border-[#8D3118] bg-[#fff8f6] px-3 sm:hidden">
+            <Search size={14} className="text-[#8D3118] shrink-0" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search documents"
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#525866]"
+            />
+          </div>
+        )}
+
+        <div className="hidden flex-wrap items-center gap-2 sm:flex">
           {mode !== "root" && (
             <select
               value={categoryFilter}
