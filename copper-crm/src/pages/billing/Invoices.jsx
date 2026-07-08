@@ -1131,34 +1131,36 @@ export default function Invoices() {
         <Metric label="Overdue" value={totals.overdue} icon={Send} />
       </div>
 
-      {/* Mobile: one card per invoice */}
-      <div className="flex flex-col gap-3 sm:hidden">
-        {sorted.length ? mobilePaginated.map((invoice) => (
-          <MobileListCard
-            key={invoice._id || invoice.id || invoice.invoiceNumber}
-            title={invoice.invoiceNumber || invoice.id || invoice._id}
-            subtitle={invoice.project || "Not linked"}
-            badge={<InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} />}
-            fields={[
-              { label: "Company", value: invoice.company || invoice.client || "Not linked" },
-              { label: "Amount", value: money(parseMoney(invoice.total || invoice.amount)) },
-            ]}
-            actions={[
-              { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => viewInvoice(invoice) },
-              { label: "Download", icon: <Download size={13} />, tone: CARD_TONES.neutral, onClick: () => downloadInvoice(invoice) },
-              { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditingInvoice(invoice) },
-            ]}
-          />
-        )) : (
-          <p className="py-10 text-center text-sm text-[#6b7280]">No invoices found.</p>
-        )}
-      </div>
-      <MobileListPagination
-        page={mobilePage}
-        totalPages={mobileTotalPages}
-        onPrev={() => setPage((p) => Math.max(1, p - 1))}
-        onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
-      />
+      {/* Mobile: one card per invoice, wrapped in an outer section like Meetings */}
+      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white sm:hidden">
+        <div className="flex flex-col gap-3 p-4">
+          {sorted.length ? mobilePaginated.map((invoice) => (
+            <MobileListCard
+              key={invoice._id || invoice.id || invoice.invoiceNumber}
+              title={invoice.invoiceNumber || invoice.id || invoice._id}
+              subtitle={invoice.project || "Not linked"}
+              badge={<InvoiceStatus invoice={invoice} onChange={(nextStatus) => handleStatusChange(invoice, nextStatus)} />}
+              fields={[
+                { label: "Company", value: invoice.company || invoice.client || "Not linked" },
+                { label: "Amount", value: money(parseMoney(invoice.total || invoice.amount)) },
+              ]}
+              actions={[
+                { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => viewInvoice(invoice) },
+                { label: "Download", icon: <Download size={13} />, tone: CARD_TONES.neutral, onClick: () => downloadInvoice(invoice) },
+                { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditingInvoice(invoice) },
+              ]}
+            />
+          )) : (
+            <p className="py-10 text-center text-sm text-[#6b7280]">No invoices found.</p>
+          )}
+        </div>
+        <MobileListPagination
+          page={mobilePage}
+          totalPages={mobileTotalPages}
+          onPrev={() => setPage((p) => Math.max(1, p - 1))}
+          onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
+        />
+      </section>
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (

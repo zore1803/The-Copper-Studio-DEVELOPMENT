@@ -796,37 +796,39 @@ export default function Companies() {
       <div className="flex-1 min-w-0 overflow-auto bg-[#FFFFFF] p-5 xl:p-6">
         {view === "table" ? (
           <>
-          {/* Mobile: one card per company */}
-          <div className="flex flex-col gap-3 sm:hidden">
-            {loading ? (
-              <p className="py-12 text-center text-sm text-[#6b7280]">Loading companies…</p>
-            ) : mobilePaginated.length === 0 ? (
-              <p className="py-12 text-center text-sm text-[#6b7280]">No companies found.</p>
-            ) : mobilePaginated.map((company) => (
-              <MobileListCard
-                key={company._id || company.id}
-                title={company.name}
-                subtitle={company.industry || "No industry"}
-                badge={<CompanyStatusBadge status={company.status} />}
-                onClick={() => openCompany(company)}
-                fields={[
-                  { label: "Location", value: company.city ? `${company.city}${company.state ? `, ${company.state}` : ""}` : "—" },
-                  { label: "GSTIN", value: company.gstin || "—" },
-                ]}
-                actions={[
-                  { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openCompany(company) },
-                  { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(company) },
-                  { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteCompany(company) },
-                ]}
-              />
-            ))}
-          </div>
-          <MobileListPagination
-            page={mobilePage}
-            totalPages={mobileTotalPages}
-            onPrev={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
-          />
+          {/* Mobile: one card per company, wrapped in an outer section like Meetings */}
+          <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white sm:hidden">
+            <div className="flex flex-col gap-3 p-4">
+              {loading ? (
+                <p className="py-12 text-center text-sm text-[#6b7280]">Loading companies…</p>
+              ) : mobilePaginated.length === 0 ? (
+                <p className="py-12 text-center text-sm text-[#6b7280]">No companies found.</p>
+              ) : mobilePaginated.map((company) => (
+                <MobileListCard
+                  key={company._id || company.id}
+                  title={company.name}
+                  subtitle={company.industry || "No industry"}
+                  badge={<CompanyStatusBadge status={company.status} />}
+                  onClick={() => openCompany(company)}
+                  fields={[
+                    { label: "Location", value: company.city ? `${company.city}${company.state ? `, ${company.state}` : ""}` : "—" },
+                    { label: "GSTIN", value: company.gstin || "—" },
+                  ]}
+                  actions={[
+                    { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openCompany(company) },
+                    { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(company) },
+                    { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteCompany(company) },
+                  ]}
+                />
+              ))}
+            </div>
+            <MobileListPagination
+              page={mobilePage}
+              totalPages={mobileTotalPages}
+              onPrev={() => setPage((p) => Math.max(1, p - 1))}
+              onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
+            />
+          </section>
 
           {/* Desktop: table */}
           <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white shadow-[0_4px_4px_rgba(0,0,0,0.05)]">

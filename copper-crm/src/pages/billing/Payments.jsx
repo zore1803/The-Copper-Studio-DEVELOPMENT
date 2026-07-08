@@ -311,29 +311,31 @@ export default function Payments() {
         <Metric label="Invoices" value={invoices.length} icon={ReceiptText} />
       </div>
 
-      {/* Mobile: one card per payment */}
-      <div className="flex flex-col gap-3 sm:hidden">
-        {sorted.length ? mobilePaginated.map((row) => (
-          <MobileListCard
-            key={row._id || row.id || row.paymentId}
-            title={row.paymentId || row.id || row._id}
-            subtitle={formatDate(row.paidAt || row.createdAt || row.date)}
-            badge={<Status value={row.status || "Pending"} />}
-            fields={[
-              { label: "Company", value: row.company || "Not linked" },
-              { label: "Amount", value: money(parseMoney(row.amount)) },
-            ]}
-          />
-        )) : (
-          <p className="py-10 text-center text-sm text-[#6b7280]">No payments found.</p>
-        )}
-      </div>
-      <MobileListPagination
-        page={mobilePage}
-        totalPages={mobileTotalPages}
-        onPrev={() => setPage((p) => Math.max(1, p - 1))}
-        onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
-      />
+      {/* Mobile: one card per payment, wrapped in an outer section like Meetings */}
+      <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white sm:hidden">
+        <div className="flex flex-col gap-3 p-4">
+          {sorted.length ? mobilePaginated.map((row) => (
+            <MobileListCard
+              key={row._id || row.id || row.paymentId}
+              title={row.paymentId || row.id || row._id}
+              subtitle={formatDate(row.paidAt || row.createdAt || row.date)}
+              badge={<Status value={row.status || "Pending"} />}
+              fields={[
+                { label: "Company", value: row.company || "Not linked" },
+                { label: "Amount", value: money(parseMoney(row.amount)) },
+              ]}
+            />
+          )) : (
+            <p className="py-10 text-center text-sm text-[#6b7280]">No payments found.</p>
+          )}
+        </div>
+        <MobileListPagination
+          page={mobilePage}
+          totalPages={mobileTotalPages}
+          onPrev={() => setPage((p) => Math.max(1, p - 1))}
+          onNext={() => setPage((p) => Math.min(mobileTotalPages, p + 1))}
+        />
+      </section>
 
       <section className="hidden sm:block overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
         {sorted.length ? (
