@@ -1286,7 +1286,7 @@ export default function CompanyDetail() {
           <KpiChip label="Company Health" value={`${companyHealthScore}%`} icon={Target} color="#8D3118" />
         </div>
 
-        <div className="overflow-x-auto px-6 pb-5">
+        <div className="hidden overflow-x-auto px-6 pb-5 sm:block">
           <div className="inline-flex items-center gap-1 rounded-full border border-[#e5e7eb] bg-white p-1">
             {TABS.map((tab) => (
               <button
