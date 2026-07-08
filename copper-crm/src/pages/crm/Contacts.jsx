@@ -13,6 +13,7 @@ import ContactFormPanel from "../../components/ContactFormPanel";
 import ContactExportMenu from "../../components/ContactExportMenu";
 import { useToast } from "../../components/useToast";
 import FilterButton from "../../components/FilterButton";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 import { contactFullName } from "../../lib/contacts";
 import { useAuth } from "../../auth/useAuth";
 import { apiPut } from "../../lib/api";
@@ -596,7 +597,42 @@ export default function Contacts() {
       <main className="flex-1 overflow-auto bg-[#FFFFFF] p-6">
         {view === "table" ? (
           <>
-            <div className="overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
+            {/* Mobile: one card per contact */}
+            <div className="flex flex-col gap-3 sm:hidden">
+              {loading ? (
+                <p className="py-10 text-center text-sm text-[#6b7280]">Loading contacts...</p>
+              ) : rows.length ? (
+                rows.map((contact) => {
+                  const portalLinked = Boolean(contact.userId);
+                  const isDeactivated = portalLinked && contact.portalStatus === "disabled";
+                  const hasPortalAccess = portalLinked && !isDeactivated;
+                  return (
+                    <MobileListCard
+                      key={contact._id || contact.id}
+                      title={contactFullName(contact)}
+                      subtitle={contact.designation || "No designation"}
+                      badge={
+                        <span className={`h-fit rounded-full px-2 py-1 text-center text-xs font-semibold ${hasPortalAccess ? "bg-emerald-50 text-emerald-700" : "bg-[#f3f4f6] text-[#6b7280]"}`}>
+                          {hasPortalAccess ? "Portal: Yes" : "Portal: No"}
+                        </span>
+                      }
+                      onClick={() => navigate(`/admin/contacts/${contact._id || contact.id}`)}
+                      fields={[
+                        { label: "Company", value: companyNameOf(contact) },
+                        { label: "Phone / Email", value: contact.phone || contact.email || "—" },
+                      ]}
+                      actions={[
+                        { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => navigate(`/admin/contacts/${contact._id || contact.id}`) },
+                        { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(contact) },
+                        { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteContact(contact) },
+                      ]}
+                    />
+                  );
+                })
+              ) : <EmptyState onCreate={() => setEditing({ status: "Active" })} />}
+            </div>
+
+            <div className="hidden sm:block overflow-hidden rounded-xl border border-[#E1E4EA] bg-white">
               <div className="grid grid-cols-[minmax(200px,1.2fr)_minmax(160px,1fr)_150px_minmax(160px,1fr)_120px_110px_auto] gap-4 border-b border-[#6E2412] bg-[#8D3118] px-4 py-3 text-xs font-bold uppercase tracking-wide text-white">
                 <span>Contact</span>
                 <span>Associated Company</span><span>Mobile No.</span><span>Email</span><span className="text-center">Portal Access</span><span className="text-center">Status</span><span className="text-right pr-1">Actions</span>
