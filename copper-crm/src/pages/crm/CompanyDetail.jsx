@@ -1508,7 +1508,7 @@ function ProjectsTable({ projects, companyId, onOpen, onDelete }) {
     <>
       {/* Mobile: one card per project instead of a cramped, horizontally
           scrolling table. */}
-      <div className="flex flex-col gap-3 p-4 sm:hidden">
+      <div className="flex flex-col gap-3 p-2 sm:hidden">
         {projects.map((project) => (
           <MobileListCard
             key={project.id || project._id}
@@ -1779,7 +1779,7 @@ function InvoicesTable({ invoices, onView, onDownload }) {
     <>
       {/* Mobile: one card per invoice instead of a cramped, horizontally
           scrolling table. */}
-      <div className="flex flex-col gap-3 p-4 sm:hidden">
+      <div className="flex flex-col gap-3 p-2 sm:hidden">
         {invoices.map((invoice) => (
           <MobileListCard
             key={invoice.id || invoice._id}
