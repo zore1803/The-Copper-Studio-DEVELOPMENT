@@ -617,6 +617,7 @@ export default function CompanyDetail() {
   const [mobileNoteSearchOpen, setMobileNoteSearchOpen] = useState(false);
   const [mobileNoteDateOpen, setMobileNoteDateOpen] = useState(false);
   const [bookingMeeting, setBookingMeeting] = useState(false);
+  const [activityPeriod, setActivityPeriod] = useState("All time");
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef(null);
   const [editingCompany, setEditingCompany] = useState(false);
@@ -1114,6 +1115,17 @@ export default function CompanyDetail() {
               <Button size="sm" onClick={() => setBookingMeeting(true)}><Calendar size={14} /> Book</Button>
             </div>
           )}
+          {activeTab === "Activity" && (
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              <select
+                value={activityPeriod}
+                onChange={(e) => setActivityPeriod(e.target.value)}
+                className="h-8 rounded-full border border-[#e5e7eb] bg-white px-3 text-xs font-bold text-[#374151] outline-none"
+              >
+                {ACTIVITY_PERIODS.map((item) => <option key={item}>{item}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       )}
       {focusMode && activeTab === "Contacts" && mobileContactSearchOpen && (
@@ -1416,7 +1428,7 @@ export default function CompanyDetail() {
             onCloseBooking={() => setBookingMeeting(false)}
           />
         )}
-        {activeTab === "Activity" && <ActivityTimeline items={activityItems} full />}
+        {activeTab === "Activity" && <ActivityTimeline items={activityItems} full period={activityPeriod} onPeriod={setActivityPeriod} />}
       </div>
 
       {editingCompany && <CompanyFormPanel company={company} contacts={contacts} onClose={() => setEditingCompany(false)} onSave={handleSaveCompanyEdit} />}
@@ -1522,8 +1534,10 @@ function isWithinActivityPeriod(date, period) {
   return true;
 }
 
-function ActivityTimeline({ items, full = false }) {
-  const [period, setPeriod] = useState("All time");
+function ActivityTimeline({ items, full = false, period: periodProp, onPeriod }) {
+  const [localPeriod, setLocalPeriod] = useState("All time");
+  const period = periodProp ?? localPeriod;
+  const setPeriod = onPeriod ?? setLocalPeriod;
   const filteredItems = useMemo(
     () => (full ? items.filter((item) => isWithinActivityPeriod(item.sortDate || new Date(item.date || 0), period)) : items),
     [items, period, full]
@@ -1531,6 +1545,8 @@ function ActivityTimeline({ items, full = false }) {
   return (
     <Section
       title="Activity Timeline"
+      hideHeaderOnMobile={full}
+      flush={full}
       action={
         full ? (
           <select value={period} onChange={(e) => setPeriod(e.target.value)} className="rounded-lg border border-[#e5e7eb] px-2.5 py-1.5 text-xs">
@@ -1539,6 +1555,7 @@ function ActivityTimeline({ items, full = false }) {
         ) : null
       }
     >
+      <div className={full ? "p-2 sm:p-5" : ""}>
       {filteredItems.length ? (
         <div className="space-y-4">
           {filteredItems.map((item, index) => {
@@ -1558,6 +1575,7 @@ function ActivityTimeline({ items, full = false }) {
           })}
         </div>
       ) : <EmptyState icon={Clock3} title={full && period !== "All time" ? "No activity in this period." : "No activity yet."} />}
+      </div>
     </Section>
   );
 }
