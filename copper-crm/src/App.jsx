@@ -48,11 +48,11 @@ const AnalyticsPage = lazy(() => import("./pages/admin/AnalyticsPage").then((m) 
 const CommunicationCenter = lazy(() => import("./pages/admin/CommunicationCenter"));
 const DocumentCenter = lazy(() => import("./pages/admin/DocumentCenter"));
 
-// Renders CompanyDetail as a floating overlay on top of whatever list page
+// Renders a detail page as a floating overlay on top of whatever list page
 // is still mounted underneath (the `backgroundLocation`), instead of a full
 // page navigation — matching the same confined/floating treatment as the
 // Edit/Add SidePanel. Closing just goes back in history to the list.
-function CompanyDetailOverlay() {
+function DetailOverlay({ children }) {
   const navigate = useNavigate();
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
@@ -64,7 +64,7 @@ function CompanyDetailOverlay() {
       <div className="relative flex h-full w-full max-w-6xl" onClick={(event) => event.stopPropagation()}>
         <div className="flex h-full w-full animate-[sheet-up_200ms_ease-out] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
           <div className="flex-1 overflow-y-auto">
-            <CompanyDetail />
+            {children}
           </div>
         </div>
         <button
@@ -76,6 +76,14 @@ function CompanyDetailOverlay() {
       </div>
     </div>
   );
+}
+
+function CompanyDetailOverlay() {
+  return <DetailOverlay><CompanyDetail /></DetailOverlay>;
+}
+
+function ContactDetailOverlay() {
+  return <DetailOverlay><ContactDetail /></DetailOverlay>;
 }
 
 function AppRoutes() {
@@ -158,6 +166,7 @@ function AppRoutes() {
         <Routes>
           <Route element={<ProtectedRoute role="superadmin" />}>
             <Route path="/admin/companies/:companyId" element={<CompanyDetailOverlay />} />
+            <Route path="/admin/contacts/:contactId" element={<ContactDetailOverlay />} />
           </Route>
         </Routes>
       )}

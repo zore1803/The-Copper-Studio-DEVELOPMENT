@@ -403,6 +403,13 @@ export default function Contacts() {
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
 
+  function openContact(contact) {
+    // Carries the current location so App.jsx can render ContactDetail as an
+    // overlay on top of this list instead of a full page navigation —
+    // matches the same floating-window treatment used for Company View.
+    navigate(`/admin/contacts/${contact._id || contact.id}`, { state: { backgroundLocation: location } });
+  }
+
   const companyMap = useMemo(() => new Map(companies.map((c) => [String(c.id || c._id), c])), [companies]);
 
   const companyNameOf = useCallback(
@@ -674,13 +681,13 @@ export default function Contacts() {
                             {hasPortalAccess ? "Portal: Yes" : "Portal: No"}
                           </span>
                         }
-                        onClick={() => navigate(`/admin/contacts/${contact._id || contact.id}`)}
+                        onClick={() => openContact(contact)}
                         fields={[
                           { label: "Company", value: companyNameOf(contact) },
                           { label: "Phone / Email", value: contact.phone || contact.email || "—" },
                         ]}
                         actions={[
-                          { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => navigate(`/admin/contacts/${contact._id || contact.id}`) },
+                          { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openContact(contact) },
                           { label: "Edit", icon: <Edit2 size={13} />, tone: CARD_TONES.edit, onClick: () => setEditing(contact) },
                           { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => deleteContact(contact) },
                         ]}
@@ -712,7 +719,7 @@ export default function Contacts() {
                     companyName={companyNameOf(contact)}
                     onEdit={setEditing}
                     onDelete={deleteContact}
-                    onOpen={(c) => navigate(`/admin/contacts/${c._id || c.id}`)}
+                    onOpen={(c) => openContact(c)}
                     onReactivate={handleReactivateContact}
                   />
                 ))
@@ -785,7 +792,7 @@ export default function Contacts() {
                 companyMap={companyMap}
                 onBack={() => setOpenedFolder(null)}
                 onAdd={() => setAssignOpen(true)}
-                onOpenContact={(c) => navigate(`/admin/contacts/${c._id || c.id}`)}
+                onOpenContact={(c) => openContact(c)}
                 onRemove={removeFromFolder}
               />
             ) : (
