@@ -49,14 +49,15 @@ function formatDate(value) {
 
 function Metric({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-xl border border-[#e5e7eb] bg-white p-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
-          <Icon size={17} />
+    <div className="rounded-xl border border-[#e5e7eb] bg-white p-2.5 sm:p-4 overflow-hidden">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#fff1ec] text-[#8D3118]">
+          <Icon size={15} className="sm:hidden" />
+          <Icon size={17} className="hidden sm:block" />
         </div>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
-          <p className="mt-0.5 text-lg font-bold text-[#111827]">{value}</p>
+        <div className="min-w-0">
+          <p className="truncate text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">{label}</p>
+          <p className="mt-0.5 truncate text-sm sm:text-lg font-bold text-[#111827]">{value}</p>
         </div>
       </div>
     </div>
