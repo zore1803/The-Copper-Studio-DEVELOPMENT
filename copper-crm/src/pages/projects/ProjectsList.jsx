@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpDown, Check, CheckCircle2, ChevronLeft, Clock3, Eye, FolderKanban, AlertTriangle, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowUpDown, Check, CheckCircle2, ChevronLeft, Clock3, Eye, FolderKanban, AlertTriangle, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import { apiGet } from "../../lib/api";
@@ -176,8 +176,8 @@ export default function ProjectsList() {
   // Carries the current location so App.jsx can render the project route as
   // an overlay on top of this list instead of a full page navigation —
   // matches the same floating-window treatment used for Company/Contact View.
-  function openProject(project, suffix = "") {
-    navigate(`/admin/projects/${project.id || project._id}${suffix}`, { state: { backgroundLocation: location } });
+  function openProject(project, suffix = "", extraState = {}) {
+    navigate(`/admin/projects/${project.id || project._id}${suffix}`, { state: { backgroundLocation: location, ...extraState } });
   }
 
   const PROJECT_DETAIL_TABS = [
@@ -369,7 +369,7 @@ export default function ProjectsList() {
               ]}
               actions={[
                 { label: "View", icon: <Eye size={13} />, tone: CARD_TONES.view, onClick: () => openProject(project) },
-                { label: "Timeline", icon: <Clock3 size={13} />, tone: CARD_TONES.edit, onClick: () => openProject(project, "/tasks") },
+                { label: "Edit", icon: <Pencil size={13} />, tone: CARD_TONES.edit, onClick: () => openProject(project, "", { openEdit: true }) },
                 { label: "Delete", icon: <Trash2 size={13} />, tone: CARD_TONES.delete, onClick: () => setDeletingProject(project) },
               ]}
               menuItems={PROJECT_DETAIL_TABS.map((tab) => ({ label: tab.label, onClick: () => openProject(project, tab.suffix) }))}

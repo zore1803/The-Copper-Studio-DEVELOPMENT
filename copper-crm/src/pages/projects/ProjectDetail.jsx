@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ListChecks, Palette, Code2, FlaskConical, ClipboardCheck, Rocket, Zap,
   CheckCircle2, Calendar,
@@ -412,11 +412,12 @@ function ManageProjectPanel({ project, invoices = [], onClose, onSave, onDelete 
 export default function ProjectDetail() {
   const { companyId, projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const { records: companies } = useCrmRecords("companies");
   const { records: allProjects, loading: projectsLoading, save: saveProject, remove: removeProject } = useCrmRecords("projects");
   const { records: invoices } = useCrmRecords("invoices");
-  const [managing, setManaging] = useState(false);
+  const [managing, setManaging] = useState(Boolean(location.state?.openEdit));
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -557,7 +558,7 @@ export default function ProjectDetail() {
         </div>
       </ProjectHeader>
 
-      <div className="flex-1 space-y-5 p-6">
+      <div className="hidden flex-1 space-y-5 p-6 sm:block">
         <section className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
           <div className="flex items-center justify-between bg-[#fff1ec] border-b border-[#f3e5e0] px-5 py-4">
             <div className="flex items-center gap-3">
