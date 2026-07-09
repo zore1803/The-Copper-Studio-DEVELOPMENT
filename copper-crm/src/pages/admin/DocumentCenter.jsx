@@ -7,6 +7,7 @@ import {
 import { Button } from "../../components/ui";
 import { useCrmRecords } from "../../hooks/useCrmRecords";
 import DocumentUploadPanel from "../../components/DocumentUploadPanel";
+import MobileListCard, { CARD_TONES } from "../../components/MobileListCard";
 
 function FolderGlyph3D(props) {
   const gradientId = useId();
@@ -189,6 +190,39 @@ function DocumentRow({ doc, selected, onSelect, onToggle, busy, canToggle }) {
 }
 
 
+function DocumentMobileCard({ doc, onSelect, onToggle, busy, canToggle }) {
+  const type = fileType(doc.fileName || doc.name || doc.storageUrl);
+  const visible = isClientVisible(doc);
+  const dateStr = doc.createdAt || doc.date || doc.updatedAt;
+  const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric'
+  }) : "Unknown date";
+
+  return (
+    <MobileListCard
+      title={doc.fileName || doc.name || "Untitled document"}
+      subtitle={doc.tags?.join(", ") || doc.folderPath || "No tags"}
+      onClick={() => onSelect(doc)}
+      badge={
+        canToggle ? (
+          <VisibilityToggle visible={visible} busy={busy} onChange={(next) => onToggle(doc, next)} />
+        ) : (
+          <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${visible ? VISIBILITY.client.className : VISIBILITY.private.className}`}>
+            {visible ? <Share2 size={11} /> : <Lock size={11} />} {visible ? "Client Visible" : "Hidden"}
+          </span>
+        )
+      }
+      fields={[
+        { label: "Type", value: type.toUpperCase() },
+        { label: "Date", value: formattedDate },
+      ]}
+      actions={doc.fileUrl ? [
+        { label: "View", icon: <FileText size={13} />, tone: CARD_TONES.view, onClick: () => openStoredFile(doc.fileUrl) },
+      ] : []}
+    />
+  );
+}
+
 function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
   return (
     <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
@@ -199,17 +233,14 @@ function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
         </div>
       </div>
       {docs.length ? (
-        <div>
-          <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
-            <span>Name</span><span>Type</span><span>Visibility</span><span>Date</span><span>File</span>
-          </div>
-          {/* Documents scroll independently of the folders above. */}
-          <div className="max-h-[220px] overflow-y-auto">
+        <>
+          {/* Mobile: one card per document instead of a cramped, horizontally
+              scrolling table. */}
+          <div className="flex flex-col gap-3 p-2 sm:hidden">
             {docs.map((doc, index) => (
-              <DocumentRow
+              <DocumentMobileCard
                 key={doc._id || doc.id || `${doc.fileName}-${index}`}
                 doc={doc}
-                selected={selected === doc}
                 onSelect={onSelect}
                 onToggle={onToggle}
                 canToggle={Boolean(onToggle)}
@@ -217,7 +248,27 @@ function FilesTable({ title, docs, selected, onSelect, onToggle, togglingId }) {
               />
             ))}
           </div>
-        </div>
+
+          <div className="hidden sm:block">
+            <div className="grid grid-cols-[minmax(0,1.5fr)_120px_130px_120px_80px] gap-4 bg-[#fafafa] px-4 py-2 text-xs font-bold uppercase tracking-wide text-[#9ca3af]">
+              <span>Name</span><span>Type</span><span>Visibility</span><span>Date</span><span>File</span>
+            </div>
+            {/* Documents scroll independently of the folders above. */}
+            <div className="max-h-[220px] overflow-y-auto">
+              {docs.map((doc, index) => (
+                <DocumentRow
+                  key={doc._id || doc.id || `${doc.fileName}-${index}`}
+                  doc={doc}
+                  selected={selected === doc}
+                  onSelect={onSelect}
+                  onToggle={onToggle}
+                  canToggle={Boolean(onToggle)}
+                  busy={togglingId != null && String(togglingId) === String(doc._id || doc.id)}
+                />
+              ))}
+            </div>
+          </div>
+        </>
       ) : (
         <EmptyState title="No documents yet." text="Upload documents to see them here." />
       )}
