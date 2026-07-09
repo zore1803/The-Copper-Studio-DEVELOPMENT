@@ -470,13 +470,24 @@ export default function ContactDetail() {
     <div className="flex min-h-full flex-col bg-[#f8fafc]">
       {focusMode && (
         <div className="flex items-center gap-2 border-b border-[#e5e7eb] bg-white px-4 py-3">
-          <button onClick={() => navigate(-1)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb]">
+          <button
+            onClick={() => setActiveTab(TABS[(TABS.indexOf(activeTab) - 1 + TABS.length) % TABS.length])}
+            title="Previous section"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#525866] hover:bg-[#f9fafb]"
+          >
             <ChevronLeft size={18} />
           </button>
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-[#111827]">{activeTab}</p>
             <p className="truncate text-xs text-[#6b7280]">{contactFullName(contact)}</p>
           </div>
+          <button
+            onClick={() => setActiveTab(TABS[(TABS.indexOf(activeTab) + 1) % TABS.length])}
+            title="Next section"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#8D3118] hover:bg-[#fff1ec]"
+          >
+            <ChevronRight size={18} />
+          </button>
           {activeTab === "Projects" && (
             <div className="ml-auto flex shrink-0 items-center gap-2">
               <Button size="sm" onClick={() => setCreatingProject(true)}><Plus size={14} /> Project</Button>
