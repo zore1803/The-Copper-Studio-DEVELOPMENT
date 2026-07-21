@@ -5,6 +5,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { ToastProvider } from "./components/ToastProvider";
 import LoadingScreen from "./components/LoadingScreen";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 // Every route is code-split so the initial bundle stays small and a hard
 // refresh only downloads the chunk for the page you're on, not the whole app.
@@ -100,7 +101,11 @@ function ProjectFilesOverlay() {
 
 function AppRoutes() {
   const location = useLocation();
-  const backgroundLocation = location.state?.backgroundLocation;
+  const isMobile = useIsMobile();
+  // Detail links always carry a `backgroundLocation` (see openCompany etc.),
+  // but the floating-overlay treatment is only wanted on mobile/app widths —
+  // on desktop the same link should land on the full detail page instead.
+  const backgroundLocation = isMobile ? location.state?.backgroundLocation : undefined;
 
   return (
     <>
